@@ -4,7 +4,7 @@ JavaScript and Canvas, with vendored PeerJS for online connections. Node.js 18+ 
 
 ## Run
 
-Run `node server.mjs` (or `npm start`) in this folder, then open http://127.0.0.1:5173. Run `node --test` for the simulation tests.
+Run `node server.mjs` (or `npm start`) in this folder, then open Run `node --test` for the simulation tests.
 
 ## Controls
 
