@@ -3,17 +3,19 @@ import {render} from './renderer.js';
 import './music.js';
 import {Lobby} from './lobby.js';
 let world=new World(Math.random,{botCount:0});
-const canvas=document.querySelector('#arena'),ctx=canvas.getContext('2d');
+const canvas=document.querySelector('#arena'),ctx=canvas.getContext('2d',{alpha:false});
 // Keep the original zoom while following the local player.
-let view={scale:1,x:0,y:0};
+let view={scale:1,x:0,y:0,width:960,height:720,dpr:1};
 function resize(){
-  const r=canvas.getBoundingClientRect(),dpr=devicePixelRatio||1;
+  const r=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,1.5,Math.sqrt(1920*1080/(r.width*r.height)));
+  view.width=r.width;view.height=r.height;view.dpr=dpr;
   canvas.width=Math.round(r.width*dpr);canvas.height=Math.round(r.height*dpr);
   view.scale=Math.min(r.width/960,r.height/720);
   view.x=(r.width-960*view.scale)/2;view.y=(r.height-720*view.scale)/2;
 }
 new ResizeObserver(resize).observe(canvas);resize();
-const $=id=>document.getElementById(id),keys=new Set();let mouseHeld=false,spaceHeld=false,aim={x:480,y:0};
+const elements=new Map();
+const $=id=>{if(!elements.has(id))elements.set(id,document.getElementById(id));return elements.get(id);};const keys=new Set();let mouseHeld=false,spaceHeld=false,aim={x:480,y:0};
 const currentInput=()=>{camera();return ({left:keys.has('KeyA'),right:keys.has('KeyD'),up:keys.has('KeyW'),down:keys.has('KeyS'),aim,held:mouseHeld||spaceHeld});};
 const act=action=>lobby.action(action,currentInput());
 const equip=slot=>act(slot===1?'rod':'item');
@@ -37,7 +39,7 @@ addEventListener('keydown',e=>{
 });
 addEventListener('keyup',e=>{keys.delete(e.code);if(e.code==='Space')spaceHeld=false;});
 let pointer=null;
-function camera(){const r=canvas.getBoundingClientRect();view.x=r.width/2-world.player.x*view.scale;view.y=r.height/2-world.player.y*view.scale;if(pointer)aim={x:(pointer.x-view.x)/view.scale,y:(pointer.y-view.y)/view.scale};}
+function camera(player=world.player){view.x=view.width/2-player.x*view.scale;view.y=view.height/2-player.y*view.scale;if(pointer)aim={x:(pointer.x-view.x)/view.scale,y:(pointer.y-view.y)/view.scale};}
 function point(e){const r=canvas.getBoundingClientRect();pointer={x:e.clientX-r.left,y:e.clientY-r.top};camera();world.player.angle=Math.atan2(aim.y-world.player.y,aim.x-world.player.x);}
 canvas.addEventListener('pointermove',point);
 canvas.addEventListener('pointerdown',e=>{if(e.button!==0||!lobby.world)return;point(e);mouseHeld=true;canvas.focus();act('click');});
@@ -72,7 +74,7 @@ function updateUI(){
  $('countdown').hidden=world.matchState!=='countdown';$('countdown-number').textContent=Math.ceil(world.countdownRemaining);
  $('match-end').hidden=!['won','lost','finished'].includes(world.matchState);$('match-title').textContent=world.matchState==='won'||(world.matchState==='finished'&&world.player.health>0)?'Last angler standing!':'You were eliminated';
  $('restart').disabled=lobby.mode==='guest';$('restart').textContent=lobby.mode==='guest'?'Waiting for host to return to lobby':lobby.mode==='host'?'Return to lobby':'Play again · Enter';
- $('match-summary').textContent=`${world.catches.length} catches · ${world.progression.eliminations.size} eliminations · Level ${world.progression.level}`;
+ $('match-summary').textContent=`${world.player.catchCount??world.catches.length} catches · ${world.progression.eliminations.size} eliminations · Level ${world.progression.level}`;
  for(const kind of ['tidal','whirlpool'])$('fire-'+kind).disabled=busy||world.player.cooldown>0||world.progression.specials[kind]===0||world.matchState!=='playing';
  $('world-state').textContent=world.matchState==='countdown'?'GET READY':active?'REELING':busy?'WAITING FOR A BITE':'EXPLORING';
  $('catch-bar').style.bottom=`${(f.bar||0)*100}%`;$('target').style.bottom=`${(f.target||0)*100}%`;$('progress-fill').style.height=active?`${f.progress*100}%`:'0%';$('percent').textContent=active?`${Math.floor(f.progress*100)}%`:'0%';
@@ -103,12 +105,13 @@ $('leave-lobby').onclick=()=>lobby.leave();
 $('copy-invite').onclick=async()=>{const url=new URL(location.href);url.search='';url.searchParams.set('room',lobby.code);try{await navigator.clipboard.writeText(url.href);lobby.status='Invite link copied. Send it to your friends.';}catch{lobby.status='Copy this room code and share the game URL.';$('room-code').select();}updateLobby();};
 const invitation=new URL(location.href).searchParams.get('room');if(invitation)$('join-code').value=invitation;
 updateLobby();
-let accumulator=0,last=performance.now();
+let accumulator=0,last=performance.now(),lastUI=0,lastRender=0;
 function frame(now){accumulator+=Math.min((now-last)/1000,.1);last=now;while(accumulator>=1/120){lobby.tick(1/120,currentInput());accumulator-=1/120;}
  if(lobby.world)world=lobby.world;
- camera();const dpr=devicePixelRatio||1;
+ if(now-lastRender<1000/60){requestAnimationFrame(frame);return;}lastRender=now-((now-lastRender)%(1000/60));
+ const display=lobby.presentation();camera(display?.player||world.player);const dpr=view.dpr;
  ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#1c4754';ctx.fillRect(0,0,canvas.width,canvas.height);
  ctx.setTransform(dpr*view.scale,0,0,dpr*view.scale,dpr*view.x,dpr*view.y);
- render(ctx,world);if(lobby.world){updateProgression();updateUI();}requestAnimationFrame(frame);
+ render(ctx,display||world);if(lobby.world&&now-lastUI>=1000/30){lastUI=now;updateProgression();updateUI();}requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);

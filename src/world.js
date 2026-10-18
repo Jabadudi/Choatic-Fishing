@@ -63,6 +63,7 @@ export class World {
   this.dashDirection={x,y};this.dashRemaining=.16;return true;
  }
  moveActor(p,dx,dy,shoreOnly){
+  if(dx===0&&dy===0)return;
   let x=Math.max(LAND.left+15,Math.min(LAND.right-15,p.x+dx));
   if(shoreOnly&&!LAKES.some(l=>lakeDistance(p.x,p.y,l)<=110)&&p.y>INLAND.top&&p.y<INLAND.bottom){if(p.x<=INLAND.left)x=Math.min(x,INLAND.left);else if(p.x>=INLAND.right)x=Math.max(x,INLAND.right);}
   let y=Math.max(LAND.top+15,Math.min(LAND.bottom-15,p.y+dy));

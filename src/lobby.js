@@ -1,11 +1,12 @@
+import {Presentation} from './presentation.js';
 import {World} from './world.js';
 import {VERSION,neutralInput,cleanInput,applyAction,snapshot,fromSnapshot} from './protocol.js';
 const nameOf=value=>String(value||'Angler').trim().slice(0,20)||'Angler';
 const roomId=()=>`fish-${Array.from(crypto.getRandomValues(new Uint8Array(6)),n=>n.toString(16).padStart(2,'0')).join('')}`;
 export class Lobby {
- constructor(onChange){this.onChange=onChange;this.mode='menu';this.status='Practice solo or invite friends.';this.members=[];this.connections=new Map();this.inputs={};this.lastSeen={};this.world=null;this.clock=0;this.sendClock=0;this.generation=0;this.lastPacket=0;}
+ constructor(onChange){this.smoothing=new Presentation();this.onChange=onChange;this.mode='menu';this.status='Practice solo or invite friends.';this.members=[];this.connections=new Map();this.inputs={};this.lastSeen={};this.world=null;this.clock=0;this.sendClock=0;this.generation=0;this.lastPacket=0;}
  notify(){this.onChange?.();}
- stop(){this.generation++;clearTimeout(this.timeout);this.peer?.destroy();this.peer=null;this.connections.clear();this.mode='menu';this.members=[];this.world=null;this.inputs={};this.lastSeen={};this.id=null;this.code='';this.error='';}
+ stop(){this.smoothing=new Presentation();this.lastInputKey='';this.generation++;clearTimeout(this.timeout);this.peer?.destroy();this.peer=null;this.connections.clear();this.mode='menu';this.members=[];this.world=null;this.inputs={};this.lastSeen={};this.id=null;this.code='';this.error='';}
  leave(){this.stop();this.status='Left lobby. Create or join another match.';this.notify();}
  practice(){this.stop();this.mode='solo';this.world=new World();this.notify();}
  async connect(name,code=null){
@@ -50,12 +51,18 @@ export class Lobby {
    if(generation!==this.generation||!data)return;this.lastPacket=performance.now();
    if(data.type==='rejected'){this.fail(data.reason);return;}
    if(data.type==='lobby'){clearTimeout(this.timeout);this.mode='guest';this.members=data.members;this.world=null;this.status=data.status;this.notify();}
-   if(data.type==='state'){const world=fromSnapshot(data.state,this.id);if(world){this.mode='guest';this.world=world;this.notify();}}
+   if(data.type==='state'){const first=!this.world;if(this.world)this.smoothing.capture(this.world,performance.now());const world=fromSnapshot(data.state,this.id,this.world);if(world){this.mode='guest';this.world=world;if(first)this.notify();}}
   });
   conn.on('close',()=>{if(generation===this.generation)this.fail('Host disconnected. The lobby has closed.');});
   conn.on('error',()=>{if(generation===this.generation)this.fail('Unable to connect to the host. Some networks need a TURN relay. Try another network.');});
  }
- send(conn,data){if(conn?.open&&conn.bufferSize<4)conn.send(data);}
+ send(conn,data){
+  if(!conn?.open)return false;
+  // Never queue stale real-time snapshots behind a congested connection.
+  if(['state','input'].includes(data.type)&&(conn.bufferSize>0||(conn.dataChannel?.bufferedAmount||0)>32768))return false;
+  conn.send(data);return true;
+ }
+ presentation(){return this.mode==='guest'&&this.world?this.smoothing.view(this.world,performance.now()):this.world;}
  broadcastLobby(){const data={type:'lobby',members:this.members,status:this.status};for(const conn of this.connections.values())this.send(conn,data);this.notify();}
  toggleReady(){if(this.world)return;const member=this.members.find(member=>member.id===this.id);if(!member)return;if(this.mode==='host'){member.ready=!member.ready;this.broadcastLobby();}else this.send(this.connection,{type:'ready',ready:!member.ready});}
  start(){if(this.mode!=='host'||this.world||this.members.length<2||!this.members.every(member=>member.ready))return false;this.world=new World(Math.random,{humans:this.members});this.inputs={};this.lastSeen={};this.broadcastState();this.notify();return true;}
@@ -64,6 +71,7 @@ export class Lobby {
  action(action,input){if(!this.world)return;if(this.mode==='guest')this.send(this.connection,{type:'action',action,input});else applyAction(this.world,this.world.player.id,action,input);}
  tick(dt,input){
   this.sendClock+=dt;
+  if(this.mode==='guest'&&this.world){const key=[input.left,input.right,input.up,input.down,input.held].join(':');if(key!==this.lastInputKey&&this.send(this.connection,{type:'input',input})){this.lastInputKey=key;this.sendClock=0;}}
   if(this.mode==='solo'){this.world.update(dt,input);return;}
   if(this.mode==='host'&&this.world){
    for(const id of Object.keys(this.inputs))if(performance.now()-(this.lastSeen[id]||0)>500)this.inputs[id]=neutralInput();
