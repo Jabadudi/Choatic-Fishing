@@ -94,3 +94,5 @@ This is a prototype with basic AI and initial balance values. Online play uses P
 
 `assets/battle-music.mp3` is the user-provided paulyudin-battle-battle-music-491417 track (2:42). Background music loops at 30% default volume after the first click or keypress. The in-game music controls support mute and volume adjustment. `src/music.js` owns a single audio instance so match restarts do not interrupt playback. Reloading the page resets audio settings. Browsers may require another user gesture to resume playback after interruption.
 
+
+The playlist now alternates Battle Music (Paulyudin, 2:42) and Armageddon (Alibi Music, 3:32), then repeats. Volume and mute apply to both tracks.
