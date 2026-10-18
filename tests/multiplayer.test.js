@@ -26,5 +26,5 @@ test('snapshot roundtrip preserves local guest HUD and typed inventory/progressi
 });
 test('remote input rejects nonfinite coordinates and ignores client-supplied state',()=>{
  assert.equal(cleanInput({aim:{x:Infinity,y:0}}),null);
- const input=cleanInput({right:true,health:9999,aim:{x:1000000,y:0}});assert.equal(input.aim.x,1920);assert.equal(input.health,undefined);assert.equal(input.held,false);
+ const input=cleanInput({right:true,health:9999,aim:{x:1000000,y:0}});assert.equal(input.aim.x,2600);assert.equal(input.health,undefined);assert.equal(input.held,false);
 });

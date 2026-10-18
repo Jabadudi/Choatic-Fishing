@@ -40,7 +40,7 @@ test('all four inner shoreline edges block crossing and corners allow sliding',(
   [INLAND.left-1,365,50,0,INLAND.left,365],
   [INLAND.right+1,365,-50,0,INLAND.right,365],
   [480,INLAND.top-1,0,50,480,INLAND.top],
-  [480,INLAND.bottom+1,0,-50,480,INLAND.bottom],
+  [400,INLAND.bottom+1,0,-50,400,INLAND.bottom],
   [INLAND.left-1,INLAND.top-1,20,20,INLAND.left+19,INLAND.top]
  ]){w.player.x=x;w.player.y=y;w.move(dx,dy,true);assert.equal(w.player.x,expectedX);assert.equal(w.player.y,expectedY);}
 });

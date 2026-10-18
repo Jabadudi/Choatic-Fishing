@@ -4,7 +4,7 @@ import './music.js';
 import {Lobby} from './lobby.js';
 let world=new World(Math.random,{botCount:0});
 const canvas=document.querySelector('#arena'),ctx=canvas.getContext('2d');
-// Fit the world without distortion; HUD overlays never change this camera.
+// Keep the original zoom while following the local player.
 let view={scale:1,x:0,y:0};
 function resize(){
   const r=canvas.getBoundingClientRect(),dpr=devicePixelRatio||1;
@@ -14,7 +14,7 @@ function resize(){
 }
 new ResizeObserver(resize).observe(canvas);resize();
 const $=id=>document.getElementById(id),keys=new Set();let mouseHeld=false,spaceHeld=false,aim={x:480,y:0};
-const currentInput=()=>({left:keys.has('KeyA'),right:keys.has('KeyD'),up:keys.has('KeyW'),down:keys.has('KeyS'),aim,held:mouseHeld||spaceHeld});
+const currentInput=()=>{camera();return ({left:keys.has('KeyA'),right:keys.has('KeyD'),up:keys.has('KeyW'),down:keys.has('KeyS'),aim,held:mouseHeld||spaceHeld});};
 const act=action=>lobby.action(action,currentInput());
 const equip=slot=>act(slot===1?'rod':'item');
 addEventListener('keydown',e=>{
@@ -36,7 +36,9 @@ addEventListener('keydown',e=>{
   }
 });
 addEventListener('keyup',e=>{keys.delete(e.code);if(e.code==='Space')spaceHeld=false;});
-function point(e){const r=canvas.getBoundingClientRect();aim={x:(e.clientX-r.left-view.x)/view.scale,y:(e.clientY-r.top-view.y)/view.scale};world.player.angle=Math.atan2(aim.y-world.player.y,aim.x-world.player.x);}
+let pointer=null;
+function camera(){const r=canvas.getBoundingClientRect();view.x=r.width/2-world.player.x*view.scale;view.y=r.height/2-world.player.y*view.scale;if(pointer)aim={x:(pointer.x-view.x)/view.scale,y:(pointer.y-view.y)/view.scale};}
+function point(e){const r=canvas.getBoundingClientRect();pointer={x:e.clientX-r.left,y:e.clientY-r.top};camera();world.player.angle=Math.atan2(aim.y-world.player.y,aim.x-world.player.x);}
 canvas.addEventListener('pointermove',point);
 canvas.addEventListener('pointerdown',e=>{if(e.button!==0||!lobby.world)return;point(e);mouseHeld=true;canvas.focus();act('click');});
 addEventListener('pointerup',()=>mouseHeld=false);
@@ -58,7 +60,7 @@ function updateProgression(){
  $('fire-tidal').textContent=`R · Tidal Cannon ×${p.specials.tidal}`;$('fire-whirlpool').textContent=`T · Whirlpool ×${p.specials.whirlpool}`;
  $('reward-choice').hidden=p.pendingChoices===0||world.matchState!=='playing';$('reward-heading').textContent=`Level up · Choose a special (${p.pendingChoices})`;
 }
-const ICONS={'Frying Pan':'◉','Swordfish':'⚔','Harpoon Gun':'➶','Anchor':'⚓','Pufferfish Bomb':'✹','Grappling Squid':'↗','Sardine':'♢','Old Boot':'♟'};
+const ICONS={'Treasure Key':'⚿','Frying Pan':'◉','Swordfish':'⚔','Harpoon Gun':'➶','Anchor':'⚓','Pufferfish Bomb':'✹','Grappling Squid':'↗','Sardine':'♢','Old Boot':'♟'};
 function updateUI(){
  const f=world.fishing,active=f.state==='reeling',busy=f.state!=='idle',inventory=world.inventory;
  $('line-panel').hidden=!active;
@@ -104,7 +106,7 @@ updateLobby();
 let accumulator=0,last=performance.now();
 function frame(now){accumulator+=Math.min((now-last)/1000,.1);last=now;while(accumulator>=1/120){lobby.tick(1/120,currentInput());accumulator-=1/120;}
  if(lobby.world)world=lobby.world;
- const dpr=devicePixelRatio||1;
+ camera();const dpr=devicePixelRatio||1;
  ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#1c4754';ctx.fillRect(0,0,canvas.width,canvas.height);
  ctx.setTransform(dpr*view.scale,0,0,dpr*view.scale,dpr*view.x,dpr*view.y);
  render(ctx,world);if(lobby.world){updateProgression();updateUI();}requestAnimationFrame(frame);

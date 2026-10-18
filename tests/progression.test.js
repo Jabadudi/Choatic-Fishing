@@ -33,7 +33,7 @@ test('eliminations grant XP once per opponent and invalid XP cannot corrupt prog
 });
 
 test('real catches grant XP; cancellations and failures do not',()=>{
-  const w=new World(()=>0,{botCount:0,countdownSeconds:0}),input={left:false,right:false,up:false,down:false,aim:{x:0,y:365},held:false};
+  const w=new World(()=>.1,{botCount:0,countdownSeconds:0}),input={left:false,right:false,up:false,down:false,aim:{x:0,y:365},held:false};
   w.player.x=180;
   for(let catchIndex=0;catchIndex<3;catchIndex++){
     assert.ok(w.cast(input.aim));
@@ -58,7 +58,7 @@ test('real catches grant XP; cancellations and failures do not',()=>{
 });
 
 test('speed rewards change movement but do not alter fishing or pause the world',()=>{
-  const baseline=new World(()=>0,{botCount:0,countdownSeconds:0}),upgraded=new World(()=>0,{botCount:0,countdownSeconds:0});
+  const baseline=new World(()=>.1,{botCount:0,countdownSeconds:0}),upgraded=new World(()=>.1,{botCount:0,countdownSeconds:0});
   upgraded.progression.grantCatchBuff(()=>0);
   const input={right:true,left:false,up:false,down:false,aim:{x:0,y:365},held:false};
   baseline.update(.1,input);upgraded.update(.1,input);

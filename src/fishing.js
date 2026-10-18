@@ -8,6 +8,7 @@ export const ITEMS = Object.freeze([
   {name:'Sardine',description:'A small snack. Restores 35 health.'},
   {name:'Old Boot',description:'You risked it all for someone else’s shoe.'}
 ]);
+export const KEY={name:'Treasure Key',description:'Rare key. Equip near a chest and press F to restore full health.'};
 export class Fishing {
   constructor(random = Math.random) { this.random=random; this.state='idle'; this.result=null; }
   cast() {
@@ -33,7 +34,7 @@ export class Fishing {
     const contact=this.target>=this.bar && this.target<=this.bar+.27;
     this.grace=Math.max(0,this.grace-dt);
     this.progress=Math.max(0,Math.min(1,this.progress+(contact?.16:(this.grace>0?0:-.105))*dt));
-    if(this.progress>=1){this.result=ITEMS[Math.min(ITEMS.length-1,Math.floor(this.random()*ITEMS.length))];this.state='caught';}
+    if(this.progress>=1){const roll=this.random();this.result=roll<.06?KEY:ITEMS[Math.min(ITEMS.length-1,Math.floor((roll-.06)/.94*ITEMS.length))];this.state='caught';}
     else if(this.progress<=0)this.state='escaped';
   }
 }

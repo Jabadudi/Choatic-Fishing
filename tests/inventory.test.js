@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Inventory} from '../src/inventory.js';
-import {World} from '../src/world.js';
+import {World,LAND} from '../src/world.js';
 
 test('rod is permanent; caught slot cannot overwrite an item and empties after finite uses',()=>{
  const inventory=new Inventory();
@@ -30,8 +30,8 @@ test('filled catch slot blocks fishing; using an item unlocks fishing without ex
 test('cooldown prevents multiple uses per click burst and grappling stays on land',()=>{
  const w=new World(Math.random,{botCount:0,countdownSeconds:0});w.inventory.receive({name:'Harpoon Gun'});w.equip(2);
  assert.equal(w.useItem(),true);assert.equal(w.useItem(),false);assert.equal(w.inventory.item.uses,2);
- const grapple=new World(Math.random,{botCount:0,countdownSeconds:0});grapple.player.x=790;grapple.inventory.receive({name:'Grappling Squid'});grapple.equip(2);grapple.useItem();
- assert.ok(grapple.player.x<=790);assert.equal(grapple.inventory.item,null);
+ const grapple=new World(Math.random,{botCount:0,countdownSeconds:0});grapple.player.x=LAND.right-15;grapple.inventory.receive({name:'Grappling Squid'});grapple.equip(2);grapple.useItem();
+ assert.ok(grapple.player.x<=LAND.right-15);assert.equal(grapple.inventory.item,null);
 });
 
 
