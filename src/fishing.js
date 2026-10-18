@@ -1,0 +1,40 @@
+export const ITEMS = Object.freeze([
+  {name:'Frying Pan',description:'Quick swings. Strong knockback. Breakfast is served.'},
+  {name:'Swordfish',description:'A fish with a point. Long-reaching melee weapon.'},
+  {name:'Harpoon Gun',description:'A ranged weapon, freshly dredged from the deep.'},
+  {name:'Anchor',description:'Heavy, slow, and exceptionally persuasive.'},
+  {name:'Pufferfish Bomb',description:'Handle with care. Throwable explosive.'},
+  {name:'Grappling Squid',description:'Eight arms. One excellent escape plan.'},
+  {name:'Sardine',description:'A small snack. Restores 35 health.'},
+  {name:'Old Boot',description:'You risked it all for someone else’s shoe.'}
+]);
+export class Fishing {
+  constructor(random = Math.random) { this.random=random; this.state='idle'; this.result=null; }
+  cast() {
+    if(this.state!=='idle') return false;
+    this.state='waiting'; this.wait=1.5+this.random()*1.5; this.result=null; return true;
+  }
+  cancel() { if(this.state==='idle') return false; this.state='idle'; this.result=null; return true; }
+  update(dt,held) {
+    if(this.state==='waiting') {
+      this.wait-=dt;
+      if(this.wait<=0){this.state='reeling';this.time=0;this.bar=.23;this.velocity=0;this.target=.34;this.progress=.3;this.grace=.9;}
+      return;
+    }
+    if(this.state!=='reeling')return;
+    this.time+=dt;
+    // A consistent, smooth trajectory. No item, enemy, or UI data enters physics.
+    this.target=.5+.25*Math.sin(this.time*.85)+.08*Math.sin(this.time*1.7);
+    this.velocity+=(held?1.7:-1.5)*dt;
+    this.velocity*=Math.exp(-2.8*dt);
+    this.bar+=this.velocity*dt;
+    if(this.bar<0){this.bar=0;this.velocity=Math.max(0,this.velocity)*.2;}
+    if(this.bar>.73){this.bar=.73;this.velocity=Math.min(0,this.velocity)*.2;}
+    const contact=this.target>=this.bar && this.target<=this.bar+.27;
+    this.grace=Math.max(0,this.grace-dt);
+    this.progress=Math.max(0,Math.min(1,this.progress+(contact?.16:(this.grace>0?0:-.105))*dt));
+    if(this.progress>=1){this.result=ITEMS[Math.min(ITEMS.length-1,Math.floor(this.random()*ITEMS.length))];this.state='caught';}
+    else if(this.progress<=0)this.state='escaped';
+  }
+}
+

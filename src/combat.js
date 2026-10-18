@@ -1,0 +1,58 @@
+// Shared combat rules for the human player and bots. No fishing physics dependencies.
+export const WEAPONS={
+ 'Frying Pan':{kind:'melee',damage:25,range:65,knockback:220,cooldown:.4},
+ 'Swordfish':{kind:'melee',damage:34,range:85,knockback:130,cooldown:.55},
+ 'Anchor':{kind:'melee',damage:60,range:76,knockback:300,cooldown:1.2},
+ 'Harpoon Gun':{kind:'projectile',damage:36,speed:440,range:540,knockback:120,cooldown:.65},
+ 'Pufferfish Bomb':{kind:'bomb',damage:48,speed:230,range:165,knockback:230,cooldown:.8},
+ 'Old Boot':{kind:'projectile',damage:5,speed:300,range:260,knockback:75,cooldown:.45}
+};
+export function damage(world,target,amount,source,angle,knockback=0){
+ if(target.health<=0||world.matchState!=='playing')return false;
+ if(target.dashRemaining>0)return false;
+ const taken=amount*source.progression.damageMultiplier*(1-target.progression.damageReduction);
+ target.health=Math.max(0,target.health-taken);
+ target.vx+=Math.cos(angle)*knockback;target.vy+=Math.sin(angle)*knockback;
+ if(target.health===0){
+  target.fishing.cancel();target.bobber=null;
+  if(source!==target)source.progression.recordElimination(target.id);
+  world.effects.push({name:'defeat',x:target.x,y:target.y,angle:0,life:.8});
+ }
+ return true;
+}
+export function attack(world,actor,item){
+ const spec=WEAPONS[item.name];actor.cooldown=spec?.cooldown||.4;
+ world.effects.push({name:item.name,x:actor.x,y:actor.y,angle:actor.angle,life:.55});
+ if(item.name==='Sardine'){actor.health=Math.min(actor.progression.maxHealth,actor.health+35);return;}
+ if(item.name==='Grappling Squid'){world.moveActor(actor,Math.cos(actor.angle)*140,Math.sin(actor.angle)*140,false);return;}
+ if(!spec)return;
+ if(spec.kind==='melee'){
+  for(const target of world.actors){if(target===actor||target.health<=0)continue;
+   const dx=target.x-actor.x,dy=target.y-actor.y,angle=Math.atan2(dy,dx);
+   const difference=Math.atan2(Math.sin(angle-actor.angle),Math.cos(angle-actor.angle));
+   if(Math.hypot(dx,dy)<=spec.range+14&&Math.abs(difference)<=1.05)damage(world,target,spec.damage,actor,angle,spec.knockback);
+  }
+ }else world.projectiles.push({x:actor.x,y:actor.y,angle:actor.angle,owner:actor,travel:0,...spec,name:item.name,hit:new Set(),radius:spec.kind==='bomb'?8:5});
+}
+export function special(world,actor,kind){
+ if(actor.health<=0||actor.fishing.state!=='idle'||actor.cooldown>0||!actor.progression.specials[kind]||world.matchState!=='playing')return false;
+ actor.progression.specials[kind]--;actor.cooldown=.8;
+ if(kind==='tidal')world.projectiles.push({x:actor.x,y:actor.y,angle:actor.angle,owner:actor,travel:0,kind:'wave',name:'Tidal Cannon',speed:360,range:650,damage:65,knockback:320,radius:25,hit:new Set()});
+ else{world.effects.push({name:'Whirlpool Burst',x:actor.x,y:actor.y,angle:0,life:.8});for(const target of world.actors){if(target!==actor&&Math.hypot(target.x-actor.x,target.y-actor.y)<155)damage(world,target,45,actor,Math.atan2(target.y-actor.y,target.x-actor.x),340);}}
+ return true;
+}
+export function updateProjectiles(world,dt){
+ for(const shot of world.projectiles){
+  const step=Math.min(shot.speed*dt,shot.range-shot.travel);
+  shot.x+=Math.cos(shot.angle)*step;shot.y+=Math.sin(shot.angle)*step;shot.travel+=step;
+  if(shot.kind==='bomb'){
+   if(shot.travel>=shot.range){world.effects.push({name:'explosion',x:shot.x,y:shot.y,angle:0,life:.55});for(const target of world.actors){if(target!==shot.owner&&Math.hypot(target.x-shot.x,target.y-shot.y)<100)damage(world,target,shot.damage,shot.owner,Math.atan2(target.y-shot.y,target.x-shot.x),shot.knockback);}shot.done=true;}
+  }else{
+   for(const target of world.actors){if(target===shot.owner||target.health<=0||shot.hit.has(target.id))continue;
+    if(Math.hypot(target.x-shot.x,target.y-shot.y)<=shot.radius+14){damage(world,target,shot.damage,shot.owner,shot.angle,shot.knockback);shot.hit.add(target.id);if(shot.kind!=='wave'){shot.done=true;break;}}
+   }
+  }
+  if(shot.travel>=shot.range)shot.done=true;
+ }
+ world.projectiles=world.projectiles.filter(shot=>!shot.done);
+}
