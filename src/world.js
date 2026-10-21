@@ -7,7 +7,7 @@ import {LAND,CHESTS,LAKES,lakeDistance,isWater,nearWater,walkable} from './terra
 export {LAND} from './terrain.js';
 export const SHORE_DEPTH=110;
 export const INLAND={left:LAND.left+SHORE_DEPTH,right:LAND.right-SHORE_DEPTH,top:LAND.top+SHORE_DEPTH,bottom:LAND.bottom-SHORE_DEPTH};
-export function createActor(id,name,x,y,random){return {id,name,x,y,angle:0,health:100,vx:0,vy:0,cooldown:0,dashRemaining:0,dashCooldown:0,dashDirection:{x:0,y:0},message:'',catches:[],inventory:new Inventory(),progression:new Progression(),fishing:new Fishing(random),bobber:null,retreat:0,intent:'TO SHORE'};}
+export function createActor(id,name,x,y,random){return {id,name,x,y,angle:0,health:100,vx:0,vy:0,cooldown:0,dashCharges:1,dashRemaining:0,dashCooldown:0,dashDirection:{x:0,y:0},message:'',catches:[],inventory:new Inventory(),progression:new Progression(),fishing:new Fishing(random),bobber:null,retreat:0,intent:'TO SHORE'};}
 export class World {
  constructor(random=Math.random,{botCount=1,countdownSeconds=5,humans=null}={}){
   this.random=random;this.player=createActor('player','YOU',480,365,random);
@@ -55,12 +55,18 @@ export class World {
  recordElimination(victimId){return this.progression.recordElimination(victimId);}
  nearestWater(actor=this.player){return nearWater(actor.x,actor.y);}
  move(dx,dy,shoreOnly){this.moveActor(this.player,dx,dy,shoreOnly);}
+ chooseUpgrade(kind,actor=this.player){
+  if(this.matchState!=='playing'||actor.health<=0||!actor.progression.chooseUpgrade(kind))return false;
+  if(kind==='health')actor.health=Math.min(actor.progression.maxHealth,actor.health+20);
+  if(kind==='dash')actor.dashCharges++;
+  actor.message=kind==='hermes'?'Hermes Boots stacked: +15% movement speed.':kind==='dash'?'Extra Dash stacked: +1 dash charge.':'Max Health stacked: +20 maximum and current HP.';return true;
+ }
  dash(input={}){
-  if(this.matchState!=='playing'||this.player.health<=0||this.fishing.state==='waiting'||this.dashRemaining>0||this.dashCooldown>0)return false;
+  if(this.matchState!=='playing'||this.player.health<=0||this.fishing.state==='waiting'||this.dashRemaining>0||this.player.dashCharges<=0)return false;
   let x=Number(!!input.right)-Number(!!input.left),y=Number(!!input.down)-Number(!!input.up);
   const length=Math.hypot(x,y);
   if(length){x/=length;y/=length;}else{x=Math.cos(this.player.angle);y=Math.sin(this.player.angle);}
-  this.dashDirection={x,y};this.dashRemaining=.16;return true;
+  this.player.dashCharges--;this.dashDirection={x,y};this.dashRemaining=.16;return true;
  }
  moveActor(p,dx,dy,shoreOnly){
   if(dx===0&&dy===0)return;
@@ -100,12 +106,12 @@ export class World {
   }
   if(this.matchState!=='playing')return;
   this.elapsed+=dt;this.effects=this.effects.filter(effect=>(effect.life-=dt)>0);
-  for(const actor of this.actors){actor.cooldown=Math.max(0,actor.cooldown-dt);if(actor.health<=0)continue;actor.health=Math.min(actor.progression.maxHealth,actor.health+dt);this.moveActor(actor,actor.vx*dt,actor.vy*dt,actor.fishing.state!=='idle');actor.vx*=Math.exp(-9*dt);actor.vy*=Math.exp(-9*dt);}
+  for(const actor of this.actors){actor.cooldown=Math.max(0,actor.cooldown-dt);if(actor.health<=0)continue;actor.progression.tickUpgrades(dt);actor.health=Math.min(actor.progression.maxHealth,actor.health+dt);this.moveActor(actor,actor.vx*dt,actor.vy*dt,actor.fishing.state!=='idle');actor.vx*=Math.exp(-9*dt);actor.vy*=Math.exp(-9*dt);}
   for(const human of this.humans){
    const actorInput=human===this.player?input:remoteInputs[human.id]||{left:false,right:false,up:false,down:false,held:false,aim:{x:human.x+1,y:human.y}};
    if(human.health>0)this.asActor(human,()=>this.updateHuman(dt,actorInput));
   }
-  for(const bot of this.bots){if(bot.health<=0)continue;updateBot(this,bot,dt);const f=bot.fishing;this.advanceFishing(bot,dt,f.state==='reeling'&&f.bar+f.velocity*.2+.135<f.target);}
+  for(const bot of this.bots){if(bot.health<=0)continue;if(bot.progression.pendingUpgrades)this.chooseUpgrade(['hermes','health'][Math.floor(this.random()*2)],bot);updateBot(this,bot,dt);const f=bot.fishing;this.advanceFishing(bot,dt,f.state==='reeling'&&f.bar+f.velocity*.2+.135<f.target);}
   updateProjectiles(this,dt);
   if(this.online){if(this.actors.filter(actor=>actor.health>0).length<=1){this.matchState='finished';for(const actor of this.actors){actor.fishing.cancel();actor.bobber=null;}}}
   else if(this.player.health<=0){this.matchState='lost';this.cancel();this.message='You were eliminated.';}
@@ -117,8 +123,11 @@ export class World {
    const step=Math.min(dt,this.dashRemaining);
    this.move(this.dashDirection.x*850*step,this.dashDirection.y*850*step,this.fishing.state!=='idle');
    this.dashRemaining=Math.max(0,this.dashRemaining-dt);
-   if(this.dashRemaining<1e-9){this.dashRemaining=0;this.dashCooldown=2;}
-  }else this.dashCooldown=Math.max(0,this.dashCooldown-dt);
+   if(this.dashRemaining<1e-9){this.dashRemaining=0;if(this.dashCooldown===0)this.dashCooldown=2;}
+  }else if(this.dashCooldown>0){
+   this.dashCooldown-=dt;
+   while(this.dashCooldown<=1e-9&&this.player.dashCharges<this.progression.maxDashes){this.player.dashCharges++;if(this.player.dashCharges<this.progression.maxDashes)this.dashCooldown+=2;else this.dashCooldown=0;}
+  }
   const p=this.player;p.angle=Math.atan2(input.aim.y-p.y,input.aim.x-p.x);
   if(!dashing&&p.health>0&&(this.fishing.state==='idle'||this.fishing.state==='reeling')){const x=Number(input.right)-Number(input.left),y=Number(input.down)-Number(input.up),len=Math.hypot(x,y)||1,speed=195*this.progression.speedMultiplier;this.move(x/len*speed*dt,y/len*speed*dt,this.fishing.state==='reeling');}
   if(p.health>0)this.advanceFishing(p,dt,input.held);

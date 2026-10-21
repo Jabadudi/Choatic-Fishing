@@ -1,5 +1,5 @@
 import {World,createActor} from './world.js';
-export const VERSION=3;
+export const VERSION=4;
 export const neutralInput=()=>({left:false,right:false,up:false,down:false,held:false,aim:{x:480,y:365}});
 export function cleanInput(raw){
  if(!raw||!Number.isFinite(raw.aim?.x)||!Number.isFinite(raw.aim?.y))return null;
@@ -10,6 +10,9 @@ export function applyAction(world,id,action,input){
  return world.asActor(actor,()=>{
   actor.angle=Math.atan2(input.aim.y-actor.y,input.aim.x-actor.x);
   switch(action){
+   case 'upgrade-hermes':return world.chooseUpgrade('hermes');
+   case 'upgrade-dash':return world.chooseUpgrade('dash');
+   case 'upgrade-health':return world.chooseUpgrade('health');
    case 'toggle':return actor.fishing.state==='idle'?world.cast(input.aim):world.cancel();
    case 'cancel':return world.cancel();
    case 'rod':return world.equip(1);

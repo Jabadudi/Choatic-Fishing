@@ -50,14 +50,15 @@ $('slot-rod').onclick=()=>equip(1);$('slot-item').onclick=()=>equip(2);$('cancel
 $('choose-whirlpool').onclick=()=>chooseReward('whirlpool');$('choose-special').onclick=()=>chooseReward('tidal');
 $('fire-tidal').onclick=()=>act('tidal');$('fire-whirlpool').onclick=()=>act('whirlpool');
 $('restart').onclick=restart;
+for(const kind of ['hermes','dash','health'])$('upgrade-'+kind).onclick=()=>{act('upgrade-'+kind);canvas.focus();};
 function restart(){release();lobby.rematch();progressionKey='';canvas.focus();}
 function chooseReward(reward){act('choose-'+reward);}
 let progressionKey='';
 function updateProgression(){
- const p=world.progression,key=[p.level,p.xp,p.pendingChoices,...Object.values(p.ranks),...Object.values(p.specials),world.matchState].join(':');if(key===progressionKey)return;progressionKey=key;
+ const p=world.progression,key=[p.level,p.xp,p.pendingChoices,...Object.values(p.ranks),...Object.values(p.upgrades),...Object.values(p.specials),world.matchState].join(':');if(key===progressionKey)return;progressionKey=key;
  $('level').textContent=`LEVEL ${p.level}`;$('xp-text').textContent=`${p.xp} / ${p.xpToNextLevel} XP`;$('xp-fill').style.width=`${p.xp/p.xpToNextLevel*100}%`;
  $('xp-track').setAttribute('aria-valuenow',p.xp);$('xp-track').setAttribute('aria-valuemax',p.xpToNextLevel);
- $('build-summary').textContent=`Speed +${p.ranks.speed*5}% · Damage +${p.ranks.power*8}% · Max HP ${p.maxHealth} · Armor ${Math.round(p.damageReduction*100)}%`;
+ $('build-summary').textContent=`Speed +${Math.round((p.speedMultiplier-1)*100)}% · Damage +${p.ranks.power*8}% · Max HP ${p.maxHealth} · Armor ${Math.round(p.damageReduction*100)}%`;
  $('buff-text').textContent=p.lastBuff?`Catch buff: ${p.lastBuff.name} — ${p.lastBuff.description}`:'Every catch grants a random passive buff';
  $('fire-tidal').textContent=`R · Tidal Cannon ×${p.specials.tidal}`;$('fire-whirlpool').textContent=`T · Whirlpool ×${p.specials.whirlpool}`;
  $('reward-choice').hidden=p.pendingChoices===0||world.matchState!=='playing';$('reward-heading').textContent=`Level up · Choose a special (${p.pendingChoices})`;
@@ -67,7 +68,11 @@ function updateUI(){
  const f=world.fishing,active=f.state==='reeling',busy=f.state!=='idle',inventory=world.inventory;
  $('line-panel').hidden=!active;
  $('health-text').textContent=`${Math.ceil(world.player.health)} / ${world.progression.maxHealth} HP`;
- $('dash-status').textContent=world.dashRemaining>0?'L-SHIFT · DASHING':world.dashCooldown>0?`L-SHIFT · ${world.dashCooldown.toFixed(1)}s`:'L-SHIFT · DASH READY';
+ $('upgrade-timer').textContent=`Next upgrade · ${Math.ceil(world.progression.upgradeRemaining)}s`;
+ $('upgrade-options').hidden=world.progression.pendingUpgrades===0||world.matchState!=='playing'||world.player.health<=0;
+ $('upgrade-heading').textContent=`Choose an upgrade (${world.progression.pendingUpgrades} available)`;
+ const stacks=world.progression.upgrades;$('upgrade-stacks').textContent=`Boots ×${stacks.hermes} · Dash ×${stacks.dash} · Health ×${stacks.health}`;
+ $('dash-status').textContent=`L-SHIFT · ${world.player.dashCharges}/${world.progression.maxDashes} DASHES`+(world.dashCooldown>0?` · +1 in ${world.dashCooldown.toFixed(1)}s`:'');
  $('dash-fill').style.width=`${world.dashRemaining>0?0:(1-world.dashCooldown/2)*100}%`;
  $('health-fill').style.width=`${world.player.health/world.progression.maxHealth*100}%`;
  $('alive-text').textContent=`${world.actors.filter(actor=>actor.health>0).length} / ${world.actors.length} ALIVE`;
