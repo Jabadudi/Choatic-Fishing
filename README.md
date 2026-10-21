@@ -1,8 +1,9 @@
 # The Wilds — an exploration world
 
-The main game now begins at Reedwater Landing. Explore a connected continent of
-forests, jungle, mountains, lakes, rivers, tar pits, a volcano, a dragon cave and
-gold mines. Press **M** for the atlas and **G** to examine a nearby landmark.
+The first playable area is Reedwater Landing: explore its beach, dock, drowned
+road, spring and forest approach. Walk off the marked north edge to enter a short
+section of Windchime Path; walk off that path's south edge to return.
+Press **M** for the current area map and **G** to examine a nearby landmark.
 See [WORLD.md](WORLD.md) for the world layout, controls, art approach and current limits.
 The earlier PvP lobby is no longer part of the player flow. The notes below describe
 the shared fishing/combat systems and their earlier arena implementation.

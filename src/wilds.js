@@ -1,165 +1,142 @@
-// A fixed world seed gives geography and scenery the same positions on every visit.
-export const WORLD={width:6400,height:4800,seed:7319};
-export const SPAWN={x:2920,y:4200};
+// Original, repeatable pixel-art areas. Exit coordinates connect actual map edges.
+export const AREAS={
+ landing:{id:'landing',name:'Reedwater Landing',width:2800,height:2200,seed:7319,spawn:{x:1250,y:1650},exits:[{edge:'north',from:1280,to:1520,target:'windchime',entry:{x:600,y:1510},label:'Windchime Path'}]},
+ windchime:{id:'windchime',name:'Windchime Path',width:1200,height:1800,seed:7321,spawn:{x:600,y:1510},exits:[{edge:'south',from:480,to:720,target:'landing',entry:{x:1400,y:120},label:'Reedwater Landing'}]}
+};
+export const WORLD=AREAS.landing;
+export const SPAWN=WORLD.spawn;
 export const LAND={left:0,right:WORLD.width,top:0,bottom:WORLD.height};
-export const LANDMARKS=[
- {id:'landing',name:'Reedwater Landing',x:2920,y:4200,kind:'landing',text:'Your boat rests beside the delta. Wooden chimes mark the beginning of the old inland path.'},
- {id:'forest',name:'Whispering Forest',x:1660,y:2150,kind:'forest',text:'Hollow trunks carry the wind between the roots. Something taps twice, far beyond the path.'},
- {id:'jungle',name:'Verdant Jungle',x:1500,y:3450,kind:'jungle',text:'Roots cradle broken stone channels. They were built to carry water into the ruins.'},
- {id:'lakes',name:'Crystal Lakes',x:3030,y:2710,kind:'lakes',text:'Silver shapes drift above a drowned road. The paving stones lead toward a submerged doorway.'},
- {id:'mountains',name:'Frostspire Mountains',x:3120,y:1000,kind:'mountain',text:'Snow gathers in every crevice except the narrow seams of warm stone.'},
- {id:'dragon',name:'Dragon Cave',x:4160,y:1000,kind:'cave',text:'The cave breathes warm air. A weathered scale lies beside claw marks older than the trail.'},
- {id:'volcano',name:'Ember Volcano',x:5070,y:1600,kind:'volcano',text:'Heat rises through black basalt. Deep beneath your feet, the mountain answers with a low rumble.'},
- {id:'tar',name:'The Tar Pits',x:5110,y:2720,kind:'tar',text:'Dark bubbles break the surface. An ancient wheel emerges from the tar, still joined to its axle.'},
- {id:'mines',name:'Gold Mines',x:4750,y:3440,kind:'mine',text:'The rails end at a sealed shaft. You hear a faint knock after your footsteps stop.'},
- {id:'river',name:'Silverflow Crossing',x:3260,y:3370,kind:'river',text:'The river divides below the bridge, carrying mountain water toward the southern sea.'}
+const LANDING_PLACES=[
+ {id:'landing',name:'Reedwater Landing',x:1250,y:1650,kind:'landing',text:'Your boat rests beside the sand. Above the tideline, a trail leads north toward three wooden chimes.'},
+ {id:'drowned',name:'The Drowned Road',x:620,y:1640,kind:'drowned',text:'Through the shallows, squared stones lead to a doorway below the water. This shore was once a street.'},
+ {id:'chimes',name:'The Three Chimes',x:1380,y:1180,kind:'chimes',text:'Three hollow wooden notes drift inland. Follow the worn trail north to enter Windchime Path.'},
+ {id:'spring',name:'Reedwater Spring',x:1820,y:980,kind:'spring',text:'Warm water bubbles beneath the reeds. Tiny silver fish gather at the edge of the spring.'},
+ {id:'tree',name:'The Hollow Tree',x:1010,y:600,kind:'tree',text:'A deer pauses beside the hollow trunk. Your footsteps echo from somewhere deeper in the roots.'}
 ];
-export const LAKES=[{x:2800,y:2150,rx:250,ry:180},{x:3340,y:2360,rx:290,ry:200},{x:3620,y:1950,rx:160,ry:150}];
-export const RIVERS=[[[3070,800],[3000,1350],[2800,1700],[2800,2150],[3080,2550],[3260,2920],[3260,3370],[3200,3830],[3200,4620]],[[4040,900],[3860,1430],[3620,1950],[3340,2360],[3080,2550]],[[2800,2150],[2200,2400],[1700,2800],[1500,3450],[2300,3990],[3200,4320]],[[3200,3830],[3600,4130],[3950,4470]]];
-const routes=[['landing','river'],['river','lakes'],['lakes','forest'],['forest','jungle'],['jungle','landing'],['forest','mountains'],['lakes','mountains'],['mountains','dragon'],['dragon','volcano'],['volcano','tar'],['tar','mines'],['mines','river'],['lakes','tar']];
-export const ROADS=routes.map(([a,b])=>{const start=LANDMARKS.find(p=>p.id===a),end=LANDMARKS.find(p=>p.id===b);return [[start.x,start.y],[(start.x+end.x)/2+Math.sin(start.x)*70,(start.y+end.y)/2+45],[end.x,end.y]];});
-export const TAR=[{x:5300,y:2250,rx:100,ry:70},{x:4920,y:2390,rx:75,ry:100},{x:5470,y:2630,rx:120,ry:70}];
+const PATH_PLACES=[{id:'path-chimes',name:'Windchime Path',x:600,y:1330,kind:'chimes',text:'Behind you lies Reedwater Landing. The chimes carry the sound of the shore into the trees.'},{id:'trail-end',name:'The Old Trail',x:600,y:320,kind:'sign',text:'The trail continues toward Willowbank. This next area is not built yet; return south to the landing for now.'}];
+export const LANDMARKS=LANDING_PLACES;
+export const placesFor=id=>id==='windchime'?PATH_PLACES:LANDING_PLACES;
+export const areaFor=id=>AREAS[id]||WORLD;
+export const LAKES=[{x:2020,y:1050,rx:130,ry:150},{x:650,y:1910,rx:390,ry:190}];
+export const RIVERS=[[[2370,-100],[2290,500],[2320,1000],[2440,1500],[2310,2300]]];
+export const ROADS=[[[1250,1650],[1400,1500],[1380,1180],[1350,800],[1400,0]],[[1380,1180],[1620,1000],[1820,980]],[[1350,800],[1100,700],[1010,600]],[[1250,1650],[960,1610],[620,1640]]];
+const PATH_ROADS=[[[600,1800],[600,1330],[520,1000],[650,650],[600,320]]];
+const pathsFor=id=>id==='windchime'?PATH_ROADS:ROADS;
 export function hash(x,y,s=0){let h=Math.imul(x+WORLD.seed,374761393)^Math.imul(y+s,668265263);h=Math.imul(h^(h>>>13),1274126177);return ((h^(h>>>16))>>>0)/4294967296;}
 export function ellipseDistance(x,y,l){return (Math.hypot((x-l.x)/l.rx,(y-l.y)/l.ry)-1)*Math.min(l.rx,l.ry);}
-function segmentDistance(x,y,a,b){const dx=b[0]-a[0],dy=b[1]-a[1],t=Math.max(0,Math.min(1,((x-a[0])*dx+(y-a[1])*dy)/(dx*dx+dy*dy)));return Math.hypot(x-a[0]-t*dx,y-a[1]-t*dy);}
-function lineDistance(x,y,lines){let d=Infinity;for(const line of lines)for(let i=1;i<line.length;i++)d=Math.min(d,segmentDistance(x,y,line[i-1],line[i]));return d;}
-export const roadDistance=(x,y)=>lineDistance(x,y,ROADS);
+function lineDistance(x,y,lines){let d=Infinity;for(const line of lines)for(let i=1;i<line.length;i++){const a=line[i-1],b=line[i],dx=b[0]-a[0],dy=b[1]-a[1],t=Math.max(0,Math.min(1,((x-a[0])*dx+(y-a[1])*dy)/(dx*dx+dy*dy)));d=Math.min(d,Math.hypot(x-a[0]-t*dx,y-a[1]-t*dy));}return d;}
+export const roadDistance=(x,y,id='landing')=>lineDistance(x,y,pathsFor(id));
 export const riverDistance=(x,y)=>lineDistance(x,y,RIVERS);
-export function coastDistance(x,y){const angle=Math.atan2((y-2400)/2150,(x-3200)/2880),edge=1+.025*Math.sin(angle*9)+.016*Math.sin(angle*17);return (Math.hypot((x-3200)/2880,(y-2400)/2150)-edge)*2150;}
-export function waterDistance(x,y){return Math.min(-coastDistance(x,y),...LAKES.map(l=>ellipseDistance(x,y,l)),riverDistance(x,y)-24);}
-export const isWater=(x,y)=>waterDistance(x,y)<0;
-export const nearWater=(x,y)=>waterDistance(x,y)<=110;
-export function regionAt(x,y){
- if(coastDistance(x,y)>0)return 'Southern Sea';
- const ox=x;x+=Math.sin(y*.0023)*110+Math.sin(y*.007)*35;y+=Math.sin(ox*.002)*90;
- if(x>4480&&y<1900)return 'Ember Volcano';
- if(y<1320)return 'Frostspire Mountains';
- if(x>4510&&y<2950)return 'The Tar Pits';
- if(x>4140&&y>=2950)return 'Goldward Foothills';
- if(x<2500&&y>3000)return 'Verdant Jungle';
- if(x<2450&&y<3000)return 'Whispering Forest';
- if(x>2450&&x<4030&&y<2890)return 'Crystal Lakes';
- if(y>3860)return 'Reedwater Delta';
- return 'Silverflow Lowlands';
+export const coastDistance=(x,y)=>y-(1910+Math.sin(x*.004)*35+Math.sin(x*.009)*12);
+export function waterDistance(x,y,id='landing'){return id==='windchime'?Infinity:Math.min(-coastDistance(x,y),...LAKES.map(l=>ellipseDistance(x,y,l)),riverDistance(x,y)-36);}
+export const isWater=(x,y,id='landing')=>waterDistance(x,y,id)<0;
+export const nearWater=(x,y,id='landing')=>waterDistance(x,y,id)<=110;
+export function regionAt(x,y,id='landing'){
+ if(id==='windchime')return 'Windchime Path';
+ if(coastDistance(x,y)>0)return 'Reedwater Shore';
+ if(y<900)return 'Forest Approach';
+ if(x>1750&&y<1450)return 'Springbank';
+ if(x<960&&y>1450)return 'The Drowned Road';
+ return 'Reedwater Landing';
 }
-const PALETTES={
- 'Southern Sea':['#254a62','#29536a','#2d5c70'],
- 'Reedwater Delta':['#8da574','#91a877','#94aa7b'],
- 'Silverflow Lowlands':['#889e68','#8ba16b','#8fa56e'],
- 'Whispering Forest':['#57734f','#5a7652','#5e7955'],
- 'Verdant Jungle':['#436e52','#477155','#4b7557'],
- 'Crystal Lakes':['#91b17e','#95b581','#99b885'],
- 'Frostspire Mountains':['#869295','#929d9e','#a8b2ad'],
- 'Ember Volcano':['#5d5556','#655959','#70605b'],
- 'The Tar Pits':['#9e8860','#ac9469','#b19b70'],
- 'Goldward Foothills':['#999466','#a39e70','#ada678']
-};
-export function surfaceAt(x,y){
- const wet=waterDistance(x,y);
- if(wet<0)return coastDistance(x,y)>0?'sea':'water';
- if(roadDistance(x,y)<25)return 'path';
- if(TAR.some(t=>ellipseDistance(x,y,t)<0))return 'tar';
- const volcano=Math.hypot(x-5070,y-1300);
- if(volcano<150)return 'lava';
- if(wet<45)return 'sand';
- return 'ground';
+const COLORS={'Reedwater Shore':['#29566b','#2b5b70','#2e6175'],'Reedwater Landing':['#91a97b','#96ad80','#9ab183'],'Forest Approach':['#627e55','#68845a','#6e8a60'],'Windchime Path':['#58734e','#5d7953','#627e58'],'Springbank':['#83a68a','#89ad90','#8eb195'],'The Drowned Road':['#a8b68c','#afbd94','#b4c099']};
+export function surfaceAt(x,y,id='landing'){
+ if(id==='windchime')return roadDistance(x,y,id)<29?'path':'ground';
+ if(isWater(x,y,id))return coastDistance(x,y)>0?'sea':'water';
+ if(roadDistance(x,y,id)<29)return 'path';
+ return waterDistance(x,y,id)<80?'sand':'ground';
 }
-export function sceneryAt(gx,gy){
- const x=gx*80+16+hash(gx,gy)*48,y=gy*80+16+hash(gx,gy,3)*48,region=regionAt(x,y),r=hash(gx,gy,9);
- if(coastDistance(x,y)>-45||waterDistance(x,y)<56||roadDistance(x,y)<65||LANDMARKS.some(p=>Math.hypot(x-p.x,y-p.y)<100))return null;
- let kind=null;
- if(region==='Whispering Forest'&&r<.72)kind='tree';
- else if(region==='Verdant Jungle'&&r<.8)kind=r<.48?'palm':'tree';
- else if(region==='Frostspire Mountains'&&r<.54)kind='mountain';
- else if(region==='Ember Volcano'&&r<.48)kind='basalt';
- else if(region==='Goldward Foothills'&&r<.3)kind='gold';
- else if(r<.13)kind=r<.07?'tree':'rock';
- else if(r<.27)kind='bush';
- return kind?{x,y,kind,r:kind==='mountain'?24:kind==='tree'||kind==='palm'?12:kind==='bush'?0:15}:null;
+export function sceneryAt(gx,gy,id='landing'){
+ const x=gx*72+12+hash(gx,gy)*48,y=gy*72+12+hash(gx,gy,3)*48,r=hash(gx,gy,9),region=regionAt(x,y,id);
+ if(waterDistance(x,y,id)<95||roadDistance(x,y,id)<65||placesFor(id).some(p=>Math.hypot(x-p.x,y-p.y)<100))return null;
+ let kind=region==='Windchime Path'||region==='Forest Approach'?(r<.78?'tree':r<.87?'bush':null):r<.13?'tree':r<.21?'rock':r<.35?'bush':null;
+ return kind?{x,y,kind,r:kind==='tree'?12:kind==='rock'?15:0}:null;
 }
-export function walkable(x,y){
- if(x<32||y<32||x>WORLD.width-32||y>WORLD.height-32||coastDistance(x,y)>-16)return false;
- // Continuous old roads bridge water and guarantee routes to every landmark.
- if(roadDistance(x,y)<25)return true;
- if(waterDistance(x,y)<15||TAR.some(t=>ellipseDistance(x,y,t)<15)||Math.hypot(x-5070,y-1300)<170)return false;
- const gx=Math.floor(x/80),gy=Math.floor(y/80);
- for(let ix=gx-1;ix<=gx+1;ix++)for(let iy=gy-1;iy<=gy+1;iy++){const o=sceneryAt(ix,iy);if(o&&o.r&&(x-o.x)**2+(y-o.y)**2<(o.r+14)**2)return false;}
+function inExit(x,exit){return x>=exit.from+16&&x<=exit.to-16;}
+export function walkable(x,y,id='landing'){
+ const area=areaFor(id),edge=area.exits.find(e=>inExit(x,e)&&((e.edge==='north'&&y<96&&y>-24)||(e.edge==='south'&&y>area.height-96&&y<area.height+24)));
+ if(edge)return true;
+ if(x<24||x>area.width-24||y<24||y>area.height-24)return false;
+ if(id==='landing'&&x>=1225&&x<=1275&&y>=1730&&y<=1935)return true;
+ if(waterDistance(x,y,id)<15)return false;
+ if(id==='windchime'&&y<250)return false;
+ if(roadDistance(x,y,id)<29)return true;
+ const gx=Math.floor(x/72),gy=Math.floor(y/72);
+ for(let ix=gx-1;ix<=gx+1;ix++)for(let iy=gy-1;iy<=gy+1;iy++){const o=sceneryAt(ix,iy,id);if(o&&o.r&&(x-o.x)**2+(y-o.y)**2<(o.r+14)**2)return false;}
  return true;
 }
-export function nearestLandmark(x,y){return LANDMARKS.find(p=>Math.hypot(x-p.x,y-p.y)<115)||null;}
-
-// Original small pixel sprites. No commercial game assets are bundled.
-function pixelTree(ctx,x,y,palm=false){
- ctx.fillStyle='#162e3155';ctx.fillRect(x-24,y+9,50,15);ctx.fillStyle='#513e32';ctx.fillRect(x-5,y-9,10,30);ctx.fillStyle='#896442';ctx.fillRect(x-2,y-9,4,28);
- if(palm){ctx.fillStyle='#274d3c';ctx.fillRect(x-35,y-27,70,10);ctx.fillRect(x-8,y-47,16,53);ctx.fillRect(x-26,y-38,52,10);ctx.fillStyle='#5d9860';ctx.fillRect(x-27,y-32,29,5);ctx.fillRect(x+4,y-39,19,5);return;}
- ctx.fillStyle='#244d3b';ctx.fillRect(x-28,y-40,56,37);ctx.fillRect(x-19,y-52,38,59);ctx.fillStyle='#376548';ctx.fillRect(x-24,y-40,44,25);ctx.fillRect(x-15,y-48,30,13);ctx.fillStyle='#528056';ctx.fillRect(x-19,y-37,12,7);ctx.fillRect(x-10,y-45,17,5);
- ctx.fillStyle='#668e5b';ctx.fillRect(x-12,y-44,8,4);ctx.fillRect(x-21,y-32,5,4);ctx.fillStyle='#2b5940';ctx.fillRect(x+8,y-28,13,6);ctx.fillRect(x-7,y-16,10,5);ctx.fillStyle='#83a366';ctx.fillRect(x-8,y-43,3,3);
+export function transitionAt(x,y,id='landing'){
+ const area=areaFor(id),exit=area.exits.find(e=>inExit(x,e)&&((e.edge==='north'&&y<0)||(e.edge==='south'&&y>area.height)));
+ return exit?{areaId:exit.target,...exit.entry}:null;
 }
-function rock(ctx,o){const {x,y,kind}=o,m=kind==='mountain';ctx.fillStyle='#23394144';ctx.fillRect(x-22,y+4,49,17);ctx.fillStyle=m?'#58676f':'#636e67';ctx.beginPath();ctx.moveTo(x-25,y+13);ctx.lineTo(x-13,y-(m?44:18));ctx.lineTo(x+8,y-(m?63:24));ctx.lineTo(x+28,y+12);ctx.closePath();ctx.fill();ctx.fillStyle=m?'#cbd5ce':kind==='gold'?'#d9b65b':'#9aa397';ctx.beginPath();ctx.moveTo(x-13,y-(m?44:18));ctx.lineTo(x+8,y-(m?63:24));ctx.lineTo(x+15,y-(m?33:8));ctx.lineTo(x+3,y-(m?39:12));ctx.lineTo(x-4,y-(m?30:7));ctx.closePath();ctx.fill();}
-function staticArea(ctx,left,top,width,height){
+export function nearestLandmark(x,y,id='landing'){return placesFor(id).find(p=>Math.hypot(x-p.x,y-p.y)<135)||null;}
+
+function tree(ctx,x,y,big=false){
+ const k=big?2:1;ctx.save();ctx.translate(x,y);ctx.scale(k,k);ctx.fillStyle='#18362d55';ctx.fillRect(-26,9,52,15);ctx.fillStyle='#503f31';ctx.fillRect(-6,-9,12,31);ctx.fillStyle='#8e6b44';ctx.fillRect(-2,-9,5,29);ctx.fillStyle='#254e3b';ctx.fillRect(-28,-40,56,37);ctx.fillRect(-19,-52,38,59);ctx.fillStyle='#3d6c49';ctx.fillRect(-24,-40,44,25);ctx.fillRect(-15,-48,30,13);ctx.fillStyle='#6a945e';ctx.fillRect(-18,-37,13,7);ctx.fillRect(-10,-45,17,5);ctx.fillStyle='#2d5940';ctx.fillRect(8,-28,13,6);ctx.fillRect(-7,-16,10,5);if(big){ctx.fillStyle='#25392e';ctx.fillRect(-4,3,9,17);}ctx.restore();
+}
+function rock(ctx,x,y){ctx.fillStyle='#31423b44';ctx.fillRect(x-20,y+6,42,12);ctx.fillStyle='#66756b';ctx.beginPath();ctx.moveTo(x-22,y+10);ctx.lineTo(x-9,y-16);ctx.lineTo(x+8,y-23);ctx.lineTo(x+23,y+10);ctx.closePath();ctx.fill();ctx.fillStyle='#a2ae9a';ctx.beginPath();ctx.moveTo(x-9,y-16);ctx.lineTo(x+8,y-23);ctx.lineTo(x+15,y-7);ctx.lineTo(x+3,y-11);ctx.closePath();ctx.fill();}
+function staticArea(ctx,left,top,width,height,id){
  for(let y=Math.floor(top/16)*16;y<top+height;y+=16)for(let x=Math.floor(left/16)*16;x<left+width;x+=16){
-  const region=regionAt(x+8,y+8),surface=surfaceAt(x+8,y+8),palette=PALETTES[region];let color=palette[Math.floor(hash(x,y)*palette.length)];
-  if(surface==='water')color='#4d9ba5';else if(surface==='sea')color='#2a566b';else if(surface==='sand')color='#c4b486';else if(surface==='path')color='#b39b71';else if(surface==='tar')color='#34323b';else if(surface==='lava')color='#d37545';
-  ctx.fillStyle=color;ctx.fillRect(x,y,16,16);
-  const r=hash(x,y,4);ctx.fillStyle=surface==='water'?'#8ac4bd':surface==='sea'?'#396c7b':surface==='lava'?'#f0b765':'#d6dbac44';
-  if(r<.55)ctx.fillRect(x+3,y+6,surface==='water'||surface==='sea'?8:2,2);
-  if(surface==='ground'&&r<.3){ctx.fillStyle='#334e3528';ctx.fillRect(x+8,y+5,2,4);ctx.fillRect(x+6,y+7,5,2);}
-  if(surface==='path'&&isWater(x+8,y+8)){ctx.fillStyle='#735b46';ctx.fillRect(x,y,16,16);ctx.fillStyle='#b59a6b';for(let k=1;k<16;k+=8)ctx.fillRect(x+k,y,5,16);}
+  const region=regionAt(x+8,y+8,id),surface=surfaceAt(x+8,y+8,id),palette=COLORS[region],r=hash(x,y,4);
+  ctx.fillStyle=surface==='water'?'#559fa7':surface==='sea'?'#2b5c70':surface==='sand'?'#cab98c':surface==='path'?'#b5a078':palette[Math.floor(hash(x,y)*3)];ctx.fillRect(x,y,16,16);
+  ctx.fillStyle=surface==='water'?'#98ccc0':surface==='sea'?'#4d8090':'#d5dba544';if(r<.5)ctx.fillRect(x+3,y+6,surface==='water'||surface==='sea'?8:2,2);
+  if(surface==='ground'&&r<.28){ctx.fillStyle='#35553c33';ctx.fillRect(x+8,y+5,2,4);ctx.fillRect(x+6,y+7,5,2);}
  }
- for(let gy=Math.floor(top/80)-1;gy<Math.ceil((top+height)/80)+1;gy++)for(let gx=Math.floor(left/80)-1;gx<Math.ceil((left+width)/80)+1;gx++){const o=sceneryAt(gx,gy);if(!o)continue;if(o.kind==='tree'||o.kind==='palm')pixelTree(ctx,o.x,o.y,o.kind==='palm');else if(o.kind==='bush'){ctx.fillStyle='#416b46';ctx.fillRect(o.x-14,o.y-7,28,14);ctx.fillStyle='#83a967';ctx.fillRect(o.x-8,o.y-9,12,5);}else rock(ctx,o);}
+ for(let gy=Math.floor(top/72)-2;gy<Math.ceil((top+height)/72)+2;gy++)for(let gx=Math.floor(left/72)-2;gx<Math.ceil((left+width)/72)+2;gx++){const o=sceneryAt(gx,gy,id);if(!o)continue;if(o.kind==='tree')tree(ctx,o.x,o.y);else if(o.kind==='rock')rock(ctx,o.x,o.y);else{ctx.fillStyle='#4c7549';ctx.fillRect(o.x-13,o.y-6,26,13);ctx.fillStyle='#8dac68';ctx.fillRect(o.x-9,o.y-8,12,4);}}
+ if(id==='landing'){
+  // The old road stays beneath the water; its shoreline is the examinable location.
+  for(let i=0;i<12;i++){ctx.fillStyle=i%2?'#80b3a6':'#8dbdb0';ctx.fillRect(520+i*21,1800+i*7,19,24);}
+  for(const [x,y]of [[480,1790],[750,1880]]){ctx.fillStyle='#a7bda6';ctx.fillRect(x,y-30,12,36);ctx.fillStyle='#d5d6b4';ctx.fillRect(x-3,y-32,18,6);}
+  // Wooden pier and the arrival boat on the southern shore.
+  ctx.fillStyle='#604b38';ctx.fillRect(1210,1730,80,220);ctx.fillStyle='#a58b62';for(let y=1735;y<1950;y+=12)ctx.fillRect(1213,y,74,7);
+  ctx.fillStyle='#77563d';ctx.fillRect(1300,1880,95,31);ctx.fillStyle='#b99b6c';ctx.fillRect(1310,1885,75,5);ctx.fillRect(1310,1901,75,5);
+ }
 }
 const chunks=new Map(),CHUNK=512,MAX_CHUNKS=30;
-export function clearTerrainCache(){chunks.clear();}
-export function cachedChunkCount(){return chunks.size;}
-function drawChunks(ctx,view){
+export const clearTerrainCache=()=>chunks.clear();
+export const cachedChunkCount=()=>chunks.size;
+function drawChunks(ctx,view,id){
  for(let cy=Math.floor(view.top/CHUNK);cy<=Math.floor(view.bottom/CHUNK);cy++)for(let cx=Math.floor(view.left/CHUNK);cx<=Math.floor(view.right/CHUNK);cx++){
-  const key=`${cx},${cy}`;let canvas=chunks.get(key);
-  if(!canvas){canvas=document.createElement('canvas');canvas.width=CHUNK;canvas.height=CHUNK;const c=canvas.getContext('2d');c.translate(-cx*CHUNK,-cy*CHUNK);staticArea(c,cx*CHUNK,cy*CHUNK,CHUNK,CHUNK);chunks.set(key,canvas);if(chunks.size>MAX_CHUNKS)chunks.delete(chunks.keys().next().value);}
-  else {chunks.delete(key);chunks.set(key,canvas);}
-  ctx.drawImage(canvas,cx*CHUNK,cy*CHUNK);
+  const key=`${id}:${cx},${cy}`;let canvas=chunks.get(key);
+  if(!canvas){canvas=document.createElement('canvas');canvas.width=CHUNK;canvas.height=CHUNK;const c=canvas.getContext('2d');c.translate(-cx*CHUNK,-cy*CHUNK);staticArea(c,cx*CHUNK,cy*CHUNK,CHUNK,CHUNK,id);chunks.set(key,canvas);if(chunks.size>MAX_CHUNKS)chunks.delete(chunks.keys().next().value);}
+  else{chunks.delete(key);chunks.set(key,canvas);}ctx.drawImage(canvas,cx*CHUNK,cy*CHUNK);
  }
 }
+function chimes(ctx,x,y){ctx.fillStyle='#776040';ctx.fillRect(x-34,y-46,68,6);ctx.fillRect(x+29,y-46,6,65);ctx.fillStyle='#d8c48d';for(let i=0;i<3;i++){ctx.fillRect(x-23+i*18,y-40,2,10);ctx.fillRect(x-26+i*18,y-30,8,19+i*6);}}
 function drawLandmark(ctx,p){
- const {x,y,kind}=p;ctx.fillStyle='#182c3444';ctx.fillRect(x-45,y+10,90,18);
- if(kind==='cave'||kind==='mine'){ctx.fillStyle='#626e71';ctx.fillRect(x-37,y-38,74,58);ctx.fillRect(x-24,y-52,48,20);ctx.fillStyle='#192a33';ctx.fillRect(x-22,y-31,44,51);ctx.fillStyle=kind==='mine'?'#d5af52':'#9ca6a0';ctx.fillRect(x-29,y-35,8,58);ctx.fillRect(x+21,y-35,8,58);if(kind==='mine'){ctx.fillStyle='#e1bd59';for(let i=0;i<5;i++)ctx.fillRect(x+34+i*5,y+10-i%2*7,7,7);}else {ctx.fillStyle='#a5b7a5';ctx.fillRect(x-10,y-45,6,5);ctx.fillRect(x+5,y-45,6,5);}}
- else if(kind==='volcano'){for(let i=0;i<6;i++){ctx.fillStyle=i<4?'#554f54':'#da774c';ctx.fillRect(x-64+i*8,y+12-i*15,128-i*16,17);}ctx.fillStyle='#f1bd70';ctx.fillRect(x-17,y-67,34,9);}
- else if(kind==='landing'){ctx.fillStyle='#6c523c';ctx.fillRect(x-53,y-12,76,30);ctx.fillStyle='#baa077';ctx.fillRect(x-43,y-8,55,5);ctx.fillStyle='#e2d4a7';ctx.fillRect(x+24,y-45,5,60);ctx.fillStyle='#947b50';ctx.fillRect(x+10,y-47,36,5);for(let i=0;i<3;i++)ctx.fillRect(x+14+i*10,y-35,4,14+i*5);}
- else if(kind==='forest'||kind==='jungle'){pixelTree(ctx,x-30,y-6,kind==='jungle');pixelTree(ctx,x+32,y-11,kind==='jungle');ctx.fillStyle='#b7b88a';ctx.fillRect(x-6,y-9,12,28);}
- else if(kind==='mountain')rock(ctx,{x,y,kind:'mountain'});
- else if(kind==='tar'){ctx.fillStyle='#2d2c35';ctx.fillRect(x-41,y-14,82,27);ctx.fillStyle='#695b56';ctx.fillRect(x-28,y-8,26,5);ctx.fillRect(x+6,y+3,18,4);}
- else {ctx.fillStyle='#a7b5a4';ctx.fillRect(x-34,y-25,12,42);ctx.fillRect(x+22,y-18,12,35);ctx.fillStyle='#cad2b0';ctx.fillRect(x-37,y-29,18,7);ctx.fillRect(x+19,y-22,18,7);}
- ctx.textAlign='center';ctx.font='bold 13px monospace';ctx.fillStyle='#172d32dd';ctx.fillRect(x-105,y+30,210,25);ctx.fillStyle='#efe8c6';ctx.fillText(p.name,x,y+47);
+ const {x,y,kind}=p;
+ if(kind==='tree')tree(ctx,x,y,true);
+ else if(kind==='landing'||kind==='chimes')chimes(ctx,x,y);
+ else if(kind==='sign'){ctx.fillStyle='#7d6244';ctx.fillRect(x-4,y-10,8,33);ctx.fillStyle='#c2a878';ctx.fillRect(x-40,y-23,80,23);}
+ else if(kind==='spring'){ctx.fillStyle='#466e58';ctx.fillRect(x-26,y-7,52,18);ctx.fillStyle='#9eb683';for(let i=0;i<5;i++)ctx.fillRect(x-25+i*11,y-27+i%2*6,3,36);}
+ ctx.font='bold 12px monospace';ctx.textAlign='center';ctx.fillStyle='#183430e8';ctx.fillRect(x-99,y+31,198,23);ctx.fillStyle='#f0e1ba';ctx.fillText(p.name,x,y+47);
 }
-function wildlife(ctx,world,view){
- const animals=[{x:1810,y:2270,kind:'deer'},{x:1730,y:2020,kind:'deer'},{x:2720,y:3990,kind:'deer'},{x:2840,y:2130,kind:'turtle'},{x:3380,y:2360,kind:'turtle'},{x:2740,y:2175,kind:'eel'},{x:3280,y:2320,kind:'eel'}];
- for(let i=0;i<animals.length;i++){
-  const a=animals[i],t=world.elapsed*.35+i,x=a.x+Math.sin(t)*12,y=a.y+Math.cos(t*.8)*8;
-  if(x<view.left-40||x>view.right+40||y<view.top-40||y>view.bottom+40)continue;
-  if(a.kind==='deer'){
-   ctx.fillStyle='#233c3455';ctx.fillRect(x-16,y+10,32,8);ctx.fillStyle='#a28b62';ctx.fillRect(x-12,y-4,23,15);ctx.fillRect(x+7,y-17,10,18);ctx.fillStyle='#715d43';ctx.fillRect(x-10,y+8,4,12);ctx.fillRect(x+6,y+8,4,12);ctx.fillStyle='#c4b28a';ctx.fillRect(x+3,y-17,6,4);ctx.fillRect(x+15,y-20,7,4);ctx.fillStyle='#8fac70';ctx.fillRect(x+6,y-29,3,14);ctx.fillRect(x+16,y-30,3,14);ctx.fillRect(x+1,y-27,6,3);ctx.fillRect(x+18,y-26,7,3);ctx.fillStyle='#263c36';ctx.fillRect(x+14,y-12,2,2);
-  }else if(a.kind==='turtle'){
-   ctx.fillStyle='#b0c59b';ctx.fillRect(x-21,y-4,9,10);ctx.fillRect(x+14,y-8,7,7);ctx.fillRect(x+12,y+9,7,7);ctx.fillStyle='#3b6b59';ctx.fillRect(x-14,y-12,29,27);ctx.fillStyle='#6e9a70';ctx.fillRect(x-10,y-9,20,19);ctx.fillStyle='#b0ba7d';ctx.fillRect(x-2,y-19,3,15);ctx.fillRect(x+4,y-23,3,20);ctx.fillRect(x-7,y-18,2,13);
-  }else{ctx.fillStyle='#b6e8cb';for(let j=0;j<7;j++)ctx.fillRect(x+j*4,y+Math.sin(t*3+j*.7)*4,5,3);}
+function wildlife(ctx,world,id){
+ const list=id==='landing'?[{x:1080,y:660,kind:'deer'},{x:1980,y:1060,kind:'turtle'},{x:675,y:1910,kind:'eel'}]:[{x:850,y:950,kind:'deer'}];
+ for(let i=0;i<list.length;i++){const a=list[i],t=world.elapsed*.35+i,x=a.x+Math.sin(t)*10,y=a.y+Math.cos(t)*6;
+  if(a.kind==='deer'){ctx.fillStyle='#a58d64';ctx.fillRect(x-12,y-4,24,15);ctx.fillRect(x+7,y-17,11,18);ctx.fillStyle='#735e43';ctx.fillRect(x-10,y+8,4,12);ctx.fillRect(x+6,y+8,4,12);ctx.fillStyle='#9eb47c';ctx.fillRect(x+5,y-28,3,13);ctx.fillRect(x+17,y-29,3,14);ctx.fillRect(x+1,y-26,6,3);ctx.fillRect(x+19,y-25,6,3);}
+  else if(a.kind==='turtle'){ctx.fillStyle='#bac69c';ctx.fillRect(x-21,y-4,9,10);ctx.fillStyle='#3e7058';ctx.fillRect(x-14,y-12,29,27);ctx.fillStyle='#7aa576';ctx.fillRect(x-10,y-9,20,19);ctx.fillStyle='#babf85';ctx.fillRect(x-2,y-20,3,19);ctx.fillRect(x+4,y-26,3,23);}
+  else{ctx.fillStyle='#b6e8d4';for(let j=0;j<7;j++)ctx.fillRect(x+j*4,y+Math.sin(t*3+j*.7)*4,5,3);}
  }
 }
 export function drawWilds(ctx,world,view={left:world.player.x-700,right:world.player.x+700,top:world.player.y-500,bottom:world.player.y+500}){
- ctx.imageSmoothingEnabled=false;
- if(typeof document!=='undefined')drawChunks(ctx,view);else staticArea(ctx,view.left,view.top,view.right-view.left,view.bottom-view.top);
- for(const p of LANDMARKS)if(p.x>view.left-130&&p.x<view.right+130&&p.y>view.top-100&&p.y<view.bottom+100)drawLandmark(ctx,p);
- wildlife(ctx,world,view);
+ const id=world.areaId||'landing',area=areaFor(id);ctx.imageSmoothingEnabled=false;
+ if(typeof document!=='undefined')drawChunks(ctx,view,id);else staticArea(ctx,view.left,view.top,view.right-view.left,view.bottom-view.top,id);
+ for(const p of placesFor(id))if(p.x>view.left-120&&p.x<view.right+120&&p.y>view.top-100&&p.y<view.bottom+100)drawLandmark(ctx,p);
+ for(const exit of area.exits){const x=(exit.from+exit.to)/2,y=exit.edge==='north'?110:area.height-200;ctx.textAlign='center';ctx.fillStyle='#1b3832';ctx.fillRect(x-125,y-15,250,30);ctx.fillStyle='#f2dfaa';ctx.font='bold 12px monospace';ctx.fillText(`${exit.edge==='north'?'↑':'↓'} ${exit.label}`,x,y+5);}
+ if(id==='windchime'){ctx.fillStyle='#7c8b6c';for(let x=470;x<730;x+=35)ctx.fillRect(x,230,28,27);}
+ wildlife(ctx,world,id);
 }
 export function drawExplorer(ctx,p){
  const x=Math.round(p.x),y=Math.round(p.y),step=Math.sin(p.walkTime||0)*2;
  ctx.fillStyle='#18323855';ctx.fillRect(x-12,y+10,25,7);ctx.fillStyle='#423d3c';ctx.fillRect(x-8,y+6+step,6,9);ctx.fillRect(x+3,y+6-step,6,9);
- ctx.fillStyle='#71885f';ctx.fillRect(x-11,y-8,22,17);ctx.fillStyle='#a2b580';ctx.fillRect(x-8,y-8,7,10);ctx.fillStyle='#c6a276';ctx.fillRect(x-7,y-20,14,12);ctx.fillStyle='#554739';ctx.fillRect(x-9,y-23,18,6);ctx.fillStyle='#d0b77e';ctx.fillRect(x-13,y-22,26,4);ctx.fillStyle='#775b44';ctx.fillRect(x-6,y-5,13,14);
- ctx.fillStyle='#c78066';ctx.fillRect(x-8,y-8,17,3);ctx.fillRect(x-11,y-5,5,8);
+ ctx.fillStyle='#71885f';ctx.fillRect(x-11,y-8,22,17);ctx.fillStyle='#a2b580';ctx.fillRect(x-8,y-8,7,10);ctx.fillStyle='#c6a276';ctx.fillRect(x-7,y-20,14,12);ctx.fillStyle='#554739';ctx.fillRect(x-9,y-23,18,6);ctx.fillStyle='#d0b77e';ctx.fillRect(x-13,y-22,26,4);ctx.fillStyle='#775b44';ctx.fillRect(x-6,y-5,13,14);ctx.fillStyle='#c78066';ctx.fillRect(x-8,y-8,17,3);ctx.fillRect(x-11,y-5,5,8);
  ctx.strokeStyle='#c6ae78';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+10,y);ctx.lineTo(x+Math.cos(p.angle)*30,y+Math.sin(p.angle)*30);ctx.stroke();
 }
-
-export function paintAtlas(ctx,width,height,player,discovered=new Set()){
- ctx.clearRect(0,0,width,height);const sx=width/WORLD.width,sy=height/WORLD.height,step=64;
- for(let y=0;y<WORLD.height;y+=step)for(let x=0;x<WORLD.width;x+=step){const surface=surfaceAt(x+32,y+32),region=regionAt(x+32,y+32);ctx.fillStyle=surface==='sea'?'#234e60':surface==='water'?'#64abb0':surface==='tar'?'#34333a':surface==='lava'?'#d47a46':PALETTES[region][1];ctx.fillRect(x*sx,y*sy,step*sx+1,step*sy+1);if(surface==='ground'&&width>400&&hash(x,y)<.5){ctx.fillStyle=region==='Frostspire Mountains'?'#d5d7c5':'#284f3e55';if(region==='Frostspire Mountains'){ctx.beginPath();ctx.moveTo(x*sx,y*sy+4);ctx.lineTo(x*sx+3,y*sy-3);ctx.lineTo(x*sx+7,y*sy+4);ctx.fill();}else ctx.fillRect(x*sx+2,y*sy+2,3,3);}}
- ctx.strokeStyle='#d6c18f';ctx.lineWidth=1;for(const line of ROADS){ctx.beginPath();line.forEach((p,i)=>i?ctx.lineTo(p[0]*sx,p[1]*sy):ctx.moveTo(p[0]*sx,p[1]*sy));ctx.stroke();}
- for(const p of LANDMARKS){ctx.fillStyle=discovered.has(p.id)?'#e4c575':'#dee1cc';ctx.fillRect(p.x*sx-2,p.y*sy-2,4,4);if(width<400)continue;ctx.font='bold 13px monospace';ctx.textAlign='center';ctx.fillStyle='#132c32';ctx.fillText(p.name,p.x*sx+1,p.y*sy-9);ctx.fillStyle='#f1e7c6';ctx.fillText(p.name,p.x*sx,p.y*sy-10);}
- if(player){ctx.fillStyle='#fff4be';ctx.beginPath();ctx.arc(player.x*sx,player.y*sy,5,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#213d40';ctx.lineWidth=2;ctx.stroke();}
+export function paintAtlas(ctx,width,height,player,discovered=new Set(),id='landing'){
+ const area=areaFor(id),sx=width/area.width,sy=height/area.height,step=24;ctx.clearRect(0,0,width,height);
+ for(let y=0;y<area.height;y+=step)for(let x=0;x<area.width;x+=step){const surface=surfaceAt(x+12,y+12,id);ctx.fillStyle=surface==='sea'?'#29596d':surface==='water'?'#65a8af':surface==='sand'?'#c9b78a':surface==='path'?'#c3ac79':COLORS[regionAt(x,y,id)][1];ctx.fillRect(x*sx,y*sy,step*sx+1,step*sy+1);}
+ for(const p of placesFor(id)){ctx.fillStyle=discovered.has(p.id)?'#e6bd65':'#e3e1c9';ctx.fillRect(p.x*sx-2,p.y*sy-2,4,4);if(width>400){ctx.font='bold 12px monospace';ctx.textAlign='center';ctx.fillStyle='#203c38';ctx.fillText(p.name,p.x*sx+1,p.y*sy-9);ctx.fillStyle='#fff0c9';ctx.fillText(p.name,p.x*sx,p.y*sy-10);}}
+ for(const e of area.exits){const x=(e.from+e.to)/2*sx,y=e.edge==='north'?18:height-10;ctx.fillStyle='#f0d68b';ctx.textAlign='center';ctx.font=`bold ${width>400?12:8}px monospace`;ctx.fillText(`${e.edge==='north'?'↑':'↓'} ${e.label}`,x,y);}
+ if(player){ctx.fillStyle='#fff4be';ctx.beginPath();ctx.arc(player.x*sx,player.y*sy,5,0,Math.PI*2);ctx.fill();}
 }

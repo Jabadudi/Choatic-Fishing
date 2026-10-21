@@ -25,7 +25,7 @@ export class World {
    this.player=this.humans[0];this.bots=[];this.actors=[...this.humans];
   }
   this.adventure=adventure;
-  if(adventure){Object.assign(this.player,Wilds.SPAWN);this.bots=[];this.actors=[this.player];this.humans=[this.player];this.chests=[];this.countdownRemaining=0;this.matchState='playing';this.discovered=new Set();this.message='Follow the old road inland. M opens your atlas · G examines a landmark.';}
+  if(adventure){this.areaId='landing';Object.assign(this.player,Wilds.SPAWN);this.bots=[];this.actors=[this.player];this.humans=[this.player];this.chests=[];this.countdownRemaining=0;this.matchState='playing';this.discovered=new Set();this.message='Welcome to Reedwater Landing. Follow the north trail to walk into Windchime Path. M opens the area map.';}
  }
  get fishing(){return this.player.fishing;}get progression(){return this.player.progression;}get inventory(){return this.player.inventory;}
  get message(){return this.player.message;}set message(value){this.player.message=value;}
@@ -56,10 +56,10 @@ export class World {
  }
  useSpecial(kind,actor=this.player){const used=special(this,actor,kind);if(actor===this.player)this.message=used?`${kind==='tidal'?'Tidal Cannon':'Whirlpool Burst'} unleashed!`:'Special unavailable. Earn a charge, abandon fishing, and let your attack recover.';return used;}
  recordElimination(victimId){return this.progression.recordElimination(victimId);}
- nearestWater(actor=this.player){return this.adventure?Wilds.nearWater(actor.x,actor.y):nearWater(actor.x,actor.y);}
+ nearestWater(actor=this.player){return this.adventure?Wilds.nearWater(actor.x,actor.y,this.areaId):nearWater(actor.x,actor.y);}
  inspect(){
   if(!this.adventure||this.matchState!=='playing')return false;
-  const place=Wilds.nearestLandmark(this.player.x,this.player.y);
+  const place=Wilds.nearestLandmark(this.player.x,this.player.y,this.areaId);
   if(!place)return false;
   this.discovered.add(place.id);this.message=place.text;return true;
  }
@@ -81,7 +81,9 @@ export class World {
   if(dx===0&&dy===0)return;
   if(this.adventure){
    const steps=Math.max(1,Math.ceil(Math.hypot(dx,dy)/5)),sx=dx/steps,sy=dy/steps;
-   for(let i=0;i<steps;i++){if(Wilds.walkable(p.x+sx,p.y)&&(!shoreOnly||Wilds.nearWater(p.x+sx,p.y)))p.x+=sx;if(Wilds.walkable(p.x,p.y+sy)&&(!shoreOnly||Wilds.nearWater(p.x,p.y+sy)))p.y+=sy;}
+   for(let i=0;i<steps;i++){if(Wilds.walkable(p.x+sx,p.y,this.areaId)&&(!shoreOnly||Wilds.nearWater(p.x+sx,p.y,this.areaId)))p.x+=sx;if(Wilds.walkable(p.x,p.y+sy,this.areaId)&&(!shoreOnly||Wilds.nearWater(p.x,p.y+sy,this.areaId)))p.y+=sy;}
+   const next=Wilds.transitionAt(p.x,p.y,this.areaId);
+   if(next){this.areaId=next.areaId;p.x=next.x;p.y=next.y;p.vx=0;p.vy=0;this.cancel();this.message=`${Wilds.areaFor(this.areaId).name} · Walk back through the edge to return.`;}
    p.walkTime=(p.walkTime||0)+Math.hypot(dx,dy)*.14;return;
   }
   let x=Math.max(LAND.left+15,Math.min(LAND.right-15,p.x+dx));
@@ -98,7 +100,7 @@ export class World {
   if(actor.inventory.selected!==1){if(actor===this.player)this.message='Equip the fishing rod with 1 first.';return false;}
   if(actor.inventory.item){if(actor===this.player)this.message='Item slot full. Equip 2 and use your item before fishing again.';return false;}
   if(!this.nearestWater(actor)){if(actor===this.player)this.message='Move closer to the shoreline to cast.';return false;}
-  if(!(this.adventure?Wilds.isWater(aim.x,aim.y):isWater(aim.x,aim.y))){if(actor===this.player)this.message='Aim out over the water, then cast.';return false;}
+  if(!(this.adventure?Wilds.isWater(aim.x,aim.y,this.areaId):isWater(aim.x,aim.y))){if(actor===this.player)this.message='Aim out over the water, then cast.';return false;}
   if(!actor.fishing.cast())return false;actor.bobber={...aim};return true;
  }
  cast(aim){const result=this.castActor(this.player,aim);if(result)this.message='Line cast. Waiting for a bite…';return result;}
@@ -127,7 +129,7 @@ export class World {
   }
   for(const bot of this.bots){if(bot.health<=0)continue;if(bot.progression.pendingUpgrades)this.chooseUpgrade(['hermes','health'][Math.floor(this.random()*2)],bot);updateBot(this,bot,dt);const f=bot.fishing;this.advanceFishing(bot,dt,f.state==='reeling'&&f.bar+f.velocity*.2+.135<f.target);}
   updateProjectiles(this,dt);
-  if(this.adventure){const place=Wilds.nearestLandmark(this.player.x,this.player.y);if(place)this.discovered.add(place.id);}
+  if(this.adventure){const place=Wilds.nearestLandmark(this.player.x,this.player.y,this.areaId);if(place)this.discovered.add(place.id);}
   else if(this.online){if(this.actors.filter(actor=>actor.health>0).length<=1){this.matchState='finished';for(const actor of this.actors){actor.fishing.cancel();actor.bobber=null;}}}
   else if(this.player.health<=0){this.matchState='lost';this.cancel();this.message='You were eliminated.';}
   else if(this.bots.length&&this.bots.every(bot=>bot.health<=0)){this.matchState='won';this.cancel();this.message='Last angler standing!';}

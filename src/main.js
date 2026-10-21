@@ -2,7 +2,7 @@ import {World} from './world.js';
 import {render} from './renderer.js';
 import './music.js';
 import {Lobby} from './lobby.js';
-import {WORLD,LANDMARKS,regionAt,nearestLandmark,paintAtlas} from './wilds.js';
+import {areaFor,placesFor,regionAt,nearestLandmark,paintAtlas} from './wilds.js';
 let world=new World(Math.random,{botCount:0});
 const canvas=document.querySelector('#arena'),ctx=canvas.getContext('2d',{alpha:false});
 // Keep the original zoom while following the local player.
@@ -43,7 +43,7 @@ addEventListener('keydown',e=>{
 });
 addEventListener('keyup',e=>{keys.delete(e.code);if(e.code==='Space')spaceHeld=false;});
 let pointer=null;
-function camera(player=world.player){view.x=view.width/2-player.x*view.scale;view.y=view.height/2-player.y*view.scale;if(pointer)aim={x:(pointer.x-view.x)/view.scale,y:(pointer.y-view.y)/view.scale};}
+function camera(player=world.player){view.x=view.width/2-player.x*view.scale;view.y=view.height/2-player.y*view.scale;if(world.adventure){const a=areaFor(world.areaId);view.x=Math.max(Math.min(0,view.width-a.width*view.scale),Math.min(0,view.x));view.y=Math.max(Math.min(0,view.height-a.height*view.scale),Math.min(0,view.y));}if(pointer)aim={x:(pointer.x-view.x)/view.scale,y:(pointer.y-view.y)/view.scale};}
 function point(e){const r=canvas.getBoundingClientRect();pointer={x:e.clientX-r.left,y:e.clientY-r.top};camera();world.player.angle=Math.atan2(aim.y-world.player.y,aim.x-world.player.x);}
 canvas.addEventListener('pointermove',point);
 canvas.addEventListener('pointerdown',e=>{if(e.button!==0||!lobby.world||atlasOpen)return;point(e);mouseHeld=true;canvas.focus();act('click');});
@@ -92,30 +92,34 @@ function updateUI(){
  $('item-name').textContent=inventory.item?.name||'Empty slot';$('item-icon').textContent=inventory.item?ICONS[inventory.item.name]||'◆':'—';$('item-uses').textContent=inventory.item?`${inventory.item.uses} use${inventory.item.uses===1?'':'s'} · Click or F`:'Reel in your next item';
  $('status').textContent=active?'WASD move along shore · Hold Space / mouse to reel · E to abandon.':busy?'Waiting for a bite… E / Esc to abandon.':world.message||'Walk to shore, aim into water, press E.';
  if(world.adventure){
-  const place=nearestLandmark(world.player.x,world.player.y);
-  $('region-name').textContent=regionAt(world.player.x,world.player.y);
-  $('discovery-count').textContent=`${world.discovered.size} / ${LANDMARKS.length} places found`;
+  const places=placesFor(world.areaId),place=nearestLandmark(world.player.x,world.player.y,world.areaId);
+  $('region-name').textContent=regionAt(world.player.x,world.player.y,world.areaId);
+  $('discovery-count').textContent=`${places.filter(p=>world.discovered.has(p.id)).length} / ${places.length} places found here`;
+  document.querySelector('.atlas-heading h2').textContent=areaFor(world.areaId).name;
   $('inspect-place').hidden=!place;$('inspect-place').textContent=place?`G · Examine ${place.name}`:'';
   if(performance.now()-lastAtlasDraw>250){lastAtlasDraw=performance.now();drawMap($('mini-atlas'));if(atlasOpen)drawMap($('atlas-canvas'));}
  }
 }
 // The adventure is the main player flow; legacy arena code remains an internal fixture.
-document.title='The Wilds · An Uncharted World';
+document.title='The Wilds · Reedwater Landing';
 document.querySelector('.lobby-eyebrow').textContent='THE WILDS';
-document.querySelector('.lobby-card h1').textContent='An uncharted world.';
+document.querySelector('.lobby-card h1').textContent='Begin at Reedwater.';
 document.querySelector('.lobby-note').textContent='WASD explore · Mouse aim · E fish · G examine · M atlas';
 document.querySelector('header h1').textContent='THE WILDS';
 document.querySelector('.controls').textContent='WASD MOVE · E FISH · G EXAMINE · M ATLAS · L-SHIFT DASH';
 document.querySelector('.lobby-actions').insertAdjacentHTML('afterbegin','<button id="explore-world">Enter the Wilds</button>');
 document.querySelector('.playfield').insertAdjacentHTML('beforeend',`<section id="exploration-hud" hidden><span class="exploration-kicker">YOUR JOURNEY</span><h2 id="region-name">Reedwater Delta</h2><p id="discovery-count">0 / 10 places found</p><button id="inspect-place" hidden>G · Examine</button></section><button id="open-atlas" hidden aria-label="Open world atlas"><canvas id="mini-atlas" width="192" height="144"></canvas><span>M · WORLD ATLAS</span></button><section id="world-atlas" hidden role="dialog" aria-modal="true" aria-label="World atlas"><div class="atlas-card"><div class="atlas-heading"><div><small>THE WILDS</small><h2>World Atlas</h2></div><button id="close-atlas">Close · M / Esc</button></div><canvas id="atlas-canvas" width="800" height="600"></canvas><p>Follow the old trails and bridges. Gold marks the places you have found. Your position is the bright marker.</p></div></section>`);
 let atlasOpen=false;
+$('open-atlas').setAttribute('aria-label','Open area map');$('open-atlas').querySelector('span').textContent='M · AREA MAP';
+$('world-atlas').setAttribute('aria-label','Area map');document.querySelector('.atlas-card p').textContent='Walk through the marked map edge to reach the connecting path. Gold marks places you have found; the bright marker shows your position.';
+canvas.setAttribute('aria-label','Reedwater exploration. WASD move, E fish, G examine, M area map, Left Shift dash.');
 const atlasImages=new Map();
 function drawMap(target){
- const key=`${target.width}:${target.height}`;let base=atlasImages.get(key);
- if(!base){base=document.createElement('canvas');base.width=target.width;base.height=target.height;paintAtlas(base.getContext('2d'),base.width,base.height,null);atlasImages.set(key,base);}
+ const area=areaFor(world.areaId),key=`${area.id}:${target.width}:${target.height}`;let base=atlasImages.get(key);
+ if(!base){base=document.createElement('canvas');base.width=target.width;base.height=target.height;paintAtlas(base.getContext('2d'),base.width,base.height,null,new Set(),area.id);atlasImages.set(key,base);}
  const c=target.getContext('2d');c.imageSmoothingEnabled=false;c.drawImage(base,0,0);
- const sx=target.width/WORLD.width,sy=target.height/WORLD.height;
- for(const p of LANDMARKS)if(world.discovered.has(p.id)){c.fillStyle='#e8be65';c.fillRect(p.x*sx-3,p.y*sy-3,6,6);}
+ const sx=target.width/area.width,sy=target.height/area.height;
+ for(const p of placesFor(area.id))if(world.discovered.has(p.id)){c.fillStyle='#e8be65';c.fillRect(p.x*sx-3,p.y*sy-3,6,6);}
  c.fillStyle='#fff4c1';c.strokeStyle='#20383d';c.lineWidth=2;c.beginPath();c.arc(world.player.x*sx,world.player.y*sy,4,0,Math.PI*2);c.fill();c.stroke();
 }
 function toggleAtlas(open=!atlasOpen){atlasOpen=open;release();$('world-atlas').hidden=!open;if(open)drawMap($('atlas-canvas'));else canvas.focus();}
@@ -127,7 +131,7 @@ function updateLobby(){
  if(!lobby.world)toggleAtlas(false);
  $('lobby-screen').hidden=!!lobby.world;
  $('leave-lobby').hidden=lobby.mode==='menu';
- $('lobby-status').textContent=lobby.mode==='menu'?'Step ashore at Reedwater Landing. Follow the rivers, find the old trails, and explore the continent.':lobby.status;
+ $('lobby-status').textContent=lobby.mode==='menu'?'Explore the shore, the drowned road, and the forest approach. Walk through the north edge to enter Windchime Path.':lobby.status;
  const inRoom=['host','guest'].includes(lobby.mode),connecting=['creating','joining'].includes(lobby.mode);
  $('lobby-menu').hidden=inRoom;$('room-panel').hidden=!inRoom;
  $('create-room').disabled=connecting;$('join-room').disabled=connecting;

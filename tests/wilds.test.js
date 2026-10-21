@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {World} from '../src/world.js';
 import {neutralInput} from '../src/protocol.js';
-import {LANDMARKS,LAKES,ROADS,SPAWN,WORLD,walkable,isWater,nearWater,sceneryAt,drawWilds,cachedChunkCount,clearTerrainCache} from '../src/wilds.js';
+import {LANDMARKS,LAKES,ROADS,SPAWN,WORLD,walkable,isWater,nearWater,sceneryAt,drawWilds,cachedChunkCount,clearTerrainCache,AREAS,transitionAt} from '../src/wilds.js';
 
 test('exploration begins on accessible land without an opponent or countdown',()=>{
  const world=new World(Math.random,{adventure:true});
@@ -11,16 +11,26 @@ test('exploration begins on accessible land without an opponent or countdown',()
  world.update(1,neutralInput());assert.equal(world.matchState,'playing');
  assert.equal(world.inspect(),true);assert.ok(world.discovered.has('landing'));assert.match(world.message,/boat/);
 });
-test('every landmark is walkable and trails provide continuous routes and bridges',()=>{
+test('landing landmarks and connecting trails are accessible',()=>{
  for(const p of LANDMARKS)assert.ok(walkable(p.x,p.y),p.name);
  for(const road of ROADS)for(let i=1;i<road.length;i++)for(let t=0;t<=1;t+=.01){const x=road[i-1][0]+(road[i][0]-road[i-1][0])*t,y=road[i-1][1]+(road[i][1]-road[i-1][1])*t;assert.ok(walkable(x,y),`route ${x},${y}`);}
 });
-test('lakes and rivers can be fished while water, tar and lava block walking',()=>{
+test('fishing at the spring uses real shoreline geometry and water blocks walking',()=>{
  const world=new World(()=>.1,{adventure:true}),l=LAKES[0];
  Object.assign(world.player,{x:l.x-l.rx-35,y:l.y});
  assert.ok(walkable(world.player.x,world.player.y));assert.ok(nearWater(world.player.x,world.player.y));assert.ok(world.cast({x:l.x,y:l.y}));
  world.fishing.update(2,false);const start=world.player.x;world.move(300,0,true);assert.ok(world.player.x>start);assert.ok(world.player.x<l.x-l.rx);assert.ok(walkable(world.player.x,world.player.y));
- assert.ok(isWater(l.x,l.y));assert.equal(walkable(l.x,l.y),false);assert.equal(walkable(5300,2250),false);assert.equal(walkable(5070,1300),false);
+ assert.ok(isWater(l.x,l.y));assert.equal(walkable(l.x,l.y),false);assert.equal(walkable(-10,200),false);
+});
+test('walking over connected map edges changes areas and returns without a menu',()=>{
+ const world=new World(()=>.1,{adventure:true});world.discovered.add('landing');
+ Object.assign(world.player,{x:1400,y:4});world.move(0,-12,false);
+ assert.equal(world.areaId,'windchime');assert.deepEqual({x:world.player.x,y:world.player.y},{x:600,y:1510});assert.ok(walkable(world.player.x,world.player.y,world.areaId));
+ world.inventory.receive({name:'Sardine'});world.progression.pendingUpgrades=1;world.chooseUpgrade('hermes');
+ world.move(0,320,false);assert.equal(world.areaId,'landing');assert.equal(world.player.x,1400);assert.equal(world.player.y,120);assert.ok(world.discovered.has('landing'));
+ assert.equal(world.inventory.item.name,'Sardine');assert.equal(world.progression.upgrades.hermes,1);
+ Object.assign(world.player,{x:800,y:30});world.move(0,-100,false);assert.equal(world.areaId,'landing');assert.ok(world.player.y>=24);assert.equal(transitionAt(800,-1),null);
+ for(const area of Object.values(AREAS))for(const exit of area.exits)assert.ok(walkable(exit.entry.x,exit.entry.y,exit.target));
 });
 test('scenery is deterministic and rendering keeps a bounded chunk cache',()=>{
  assert.deepEqual(sceneryAt(20,25),sceneryAt(20,25));
