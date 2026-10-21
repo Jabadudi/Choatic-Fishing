@@ -1,10 +1,18 @@
-# Chaotic Fishing — bot practice and online lobbies
+# The Wilds — an exploration world
+
+The main game now begins at Reedwater Landing. Explore a connected continent of
+forests, jungle, mountains, lakes, rivers, tar pits, a volcano, a dragon cave and
+gold mines. Press **M** for the atlas and **G** to examine a nearby landmark.
+See [WORLD.md](WORLD.md) for the world layout, controls, art approach and current limits.
+The earlier PvP lobby is no longer part of the player flow. The notes below describe
+the shared fishing/combat systems and their earlier arena implementation.
 
 JavaScript and Canvas, with vendored PeerJS for online connections. Node.js 18+ serves and tests the project; no package installation required.
 
 ## Run
 
-Run `node server.mjs` (or `npm start`) in this folder, then open Run `node --test` for the simulation tests.
+Run `node server.mjs` (or `npm start`) in this folder, then open http://127.0.0.1:5173/.
+Run `node --test` for the simulation tests.
 
 ## Controls
 

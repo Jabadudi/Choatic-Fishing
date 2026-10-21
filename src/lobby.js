@@ -9,6 +9,7 @@ export class Lobby {
  stop(){this.smoothing=new Presentation();this.lastInputKey='';this.generation++;clearTimeout(this.timeout);this.peer?.destroy();this.peer=null;this.connections.clear();this.mode='menu';this.members=[];this.world=null;this.inputs={};this.lastSeen={};this.id=null;this.code='';this.error='';}
  leave(){this.stop();this.status='Left lobby. Create or join another match.';this.notify();}
  practice(){this.stop();this.mode='solo';this.world=new World();this.notify();}
+ explore(){this.stop();this.mode='solo';this.world=new World(Math.random,{adventure:true});this.notify();}
  async connect(name,code=null){
   this.stop();this.mode=code?'joining':'creating';this.name=nameOf(name);this.status=code?'Connecting to host…':'Creating lobby…';this.notify();
   const generation=this.generation;

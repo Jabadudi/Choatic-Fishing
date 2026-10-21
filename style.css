@@ -6,3 +6,29 @@
 #lobby-screen{position:fixed;inset:0;z-index:20;background:#10272ced;display:grid;place-items:center;padding:18px;overflow:auto}.lobby-card{width:min(100%,480px);padding:28px;border:1px solid #8eaa83;background:#192e2c;box-shadow:0 14px 80px #0006}.lobby-eyebrow{font-size:10px;letter-spacing:3px;color:#bedb98}.lobby-card h1{font-size:29px;margin:12px 0 18px}.lobby-card p{font-size:12px;line-height:1.6;color:#c2d4c6}.lobby-card label{display:block;font-size:11px;margin:16px 0 7px}.lobby-card input{min-width:0;width:100%;background:#10231f;color:#edf3df;border:1px solid #557365;padding:11px;font:inherit;font-size:13px}.lobby-card button{border:0;background:#bedb98;color:#132923;padding:12px;font-size:12px;font-weight:bold}.lobby-card button:disabled{opacity:.4}.lobby-actions,.join-row{display:flex;gap:9px;margin-top:10px}.lobby-actions>*{flex:1}.join-row input{flex:1}.join-row button{white-space:nowrap}.lobby-note{font-size:10px!important;color:#97b5a4!important}#room-members{list-style:none;padding:0}#room-members li{padding:10px 0;border-bottom:1px solid #557365;font-size:13px}#leave-lobby{position:fixed;left:18px;bottom:110px;z-index:25;background:#142923df;border:1px solid #8eaa83;color:#edf3df;padding:8px 12px;font-size:10px}#music-status{max-width:150px}
 
 #timed-upgrades{position:absolute;z-index:5;left:18px;top:205px;width:215px;padding:10px;background:#15312ced;border:1px solid #a0c8ab66;font-size:11px}#upgrade-timer{color:#e9d4aa}#upgrade-options h3{font-size:12px;margin:10px 0}#upgrade-options button{display:flex;justify-content:space-between;align-items:center;width:100%;margin:5px 0;padding:10px 7px;background:#bedb98;color:#192a2e;border:0;font-size:11px}#upgrade-options small{font-size:9px}#upgrade-options p,#upgrade-stacks{font-size:9px;color:#c9dccc;line-height:1.5}#upgrade-stacks{display:block;margin-top:6px}#reward-choice{left:auto;right:18px;top:85px}@media(max-height:600px){#timed-upgrades{top:165px;width:195px;padding:7px}#upgrade-options button{padding:7px}#upgrade-options p{display:none}}@media(max-width:500px){#timed-upgrades{left:8px;width:175px}#upgrade-options button{font-size:10px}}
+
+/* The Wilds: original pixel terrain and a quiet exploration interface. */
+canvas{image-rendering:pixelated}
+#practice,#create-room,#lobby-menu>label,#player-name,#lobby-menu>.join-row{display:none}
+.lobby-card{border:2px solid #a3aa7c;background:#233936;box-shadow:5px 5px 0 #12272b}
+#explore-world{background:#d4c292;padding:18px;font-size:14px;letter-spacing:1px}
+.exploring #alive-text{display:none}
+.exploring .music-hud{top:auto;bottom:200px;max-width:215px}
+.exploring #reward-choice{right:240px}
+#exploration-hud{position:absolute;left:18px;top:83px;z-index:3;width:240px;padding:12px;background:#1b3332ed;border:1px solid #a3b18a66}
+.exploration-kicker{font:8px monospace;letter-spacing:2px;color:#c5ba8b}
+#region-name{font:bold 15px monospace;color:#e7dab3;margin:8px 0}
+#discovery-count{font:10px monospace;color:#adc6a4;margin:0}
+#inspect-place{font:10px monospace;color:#eddfb8;background:#355246;border:1px solid #b0b387;padding:8px;margin-top:10px;width:100%}
+#open-atlas{position:absolute;top:20px;right:18px;z-index:3;background:#233c3d;border:2px solid #afa780;padding:5px;box-shadow:3px 3px 0 #182d32}
+#open-atlas span{display:block;font:9px monospace;letter-spacing:1px;margin:6px;color:#e7dab3}
+#world-atlas{position:fixed;inset:0;z-index:40;background:#10242deb;display:grid;place-items:center;padding:20px}
+.atlas-card{width:min(860px,100%);max-height:100%;overflow:auto;padding:18px;background:#243d3d;border:2px solid #b6ad81;box-shadow:5px 5px 0 #10242d}
+.atlas-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.atlas-heading small{font:9px monospace;letter-spacing:3px;color:#d9c996}
+.atlas-heading h2{font:24px Georgia;color:#ede1be;margin:6px 0;display:block}
+.atlas-heading button{background:#4d6553;border:1px solid #b6ad81;padding:10px;color:#efe6c5;font-size:11px}
+#atlas-canvas{width:100%;height:auto;max-height:70vh;object-fit:contain}
+.atlas-card p{font:11px monospace;color:#c2cbb2;line-height:1.7;margin:12px 0 0}
+@media(max-width:800px){#open-atlas{top:80px;right:12px}#mini-atlas{width:128px;height:96px}#exploration-hud{width:195px}.exploring #reward-choice{top:220px;right:12px}.exploring .music-hud{display:none}}
+@media(max-height:600px){#exploration-hud{top:60px;padding:8px}#region-name{font-size:12px}#mini-atlas{width:120px;height:90px}.exploring .music-hud{display:none}.exploring #timed-upgrades{top:180px}}

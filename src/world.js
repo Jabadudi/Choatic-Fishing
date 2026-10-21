@@ -4,12 +4,13 @@ import {Inventory} from './inventory.js';
 import {attack,special,updateProjectiles} from './combat.js';
 import {updateBot} from './bots.js';
 import {LAND,CHESTS,LAKES,lakeDistance,isWater,nearWater,walkable} from './terrain.js';
+import * as Wilds from './wilds.js';
 export {LAND} from './terrain.js';
 export const SHORE_DEPTH=110;
 export const INLAND={left:LAND.left+SHORE_DEPTH,right:LAND.right-SHORE_DEPTH,top:LAND.top+SHORE_DEPTH,bottom:LAND.bottom-SHORE_DEPTH};
 export function createActor(id,name,x,y,random){return {id,name,x,y,angle:0,health:100,vx:0,vy:0,cooldown:0,dashCharges:1,dashRemaining:0,dashCooldown:0,dashDirection:{x:0,y:0},message:'',catches:[],inventory:new Inventory(),progression:new Progression(),fishing:new Fishing(random),bobber:null,retreat:0,intent:'TO SHORE'};}
 export class World {
- constructor(random=Math.random,{botCount=1,countdownSeconds=5,humans=null}={}){
+ constructor(random=Math.random,{botCount=1,countdownSeconds=5,humans=null,adventure=false}={}){
   this.random=random;this.player=createActor('player','YOU',480,365,random);
   this.online=!!humans;this.chests=CHESTS.map(c=>({...c,opened:false}));
   const spawns=[{name:'BRINE',x:220,y:180,aim:{x:80,y:180}},{name:'HOOK',x:740,y:180,aim:{x:880,y:180}},{name:'GILL',x:740,y:550,aim:{x:880,y:550}}];
@@ -23,6 +24,8 @@ export class World {
    this.humans=humans.map((human,i)=>Object.assign(createActor(human.id,human.name,...positions[i],random),{color:['#b8db94','#ef947a','#d4a7dc','#f0c67c'][i]}));
    this.player=this.humans[0];this.bots=[];this.actors=[...this.humans];
   }
+  this.adventure=adventure;
+  if(adventure){Object.assign(this.player,Wilds.SPAWN);this.bots=[];this.actors=[this.player];this.humans=[this.player];this.chests=[];this.countdownRemaining=0;this.matchState='playing';this.discovered=new Set();this.message='Follow the old road inland. M opens your atlas · G examines a landmark.';}
  }
  get fishing(){return this.player.fishing;}get progression(){return this.player.progression;}get inventory(){return this.player.inventory;}
  get message(){return this.player.message;}set message(value){this.player.message=value;}
@@ -53,7 +56,13 @@ export class World {
  }
  useSpecial(kind,actor=this.player){const used=special(this,actor,kind);if(actor===this.player)this.message=used?`${kind==='tidal'?'Tidal Cannon':'Whirlpool Burst'} unleashed!`:'Special unavailable. Earn a charge, abandon fishing, and let your attack recover.';return used;}
  recordElimination(victimId){return this.progression.recordElimination(victimId);}
- nearestWater(actor=this.player){return nearWater(actor.x,actor.y);}
+ nearestWater(actor=this.player){return this.adventure?Wilds.nearWater(actor.x,actor.y):nearWater(actor.x,actor.y);}
+ inspect(){
+  if(!this.adventure||this.matchState!=='playing')return false;
+  const place=Wilds.nearestLandmark(this.player.x,this.player.y);
+  if(!place)return false;
+  this.discovered.add(place.id);this.message=place.text;return true;
+ }
  move(dx,dy,shoreOnly){this.moveActor(this.player,dx,dy,shoreOnly);}
  chooseUpgrade(kind,actor=this.player){
   if(this.matchState!=='playing'||actor.health<=0||!actor.progression.chooseUpgrade(kind))return false;
@@ -70,6 +79,11 @@ export class World {
  }
  moveActor(p,dx,dy,shoreOnly){
   if(dx===0&&dy===0)return;
+  if(this.adventure){
+   const steps=Math.max(1,Math.ceil(Math.hypot(dx,dy)/5)),sx=dx/steps,sy=dy/steps;
+   for(let i=0;i<steps;i++){if(Wilds.walkable(p.x+sx,p.y)&&(!shoreOnly||Wilds.nearWater(p.x+sx,p.y)))p.x+=sx;if(Wilds.walkable(p.x,p.y+sy)&&(!shoreOnly||Wilds.nearWater(p.x,p.y+sy)))p.y+=sy;}
+   p.walkTime=(p.walkTime||0)+Math.hypot(dx,dy)*.14;return;
+  }
   let x=Math.max(LAND.left+15,Math.min(LAND.right-15,p.x+dx));
   if(shoreOnly&&!LAKES.some(l=>lakeDistance(p.x,p.y,l)<=110)&&p.y>INLAND.top&&p.y<INLAND.bottom){if(p.x<=INLAND.left)x=Math.min(x,INLAND.left);else if(p.x>=INLAND.right)x=Math.max(x,INLAND.right);}
   let y=Math.max(LAND.top+15,Math.min(LAND.bottom-15,p.y+dy));
@@ -84,7 +98,7 @@ export class World {
   if(actor.inventory.selected!==1){if(actor===this.player)this.message='Equip the fishing rod with 1 first.';return false;}
   if(actor.inventory.item){if(actor===this.player)this.message='Item slot full. Equip 2 and use your item before fishing again.';return false;}
   if(!this.nearestWater(actor)){if(actor===this.player)this.message='Move closer to the shoreline to cast.';return false;}
-  if(!isWater(aim.x,aim.y)){if(actor===this.player)this.message='Aim out over the water, then cast.';return false;}
+  if(!(this.adventure?Wilds.isWater(aim.x,aim.y):isWater(aim.x,aim.y))){if(actor===this.player)this.message='Aim out over the water, then cast.';return false;}
   if(!actor.fishing.cast())return false;actor.bobber={...aim};return true;
  }
  cast(aim){const result=this.castActor(this.player,aim);if(result)this.message='Line cast. Waiting for a bite…';return result;}
@@ -113,7 +127,8 @@ export class World {
   }
   for(const bot of this.bots){if(bot.health<=0)continue;if(bot.progression.pendingUpgrades)this.chooseUpgrade(['hermes','health'][Math.floor(this.random()*2)],bot);updateBot(this,bot,dt);const f=bot.fishing;this.advanceFishing(bot,dt,f.state==='reeling'&&f.bar+f.velocity*.2+.135<f.target);}
   updateProjectiles(this,dt);
-  if(this.online){if(this.actors.filter(actor=>actor.health>0).length<=1){this.matchState='finished';for(const actor of this.actors){actor.fishing.cancel();actor.bobber=null;}}}
+  if(this.adventure){const place=Wilds.nearestLandmark(this.player.x,this.player.y);if(place)this.discovered.add(place.id);}
+  else if(this.online){if(this.actors.filter(actor=>actor.health>0).length<=1){this.matchState='finished';for(const actor of this.actors){actor.fishing.cancel();actor.bobber=null;}}}
   else if(this.player.health<=0){this.matchState='lost';this.cancel();this.message='You were eliminated.';}
   else if(this.bots.length&&this.bots.every(bot=>bot.health<=0)){this.matchState='won';this.cancel();this.message='Last angler standing!';}
  }
