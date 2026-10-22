@@ -113,3 +113,11 @@ The playlist now alternates Battle Music (Paulyudin, 2:42) and Armageddon (Alibi
 ## Mobile controls
 
 On phones, a joystick at the bottom right controls movement and facing. The bottom-left **Use** button uses the selected item; with the rod selected it casts, becomes **Cancel** while waiting, and becomes **Reel** during the catch. Hold Reel to raise the fishing bar and release it to lower the bar. Tap water to aim before casting. Tap **Examine** near a landmark, the hotbar to select an item, and the map to open or close it. The inventory sits above the controls in portrait mode. Both thumbs work independently, and input releases on interruption or when opening the map.
+
+## First NPC
+
+Mara stands on the shore beside the broken boat at Reedwater Landing. Walk close
+and press **G**, or tap the mobile **Talk** button (which replaces Examine nearby).
+She says **Hello!** in a speech bubble. The greeting can be repeated and fades
+after five seconds or when you walk away. She is a friendly character, separate
+from combat, fishing rewards and landmark discovery counts.

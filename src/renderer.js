@@ -2,6 +2,7 @@ import {drawTerrain} from './terrain.js';
 import {drawWilds,drawWildsLabels,drawDepthSorted,drawExplorer} from './wilds.js';
 import {drawRabbits,drawRabbit,visibleRabbits} from './rabbits.js';
 import {drawAtmosphere} from './atmosphere.js';
+import {visibleNpcs,drawNpc,drawDialogue} from './npcs.js';
 export function render(ctx,world,view){
  const {elapsed:t,player:p,bobber}=world;
  const actors=[];
@@ -9,7 +10,8 @@ export function render(ctx,world,view){
   // Player and rabbits join the scenery in one ground-order pass; feet sit about 12 units below the explorer's centre.
   drawWilds(ctx,world,view);
   actors.push({y:p.y+12,ref:p});for(const r of visibleRabbits(world,view))actors.push({y:r.y,ref:r});
-  drawDepthSorted(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500},actors,(c,ref)=>ref===p?drawPlayer(c,world):drawRabbit(c,ref));
+  for(const n of visibleNpcs(world,view))actors.push({y:n.y+14,ref:n});
+  drawDepthSorted(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500},actors,(c,ref)=>ref===p?drawPlayer(c,world):ref.npc?drawNpc(c,ref,t):drawRabbit(c,ref));
  }else{drawTerrain(ctx,world);drawRabbits(ctx,world,view);}
   for(const bot of world.actors.filter(actor=>actor!==world.player)){
     if(bot.health<=0)continue;
@@ -39,7 +41,7 @@ export function render(ctx,world,view){
     else{ctx.beginPath();ctx.arc(0,0,effect.name==='Anchor'?72:48,-1+age*2,1+age*2);ctx.stroke();}
     ctx.restore();
   }
-  if(world.adventure){drawWildsLabels(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500});if(view)drawAtmosphere(ctx,world,view);}
+  if(world.adventure){drawWildsLabels(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500});if(view)drawAtmosphere(ctx,world,view);drawDialogue(ctx,world);}
 }
 function drawBobber(ctx,world){
  const {elapsed:t,player:p,bobber}=world;if(!bobber)return;

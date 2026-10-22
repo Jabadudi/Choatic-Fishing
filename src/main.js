@@ -1,4 +1,5 @@
 import {TouchInput,mountMobileControls,gameScale} from './mobile.js';
+import {nearbyNpc} from './npcs.js';
 import {World} from './world.js';
 import {render} from './renderer.js';
 import './music.js';
@@ -79,7 +80,7 @@ function updateUI(){
  $('close-atlas').textContent=touchMode?'Close':'Close · M / Esc';
  $('cancel').textContent=touchMode?'Abandon':'Abandon · E / Esc';
  touchUI?.update(world,!touchMode||!lobby.world||atlasOpen||world.player.health<=0);
- if(touchMode)$('touch-examine').disabled=!world.adventure||!nearestLandmark(world.player.x,world.player.y,world.areaId);
+ if(touchMode){const npc=nearbyNpc(world);$('touch-examine').disabled=!world.adventure||(!npc&&!nearestLandmark(world.player.x,world.player.y,world.areaId));$('touch-examine').querySelector('strong').textContent=npc?'Talk':'Examine';$('touch-examine').setAttribute('aria-label',npc?`Talk to ${npc.name}`:'Examine nearby landmark');}
  const f=world.fishing,active=f.state==='reeling',busy=f.state!=='idle',inventory=world.inventory;
  $('line-panel').hidden=!active;
  $('health-text').textContent=`${Math.ceil(world.player.health)} / ${world.progression.maxHealth} HP`;
