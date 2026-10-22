@@ -162,8 +162,9 @@ function drawWater(ctx,world,view,id){
   const {foam,sparkle}=shorePoints(id,cx,cy);
   ctx.fillStyle='#fffff5';
   for(const [x,y,d]of foam){if(d< -1-3.5*(1+Math.sin(t*1.6+x*.03)))continue;ctx.globalAlpha=.55+.3*Math.sin(t*2+x*.1);ctx.fillRect(x,y,8,2);}
-  ctx.globalAlpha=.9;ctx.fillStyle='#fffadc';
-  for(const [x,y,phase]of sparkle){const k=(phase+t*.25)%1;if(k<.02){const big=k<.01;ctx.fillRect(x,y,big?4:2,2);ctx.fillRect(x+1,y-1,1,big?4:2);}}
+  // Each glint eases in and out over ~0.6s on a slow 25s cycle, so the water twinkles gently rather than flickering.
+  ctx.fillStyle='#fffadc';
+  for(const [x,y,phase]of sparkle){const k=(phase+t*.04)%1;if(k<.025){const a=Math.sin(Math.PI*k/.025);ctx.globalAlpha=.55*a;ctx.fillRect(x,y,2,2);if(a>.7){ctx.globalAlpha=.25*a;ctx.fillRect(x-1,y,4,2);ctx.fillRect(x,y-1,2,4);}}}
  }
  ctx.restore();
 }
