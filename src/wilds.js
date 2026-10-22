@@ -79,6 +79,37 @@ const tree=leafyTree,rock=meadowRock;
 const WATER_RAMP=['#7cc8bd','#3ea6b0','#2a86a3','#1f6690','#1a5578'];
 function waterColor(wet,sea){const i=wet> -14?0:wet> -40?1:wet> -110?2:3;return WATER_RAMP[sea?Math.min(4,i+1):i];}
 function lilyPad(ctx,x,y,flower){ctx.fillStyle='#2f7a45';ctx.beginPath();ctx.ellipse(x,y,8,5,0,.5,6);ctx.lineTo(x,y);ctx.fill();ctx.fillStyle='#5aa552';ctx.fillRect(x-5,y-3,6,2);if(flower){ctx.fillStyle='#f6c6d6';ctx.fillRect(x-2,y-3,5,4);ctx.fillStyle='#ffeaa8';ctx.fillRect(x,y-2,1,2);}}
+// The Drowned Road entrance: mossy cobbles and edge stones running from the sand into the lake, reeds, and a leaning milestone
+// sunk into a level sand mound behind a shore rock. Stone sinking underwater is tinted by its depth below the waterline.
+const SHORE_Y=1722,MILESTONE={x:551,y:1694,a:-.35};
+const underTint=d=>`rgba(40,120,140,${Math.min(.75,d*.012)})`;
+function block(ctx,x,y,w,h,base,top,depth){ctx.fillStyle='#4f5e55';ctx.fillRect(x,y,w,h);ctx.fillStyle=base;ctx.fillRect(x,y,w,h-2);ctx.fillStyle=top;ctx.fillRect(x,y,w,2);if(depth>0){ctx.fillStyle=underTint(depth);ctx.fillRect(x,y,w,h);}}
+function causeway(ctx){
+ for(let y=1664;y<1860;y+=8)for(let x=600;x<644;x+=8){const d=y-SHORE_Y,j=(x*7+y*3)%5;block(ctx,x+(y%16?0:4),y,7,7,j<2?'#a9a58d':'#b8b39a','#cfc9ab',d);if(j===0&&d<10){ctx.fillStyle='#6f9a4a';ctx.fillRect(x+1,y+1,3,2);}}
+ for(let y=1680;y<1880;y+=18){const d=y-SHORE_Y;block(ctx,590,y,6,8,'#8f9c90','#c2c8b6',d);block(ctx,646,y,6,8,'#8f9c90','#c2c8b6',d);}
+ for(const [x,y] of [[586,1730],[652,1718],[662,1734]])for(let i=0;i<4;i++){ctx.fillStyle=i%2?'#6d9a3a':'#8bb04a';ctx.fillRect(x+i*3,y-14+i,2,14-i);}
+ // Milestone: soft shadow down-right, the leaning stone, then a level mound that buries its foot evenly.
+ ctx.fillStyle='rgba(31,58,53,.32)';ctx.beginPath();ctx.ellipse(570,1714,19,5,0,0,Math.PI*2);ctx.fill();
+ const R=(c,x,y,w,h)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h);};
+ ctx.save();ctx.translate(MILESTONE.x,MILESTONE.y);ctx.rotate(MILESTONE.a);
+ R('#7f8c80',-9,-26,21,46);R('#8f9c90',-9,-26,19,44);R('#b7c2b2',-9,-26,7,44);R('#c9d0c0',-9,-28,19,3);
+ R('#5f6e66',4,-18,1,7);R('#5f6e66',3,-11,1,5);R('#5f8a4a',8,-28,5,3);
+ ctx.restore();
+ ctx.fillStyle='#b5a476';ctx.beginPath();ctx.ellipse(557,1710,17,6,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#cdbd8c';ctx.beginPath();ctx.ellipse(556,1708.5,14,3.5,0,0,Math.PI*2);ctx.fill();
+ R('#5f8a4a',542,1706,6,4);R('#86b05a',543,1705,3,2);R('#5f8a4a',566,1705,6,3);R('#86b05a',568,1704,2,2);
+ // The shore rock stands in front of the milestone, so it is painted again over the stone's foot.
+ meadowRock(ctx,562.7,1716.4,true,false);
+}
+// The milestone glyph breathes: a slow swell of teal light with a soft halo, about four seconds per breath.
+export const milestoneBreath=t=>.5+.5*Math.sin(t*1.6);
+function milestoneGlyph(ctx,t){
+ const b=milestoneBreath(t);
+ ctx.save();ctx.translate(MILESTONE.x,MILESTONE.y);ctx.rotate(MILESTONE.a);
+ const g=ctx.createRadialGradient(1,-9,0,1,-9,18);g.addColorStop(0,`rgba(95,224,207,${.55*b})`);g.addColorStop(1,'rgba(95,224,207,0)');
+ ctx.globalCompositeOperation='screen';ctx.fillStyle=g;ctx.fillRect(-17,-27,36,36);ctx.globalCompositeOperation='source-over';
+ ctx.globalAlpha=.35+.65*b;ctx.fillStyle='#7ff0e0';ctx.fillRect(-4,-10,10,2);ctx.fillRect(0,-14,2,9);ctx.fillRect(3,-6,4,2);ctx.fillRect(-4,-4,3,2);
+ ctx.restore();
+}
 // The arrival dinghy, run aground at an angle with its hull stove in. Local coords: bow toward +x, flat transom at -x.
 const HULL=[[-32,-12],[8,-14],[28,-9],[40,0],[28,9],[8,14],[-32,12]];
 function hullShape(ctx,pts,color,k=1){ctx.fillStyle=color;ctx.beginPath();pts.forEach(([x,y],i)=>i?ctx.lineTo(x*k,y*k):ctx.moveTo(x*k,y*k));ctx.closePath();ctx.fill();}
@@ -127,14 +158,8 @@ function staticArea(ctx,left,top,width,height,id){
  }
  for(let gy=Math.floor(top/72)-2;gy<Math.ceil((top+height)/72)+2;gy++)for(let gx=Math.floor(left/72)-2;gx<Math.ceil((left+width)/72)+2;gx++){const o=sceneryAt(gx,gy,id);if(!o)continue;if(o.kind==='tree')tree(ctx,o.x,o.y,false,typeof document!=='undefined'?'trunk':'all');else if(o.kind==='rock')rock(ctx,o.x,o.y);else meadowBush(ctx,o.x,o.y);}
  if(id==='landing'){
-  // The old road stays beneath the water; its shoreline is the examinable location.
-  for(let i=0;i<12;i++){ctx.fillStyle=i%2?'rgba(150,200,190,.35)':'rgba(170,215,200,.4)';ctx.fillRect(520+i*21,1800+i*7,19,24);ctx.fillStyle='rgba(20,60,70,.25)';ctx.fillRect(520+i*21,1822+i*7,19,2);}
-  for(const [x,y]of [[480,1790],[750,1880]]){
-   ctx.fillStyle='#8fa594';ctx.fillRect(x,y-30,12,36);ctx.fillStyle='#a7bda6';ctx.fillRect(x,y-30,5,36);ctx.fillStyle='#d5d6b4';ctx.fillRect(x-3,y-32,18,6);
-   ctx.fillStyle='#4f5e55';ctx.fillRect(x+7,y-24,1,5);ctx.fillRect(x+6,y-19,1,4);ctx.fillRect(x+7,y-15,1,3);
-   ctx.fillStyle='#5f8a4a';ctx.fillRect(x-3,y-33,7,3);ctx.fillRect(x+9,y-33,6,2);ctx.fillRect(x,y-12,4,6);ctx.fillStyle='#86b05a';ctx.fillRect(x-1,y-34,4,2);
-   ctx.fillStyle='rgba(20,60,70,.45)';ctx.fillRect(x,y,12,6);ctx.fillStyle='rgba(255,255,245,.6)';ctx.fillRect(x-3,y-1,18,2);
-  }
+  // The old road runs out of the sand as an overgrown causeway and on under the lake; a toppled milestone marks it.
+  causeway(ctx);
   // Wooden pier, and the dinghy you arrived in, wrecked on the shore beside it.
   ctx.fillStyle='#604b38';ctx.fillRect(1210,1730,80,220);
   for(let y=1735,i=0;y<1950;y+=12,i++){ctx.fillStyle=i%2?'#9a8058':'#a58b62';ctx.fillRect(1213,y,74,7);ctx.fillStyle='#c2a678';ctx.fillRect(1213,y,74,1);if(i%3===0){ctx.fillStyle='#4a3a28';ctx.fillRect(1206,y-2,7,12);ctx.fillRect(1287,y-2,7,12);}}
@@ -264,6 +289,7 @@ export function drawWilds(ctx,world,view={left:world.player.x-700,right:world.pl
  drawWater(ctx,world,view,id);
  for(const p of placesFor(id))if(p.x>view.left-120&&p.x<view.right+120&&p.y>view.top-100&&p.y<view.bottom+100)drawLandmark(ctx,p,world.elapsed||0);
  if(id==='landing'&&view.right>1220&&view.left<1370&&view.bottom>1660&&view.top<1810)lantern(ctx);
+ if(id==='landing'&&view.right>520&&view.left<590&&view.bottom>1660&&view.top<1730)milestoneGlyph(ctx,world.elapsed||0);
  if(id==='windchime'){ctx.fillStyle='#7c8b6c';for(let x=470;x<730;x+=35)ctx.fillRect(x,230,28,27);}
  wildlife(ctx,world,id);
 }

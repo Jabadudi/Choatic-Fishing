@@ -87,3 +87,21 @@ test('the arrival boat is a beached dinghy with its hull stove in',()=>{
  assert.ok(!rects.includes('1300,1880,95,31'),'old flat boat is gone');
  assert.ok(styles.includes('#2a1c10'),'dark hole in the hull is painted');
 });
+
+import {milestoneBreath} from '../src/wilds.js';
+test('the Drowned Road entrance is an overgrown causeway with a milestone instead of the old pillars',()=>{
+ const rects=[],styles=[];
+ const c=new Proxy({fillRect(...a){rects.push(a.join());},createLinearGradient:()=>({addColorStop(){}}),createRadialGradient:()=>({addColorStop(){}})},{get:(t,k)=>k in t?t[k]:()=>{},set:(t,k,v)=>{if(k==='fillStyle')styles.push(v);t[k]=v;return true;}});
+ const world=new World(()=>0,{adventure:true});world.rabbits=[];
+ drawWilds(c,world,{left:500,top:1640,right:720,bottom:1880});
+ assert.ok(!rects.includes('480,1760,12,36')&&!rects.includes('750,1850,12,36'),'old pillars are gone');
+ assert.ok(styles.includes('#b8b39a'),'causeway cobbles are painted');
+ assert.ok(styles.includes('#7ff0e0'),'milestone glyph is painted');
+});
+test('the milestone glyph breathes on a slow cycle between dim and bright',()=>{
+ const period=2*Math.PI/1.6;
+ assert.ok(Math.abs(milestoneBreath(0)-.5)<1e-9);
+ assert.ok(Math.abs(milestoneBreath(period/4)-1)<1e-9,'brightest a quarter-cycle in');
+ assert.ok(Math.abs(milestoneBreath(period*3/4))<1e-9,'dimmest three quarters in');
+ assert.ok(period>3.5&&period<4.5,'about four seconds per breath');
+});
