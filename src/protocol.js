@@ -1,9 +1,10 @@
 import {World,createActor} from './world.js';
-export const VERSION=5;
+export const VERSION=6;
 export const neutralInput=()=>({left:false,right:false,up:false,down:false,held:false,aim:{x:480,y:365}});
 export function cleanInput(raw){
  if(!raw||!Number.isFinite(raw.aim?.x)||!Number.isFinite(raw.aim?.y))return null;
- return {left:raw.left===true,right:raw.right===true,up:raw.up===true,down:raw.down===true,held:raw.held===true,aim:{x:Math.max(-960,Math.min(2600,raw.aim.x)),y:Math.max(-720,Math.min(2100,raw.aim.y))}};
+ let analog={};if('moveX' in raw||'moveY' in raw){if(!Number.isFinite(raw.moveX)||!Number.isFinite(raw.moveY))return null;const length=Math.max(1,Math.hypot(raw.moveX,raw.moveY));analog={moveX:raw.moveX/length,moveY:raw.moveY/length};}
+ return {...analog,left:raw.left===true,right:raw.right===true,up:raw.up===true,down:raw.down===true,held:raw.held===true,aim:{x:Math.max(-960,Math.min(2600,raw.aim.x)),y:Math.max(-720,Math.min(2100,raw.aim.y))}};
 }
 export function applyAction(world,id,action,input){
  const actor=world.humans.find(actor=>actor.id===id);if(!actor||actor.health<=0||world.matchState!=='playing')return false;

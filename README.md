@@ -109,3 +109,7 @@ This is a prototype with basic AI and initial balance values. Online play uses P
 
 
 The playlist now alternates Battle Music (Paulyudin, 2:42) and Armageddon (Alibi Music, 3:32), then repeats. Volume and mute apply to both tracks.
+
+## Mobile controls
+
+On phones, a joystick at the bottom right controls movement and facing. The bottom-left **Use** button uses the selected item; with the rod selected it casts, becomes **Cancel** while waiting, and becomes **Reel** during the catch. Hold Reel to raise the fishing bar and release it to lower the bar. Tap water to aim before casting. Tap **Examine** near a landmark, the hotbar to select an item, and the map to open or close it. The inventory sits above the controls in portrait mode. Both thumbs work independently, and input releases on interruption or when opening the map.
