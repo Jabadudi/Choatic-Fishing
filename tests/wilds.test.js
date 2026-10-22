@@ -64,3 +64,16 @@ import {labelAlpha} from '../src/wilds.js';
 test('landmark labels fade in near the player',()=>{
  assert.equal(labelAlpha(100),1);assert.equal(labelAlpha(220),0);assert.equal(labelAlpha(500),0);assert.ok(Math.abs(labelAlpha(180)-.5)<1e-9);
 });
+
+test('labels and exit signs draw above swaying crowns',()=>{
+ const ops=[],c=new Proxy({drawImage(){ops.push('img');},fillText(){ops.push('text');},createRadialGradient:()=>({addColorStop(){}})},{get:(t,k)=>k in t?t[k]:()=>{},set:(t,k,v)=>{t[k]=v;return true;}}),original=globalThis.document;
+ try{globalThis.document={createElement:()=>({getContext:()=>c})};clearTerrainCache();const world=new World(Math.random,{adventure:true});world.areaId='windchime';Object.assign(world.player,{x:600,y:1600});
+  drawWilds(c,world,{left:100,top:1200,right:1100,bottom:1800});
+  assert.ok(ops.includes('text'));assert.ok(ops.lastIndexOf('img')<ops.indexOf('text'));
+ }finally{globalThis.document=original;clearTerrainCache();}
+});
+test('shore foam and sparkles skip the pier and boat and use the coarse grid',()=>{
+ const {foam,sparkle}=shorePoints('landing',2,3),onDock=([x,y])=>(x>=1200&&x<=1300&&y>=1725&&y<=1955)||(x>=1295&&x<=1400&&y>=1875&&y<=1915);
+ assert.ok(foam.length>0);assert.equal(foam.filter(onDock).length,0);assert.equal(sparkle.filter(onDock).length,0);
+ assert.ok(foam.every(([x,y])=>x%8===0&&y%8===0));
+});

@@ -146,22 +146,26 @@ function drawCrowns(ctx,world,view,id){
   ctx.drawImage(sprite,Math.round(o.x)-48+sway,Math.round(o.y)-100);
  }
 }
-// Shore foam and sparkle positions are found once per chunk, so the live water layer never samples distance per frame.
+// Shore foam and sparkle positions are found once per chunk on a coarse grid, so the live water layer never samples distance per frame.
 const shores=new Map(),MAX_SHORES=60;
+const onDock=(x,y,id)=>id==='landing'&&((x>=1200&&x<=1300&&y>=1725&&y<=1955)||(x>=1295&&x<=1400&&y>=1875&&y<=1915));
 export function shorePoints(id,cx,cy){
  const key=`${id}:${cx},${cy}`;let points=shores.get(key);if(points)return points;
  points={foam:[],sparkle:[]};
- for(let y=cy*CHUNK;y<(cy+1)*CHUNK;y+=4)for(let x=cx*CHUNK;x<(cx+1)*CHUNK;x+=4){const d=waterDistance(x,y,id);if(d<0&&d> -6)points.foam.push([x,y,d]);if(x%18===0&&y%18===0&&d< -20)points.sparkle.push([x,y,hash(x,y,11)]);}
+ for(let y=cy*CHUNK;y<(cy+1)*CHUNK;y+=8)for(let x=cx*CHUNK;x<(cx+1)*CHUNK;x+=8){const d=waterDistance(x,y,id);if(d<0&&d> -8&&!onDock(x,y,id))points.foam.push([x,y,d]);}
+ for(let y=Math.ceil(cy*CHUNK/18)*18;y<(cy+1)*CHUNK;y+=18)for(let x=Math.ceil(cx*CHUNK/18)*18;x<(cx+1)*CHUNK;x+=18)if(waterDistance(x,y,id)< -20&&!onDock(x,y,id))points.sparkle.push([x,y,hash(x,y,11)]);
  shores.set(key,points);if(shores.size>MAX_SHORES)shores.delete(shores.keys().next().value);return points;
 }
 function drawWater(ctx,world,view,id){
- if(id==='windchime')return;const t=world.elapsed||0;
+ if(id==='windchime')return;const t=world.elapsed||0;ctx.save();
  for(let cy=Math.floor(view.top/CHUNK);cy<=Math.floor(view.bottom/CHUNK);cy++)for(let cx=Math.floor(view.left/CHUNK);cx<=Math.floor(view.right/CHUNK);cx++){
   const {foam,sparkle}=shorePoints(id,cx,cy);
-  for(const [x,y,d]of foam){if(d< -1-2.5*(1+Math.sin(t*1.6+x*.03)))continue;ctx.fillStyle=`rgba(255,255,245,${.55+.3*Math.sin(t*2+x*.1)})`;ctx.fillRect(x,y,4,2);}
-  ctx.fillStyle='rgba(255,250,220,.9)';
+  ctx.fillStyle='#fffff5';
+  for(const [x,y,d]of foam){if(d< -1-3.5*(1+Math.sin(t*1.6+x*.03)))continue;ctx.globalAlpha=.55+.3*Math.sin(t*2+x*.1);ctx.fillRect(x,y,8,2);}
+  ctx.globalAlpha=.9;ctx.fillStyle='#fffadc';
   for(const [x,y,phase]of sparkle){const k=(phase+t*.25)%1;if(k<.06){const big=k<.03;ctx.fillRect(x,y,big?4:2,2);ctx.fillRect(x+1,y-1,1,big?4:2);}}
  }
+ ctx.restore();
 }
 function chimes(ctx,x,y,t){
  ctx.fillStyle='#776040';ctx.fillRect(x-34,y-46,68,6);ctx.fillRect(x+29,y-46,6,65);ctx.fillStyle='#5c4a32';ctx.fillRect(x-34,y-41,68,1);
@@ -174,7 +178,7 @@ function parchmentTag(ctx,x,y,text,alpha){
  ctx.save();ctx.globalAlpha=alpha;ctx.fillStyle='#00000040';ctx.fillRect(x-w/2+2,y+2,w,20);ctx.fillStyle='#6b5530';ctx.fillRect(x-w/2-2,y-2,w+4,24);ctx.fillStyle='#f1e3bd';ctx.fillRect(x-w/2,y,w,20);
  ctx.font='11px monospace';ctx.textAlign='center';ctx.fillStyle='#2b2a1e';ctx.fillText(text,x,y+14);ctx.restore();
 }
-function drawLandmark(ctx,p,t=0,alpha=1){
+function drawLandmark(ctx,p,t=0){
  const {x,y,kind}=p;
  if(kind==='tree')tree(ctx,x,y,true);
  else if(kind==='landing'||kind==='chimes')chimes(ctx,x,y,t);
@@ -183,7 +187,6 @@ function drawLandmark(ctx,p,t=0,alpha=1){
   ctx.fillStyle='#466e58';ctx.fillRect(x-26,y-7,52,18);ctx.fillStyle='#9eb683';for(let i=0;i<5;i++)ctx.fillRect(x-25+i*11,y-27+i%2*6,3,36);
   for(let i=0;i<4;i++){const k=(t/2+i/4)%1;ctx.fillStyle=`rgba(225,250,240,${.8*(1-k)})`;ctx.fillRect(Math.round(x-15+i*10+Math.sin(t*3+i)*2),Math.round(y+4-k*22),3,3);}
  }
- parchmentTag(ctx,x,y+34,p.name,alpha);
 }
 function lantern(ctx){
  const g=ctx.createRadialGradient(1292,1736,2,1292,1736,70);g.addColorStop(0,'rgba(255,205,120,.55)');g.addColorStop(1,'rgba(255,205,120,0)');
@@ -202,10 +205,12 @@ export function drawWilds(ctx,world,view={left:world.player.x-700,right:world.pl
  const id=world.areaId||'landing',area=areaFor(id);ctx.imageSmoothingEnabled=false;
  if(typeof document!=='undefined')drawChunks(ctx,view,id);else staticArea(ctx,view.left,view.top,view.right-view.left,view.bottom-view.top,id);
  drawWater(ctx,world,view,id);
- for(const p of placesFor(id))if(p.x>view.left-120&&p.x<view.right+120&&p.y>view.top-100&&p.y<view.bottom+100)drawLandmark(ctx,p,world.elapsed||0,labelAlpha(Math.hypot(world.player.x-p.x,world.player.y-p.y)));
+ for(const p of placesFor(id))if(p.x>view.left-120&&p.x<view.right+120&&p.y>view.top-100&&p.y<view.bottom+100)drawLandmark(ctx,p,world.elapsed||0);
  if(id==='landing'&&view.right>1220&&view.left<1370&&view.bottom>1660&&view.top<1810)lantern(ctx);
- for(const exit of area.exits){const x=(exit.from+exit.to)/2,y=exit.edge==='north'?110:area.height-200;parchmentTag(ctx,x,y-12,`${exit.edge==='north'?'↑':'↓'} ${exit.label}`,1);}
  drawCrowns(ctx,world,view,id);
+ // Labels go last so swaying canopies never cover a place name or exit sign.
+ for(const p of placesFor(id))if(p.x>view.left-120&&p.x<view.right+120&&p.y>view.top-100&&p.y<view.bottom+100)parchmentTag(ctx,p.x,p.y+34,p.name,labelAlpha(Math.hypot(world.player.x-p.x,world.player.y-p.y)));
+ for(const exit of area.exits){const x=(exit.from+exit.to)/2,y=exit.edge==='north'?110:area.height-200;parchmentTag(ctx,x,y-12,`${exit.edge==='north'?'↑':'↓'} ${exit.label}`,1);}
  if(id==='windchime'){ctx.fillStyle='#7c8b6c';for(let x=470;x<730;x+=35)ctx.fillRect(x,230,28,27);}
  wildlife(ctx,world,id);
 }
