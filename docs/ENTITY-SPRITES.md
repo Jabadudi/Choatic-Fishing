@@ -9,7 +9,7 @@ Artwork is configured in `src/sprite-definitions.js`. Simulation stays in the en
 3. Adjust `frames` or `frameSize`, `animations`, `scale`, `anchor` and `offset` if the sheet layout or appearance changes.
 4. Run `node --test`, preview the result, then build and deploy. Image contents contribute to the release version, so replacing an image at the same filename still refreshes it on players' devices.
 
-Mara, the explorer, deer, turtle, eel and projectiles currently use drawn placeholders. Set their `asset` to an image filename to replace that artwork. Set it back to `null` to restore the fallback. Rabbits already use the shared sprite loader with the existing 23 crops.
+Mara, the explorer, eel and projectiles currently use drawn placeholders. Set their `asset` to an image filename to replace that artwork. Set it back to `null` to restore the fallback. Rabbits use the shared sprite loader with the existing 23 crops; deer (`deer-sheet.png`, 64×64 grid) and turtle (`turtle-sheet.png`, 96×64 grid) use regular grid sheets.
 
 ## Example: deer sprite sheet
 

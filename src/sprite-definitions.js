@@ -15,8 +15,16 @@ export const SPRITES={
  }},
  player:{asset:null,scale:1,anchor:[.5,1],offset:[0,15]},
  mara:{asset:null,scale:1,anchor:[.5,1],offset:[0,14]},
- deer:{asset:null,scale:1,anchor:[.5,1],offset:[0,20]},
- turtle:{asset:null,scale:1,anchor:[.5,1],offset:[0,15]},
+ // 4×4 grid of 64px cells: stand, walk, leap, graze. Cells keep ~5px below the hooves.
+ deer:{asset:'deer-sheet.png',frameSize:[64,64],columns:4,scale:1,anchor:[.5,1],offset:[0,25],mirror:'left',animations:{
+  idle:{frames:[0,1,2,3],fps:3},walk:{frames:[4,5,6,7],fps:8},
+  hurt:{frames:[8,9,10,11],fps:16,loop:false},death:{frames:[12,13,14,15],fps:4,loop:false}
+ }},
+ // 4×3 grid of 96×64 cells: idle, paddle, retreat into shell. Cells keep ~15px below the shell.
+ turtle:{asset:'turtle-sheet.png',frameSize:[96,64],columns:4,scale:.75,anchor:[.5,1],offset:[0,26],mirror:'left',animations:{
+  idle:{frames:[0,1,2,3],fps:3},walk:{frames:[4,5,6,7],fps:6},
+  hurt:{frames:[8,9,10,11],fps:16,loop:false},death:{frames:[11]}
+ }},
  eel:{asset:null,scale:1,anchor:[.5,.5],offset:[12,0]},
  'projectile.projectile':{asset:null,scale:1,anchor:[.5,.5],offset:[0,0]},
  'projectile.bomb':{asset:null,scale:1,anchor:[.5,.5],offset:[0,0]},

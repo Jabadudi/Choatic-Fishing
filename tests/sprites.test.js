@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {SPRITES} from '../src/sprite-definitions.js';
 import {drawSprite,drawEntitySprite,frameIndex,frameRect,clearSpriteCache} from '../src/sprites.js';
 import {createNpcs,drawNpc} from '../src/npcs.js';
@@ -53,4 +54,11 @@ test('missing or still-loading artwork returns control to the existing placehold
 test('replacing image bytes at the same filename changes the deployment cache version',()=>{
  const a=[['src/entity.js','same behaviour'],['assets/deer.png',Buffer.from([1,2,3])]],b=[['src/entity.js','same behaviour'],['assets/deer.png',Buffer.from([1,2,4])]];
  assert.notEqual(releaseFingerprint(a),releaseFingerprint(b));assert.equal(releaseFingerprint(a),releaseFingerprint([...a].reverse()));
+});
+test('deer and turtle sheets match their configured grids and every clip frame fits',()=>{
+ for(const [id,w,h]of [['deer',256,256],['turtle',384,192]]){
+  const d=SPRITES[id],png=readFileSync(new URL(`../assets/${d.asset}`,import.meta.url));
+  assert.equal(png.toString('ascii',1,4),'PNG');assert.equal(png.readUInt32BE(16),w);assert.equal(png.readUInt32BE(20),h);
+  for(const clip of Object.values(d.animations))for(const i of clip.frames){const [x,y,fw,fh]=frameRect(d,i,w,h);assert.ok(x+fw<=w&&y+fh<=h);}
+ }
 });
