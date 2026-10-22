@@ -1,11 +1,16 @@
 import {drawTerrain} from './terrain.js';
-import {drawWilds,drawExplorer} from './wilds.js';
-import {drawRabbits} from './rabbits.js';
+import {drawWilds,drawWildsLabels,drawDepthSorted,drawExplorer} from './wilds.js';
+import {drawRabbits,drawRabbit,visibleRabbits} from './rabbits.js';
 import {drawAtmosphere} from './atmosphere.js';
 export function render(ctx,world,view){
  const {elapsed:t,player:p,bobber}=world;
- if(world.adventure)drawWilds(ctx,world,view);else drawTerrain(ctx,world);
- drawRabbits(ctx,world,view);
+ const actors=[];
+ if(world.adventure){
+  // Player and rabbits join the scenery in one ground-order pass; feet sit about 12 units below the explorer's centre.
+  drawWilds(ctx,world,view);
+  actors.push({y:p.y+12,ref:p});for(const r of visibleRabbits(world,view))actors.push({y:r.y,ref:r});
+  drawDepthSorted(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500},actors,(c,ref)=>ref===p?drawPlayer(c,world):drawRabbit(c,ref));
+ }else{drawTerrain(ctx,world);drawRabbits(ctx,world,view);}
   for(const bot of world.actors.filter(actor=>actor!==world.player)){
     if(bot.health<=0)continue;
     if(bot.bobber){ctx.strokeStyle='#eee3bf99';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(bot.x,bot.y);ctx.lineTo(bot.bobber.x,bot.bobber.y);ctx.stroke();ctx.fillStyle=bot.color;ctx.beginPath();ctx.arc(bot.bobber.x,bot.bobber.y,4,0,Math.PI*2);ctx.fill();}
@@ -16,9 +21,8 @@ export function render(ctx,world,view){
     ctx.font='8px Arial';ctx.fillStyle='#263e35';ctx.fillText(bot.fishing.state!=='idle'?'FISHING':bot.inventory.item?.name||'TO SHORE',bot.x,bot.y+29);
   }
   for(const shot of world.projectiles){ctx.save();ctx.translate(shot.x,shot.y);ctx.rotate(shot.angle);ctx.fillStyle=shot.kind==='wave'?'#a0eee2':shot.kind==='bomb'?'#e2c27c':'#fff0c8';if(shot.kind==='wave'){ctx.globalAlpha=.8;ctx.beginPath();ctx.ellipse(0,0,12,shot.radius,0,0,Math.PI*2);ctx.fill();}else if(shot.kind==='bomb'){ctx.beginPath();ctx.arc(0,0,8,0,Math.PI*2);ctx.fill();}else ctx.fillRect(-10,-3,20,6);ctx.restore();}
-  if(bobber){ctx.strokeStyle='#f1e6c7';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(p.x+Math.cos(p.angle)*23,p.y+Math.sin(p.angle)*23);ctx.lineTo(bobber.x,bobber.y);ctx.stroke();ctx.strokeStyle='#99c8b788';ctx.beginPath();ctx.ellipse(bobber.x,bobber.y+4,12+Math.sin(t*3)*3,5,0,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#ef947a';ctx.beginPath();ctx.arc(bobber.x,bobber.y,5,0,Math.PI*2);ctx.fill();}
-  if(world.adventure)drawExplorer(ctx,p);
-  else {
+  if(!world.adventure){
+  drawBobber(ctx,world);
   ctx.fillStyle='#243e3a55';ctx.beginPath();ctx.ellipse(p.x,p.y+14,18,8,0,0,Math.PI*2);ctx.fill();
   ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.angle);ctx.fillStyle='#b8db94';ctx.strokeStyle='#243d3e';ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,14,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle='#f0d8b1';ctx.fillRect(8,-7,11,14);ctx.strokeStyle='#d8bd86';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(4,7);ctx.lineTo(29,7);ctx.stroke();ctx.restore();
   ctx.fillStyle='#edf3df';ctx.font='bold 10px Arial';ctx.fillText('YOU',p.x,p.y-25);
@@ -35,5 +39,10 @@ export function render(ctx,world,view){
     else{ctx.beginPath();ctx.arc(0,0,effect.name==='Anchor'?72:48,-1+age*2,1+age*2);ctx.stroke();}
     ctx.restore();
   }
-  if(world.adventure&&view)drawAtmosphere(ctx,world,view);
+  if(world.adventure){drawWildsLabels(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500});if(view)drawAtmosphere(ctx,world,view);}
 }
+function drawBobber(ctx,world){
+ const {elapsed:t,player:p,bobber}=world;if(!bobber)return;
+ ctx.strokeStyle='#f1e6c7';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(p.x+Math.cos(p.angle)*23,p.y+Math.sin(p.angle)*23);ctx.lineTo(bobber.x,bobber.y);ctx.stroke();ctx.strokeStyle='#99c8b788';ctx.beginPath();ctx.ellipse(bobber.x,bobber.y+4,12+Math.sin(t*3)*3,5,0,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#ef947a';ctx.beginPath();ctx.arc(bobber.x,bobber.y,5,0,Math.PI*2);ctx.fill();
+}
+function drawPlayer(ctx,world){drawBobber(ctx,world);drawExplorer(ctx,world.player);}

@@ -138,12 +138,35 @@ export function crownSprite(big=false){
  if(!sprite){sprite=document.createElement('canvas');sprite.width=96;sprite.height=112;leafyTree(sprite.getContext('2d'),48,100,big,'crown');crowns.set(big,sprite);}
  return sprite;
 }
-function drawCrowns(ctx,world,view,id){
- const sprite=crownSprite();if(!sprite)return;
+// Depth: scenery and characters are drawn in order of where they touch the ground, so whatever stands lower on screen is in front.
+// Static scenery stays in the chunk cache; only canopies (always) and trunks, rocks and bushes near a character are redrawn here.
+const fades=new Map(),slots=[],order=[];let fadeTime=0;
+export const canopyAlpha=(gx,gy)=>fades.get(`${gx},${gy}`)??1;
+const slot=i=>slots[i]??=({y:0,kind:'',x:0,oy:0,gx:0,gy:0,near:false,ref:null});
+const nearActor=(x,y,actors)=>actors.some(a=>Math.abs(a.ref.x-x)<70&&a.ref.y>y-130&&a.ref.y<y+40);
+export function drawDepthSorted(ctx,world,view,actors,drawActor){
+ const id=world.areaId||'landing',p=world.player,sprite=crownSprite(),t=world.elapsed||0,step=Math.min(1,Math.max(0,t-fadeTime)*8);fadeTime=t;
+ let n=0;
+ for(const a of actors){const it=slot(n++);it.kind='actor';it.y=a.y;it.ref=a.ref;}
  for(let gy=Math.floor(view.top/72)-1;gy<=Math.ceil((view.bottom+100)/72);gy++)for(let gx=Math.floor(view.left/72)-1;gx<=Math.ceil(view.right/72)+1;gx++){
-  const o=sceneryAt(gx,gy,id);if(!o||o.kind!=='tree')continue;
-  const sway=Math.round(Math.sin((world.elapsed||0)*1.2+hash(gx,gy,21)*6)*1.5);
-  ctx.drawImage(sprite,Math.round(o.x)-48+sway,Math.round(o.y)-100);
+  const o=sceneryAt(gx,gy,id);if(!o)continue;
+  const near=nearActor(o.x,o.y,actors);if(o.kind!=='tree'&&!near)continue;if(o.kind==='tree'&&!near&&!sprite)continue;
+  const it=slot(n++);it.kind=o.kind;it.x=o.x;it.oy=o.y;it.gx=gx;it.gy=gy;it.near=near;it.y=o.y+(o.kind==='rock'?8:o.kind==='bush'?4:0);
+  if(o.kind==='tree'&&sprite){
+   // A canopy that hides the player eases to 30% so they stay visible.
+   const key=`${gx},${gy}`,target=o.y>p.y+12&&Math.abs(p.x-o.x)<56&&p.y>o.y-115?.3:1,cur=fades.get(key)??1,next=cur+(target-cur)*step;
+   if(next>.999)fades.delete(key);else fades.set(key,next);
+  }
+ }
+ order.length=0;for(let i=0;i<n;i++)order.push(slots[i]);order.sort((a,b)=>a.y-b.y);
+ for(const it of order){
+  if(it.kind==='actor')drawActor(ctx,it.ref);
+  else if(it.kind==='rock')meadowRock(ctx,it.x,it.oy,false,false);
+  else if(it.kind==='bush')meadowBush(ctx,it.x,it.oy,false);
+  else{
+   if(it.near)leafyTree(ctx,it.x,it.oy,false,'stem');
+   if(sprite){const sway=Math.round(Math.sin(t*1.2+hash(it.gx,it.gy,21)*6)*1.5);ctx.globalAlpha=canopyAlpha(it.gx,it.gy);ctx.drawImage(sprite,Math.round(it.x)-48+sway,Math.round(it.oy)-100);ctx.globalAlpha=1;}
+  }
  }
 }
 // Shore foam and sparkle positions are found once per chunk on a coarse grid, so the live water layer never samples distance per frame.
@@ -208,12 +231,14 @@ export function drawWilds(ctx,world,view={left:world.player.x-700,right:world.pl
  drawWater(ctx,world,view,id);
  for(const p of placesFor(id))if(p.x>view.left-120&&p.x<view.right+120&&p.y>view.top-100&&p.y<view.bottom+100)drawLandmark(ctx,p,world.elapsed||0);
  if(id==='landing'&&view.right>1220&&view.left<1370&&view.bottom>1660&&view.top<1810)lantern(ctx);
- drawCrowns(ctx,world,view,id);
- // Labels go last so swaying canopies never cover a place name or exit sign.
- for(const p of placesFor(id))if(p.x>view.left-120&&p.x<view.right+120&&p.y>view.top-100&&p.y<view.bottom+100)parchmentTag(ctx,p.x,p.y+34,p.name,labelAlpha(Math.hypot(world.player.x-p.x,world.player.y-p.y)));
- for(const exit of area.exits){const x=(exit.from+exit.to)/2,y=exit.edge==='north'?110:area.height-200;parchmentTag(ctx,x,y-12,`${exit.edge==='north'?'↑':'↓'} ${exit.label}`,1);}
  if(id==='windchime'){ctx.fillStyle='#7c8b6c';for(let x=470;x<730;x+=35)ctx.fillRect(x,230,28,27);}
  wildlife(ctx,world,id);
+}
+// Labels go last so canopies and characters never cover a place name or exit sign.
+export function drawWildsLabels(ctx,world,view){
+ const id=world.areaId||'landing',area=areaFor(id);
+ for(const p of placesFor(id))if(p.x>view.left-120&&p.x<view.right+120&&p.y>view.top-100&&p.y<view.bottom+100)parchmentTag(ctx,p.x,p.y+34,p.name,labelAlpha(Math.hypot(world.player.x-p.x,world.player.y-p.y)));
+ for(const exit of area.exits){const x=(exit.from+exit.to)/2,y=exit.edge==='north'?110:area.height-200;parchmentTag(ctx,x,y-12,`${exit.edge==='north'?'↑':'↓'} ${exit.label}`,1);}
 }
 export function drawExplorer(ctx,p){
  const x=Math.round(p.x),y=Math.round(p.y),step=Math.sin(p.walkTime||0)*2;
