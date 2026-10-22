@@ -75,6 +75,11 @@ export function transitionAt(x,y,id='landing'){
 export function nearestLandmark(x,y,id='landing'){return placesFor(id).find(p=>Math.hypot(x-p.x,y-p.y)<135)||null;}
 
 const tree=leafyTree,rock=meadowRock;
+// Water deepens in bands away from the shore; the sea sits one band darker than the lakes.
+const WATER_RAMP=['#7cc8bd','#3ea6b0','#2a86a3','#1f6690','#1a5578'];
+function waterColor(wet,sea){const i=wet> -14?0:wet> -40?1:wet> -110?2:3;return WATER_RAMP[sea?Math.min(4,i+1):i];}
+function lilyPad(ctx,x,y,flower){ctx.fillStyle='#2f7a45';ctx.beginPath();ctx.ellipse(x,y,8,5,0,.5,6);ctx.lineTo(x,y);ctx.fill();ctx.fillStyle='#5aa552';ctx.fillRect(x-5,y-3,6,2);if(flower){ctx.fillStyle='#f6c6d6';ctx.fillRect(x-2,y-3,5,4);ctx.fillStyle='#ffeaa8';ctx.fillRect(x,y-2,1,2);}}
+function reeds(ctx,x,y,seed){for(let i=0;i<4;i++){const h=12+Math.floor(hash(seed,i,8)*10);ctx.fillStyle=i%2?'#6d9a3a':'#8bb04a';ctx.fillRect(x+i*3-4,y-h,2,h);if(i===1){ctx.fillStyle='#6b4a2a';ctx.fillRect(x+i*3-5,y-h-5,4,7);}}}
 function staticArea(ctx,left,top,width,height,id){
  const texturedGrass=drawGrassBase(ctx,left,top,width,height,clearTerrainCache);
  const dirt=pathPattern(ctx,clearTerrainCache);
@@ -82,12 +87,10 @@ function staticArea(ctx,left,top,width,height,id){
   const px=x+4,py=y+4,wet=waterDistance(px,py,id),road=roadDistance(px,py,id),r=hash(x,y,4),palette=COLORS[regionAt(px,py,id)];
   // Visual fringes soften the shoreline and trail without changing collision geometry.
   const water=wet<0,path=!water&&road<24+r*12,sand=!water&&!path&&wet< (coastDistance(px,py)>-70?58:20)+r*8;
-  if(water||path||sand||!texturedGrass){ctx.fillStyle=water?(wet> -14?'#63b4b0':wet> -40?'#339ba8':coastDistance(px,py)>0?'#287f9f':'#288fa6'):path?['#d6bd7a','#dfc885','#d9c17e'][Math.floor(r*3)]:sand?['#c5ba77','#d1c487','#cabe7d'][Math.floor(r*3)]:palette[Math.floor(hash(Math.floor(x/48),Math.floor(y/48))*3)];ctx.fillRect(x,y,8,8);}
+  if(water||path||sand||!texturedGrass){ctx.fillStyle=water?waterColor(wet,coastDistance(px,py)>0):path?['#d6bd7a','#dfc885','#d9c17e'][Math.floor(r*3)]:sand?['#c5ba77','#d1c487','#cabe7d'][Math.floor(r*3)]:palette[Math.floor(hash(Math.floor(x/48),Math.floor(y/48))*3)];ctx.fillRect(x,y,8,8);}
   if(path&&dirt){ctx.fillStyle=dirt;ctx.fillRect(x,y,8,8);}
-  if(water){
-   if(r<.3){ctx.fillStyle=wet> -20?'#91d2bc':'#58b2bd';ctx.fillRect(x+1,y+3,5,2);}
-   if(wet> -7&&r>.4){ctx.fillStyle='#c0dac0';ctx.fillRect(x,y,5,2);}
-  }else if(path||sand){
+  if(water)continue;
+  if(path||sand){
    if((!path||!dirt)&&r<.35){ctx.fillStyle=r<.12?'#ac9d65':'#efdaa2';ctx.fillRect(x+2,y+3,r<.12?3:4,2);}
    if(path&&road>21&&r>.4){grassDetail(ctx,x,y,7);if(r>.72){ctx.fillStyle='#80ac3e';ctx.fillRect(x+2,y+1,3,4);ctx.fillStyle='#b1c74c';ctx.fillRect(x+4,y,2,3);}}
   }else if(!texturedGrass)grassDetail(ctx,x,y,9);
@@ -97,7 +100,8 @@ function staticArea(ctx,left,top,width,height,id){
   const px=x+hash(x,y)*17,py=y+hash(x,y,2)*17,wet=waterDistance(px,py,id),road=roadDistance(px,py,id),r=hash(x,y,19);
   if(wet>35&&road>36&&r>.73){for(let i=0;i<3;i++)wildflower(ctx,Math.round(px+hash(x,i,3)*16),Math.round(py+hash(y,i,4)*13),i!==2);}
   else if(wet>0&&wet<17&&r>.35)rock(ctx,px,py,true);
-  else if(wet< -30&&wet> -150&&r>.91){ctx.fillStyle='#226f6b';ctx.fillRect(px-6,py-2,15,6);ctx.fillStyle='#85b746';ctx.fillRect(px-6,py-4,12,6);ctx.fillStyle='#b5cf58';ctx.fillRect(px-4,py-4,5,2);if(r>.97)wildflower(ctx,Math.round(px+2),Math.round(py-5));}
+  else if(wet< -18&&wet> -110&&coastDistance(px,py)<0&&r>.8)lilyPad(ctx,Math.round(px),Math.round(py),r>.93);
+  else if(wet< -2&&wet> -16&&r>.55)reeds(ctx,Math.round(px),Math.round(py),x);
  }
  for(let gy=Math.floor(top/72)-2;gy<Math.ceil((top+height)/72)+2;gy++)for(let gx=Math.floor(left/72)-2;gx<Math.ceil((left+width)/72)+2;gx++){const o=sceneryAt(gx,gy,id);if(!o)continue;if(o.kind==='tree')tree(ctx,o.x,o.y,false,typeof document!=='undefined'?'trunk':'all');else if(o.kind==='rock')rock(ctx,o.x,o.y);else meadowBush(ctx,o.x,o.y);}
  if(id==='landing'){
@@ -136,6 +140,23 @@ function drawCrowns(ctx,world,view,id){
   ctx.drawImage(sprite,Math.round(o.x)-48+sway,Math.round(o.y)-100);
  }
 }
+// Shore foam and sparkle positions are found once per chunk, so the live water layer never samples distance per frame.
+const shores=new Map(),MAX_SHORES=60;
+export function shorePoints(id,cx,cy){
+ const key=`${id}:${cx},${cy}`;let points=shores.get(key);if(points)return points;
+ points={foam:[],sparkle:[]};
+ for(let y=cy*CHUNK;y<(cy+1)*CHUNK;y+=4)for(let x=cx*CHUNK;x<(cx+1)*CHUNK;x+=4){const d=waterDistance(x,y,id);if(d<0&&d> -6)points.foam.push([x,y,d]);if(x%18===0&&y%18===0&&d< -20)points.sparkle.push([x,y,hash(x,y,11)]);}
+ shores.set(key,points);if(shores.size>MAX_SHORES)shores.delete(shores.keys().next().value);return points;
+}
+function drawWater(ctx,world,view,id){
+ if(id==='windchime')return;const t=world.elapsed||0;
+ for(let cy=Math.floor(view.top/CHUNK);cy<=Math.floor(view.bottom/CHUNK);cy++)for(let cx=Math.floor(view.left/CHUNK);cx<=Math.floor(view.right/CHUNK);cx++){
+  const {foam,sparkle}=shorePoints(id,cx,cy);
+  for(const [x,y,d]of foam){if(d< -1-2.5*(1+Math.sin(t*1.6+x*.03)))continue;ctx.fillStyle=`rgba(255,255,245,${.55+.3*Math.sin(t*2+x*.1)})`;ctx.fillRect(x,y,4,2);}
+  ctx.fillStyle='rgba(255,250,220,.9)';
+  for(const [x,y,phase]of sparkle){const k=(phase+t*.25)%1;if(k<.06){const big=k<.03;ctx.fillRect(x,y,big?4:2,2);ctx.fillRect(x+1,y-1,1,big?4:2);}}
+ }
+}
 function chimes(ctx,x,y){ctx.fillStyle='#776040';ctx.fillRect(x-34,y-46,68,6);ctx.fillRect(x+29,y-46,6,65);ctx.fillStyle='#d8c48d';for(let i=0;i<3;i++){ctx.fillRect(x-23+i*18,y-40,2,10);ctx.fillRect(x-26+i*18,y-30,8,19+i*6);}}
 function drawLandmark(ctx,p){
  const {x,y,kind}=p;
@@ -156,6 +177,7 @@ function wildlife(ctx,world,id){
 export function drawWilds(ctx,world,view={left:world.player.x-700,right:world.player.x+700,top:world.player.y-500,bottom:world.player.y+500}){
  const id=world.areaId||'landing',area=areaFor(id);ctx.imageSmoothingEnabled=false;
  if(typeof document!=='undefined')drawChunks(ctx,view,id);else staticArea(ctx,view.left,view.top,view.right-view.left,view.bottom-view.top,id);
+ drawWater(ctx,world,view,id);
  for(const p of placesFor(id))if(p.x>view.left-120&&p.x<view.right+120&&p.y>view.top-100&&p.y<view.bottom+100)drawLandmark(ctx,p);
  for(const exit of area.exits){const x=(exit.from+exit.to)/2,y=exit.edge==='north'?110:area.height-200;ctx.textAlign='center';ctx.fillStyle='#1b3832';ctx.fillRect(x-125,y-15,250,30);ctx.fillStyle='#f2dfaa';ctx.font='bold 12px monospace';ctx.fillText(`${exit.edge==='north'?'↑':'↓'} ${exit.label}`,x,y+5);}
  drawCrowns(ctx,world,view,id);

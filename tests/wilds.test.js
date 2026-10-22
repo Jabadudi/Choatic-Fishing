@@ -53,3 +53,9 @@ test('tree crowns use one cached sprite per variant and leafyTree supports parts
   assert.equal(crownCacheSize(),1);assert.ok(draws.length>20);
  }finally{globalThis.document=original;clearTerrainCache();}
 });
+
+import {shorePoints} from '../src/wilds.js';
+test('shore points are cached per area and empty in Windchime Path',()=>{
+ const a=shorePoints('landing',1,3);assert.ok(a.foam.length>0);assert.ok(a.sparkle.length>0);assert.equal(shorePoints('landing',1,3),a);
+ assert.equal(shorePoints('windchime',1,3).foam.length,0);
+});
