@@ -3,12 +3,13 @@ import {BEHAVIOR_LABELS} from './entities.js';
 export function drawWildlife(c,a){
  const {x,y}=a,t=a.time||0;
  c.save();if(a.health<=0)c.globalAlpha=Math.min(1,a.deathRemaining);else if(a.hurtRemaining>0)c.globalAlpha=.55;
- if(drawEntitySprite(c,a.spriteId,{x,y,state:a.health<=0?'death':a.hurtRemaining>0?'hurt':a.state==='flee'?'walk':a.state,time:a.hurtRemaining>0?.25-a.hurtRemaining:t,facingX:a.direction.x})){c.restore();return;}
+ if(drawEntitySprite(c,a.spriteId,{x,y,state:a.health<=0?'death':a.hurtRemaining>0?'hurt':a.state==='flee'?'walk':a.state==='attack'?'idle':a.state,time:a.hurtRemaining>0?.25-a.hurtRemaining:t,facingX:a.direction.x})){c.restore();return;}
  c.translate(Math.round(x),Math.round(y));if(a.species==='turtle'?a.direction.x>0:a.direction.x<0)c.scale(-1,1);
  if(a.health<=0){c.scale(1,.35);c.translate(0,10);}
  const r=(color,x,y,w,h)=>{c.fillStyle=color;c.fillRect(x,y,w,h);};
  if(a.species==='deer'){
   const step=a.state==='walk'||a.state==='flee'?Math.sin(t*16)*3:0;
+  if(a.state==='attack')c.rotate(a.direction.x<0?-.15:.15);
   r('#a58d64',-14,-5,28,16);r('#bea781',-10,-5,17,5);r('#a58d64',9,-19,11,20);
   r('#735e43',-11,8+step,4,12);r('#735e43',8,8-step,4,12);r('#e7d4a8',14,-16,5,4);
   r('#88704e',8,-32,3,15);r('#88704e',19,-32,3,15);r('#88704e',4,-29,7,3);r('#88704e',20,-27,6,3);r('#283d34',17,-17,2,2);

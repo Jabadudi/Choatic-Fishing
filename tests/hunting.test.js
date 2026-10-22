@@ -8,9 +8,9 @@ import {neutralInput} from '../src/protocol.js';
 import {visibleRabbits} from '../src/rabbits.js';
 const fresh=()=>new World(()=>.1,{adventure:true});
 
-test('all nine animals are passive; Mara is a talk-only, untargetable NPC',()=>{
+test('nine animals have their assigned behavior; Mara is a talk-only, untargetable NPC',()=>{
  const w=fresh();assert.equal(w.animals.length,9);assert.equal(new Set(w.animals.map(a=>a.id)).size,9);
- for(const a of w.animals){assert.equal(a.entityType,ENTITY_TYPES.ANIMAL);assert.equal(a.behavior,BEHAVIORS.PASSIVE);assert.equal(a.health,a.maxHealth);assert.ok(animalGround(a,a.x,a.y),a.id);}
+ for(const a of w.animals){assert.equal(a.entityType,ENTITY_TYPES.ANIMAL);assert.equal(a.behavior,a.species==='deer'?BEHAVIORS.DEFENSIVE:BEHAVIORS.PASSIVE);assert.equal(a.health,a.maxHealth);assert.ok(animalGround(a,a.x,a.y),a.id);}
  const mara=w.npcs[0];assert.equal(mara.entityType,ENTITY_TYPES.NPC);assert.equal(mara.huntable,false);assert.deepEqual(mara.interactions,['talk']);
  assert.equal(combatTargets(w).includes(mara),false);assert.equal(damage(w,mara,100,w.player,0,300),false);
  Object.assign(w.player,{x:mara.x-25,y:mara.y});assert.ok(w.inspect());assert.equal(w.message,'Mara: Hello!');
@@ -63,11 +63,28 @@ test('only animals in the active area can be hit; area travel clears lingering p
  Object.assign(w.player,{x:1400,y:4});w.move(0,-12,false);assert.equal(w.areaId,'windchime');assert.equal(w.projectiles.length,0);
 });
 
-test('disturbed passive wildlife flees and cannot damage the player',()=>{
+test('deer ignore nearby players, retaliate only after injury, and stop after a bounded pursuit',()=>{
  const w=fresh(),deer=w.wildlife.find(a=>a.species==='deer'&&a.areaId==='landing');
- Object.assign(w.player,{x:deer.x-55,y:deer.y});const x=deer.x;
+ Object.assign(w.player,{x:deer.x-35,y:deer.y});const x=deer.x;
  for(let i=0;i<60;i++)updateWildlife(w,1/120);
- assert.ok(deer.x>x);assert.equal(w.player.health,100);assert.equal(deer.behavior,'passive');
+ assert.equal(deer.x,x);assert.equal(w.player.health,100);assert.equal(deer.behavior,'defensive');
+ damageAnimal(w,deer,1,w.player,0);
+ for(let i=0;i<120;i++)updateWildlife(w,1/120);
+ assert.equal(w.player.health,88);
+ const health=w.player.health;
+ for(let i=0;i<12;i++)updateWildlife(w,1/120);
+ assert.equal(w.player.health,health);
+ Object.assign(w.player,{x:deer.x-400,y:deer.y});updateWildlife(w,1/120);
+ assert.equal(deer.anger,0);assert.equal(deer.attackerId,null);
+});
+
+test('deer windup can be dodged and dashing prevents retaliation damage',()=>{
+ const w=fresh(),deer=w.wildlife[0];Object.assign(w.player,{x:deer.x-35,y:deer.y});
+ damageAnimal(w,deer,1,w.player,0);updateWildlife(w,.01);assert.equal(deer.state,'attack');
+ w.player.x-=100;updateWildlife(w,.5);assert.equal(w.player.health,100);
+ Object.assign(w.player,{x:deer.x-35,y:deer.y,dashRemaining:1});
+ for(let i=0;i<240;i++)updateWildlife(w,1/120);
+ assert.equal(w.player.health,100);
 });
 
 test('land and water animals respect habitat after attacks; wounded state persists across area visits',()=>{
@@ -80,7 +97,7 @@ test('land and water animals respect habitat after attacks; wounded state persis
   w.update(1/120,neutralInput());
   for(const a of w.animals)assert.ok(animalGround(a,a.x,a.y),a.id);
  }
- assert.equal(w.player.health,100);
+ assert.ok(w.player.health>0);
  const health=w.wildlife[0].health,positions=JSON.stringify(w.animals.filter(a=>a.areaId==='landing'));
  w.areaId='windchime';w.update(.2,neutralInput());assert.equal(JSON.stringify(w.animals.filter(a=>a.areaId==='landing')),positions);
  w.areaId='landing';assert.equal(w.wildlife[0].health,health);

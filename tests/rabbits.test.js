@@ -21,7 +21,7 @@ test('rabbits spawn on dry navigable ground and idle before hopping',()=>{
  assert.ok(hopped&&grazed);
 });
 test('approaching a rabbit triggers a retreat without touching fishing or combat state',()=>{
- const w=fresh(),r=w.rabbits[0];w.rabbits=[r];Object.assign(w.player,{x:r.x-60,y:r.y});
+ const w=fresh(),r=w.rabbits[0];w.rabbits=[r];Object.assign(w.player,{x:r.x-40,y:r.y});
  const distance=Math.hypot(r.x-w.player.x,r.y-w.player.y),health=w.player.health;
  w.fishing.state='reeling';Object.assign(w.fishing,{bar:.3,target:.4,progress:.7});
  for(let i=0;i<120;i++)updateRabbits(w,1/120);
@@ -38,4 +38,9 @@ test('wandering and fleeing stay on land and rabbits persist while their area is
  const state=JSON.stringify(w.rabbits);w.areaId='windchime';updateRabbits(w,5);assert.equal(JSON.stringify(w.rabbits),state);
  w.areaId='landing';updateRabbits(w,.1);assert.notEqual(JSON.stringify(w.rabbits),state);
  w.matchState='finished';const stopped=JSON.stringify(w.rabbits);updateRabbits(w,1);assert.equal(JSON.stringify(w.rabbits),stopped);
+});
+
+test('rabbits allow a player outside the smaller scare radius to stand nearby',()=>{
+ const w=fresh(),r=w.rabbits[0];Object.assign(w.player,{x:r.x-85,y:r.y});
+ updateRabbits(w,.5);assert.equal(r.alert,0);assert.equal(r.state,'idle');
 });

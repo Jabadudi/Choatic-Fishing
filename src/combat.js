@@ -24,12 +24,12 @@ export function damage(world,target,amount,source,angle,knockback=0){
  if(target.entityType==='animal')return damageAnimal(world,target,amount,source,angle,knockback);
  if(target.health<=0||world.matchState!=='playing')return false;
  if(target.dashRemaining>0)return false;
- const taken=amount*source.progression.damageMultiplier*(1-target.progression.damageReduction);
+ const taken=amount*(source.progression?.damageMultiplier??1)*(1-target.progression.damageReduction);
  target.health=Math.max(0,target.health-taken);
  target.vx+=Math.cos(angle)*knockback;target.vy+=Math.sin(angle)*knockback;
  if(target.health===0){
   target.fishing.cancel();target.bobber=null;
-  if(source!==target)source.progression.recordElimination(target.id);
+  if(source!==target)source.progression?.recordElimination(target.id);
   world.effects.push({name:'defeat',x:target.x,y:target.y,angle:0,life:.8});
  }
  return true;

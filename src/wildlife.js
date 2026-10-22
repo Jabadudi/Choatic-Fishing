@@ -1,3 +1,4 @@
+import {damage} from './combat.js';
 import {walkable,isWater,waterDistance,areaFor} from './wilds.js';
 import {animalTraits,reactionFor,huntableInArea} from './entities.js';
 
@@ -34,7 +35,7 @@ export function damageAnimal(world,animal,amount,source,angle,knockback=0){
  if(world.matchState!=='playing'||source.health<=0||!huntableInArea(world,animal)||!Number.isFinite(amount)||amount<=0)return false;
  const taken=amount*(source.progression?.damageMultiplier??1);
  animal.health=Math.max(0,animal.health-taken);animal.hurtRemaining=.25;animal.alert=3;
- animal.threat={x:source.x,y:source.y};animal.vx+=Math.cos(angle)*knockback*.45;animal.vy+=Math.sin(angle)*knockback*.45;
+ if(animal.behavior==='defensive'){animal.attackerId=source.id;animal.anger=6;}animal.threat={x:source.x,y:source.y};animal.vx+=Math.cos(angle)*knockback*.45;animal.vy+=Math.sin(angle)*knockback*.45;
  if(animal.species==='rabbit'){animal.state='idle';animal.time=0;}
  world.effects.push({name:'animal-hit',label:`-${Math.round(taken)}`,x:animal.x,y:animal.y-25,angle:0,life:.6,duration:.6});
  if(animal.health===0){
@@ -60,7 +61,27 @@ export function updateWildlife(world,dt){
   if(a.areaId!==world.areaId||a.health<=0)continue;
   a.time+=dt;a.alert=Math.max(0,a.alert-dt);
   const distance=Math.hypot(a.x-world.player.x,a.y-world.player.y),disturbed=world.player.health>0&&distance<a.fearRange;
-  const reaction=reactionFor(a,{disturbed,provoked:a.alert>0});
+  const reaction=reactionFor(a,{disturbed,provoked:a.behavior==='defensive'?a.anger>0:a.alert>0});
+  if(reaction==='retaliate'){
+   const target=world.actors.find(actor=>actor.id===a.attackerId),range=target?Math.hypot(target.x-a.x,target.y-a.y):Infinity;
+   a.anger=Math.max(0,a.anger-dt);a.attackCooldownRemaining=Math.max(0,(a.attackCooldownRemaining||0)-dt);
+   if(!target||target.health<=0||range>a.leashRange||Math.hypot(a.x-a.home.x,a.y-a.home.y)>a.leashRange||a.anger<=0){
+    a.anger=0;a.attackerId=null;a.attackRemaining=0;a.state='idle';a.time=0;a.wait=.8;
+   }else{
+    const angle=Math.atan2(target.y-a.y,target.x-a.x);a.direction={x:Math.cos(angle),y:Math.sin(angle)};
+    if(a.attackRemaining>0){
+     a.state='attack';a.attackRemaining=Math.max(0,a.attackRemaining-dt);
+     if(a.attackRemaining===0){
+      if(range<=a.attackRange)damage(world,target,a.attackDamage,a,angle,90);
+      a.attackCooldownRemaining=a.attackCooldown;
+     }
+    }else if(range<=a.attackRange){
+     a.state='idle';
+     if(a.attackCooldownRemaining===0){a.state='attack';a.time=0;a.attackRemaining=a.attackWindup;}
+    }else{a.state='walk';moveAnimal(a,a.direction.x*a.chaseSpeed*dt,a.direction.y*a.chaseSpeed*dt);}
+    continue;
+   }
+  }
   if(reaction==='flee'){
    const threat=disturbed?world.player:a.threat||world.player,angle=Math.atan2(a.y-threat.y,a.x-threat.x);
    a.state='flee';
@@ -72,7 +93,6 @@ export function updateWildlife(world,dt){
    }
    continue;
   }
-  // Defensive and aggressive categories are reserved for future entities; today's animals are all passive.
   if(a.state==='flee'){a.state='idle';a.time=0;a.wait=.8;}
   if(a.state==='idle'&&a.time>=a.wait){
    const angle=Math.hypot(a.x-a.home.x,a.y-a.home.y)>180?Math.atan2(a.home.y-a.y,a.home.x-a.x):random(a)*Math.PI*2;

@@ -3,8 +3,8 @@ export const ENTITY_TYPES=Object.freeze({PLAYER:'player',NPC:'npc',ANIMAL:'anima
 export const BEHAVIORS=Object.freeze({PASSIVE:'passive',DEFENSIVE:'defensive',AGGRESSIVE:'aggressive'});
 export const BEHAVIOR_LABELS=Object.freeze({passive:'Passive',defensive:'Defensive',aggressive:'Aggressive'});
 export const ANIMAL_TYPES=Object.freeze({
- rabbit:{name:'Rabbit',maxHealth:18,radius:10,habitat:'land',speed:70,fleeSpeed:180,fearRange:125,huntXp:10},
- deer:{name:'Deer',maxHealth:60,radius:18,habitat:'land',speed:48,fleeSpeed:175,fearRange:150,huntXp:25},
+ rabbit:{name:'Rabbit',maxHealth:18,radius:10,habitat:'land',speed:70,fleeSpeed:180,fearRange:55,huntXp:10},
+ deer:{behavior:BEHAVIORS.DEFENSIVE,attackDamage:12,attackRange:52,attackWindup:.45,attackCooldown:1.4,chaseSpeed:115,leashRange:320,name:'Deer',maxHealth:60,radius:18,habitat:'land',speed:48,fleeSpeed:175,fearRange:150,huntXp:25},
  turtle:{name:'Turtle',maxHealth:45,radius:14,habitat:'water',speed:18,fleeSpeed:42,fearRange:85,huntXp:15},
  eel:{name:'Eel',maxHealth:24,radius:12,habitat:'water',speed:36,fleeSpeed:100,fearRange:110,huntXp:12}
 });

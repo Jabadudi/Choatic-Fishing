@@ -14,8 +14,8 @@ See `docs/ENTITY-SPRITES.md` for the replacement workflow and examples.
 # Entity behavior standard
 
 - Declare an entity type and gameplay behavior using `src/entities.js`. Keep friendly NPCs separate from huntable animals.
-- Current rabbits, deer, turtle and eel are passive; they flee and never attack. Mara is talk-only and excluded from damage targets.
-- Passive, defensive and aggressive reaction policies are distinct. Defensive/aggressive AI must be implemented and tested before assigning a new species to those categories; current movement implements passive wildlife only.
+- Current rabbits, turtle and eel are passive; deer are defensive and retaliate only after injury. Mara is talk-only and excluded from damage targets.
+- Passive, defensive and aggressive reaction policies are distinct. Attack AI must be implemented and tested before assigning a species a combat category. Deer use bounded pursuit and timed melee retaliation; aggressive AI remains unimplemented.
 - Health, hit radius, habitat, movement and hunt rewards live in gameplay definitions, independently of sprites. Hunting XP must be granted only once per animal, with no PvP elimination rewards.
 - Keep movement and damage in simulation updates. Renderers must not move animals or consume simulation randomness.
 
