@@ -1,3 +1,4 @@
+import {leafyTree,meadowRock,meadowBush,grassDetail,wildflower} from './plains-art.js';
 // Original, repeatable pixel-art areas. Exit coordinates connect actual map edges.
 export const AREAS={
  landing:{id:'landing',name:'Reedwater Landing',width:2800,height:2200,seed:7319,spawn:{x:1250,y:1650},exits:[{edge:'north',from:1280,to:1520,target:'windchime',entry:{x:600,y:1510},label:'Windchime Path'}]},
@@ -39,7 +40,7 @@ export function regionAt(x,y,id='landing'){
  if(x<960&&y>1450)return 'The Drowned Road';
  return 'Reedwater Landing';
 }
-const COLORS={'Reedwater Shore':['#29566b','#2b5b70','#2e6175'],'Reedwater Landing':['#91a97b','#96ad80','#9ab183'],'Forest Approach':['#627e55','#68845a','#6e8a60'],'Windchime Path':['#58734e','#5d7953','#627e58'],'Springbank':['#83a68a','#89ad90','#8eb195'],'The Drowned Road':['#a8b68c','#afbd94','#b4c099']};
+const COLORS={'Reedwater Shore':['#247b9a','#2989a4','#3193ac'],'Reedwater Landing':['#88b447','#8bb748','#90ba4b'],'Forest Approach':['#7aa344','#7ea846','#82ad47'],'Windchime Path':['#7aa344','#7ea846','#82ad47'],'Springbank':['#88b447','#8bb748','#90ba4b'],'The Drowned Road':['#88b447','#8bb748','#90ba4b']};
 export function surfaceAt(x,y,id='landing'){
  if(id==='windchime')return roadDistance(x,y,id)<29?'path':'ground';
  if(isWater(x,y,id))return coastDistance(x,y)>0?'sea':'water';
@@ -71,18 +72,29 @@ export function transitionAt(x,y,id='landing'){
 }
 export function nearestLandmark(x,y,id='landing'){return placesFor(id).find(p=>Math.hypot(x-p.x,y-p.y)<135)||null;}
 
-function tree(ctx,x,y,big=false){
- const k=big?2:1;ctx.save();ctx.translate(x,y);ctx.scale(k,k);ctx.fillStyle='#18362d55';ctx.fillRect(-26,9,52,15);ctx.fillStyle='#503f31';ctx.fillRect(-6,-9,12,31);ctx.fillStyle='#8e6b44';ctx.fillRect(-2,-9,5,29);ctx.fillStyle='#254e3b';ctx.fillRect(-28,-40,56,37);ctx.fillRect(-19,-52,38,59);ctx.fillStyle='#3d6c49';ctx.fillRect(-24,-40,44,25);ctx.fillRect(-15,-48,30,13);ctx.fillStyle='#6a945e';ctx.fillRect(-18,-37,13,7);ctx.fillRect(-10,-45,17,5);ctx.fillStyle='#2d5940';ctx.fillRect(8,-28,13,6);ctx.fillRect(-7,-16,10,5);if(big){ctx.fillStyle='#25392e';ctx.fillRect(-4,3,9,17);}ctx.restore();
-}
-function rock(ctx,x,y){ctx.fillStyle='#31423b44';ctx.fillRect(x-20,y+6,42,12);ctx.fillStyle='#66756b';ctx.beginPath();ctx.moveTo(x-22,y+10);ctx.lineTo(x-9,y-16);ctx.lineTo(x+8,y-23);ctx.lineTo(x+23,y+10);ctx.closePath();ctx.fill();ctx.fillStyle='#a2ae9a';ctx.beginPath();ctx.moveTo(x-9,y-16);ctx.lineTo(x+8,y-23);ctx.lineTo(x+15,y-7);ctx.lineTo(x+3,y-11);ctx.closePath();ctx.fill();}
+const tree=leafyTree,rock=meadowRock;
 function staticArea(ctx,left,top,width,height,id){
- for(let y=Math.floor(top/16)*16;y<top+height;y+=16)for(let x=Math.floor(left/16)*16;x<left+width;x+=16){
-  const region=regionAt(x+8,y+8,id),surface=surfaceAt(x+8,y+8,id),palette=COLORS[region],r=hash(x,y,4);
-  ctx.fillStyle=surface==='water'?'#559fa7':surface==='sea'?'#2b5c70':surface==='sand'?'#cab98c':surface==='path'?'#b5a078':palette[Math.floor(hash(x,y)*3)];ctx.fillRect(x,y,16,16);
-  ctx.fillStyle=surface==='water'?'#98ccc0':surface==='sea'?'#4d8090':'#d5dba544';if(r<.5)ctx.fillRect(x+3,y+6,surface==='water'||surface==='sea'?8:2,2);
-  if(surface==='ground'&&r<.28){ctx.fillStyle='#35553c33';ctx.fillRect(x+8,y+5,2,4);ctx.fillRect(x+6,y+7,5,2);}
+ for(let y=Math.floor(top/8)*8;y<top+height;y+=8)for(let x=Math.floor(left/8)*8;x<left+width;x+=8){
+  const px=x+4,py=y+4,wet=waterDistance(px,py,id),road=roadDistance(px,py,id),r=hash(x,y,4),palette=COLORS[regionAt(px,py,id)];
+  // Visual fringes soften the shoreline and trail without changing collision geometry.
+  const water=wet<0,path=!water&&road<26+r*8,sand=!water&&!path&&wet< (coastDistance(px,py)>-70?58:20)+r*8;
+  ctx.fillStyle=water?(wet> -14?'#63b4b0':wet> -40?'#339ba8':coastDistance(px,py)>0?'#287f9f':'#288fa6'):path?['#d6bd7a','#dfc885','#d9c17e'][Math.floor(r*3)]:sand?['#c5ba77','#d1c487','#cabe7d'][Math.floor(r*3)]:palette[Math.floor(hash(Math.floor(x/48),Math.floor(y/48))*3)];ctx.fillRect(x,y,8,8);
+  if(water){
+   if(r<.3){ctx.fillStyle=wet> -20?'#91d2bc':'#58b2bd';ctx.fillRect(x+1,y+3,5,2);}
+   if(wet> -7&&r>.4){ctx.fillStyle='#c0dac0';ctx.fillRect(x,y,5,2);}
+  }else if(path||sand){
+   if(r<.35){ctx.fillStyle=r<.12?'#ac9d65':'#efdaa2';ctx.fillRect(x+2,y+3,r<.12?3:4,2);}
+   if(path&&road>22&&r>.6)grassDetail(ctx,x,y,7);
+  }else grassDetail(ctx,x,y,9);
  }
- for(let gy=Math.floor(top/72)-2;gy<Math.ceil((top+height)/72)+2;gy++)for(let gx=Math.floor(left/72)-2;gx<Math.ceil((left+width)/72)+2;gx++){const o=sceneryAt(gx,gy,id);if(!o)continue;if(o.kind==='tree')tree(ctx,o.x,o.y);else if(o.kind==='rock')rock(ctx,o.x,o.y);else{ctx.fillStyle='#4c7549';ctx.fillRect(o.x-13,o.y-6,26,13);ctx.fillStyle='#8dac68';ctx.fillRect(o.x-9,o.y-8,12,4);}}
+ // Sparse clusters leave the walking routes readable and give the meadow small discoveries.
+ for(let y=Math.floor((top-24)/24)*24;y<top+height+24;y+=24)for(let x=Math.floor((left-24)/24)*24;x<left+width+24;x+=24){
+  const px=x+hash(x,y)*17,py=y+hash(x,y,2)*17,wet=waterDistance(px,py,id),road=roadDistance(px,py,id),r=hash(x,y,19);
+  if(wet>35&&road>36&&r>.73){for(let i=0;i<3;i++)wildflower(ctx,Math.round(px+hash(x,i,3)*16),Math.round(py+hash(y,i,4)*13),i!==2);}
+  else if(wet>0&&wet<17&&r>.35)rock(ctx,px,py,true);
+  else if(wet< -30&&wet> -150&&r>.91){ctx.fillStyle='#226f6b';ctx.fillRect(px-6,py-2,15,6);ctx.fillStyle='#85b746';ctx.fillRect(px-6,py-4,12,6);ctx.fillStyle='#b5cf58';ctx.fillRect(px-4,py-4,5,2);if(r>.97)wildflower(ctx,Math.round(px+2),Math.round(py-5));}
+ }
+ for(let gy=Math.floor(top/72)-2;gy<Math.ceil((top+height)/72)+2;gy++)for(let gx=Math.floor(left/72)-2;gx<Math.ceil((left+width)/72)+2;gx++){const o=sceneryAt(gx,gy,id);if(!o)continue;if(o.kind==='tree')tree(ctx,o.x,o.y);else if(o.kind==='rock')rock(ctx,o.x,o.y);else meadowBush(ctx,o.x,o.y);}
  if(id==='landing'){
   // The old road stays beneath the water; its shoreline is the examinable location.
   for(let i=0;i<12;i++){ctx.fillStyle=i%2?'#80b3a6':'#8dbdb0';ctx.fillRect(520+i*21,1800+i*7,19,24);}
