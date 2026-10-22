@@ -22,7 +22,7 @@ function gradients(ctx,W,H){
  const warm=ctx.createLinearGradient(0,0,W*.6,H);warm.addColorStop(0,'rgba(255,190,90,.75)');warm.addColorStop(1,'rgba(255,140,80,.25)');
  const cool=ctx.createLinearGradient(0,H*.45,0,H);cool.addColorStop(0,'rgb(255,255,255)');cool.addColorStop(1,'rgb(150,165,205)');
  const shaft=ctx.createLinearGradient(0,0,120,0);shaft.addColorStop(0,'rgba(255,225,160,0)');shaft.addColorStop(.5,'rgb(255,225,160)');shaft.addColorStop(1,'rgba(255,225,160,0)');
- const vignette=ctx.createRadialGradient(W/2,H/2,H*.38,W/2,H/2,H*.85);vignette.addColorStop(0,'rgba(10,20,25,0)');vignette.addColorStop(1,'rgba(10,20,25,.55)');
+ const vignette=ctx.createRadialGradient(W/2,H/2,H*.48,W/2,H/2,H*.9);vignette.addColorStop(0,'rgba(10,20,25,0)');vignette.addColorStop(1,'rgba(10,20,25,.3)');
  return cache={W,H,warm,cool,shaft,vignette};
 }
 function glow(){
