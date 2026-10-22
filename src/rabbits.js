@@ -69,11 +69,15 @@ export function drawRabbits(ctx,world,view){
  if(!world.adventure||!world.rabbits?.length||typeof Image==='undefined')return;
  if(!sheet){sheet=new Image();sheet.src=new URL('../assets/bunny-sheet.png',import.meta.url).href;}
  if(!sheet.complete||!sheet.naturalWidth)return;
- const visible=world.rabbits.filter(r=>r.areaId===world.areaId&&(!view||(r.x>view.left-40&&r.x<view.right+40&&r.y>view.top-50&&r.y<view.bottom+40))).sort((a,b)=>a.y-b.y);
- for(const r of visible){
-  const [sx,sy,sw,sh]=RABBIT_FRAMES[rabbitFrame(r)],w=sw*.5,h=sh*.5,hop=r.state==='hop'?Math.sin(Math.min(1,r.time/r.hopDuration)*Math.PI)*5:0;
-  ctx.save();ctx.imageSmoothingEnabled=false;ctx.fillStyle='#263d3438';ctx.beginPath();ctx.ellipse(r.x,r.y+1,8-hop*.3,3,0,0,Math.PI*2);ctx.fill();
-  ctx.translate(Math.round(r.x),Math.round(r.y-hop));if(r.direction.x>0)ctx.scale(-1,1);
-  ctx.drawImage(sheet,sx,sy,sw,sh,-w/2,-h,w,h);ctx.restore();
- }
+ for(const r of visibleRabbits(world,view).sort((a,b)=>a.y-b.y))drawRabbit(ctx,r);
+}
+export const visibleRabbits=(world,view)=>(world.rabbits||[]).filter(r=>r.areaId===world.areaId&&(!view||(r.x>view.left-40&&r.x<view.right+40&&r.y>view.top-50&&r.y<view.bottom+40)));
+export function drawRabbit(ctx,r){
+ if(typeof Image==='undefined')return;
+ if(!sheet){sheet=new Image();sheet.src=new URL('../assets/bunny-sheet.png',import.meta.url).href;}
+ if(!sheet.complete||!sheet.naturalWidth)return;
+ const [sx,sy,sw,sh]=RABBIT_FRAMES[rabbitFrame(r)],w=sw*.5,h=sh*.5,hop=r.state==='hop'?Math.sin(Math.min(1,r.time/r.hopDuration)*Math.PI)*5:0;
+ ctx.save();ctx.imageSmoothingEnabled=false;ctx.fillStyle='#263d3438';ctx.beginPath();ctx.ellipse(r.x,r.y+1,8-hop*.3,3,0,0,Math.PI*2);ctx.fill();
+ ctx.translate(Math.round(r.x),Math.round(r.y-hop));if(r.direction.x>0)ctx.scale(-1,1);
+ ctx.drawImage(sheet,sx,sy,sw,sh,-w/2,-h,w,h);ctx.restore();
 }

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {World} from '../src/world.js';
+import {render} from '../src/renderer.js';
 import {neutralInput} from '../src/protocol.js';
 import {LANDMARKS,LAKES,ROADS,SPAWN,WORLD,walkable,isWater,nearWater,sceneryAt,drawWilds,cachedChunkCount,clearTerrainCache,AREAS,transitionAt} from '../src/wilds.js';
 
@@ -47,9 +48,9 @@ test('tree crowns use one cached sprite per variant and leafyTree supports parts
  const calls=[];const ctx=new Proxy({fillRect(){calls.push(1);}},{get:(t,k)=>k in t?t[k]:()=>{},set:(t,k,v)=>{t[k]=v;return true;}});
  leafyTree(ctx,0,0,false,'trunk');const trunk=calls.length;calls.length=0;leafyTree(ctx,0,0,false,'crown');
  assert.ok(trunk>0&&calls.length>trunk);
- const draws=[],c=new Proxy({drawImage(){draws.push(1);}},{get:(t,k)=>k in t?t[k]:()=>{},set:(t,k,v)=>{t[k]=v;return true;}}),original=globalThis.document;
+ const draws=[],c=new Proxy({drawImage(){draws.push(1);},createLinearGradient:()=>({addColorStop(){}}),createRadialGradient:()=>({addColorStop(){}})},{get:(t,k)=>k in t?t[k]:()=>{},set:(t,k,v)=>{t[k]=v;return true;}}),original=globalThis.document;
  try{globalThis.document={createElement:()=>({getContext:()=>c})};clearTerrainCache();const world=new World(Math.random,{adventure:true});world.areaId='windchime';
-  drawWilds(c,world,{left:0,top:300,right:1200,bottom:1500});drawWilds(c,world,{left:0,top:300,right:1200,bottom:1500});
+  world.rabbits=[];render(c,world,{left:0,top:300,right:1200,bottom:1500});render(c,world,{left:0,top:300,right:1200,bottom:1500});
   assert.equal(crownCacheSize(),1);assert.ok(draws.length>20);
  }finally{globalThis.document=original;clearTerrainCache();}
 });
@@ -66,10 +67,10 @@ test('landmark labels fade in near the player',()=>{
 });
 
 test('labels and exit signs draw above swaying crowns',()=>{
- const ops=[],c=new Proxy({drawImage(){ops.push('img');},fillText(){ops.push('text');},createRadialGradient:()=>({addColorStop(){}})},{get:(t,k)=>k in t?t[k]:()=>{},set:(t,k,v)=>{t[k]=v;return true;}}),original=globalThis.document;
+ const ops=[],c=new Proxy({drawImage(){ops.push('img');},fillText(){ops.push('text');},translate(x,y){if(x===100&&y===1200)ops.push('atmosphere');},createLinearGradient:()=>({addColorStop(){}}),createRadialGradient:()=>({addColorStop(){}})},{get:(t,k)=>k in t?t[k]:()=>{},set:(t,k,v)=>{t[k]=v;return true;}}),original=globalThis.document;
  try{globalThis.document={createElement:()=>({getContext:()=>c})};clearTerrainCache();const world=new World(Math.random,{adventure:true});world.areaId='windchime';Object.assign(world.player,{x:600,y:1600});
-  drawWilds(c,world,{left:100,top:1200,right:1100,bottom:1800});
-  assert.ok(ops.includes('text'));assert.ok(ops.lastIndexOf('img')<ops.indexOf('text'));
+  world.rabbits=[];render(c,world,{left:100,top:1200,right:1100,bottom:1800});
+  assert.ok(ops.includes('text'));const scene=ops.slice(0,ops.indexOf('atmosphere'));assert.ok(scene.lastIndexOf('img')<scene.indexOf('text'));
  }finally{globalThis.document=original;clearTerrainCache();}
 });
 test('shore foam and sparkles skip the pier and boat and use the coarse grid',()=>{
