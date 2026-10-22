@@ -1,4 +1,5 @@
 import {leafyTree,meadowRock,meadowBush,grassDetail,wildflower} from './plains-art.js';
+import {drawGrassBase} from './grass-texture.js';
 // Original, repeatable pixel-art areas. Exit coordinates connect actual map edges.
 export const AREAS={
  landing:{id:'landing',name:'Reedwater Landing',width:2800,height:2200,seed:7319,spawn:{x:1250,y:1650},exits:[{edge:'north',from:1280,to:1520,target:'windchime',entry:{x:600,y:1510},label:'Windchime Path'}]},
@@ -74,18 +75,19 @@ export function nearestLandmark(x,y,id='landing'){return placesFor(id).find(p=>M
 
 const tree=leafyTree,rock=meadowRock;
 function staticArea(ctx,left,top,width,height,id){
+ const texturedGrass=drawGrassBase(ctx,left,top,width,height,clearTerrainCache);
  for(let y=Math.floor(top/8)*8;y<top+height;y+=8)for(let x=Math.floor(left/8)*8;x<left+width;x+=8){
   const px=x+4,py=y+4,wet=waterDistance(px,py,id),road=roadDistance(px,py,id),r=hash(x,y,4),palette=COLORS[regionAt(px,py,id)];
   // Visual fringes soften the shoreline and trail without changing collision geometry.
   const water=wet<0,path=!water&&road<26+r*8,sand=!water&&!path&&wet< (coastDistance(px,py)>-70?58:20)+r*8;
-  ctx.fillStyle=water?(wet> -14?'#63b4b0':wet> -40?'#339ba8':coastDistance(px,py)>0?'#287f9f':'#288fa6'):path?['#d6bd7a','#dfc885','#d9c17e'][Math.floor(r*3)]:sand?['#c5ba77','#d1c487','#cabe7d'][Math.floor(r*3)]:palette[Math.floor(hash(Math.floor(x/48),Math.floor(y/48))*3)];ctx.fillRect(x,y,8,8);
+  if(water||path||sand||!texturedGrass){ctx.fillStyle=water?(wet> -14?'#63b4b0':wet> -40?'#339ba8':coastDistance(px,py)>0?'#287f9f':'#288fa6'):path?['#d6bd7a','#dfc885','#d9c17e'][Math.floor(r*3)]:sand?['#c5ba77','#d1c487','#cabe7d'][Math.floor(r*3)]:palette[Math.floor(hash(Math.floor(x/48),Math.floor(y/48))*3)];ctx.fillRect(x,y,8,8);}
   if(water){
    if(r<.3){ctx.fillStyle=wet> -20?'#91d2bc':'#58b2bd';ctx.fillRect(x+1,y+3,5,2);}
    if(wet> -7&&r>.4){ctx.fillStyle='#c0dac0';ctx.fillRect(x,y,5,2);}
   }else if(path||sand){
    if(r<.35){ctx.fillStyle=r<.12?'#ac9d65':'#efdaa2';ctx.fillRect(x+2,y+3,r<.12?3:4,2);}
    if(path&&road>22&&r>.6)grassDetail(ctx,x,y,7);
-  }else grassDetail(ctx,x,y,9);
+  }else if(!texturedGrass)grassDetail(ctx,x,y,9);
  }
  // Sparse clusters leave the walking routes readable and give the meadow small discoveries.
  for(let y=Math.floor((top-24)/24)*24;y<top+height+24;y+=24)for(let x=Math.floor((left-24)/24)*24;x<left+width+24;x+=24){
