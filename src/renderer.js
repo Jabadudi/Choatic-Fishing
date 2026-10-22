@@ -1,6 +1,7 @@
 import {drawTerrain} from './terrain.js';
 import {drawWilds,drawExplorer} from './wilds.js';
 import {drawRabbits} from './rabbits.js';
+import {drawAtmosphere} from './atmosphere.js';
 export function render(ctx,world,view){
  const {elapsed:t,player:p,bobber}=world;
  if(world.adventure)drawWilds(ctx,world,view);else drawTerrain(ctx,world);
@@ -34,4 +35,5 @@ export function render(ctx,world,view){
     else{ctx.beginPath();ctx.arc(0,0,effect.name==='Anchor'?72:48,-1+age*2,1+age*2);ctx.stroke();}
     ctx.restore();
   }
+  if(world.adventure&&view)drawAtmosphere(ctx,world,view);
 }
