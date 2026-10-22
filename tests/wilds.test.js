@@ -73,8 +73,17 @@ test('labels and exit signs draw above swaying crowns',()=>{
   assert.ok(ops.includes('text'));const scene=ops.slice(0,ops.indexOf('atmosphere'));assert.ok(scene.lastIndexOf('img')<scene.indexOf('text'));
  }finally{globalThis.document=original;clearTerrainCache();}
 });
-test('shore foam and sparkles skip the pier and boat and use the coarse grid',()=>{
- const {foam,sparkle}=shorePoints('landing',2,3),onDock=([x,y])=>(x>=1200&&x<=1300&&y>=1725&&y<=1955)||(x>=1295&&x<=1400&&y>=1875&&y<=1915);
+test('shore foam and sparkles skip the pier and the beached dinghy and use the coarse grid',()=>{
+ const {foam,sparkle}=shorePoints('landing',2,3),onDock=([x,y])=>{const dx=x-1400,dy=y-1884,lx=dx*Math.cos(.32)-dy*Math.sin(.32),ly=dx*Math.sin(.32)+dy*Math.cos(.32);return (x>=1200&&x<=1300&&y>=1725&&y<=1955)||(lx>-36&&lx<44&&Math.abs(ly)<17);};
  assert.ok(foam.length>0);assert.equal(foam.filter(onDock).length,0);assert.equal(sparkle.filter(onDock).length,0);
  assert.ok(foam.every(([x,y])=>x%8===0&&y%8===0));
+});
+
+test('the arrival boat is a beached dinghy with its hull stove in',()=>{
+ const rects=[],styles=[];
+ const c=new Proxy({fillRect(...a){rects.push(a.join());},createLinearGradient:()=>({addColorStop(){}}),createRadialGradient:()=>({addColorStop(){}})},{get:(t,k)=>k in t?t[k]:()=>{},set:(t,k,v)=>{if(k==='fillStyle')styles.push(v);t[k]=v;return true;}});
+ const world=new World(()=>0,{adventure:true});world.rabbits=[];
+ drawWilds(c,world,{left:1250,top:1780,right:1500,bottom:1960});
+ assert.ok(!rects.includes('1300,1880,95,31'),'old flat boat is gone');
+ assert.ok(styles.includes('#2a1c10'),'dark hole in the hull is painted');
 });
