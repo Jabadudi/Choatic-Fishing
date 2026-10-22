@@ -34,7 +34,7 @@ test('walking over connected map edges changes areas and returns without a menu'
 });
 test('scenery is deterministic and rendering keeps a bounded chunk cache',()=>{
  assert.deepEqual(sceneryAt(20,25),sceneryAt(20,25));
- const ctx=new Proxy({},{get:(o,k)=>o[k]||(()=>{}),set:(o,k,v)=>(o[k]=v,true)}),original=globalThis.document;
+ const ctx=new Proxy({createRadialGradient:()=>({addColorStop(){}})},{get:(o,k)=>o[k]||(()=>{}),set:(o,k,v)=>(o[k]=v,true)}),original=globalThis.document;
  try{globalThis.document={createElement:()=>({getContext:()=>ctx})};clearTerrainCache();const world=new World(Math.random,{adventure:true});
  for(let x=0;x<WORLD.width;x+=512)drawWilds(ctx,world,{left:x,right:x+960,top:1800,bottom:2520});
  assert.ok(cachedChunkCount()<=30);
@@ -58,4 +58,9 @@ import {shorePoints} from '../src/wilds.js';
 test('shore points are cached per area and empty in Windchime Path',()=>{
  const a=shorePoints('landing',1,3);assert.ok(a.foam.length>0);assert.ok(a.sparkle.length>0);assert.equal(shorePoints('landing',1,3),a);
  assert.equal(shorePoints('windchime',1,3).foam.length,0);
+});
+
+import {labelAlpha} from '../src/wilds.js';
+test('landmark labels fade in near the player',()=>{
+ assert.equal(labelAlpha(100),1);assert.equal(labelAlpha(220),0);assert.equal(labelAlpha(500),0);assert.ok(Math.abs(labelAlpha(180)-.5)<1e-9);
 });

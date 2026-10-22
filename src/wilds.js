@@ -106,10 +106,16 @@ function staticArea(ctx,left,top,width,height,id){
  for(let gy=Math.floor(top/72)-2;gy<Math.ceil((top+height)/72)+2;gy++)for(let gx=Math.floor(left/72)-2;gx<Math.ceil((left+width)/72)+2;gx++){const o=sceneryAt(gx,gy,id);if(!o)continue;if(o.kind==='tree')tree(ctx,o.x,o.y,false,typeof document!=='undefined'?'trunk':'all');else if(o.kind==='rock')rock(ctx,o.x,o.y);else meadowBush(ctx,o.x,o.y);}
  if(id==='landing'){
   // The old road stays beneath the water; its shoreline is the examinable location.
-  for(let i=0;i<12;i++){ctx.fillStyle=i%2?'#80b3a6':'#8dbdb0';ctx.fillRect(520+i*21,1800+i*7,19,24);}
-  for(const [x,y]of [[480,1790],[750,1880]]){ctx.fillStyle='#a7bda6';ctx.fillRect(x,y-30,12,36);ctx.fillStyle='#d5d6b4';ctx.fillRect(x-3,y-32,18,6);}
+  for(let i=0;i<12;i++){ctx.fillStyle=i%2?'rgba(150,200,190,.35)':'rgba(170,215,200,.4)';ctx.fillRect(520+i*21,1800+i*7,19,24);ctx.fillStyle='rgba(20,60,70,.25)';ctx.fillRect(520+i*21,1822+i*7,19,2);}
+  for(const [x,y]of [[480,1790],[750,1880]]){
+   ctx.fillStyle='#8fa594';ctx.fillRect(x,y-30,12,36);ctx.fillStyle='#a7bda6';ctx.fillRect(x,y-30,5,36);ctx.fillStyle='#d5d6b4';ctx.fillRect(x-3,y-32,18,6);
+   ctx.fillStyle='#4f5e55';ctx.fillRect(x+7,y-24,1,5);ctx.fillRect(x+6,y-19,1,4);ctx.fillRect(x+7,y-15,1,3);
+   ctx.fillStyle='#5f8a4a';ctx.fillRect(x-3,y-33,7,3);ctx.fillRect(x+9,y-33,6,2);ctx.fillRect(x,y-12,4,6);ctx.fillStyle='#86b05a';ctx.fillRect(x-1,y-34,4,2);
+   ctx.fillStyle='rgba(20,60,70,.45)';ctx.fillRect(x,y,12,6);ctx.fillStyle='rgba(255,255,245,.6)';ctx.fillRect(x-3,y-1,18,2);
+  }
   // Wooden pier and the arrival boat on the southern shore.
-  ctx.fillStyle='#604b38';ctx.fillRect(1210,1730,80,220);ctx.fillStyle='#a58b62';for(let y=1735;y<1950;y+=12)ctx.fillRect(1213,y,74,7);
+  ctx.fillStyle='#604b38';ctx.fillRect(1210,1730,80,220);
+  for(let y=1735,i=0;y<1950;y+=12,i++){ctx.fillStyle=i%2?'#9a8058':'#a58b62';ctx.fillRect(1213,y,74,7);ctx.fillStyle='#c2a678';ctx.fillRect(1213,y,74,1);if(i%3===0){ctx.fillStyle='#4a3a28';ctx.fillRect(1206,y-2,7,12);ctx.fillRect(1287,y-2,7,12);}}
   ctx.fillStyle='#77563d';ctx.fillRect(1300,1880,95,31);ctx.fillStyle='#b99b6c';ctx.fillRect(1310,1885,75,5);ctx.fillRect(1310,1901,75,5);
  }
 }
@@ -157,14 +163,32 @@ function drawWater(ctx,world,view,id){
   for(const [x,y,phase]of sparkle){const k=(phase+t*.25)%1;if(k<.06){const big=k<.03;ctx.fillRect(x,y,big?4:2,2);ctx.fillRect(x+1,y-1,1,big?4:2);}}
  }
 }
-function chimes(ctx,x,y){ctx.fillStyle='#776040';ctx.fillRect(x-34,y-46,68,6);ctx.fillRect(x+29,y-46,6,65);ctx.fillStyle='#d8c48d';for(let i=0;i<3;i++){ctx.fillRect(x-23+i*18,y-40,2,10);ctx.fillRect(x-26+i*18,y-30,8,19+i*6);}}
-function drawLandmark(ctx,p){
+function chimes(ctx,x,y,t){
+ ctx.fillStyle='#776040';ctx.fillRect(x-34,y-46,68,6);ctx.fillRect(x+29,y-46,6,65);ctx.fillStyle='#5c4a32';ctx.fillRect(x-34,y-41,68,1);
+ for(let i=0;i<3;i++){ctx.save();ctx.translate(x-22+i*18,y-40);ctx.rotate(Math.sin(t*1.8+i)*.12);ctx.fillStyle='#d8c48d';ctx.fillRect(-1,0,2,10);ctx.fillRect(-4,10,8,19+i*6);ctx.fillStyle='#b39c66';ctx.fillRect(2,10,2,19+i*6);ctx.restore();}
+}
+// Landmark names fade in as the player approaches: fully shown within 140 units, gone beyond 220.
+export const labelAlpha=d=>Math.max(0,Math.min(1,(220-d)/80));
+function parchmentTag(ctx,x,y,text,alpha){
+ if(alpha<=0)return;const w=text.length*7+20;
+ ctx.save();ctx.globalAlpha=alpha;ctx.fillStyle='#00000040';ctx.fillRect(x-w/2+2,y+2,w,20);ctx.fillStyle='#6b5530';ctx.fillRect(x-w/2-2,y-2,w+4,24);ctx.fillStyle='#f1e3bd';ctx.fillRect(x-w/2,y,w,20);
+ ctx.font='11px monospace';ctx.textAlign='center';ctx.fillStyle='#2b2a1e';ctx.fillText(text,x,y+14);ctx.restore();
+}
+function drawLandmark(ctx,p,t=0,alpha=1){
  const {x,y,kind}=p;
  if(kind==='tree')tree(ctx,x,y,true);
- else if(kind==='landing'||kind==='chimes')chimes(ctx,x,y);
+ else if(kind==='landing'||kind==='chimes')chimes(ctx,x,y,t);
  else if(kind==='sign'){ctx.fillStyle='#7d6244';ctx.fillRect(x-4,y-10,8,33);ctx.fillStyle='#c2a878';ctx.fillRect(x-40,y-23,80,23);}
- else if(kind==='spring'){ctx.fillStyle='#466e58';ctx.fillRect(x-26,y-7,52,18);ctx.fillStyle='#9eb683';for(let i=0;i<5;i++)ctx.fillRect(x-25+i*11,y-27+i%2*6,3,36);}
- ctx.font='bold 12px monospace';ctx.textAlign='center';ctx.fillStyle='#183430e8';ctx.fillRect(x-99,y+31,198,23);ctx.fillStyle='#f0e1ba';ctx.fillText(p.name,x,y+47);
+ else if(kind==='spring'){
+  ctx.fillStyle='#466e58';ctx.fillRect(x-26,y-7,52,18);ctx.fillStyle='#9eb683';for(let i=0;i<5;i++)ctx.fillRect(x-25+i*11,y-27+i%2*6,3,36);
+  for(let i=0;i<4;i++){const k=(t/2+i/4)%1;ctx.fillStyle=`rgba(225,250,240,${.8*(1-k)})`;ctx.fillRect(Math.round(x-15+i*10+Math.sin(t*3+i)*2),Math.round(y+4-k*22),3,3);}
+ }
+ parchmentTag(ctx,x,y+34,p.name,alpha);
+}
+function lantern(ctx){
+ const g=ctx.createRadialGradient(1292,1736,2,1292,1736,70);g.addColorStop(0,'rgba(255,205,120,.55)');g.addColorStop(1,'rgba(255,205,120,0)');
+ ctx.save();ctx.globalCompositeOperation='screen';ctx.fillStyle=g;ctx.fillRect(1222,1666,140,140);ctx.restore();
+ ctx.fillStyle='#4a3a28';ctx.fillRect(1290,1712,4,26);ctx.fillStyle='#ffd27a';ctx.fillRect(1287,1726,10,9);ctx.fillStyle='#2a2018';ctx.fillRect(1286,1724,12,2);
 }
 function wildlife(ctx,world,id){
  const list=id==='landing'?[{x:1080,y:660,kind:'deer'},{x:1980,y:1060,kind:'turtle'},{x:675,y:1910,kind:'eel'}]:[{x:850,y:950,kind:'deer'}];
@@ -178,8 +202,9 @@ export function drawWilds(ctx,world,view={left:world.player.x-700,right:world.pl
  const id=world.areaId||'landing',area=areaFor(id);ctx.imageSmoothingEnabled=false;
  if(typeof document!=='undefined')drawChunks(ctx,view,id);else staticArea(ctx,view.left,view.top,view.right-view.left,view.bottom-view.top,id);
  drawWater(ctx,world,view,id);
- for(const p of placesFor(id))if(p.x>view.left-120&&p.x<view.right+120&&p.y>view.top-100&&p.y<view.bottom+100)drawLandmark(ctx,p);
- for(const exit of area.exits){const x=(exit.from+exit.to)/2,y=exit.edge==='north'?110:area.height-200;ctx.textAlign='center';ctx.fillStyle='#1b3832';ctx.fillRect(x-125,y-15,250,30);ctx.fillStyle='#f2dfaa';ctx.font='bold 12px monospace';ctx.fillText(`${exit.edge==='north'?'↑':'↓'} ${exit.label}`,x,y+5);}
+ for(const p of placesFor(id))if(p.x>view.left-120&&p.x<view.right+120&&p.y>view.top-100&&p.y<view.bottom+100)drawLandmark(ctx,p,world.elapsed||0,labelAlpha(Math.hypot(world.player.x-p.x,world.player.y-p.y)));
+ if(id==='landing'&&view.right>1220&&view.left<1370&&view.bottom>1660&&view.top<1810)lantern(ctx);
+ for(const exit of area.exits){const x=(exit.from+exit.to)/2,y=exit.edge==='north'?110:area.height-200;parchmentTag(ctx,x,y-12,`${exit.edge==='north'?'↑':'↓'} ${exit.label}`,1);}
  drawCrowns(ctx,world,view,id);
  if(id==='windchime'){ctx.fillStyle='#7c8b6c';for(let x=470;x<730;x+=35)ctx.fillRect(x,230,28,27);}
  wildlife(ctx,world,id);
