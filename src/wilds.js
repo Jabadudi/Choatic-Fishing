@@ -281,15 +281,6 @@ function lantern(ctx){
  ctx.save();ctx.globalCompositeOperation='screen';ctx.fillStyle=g;ctx.fillRect(1222,1666,140,140);ctx.restore();
  ctx.fillStyle='#4a3a28';ctx.fillRect(1290,1712,4,26);ctx.fillStyle='#ffd27a';ctx.fillRect(1287,1726,10,9);ctx.fillStyle='#2a2018';ctx.fillRect(1286,1724,12,2);
 }
-function wildlife(ctx,world,id){
- const list=id==='crossroads'?[]:id==='landing'?[{x:1080,y:660,kind:'deer'},{x:1980,y:1060,kind:'turtle'},{x:675,y:1910,kind:'eel'}]:[{x:850,y:950,kind:'deer'}];
- for(let i=0;i<list.length;i++){const a=list[i],t=world.elapsed*.35+i,x=a.x+Math.sin(t)*10,y=a.y+Math.cos(t)*6;
-  if(drawEntitySprite(ctx,a.spriteId||a.kind,{x,y,state:a.kind==='deer'?'walk':'idle',time:world.elapsed||0}))continue;
-  if(a.kind==='deer'){ctx.fillStyle='#a58d64';ctx.fillRect(x-12,y-4,24,15);ctx.fillRect(x+7,y-17,11,18);ctx.fillStyle='#735e43';ctx.fillRect(x-10,y+8,4,12);ctx.fillRect(x+6,y+8,4,12);ctx.fillStyle='#9eb47c';ctx.fillRect(x+5,y-28,3,13);ctx.fillRect(x+17,y-29,3,14);ctx.fillRect(x+1,y-26,6,3);ctx.fillRect(x+19,y-25,6,3);}
-  else if(a.kind==='turtle'){ctx.fillStyle='#bac69c';ctx.fillRect(x-21,y-4,9,10);ctx.fillStyle='#3e7058';ctx.fillRect(x-14,y-12,29,27);ctx.fillStyle='#7aa576';ctx.fillRect(x-10,y-9,20,19);ctx.fillStyle='#babf85';ctx.fillRect(x-2,y-20,3,19);ctx.fillRect(x+4,y-26,3,23);}
-  else{ctx.fillStyle='#b6e8d4';for(let j=0;j<7;j++)ctx.fillRect(x+j*4,y+Math.sin(t*3+j*.7)*4,5,3);}
- }
-}
 export function drawWilds(ctx,world,view={left:world.player.x-700,right:world.player.x+700,top:world.player.y-500,bottom:world.player.y+500}){
  const id=world.areaId||'landing',area=areaFor(id);ctx.imageSmoothingEnabled=false;
  if(typeof document!=='undefined')drawChunks(ctx,view,id);else staticArea(ctx,view.left,view.top,view.right-view.left,view.bottom-view.top,id);
@@ -298,7 +289,7 @@ export function drawWilds(ctx,world,view={left:world.player.x-700,right:world.pl
  if(id==='landing'&&view.right>1220&&view.left<1370&&view.bottom>1660&&view.top<1810)lantern(ctx);
  if(id==='landing'&&view.right>520&&view.left<590&&view.bottom>1660&&view.top<1730)milestoneGlyph(ctx,world.elapsed||0);
  if(id==='crossroads')drawCrossroads(ctx,world.elapsed||0);
- wildlife(ctx,world,id);
+
 }
 // Labels go last so canopies and characters never cover a place name or exit sign.
 export function drawWildsLabels(ctx,world,view){

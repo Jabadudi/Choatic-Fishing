@@ -129,3 +129,13 @@ New entities use a shared artwork registry. Replace files in `assets/` and adjus
 behaviour, health, collision sizes and drops stay separate. Existing rabbits,
 Mara, the explorer, wildlife and projectiles are connected, with drawn fallbacks
 where no image is configured. See [the replacement guide](docs/ENTITY-SPRITES.md).
+
+## Entity categories and passive hunting
+
+Mara is a friendly **NPC** with talk interaction only. Weapons and specials cannot target or harm her.
+
+All nine existing animals are **passive**: five rabbits, two deer, one turtle and one eel. They wander, flee from disturbance or injury, and never attack the player. The turtle and eel swim within water; land animals stay on navigable land. Health and positions persist when moving between areas.
+
+Equip a weapon caught while fishing, aim at an animal, and click or use the mobile **Use** button. Melee needs facing and reach; projectiles can hit swimming animals. Injured animals show health and category labels. A successful hunt awards XP once and records the species in the journey's hunt tally. Defeated animals fade out and stay hunted for this journey; a new game resets them. Mara and landmark discovery counts stay separate from hunting.
+
+`src/entities.js` defines **passive**, **defensive** (retaliates when provoked) and **aggressive** (initiates pursuit) reaction policies. Only passive animal AI is active in this build; hostile AI and new hostile species are future additions. Species health, hit radius, habitat, speeds and hunting XP are configured independently of `src/sprite-definitions.js`. No crafting drops or harvesting economy have been added yet.

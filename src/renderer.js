@@ -1,3 +1,5 @@
+import {visibleWildlife} from './wildlife.js';
+import {drawWildlife,drawAnimalStatus} from './wildlife-art.js';
 import {drawEntitySprite} from './sprites.js';
 import {drawTerrain} from './terrain.js';
 import {drawWilds,drawWildsLabels,drawDepthSorted,drawExplorer} from './wilds.js';
@@ -11,8 +13,9 @@ export function render(ctx,world,view){
   // Player and rabbits join the scenery in one ground-order pass; feet sit about 12 units below the explorer's centre.
   drawWilds(ctx,world,view);
   actors.push({y:p.y+12,ref:p});for(const r of visibleRabbits(world,view))actors.push({y:r.y,ref:r});
+  for(const a of visibleWildlife(world,view))actors.push({y:a.y+14,ref:a});
   for(const n of visibleNpcs(world,view))actors.push({y:n.y+14,ref:n});
-  drawDepthSorted(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500},actors,(c,ref)=>ref===p?drawPlayer(c,world):ref.npc?drawNpc(c,ref,t):drawRabbit(c,ref));
+  drawDepthSorted(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500},actors,(c,ref)=>ref===p?drawPlayer(c,world):ref.npc?drawNpc(c,ref,t):ref.species==='rabbit'?drawRabbit(c,ref):drawWildlife(c,ref));
  }else{drawTerrain(ctx,world);drawRabbits(ctx,world,view);}
   for(const bot of world.actors.filter(actor=>actor!==world.player)){
     if(bot.health<=0)continue;
@@ -31,10 +34,11 @@ export function render(ctx,world,view){
   ctx.fillStyle='#edf3df';ctx.font='bold 10px Arial';ctx.fillText('YOU',p.x,p.y-25);
   }
   for(const effect of world.effects){
-    const duration=['defeat','Whirlpool Burst'].includes(effect.name)?.8:.55;
+    const duration=effect.duration||(['defeat','Whirlpool Burst'].includes(effect.name)?.8:.55);
     const age=Math.max(0,duration-effect.life);ctx.save();ctx.globalAlpha=Math.min(1,effect.life/duration);ctx.translate(effect.x,effect.y);ctx.rotate(effect.angle);
     ctx.strokeStyle='#f3d59d';ctx.fillStyle='#f3d59d';ctx.lineWidth=5;
-    if(['Harpoon Gun','Old Boot','Pufferfish Bomb'].includes(effect.name)){ctx.fillRect(18,-3,8,6);}
+    if(effect.name==='animal-hit'||effect.name==='hunt'){ctx.font=effect.name==='hunt'?'bold 12px monospace':'bold 14px monospace';ctx.textAlign='center';ctx.fillStyle=effect.name==='hunt'?'#f8e6a7':'#fff4e4';ctx.fillText(effect.label,0,-age*30);}
+    else if(['Harpoon Gun','Old Boot','Pufferfish Bomb'].includes(effect.name)){ctx.fillRect(18,-3,8,6);}
     else if(effect.name==='Whirlpool Burst'){ctx.strokeStyle='#a0eee2';ctx.beginPath();ctx.arc(0,0,155*(1-effect.life/.8),0,Math.PI*2);ctx.stroke();}
     else if(effect.name==='explosion'||effect.name==='defeat'){ctx.beginPath();ctx.arc(0,0,10+age*150,0,Math.PI*2);ctx.stroke();}
     else if(effect.name==='Sardine'){ctx.fillStyle='#b9db8c';ctx.font='bold 25px Arial';ctx.fillText('SNACK',0,-30-age*40);}
@@ -42,7 +46,7 @@ export function render(ctx,world,view){
     else{ctx.beginPath();ctx.arc(0,0,effect.name==='Anchor'?72:48,-1+age*2,1+age*2);ctx.stroke();}
     ctx.restore();
   }
-  if(world.adventure){drawWildsLabels(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500});if(view)drawAtmosphere(ctx,world,view);drawDialogue(ctx,world);}
+  if(world.adventure){drawWildsLabels(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500});if(view)drawAtmosphere(ctx,world,view);drawAnimalStatus(ctx,world);drawDialogue(ctx,world);}
 }
 function drawBobber(ctx,world){
  const {elapsed:t,player:p,bobber}=world;if(!bobber)return;

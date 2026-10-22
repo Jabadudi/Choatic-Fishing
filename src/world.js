@@ -1,3 +1,4 @@
+import {createWildlife,updateWildlife,updateAnimalCombat} from './wildlife.js';
 import {Fishing,ITEMS} from './fishing.js';
 import {Progression,XP} from './progression.js';
 import {Inventory} from './inventory.js';
@@ -10,7 +11,7 @@ import {createNpcs,nearbyNpc,updateDialogue} from './npcs.js';
 export {LAND} from './terrain.js';
 export const SHORE_DEPTH=110;
 export const INLAND={left:LAND.left+SHORE_DEPTH,right:LAND.right-SHORE_DEPTH,top:LAND.top+SHORE_DEPTH,bottom:LAND.bottom-SHORE_DEPTH};
-export function createActor(id,name,x,y,random){return {id,name,x,y,angle:0,health:100,vx:0,vy:0,cooldown:0,dashCharges:1,dashRemaining:0,dashCooldown:0,dashDirection:{x:0,y:0},message:'',catches:[],inventory:new Inventory(),progression:new Progression(),fishing:new Fishing(random),bobber:null,retreat:0,intent:'TO SHORE'};}
+export function createActor(id,name,x,y,random){return {id,name,entityType:'player',x,y,angle:0,health:100,vx:0,vy:0,cooldown:0,dashCharges:1,dashRemaining:0,dashCooldown:0,dashDirection:{x:0,y:0},message:'',catches:[],inventory:new Inventory(),progression:new Progression(),fishing:new Fishing(random),bobber:null,retreat:0,intent:'TO SHORE'};}
 export class World {
  constructor(random=Math.random,{botCount=1,countdownSeconds=5,humans=null,adventure=false}={}){
   this.random=random;this.player=createActor('player','YOU',480,365,random);
@@ -27,10 +28,11 @@ export class World {
    this.player=this.humans[0];this.bots=[];this.actors=[...this.humans];
   }
   this.adventure=adventure;
-  this.rabbits=adventure?createRabbits():[];
+  this.rabbits=adventure?createRabbits():[];this.wildlife=adventure?createWildlife():[];this.hunting={total:0,bySpecies:{}};
   this.npcs=adventure?createNpcs():[];this.dialogue=null;
   if(adventure){this.areaId='landing';Object.assign(this.player,Wilds.SPAWN);this.bots=[];this.actors=[this.player];this.humans=[this.player];this.chests=[];this.countdownRemaining=0;this.matchState='playing';this.discovered=new Set();this.message='Welcome to Reedwater Landing. Follow the north trail to walk into Windchime Path. M opens the area map.';}
  }
+ get animals(){return [...this.rabbits,...this.wildlife];}
  get fishing(){return this.player.fishing;}get progression(){return this.player.progression;}get inventory(){return this.player.inventory;}
  get message(){return this.player.message;}set message(value){this.player.message=value;}
  get catches(){return this.player.catches;}set catches(value){this.player.catches=value;}
@@ -53,9 +55,9 @@ export class World {
   attack(this,actor,item);return true;
  }
  useItem(){
-  const name=this.inventory.item?.name;
+  const name=this.inventory.item?.name,huntsBefore=this.hunting.total;
   if(!this.useActorItem(this.player)){if(!this.inventory.item)this.message='Selected slot is empty. Choose a filled slot with 2–7.';return false;}
-  if(name==='Treasure Key')return true;
+  if(name==='Treasure Key'||this.hunting.total>huntsBefore)return true;
   this.message=this.inventory.item?`${name} · ${this.inventory.item.uses} uses left.`:`${name} used up. Slot clear — fish again.`;return true;
  }
  useSpecial(kind,actor=this.player){const used=special(this,actor,kind);if(actor===this.player)this.message=used?`${kind==='tidal'?'Tidal Cannon':'Whirlpool Burst'} unleashed!`:'Special unavailable. Earn a charge, abandon fishing, and let your attack recover.';return used;}
@@ -89,7 +91,7 @@ export class World {
    const steps=Math.max(1,Math.ceil(Math.hypot(dx,dy)/5)),sx=dx/steps,sy=dy/steps;
    for(let i=0;i<steps;i++){if(Wilds.walkable(p.x+sx,p.y,this.areaId)&&(!shoreOnly||Wilds.nearWater(p.x+sx,p.y,this.areaId)))p.x+=sx;if(Wilds.walkable(p.x,p.y+sy,this.areaId)&&(!shoreOnly||Wilds.nearWater(p.x,p.y+sy,this.areaId)))p.y+=sy;}
    const next=Wilds.transitionAt(p.x,p.y,this.areaId);
-   if(next){this.areaId=next.areaId;p.x=next.x;p.y=next.y;p.vx=0;p.vy=0;this.cancel();this.message=this.areaId==='crossroads'?'Willowbank Crossroads · West: village approach · East: marsh crossing · South: Windchime Path.':`${Wilds.areaFor(this.areaId).name} · Follow the trail; walk back through the edge to return.`;}
+   if(next){this.projectiles=[];this.effects=[];this.dialogue=null;this.areaId=next.areaId;p.x=next.x;p.y=next.y;p.vx=0;p.vy=0;this.cancel();this.message=this.areaId==='crossroads'?'Willowbank Crossroads · West: village approach · East: marsh crossing · South: Windchime Path.':`${Wilds.areaFor(this.areaId).name} · Follow the trail; walk back through the edge to return.`;}
    p.walkTime=(p.walkTime||0)+Math.hypot(dx,dy)*.14;return;
   }
   let x=Math.max(LAND.left+15,Math.min(LAND.right-15,p.x+dx));
@@ -135,7 +137,9 @@ export class World {
   }
   for(const bot of this.bots){if(bot.health<=0)continue;if(bot.progression.pendingUpgrades)this.chooseUpgrade(['hermes','health'][Math.floor(this.random()*2)],bot);updateBot(this,bot,dt);const f=bot.fishing;this.advanceFishing(bot,dt,f.state==='reeling'&&f.bar+f.velocity*.2+.135<f.target);}
   updateProjectiles(this,dt);
+  updateAnimalCombat(this,dt);
   updateRabbits(this,dt);
+  updateWildlife(this,dt);
   updateDialogue(this,dt);
   if(this.adventure){const place=Wilds.nearestLandmark(this.player.x,this.player.y,this.areaId);if(place)this.discovered.add(place.id);}
   else if(this.online){if(this.actors.filter(actor=>actor.health>0).length<=1){this.matchState='finished';for(const actor of this.actors){actor.fishing.cancel();actor.bobber=null;}}}

@@ -1,3 +1,4 @@
+import {animalTraits,reactionFor} from './entities.js';
 import {walkable,waterDistance,areaFor} from './wilds.js';
 
 import {drawEntitySprite,spriteFrame} from './sprites.js';
@@ -13,7 +14,7 @@ export function createRabbits(){
   let position=null;
   for(let ring=0;ring<8&&!position;ring++)for(let j=0;j<16;j++){const angle=j*Math.PI/8,x=home.x+Math.cos(angle)*ring*14,y=home.y+Math.sin(angle)*ring*14;if(rabbitGround(x,y,'landing')){position={x,y};break;}}
   if(!position)return null;
-  return {id:`rabbit-${i}`,areaId:'landing',...position,home:{...position},seed:7319+i*971,state:'idle',time:0,wait:1+i*.37,alert:0,direction:{x:-1,y:0},hopDuration:.65,hopDistance:0};
+  return {...animalTraits('rabbit'),id:`rabbit-${i}`,areaId:'landing',...position,home:{...position},seed:7319+i*971,state:'idle',time:0,wait:1+i*.37,alert:0,direction:{x:-1,y:0},hopDuration:.65,hopDistance:0};
  }).filter(Boolean);
 }
 function startHop(r,player){
@@ -35,10 +36,11 @@ function startHop(r,player){
 export function updateRabbits(world,dt){
  if(!world.adventure||world.matchState!=='playing')return;
  for(const r of world.rabbits||[]){
-  if(r.areaId!==world.areaId)continue;
+  if(r.areaId!==world.areaId||r.health<=0)continue;
   r.alert=Math.max(0,r.alert-dt);
-  const close=Math.hypot(r.x-world.player.x,r.y-world.player.y)<125;
-  if(close){r.alert=1.3;if(r.state!=='hop')startHop(r,world.player);}
+  const disturbed=world.player.health>0&&Math.hypot(r.x-world.player.x,r.y-world.player.y)<r.fearRange;
+  const close=reactionFor(r,{disturbed,provoked:r.alert>0})==='flee';
+  if(close){if(disturbed)r.alert=Math.max(r.alert,1.3);if(r.state!=='hop')startHop(r,world.player);}
   r.time+=dt;
   if(r.state==='hop'){
    const step=Math.min(dt,Math.max(0,r.hopDuration-(r.time-dt))),distance=r.hopDistance*step/r.hopDuration;
@@ -55,11 +57,12 @@ export function drawRabbits(ctx,world,view){
  if(!world.adventure||!world.rabbits?.length)return;
  for(const r of visibleRabbits(world,view).sort((a,b)=>a.y-b.y))drawRabbit(ctx,r);
 }
-export const visibleRabbits=(world,view)=>(world.rabbits||[]).filter(r=>r.areaId===world.areaId&&(!view||(r.x>view.left-40&&r.x<view.right+40&&r.y>view.top-50&&r.y<view.bottom+40)));
+export const visibleRabbits=(world,view)=>(world.rabbits||[]).filter(r=>r.areaId===world.areaId&&(r.health>0||r.deathRemaining>0)&&(!view||(r.x>view.left-40&&r.x<view.right+40&&r.y>view.top-50&&r.y<view.bottom+40)));
 export function drawRabbit(ctx,r){
+ ctx.save();if(r.health<=0)ctx.globalAlpha=Math.min(1,r.deathRemaining);else if(r.hurtRemaining>0)ctx.globalAlpha=.55;
  const hop=r.state==='hop'?Math.sin(Math.min(1,r.time/r.hopDuration)*Math.PI)*5:0;
  ctx.save();ctx.fillStyle='#263d3438';ctx.beginPath();ctx.ellipse(r.x,r.y+1,8-hop*.3,3,0,0,Math.PI*2);ctx.fill();ctx.restore();
- if(drawEntitySprite(ctx,r.spriteId||'rabbit',{x:r.x,y:r.y-hop,state:r.state,time:r.time,duration:r.state==='hop'?r.hopDuration:undefined,facingX:r.direction.x}))return;
+ if(drawEntitySprite(ctx,r.spriteId||'rabbit',{x:r.x,y:r.y-hop,state:r.health<=0?'death':r.hurtRemaining>0?'hurt':r.state,time:r.hurtRemaining>0?.25-r.hurtRemaining:r.time,duration:r.state==='hop'?r.hopDuration:undefined,facingX:r.direction.x})){ctx.restore();return;}
  // Visible fallback while a replacement is loading or has incompatible crops.
- ctx.fillStyle='#d2cfdf';ctx.fillRect(r.x-7,r.y-hop-12,14,12);ctx.fillRect(r.x-5,r.y-hop-23,3,13);ctx.fillRect(r.x+1,r.y-hop-22,3,12);
+ ctx.fillStyle='#d2cfdf';ctx.fillRect(r.x-7,r.y-hop-12,14,12);ctx.fillRect(r.x-5,r.y-hop-23,3,13);ctx.fillRect(r.x+1,r.y-hop-22,3,12);ctx.restore();
 }

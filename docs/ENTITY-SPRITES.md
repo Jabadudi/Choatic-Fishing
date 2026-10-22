@@ -28,7 +28,7 @@ deer:{
 }
 ```
 
-This config describes artwork; adding `hurt` or `death` artwork does not implement hunting. Future behaviour supplies those state names when the corresponding mechanic exists. A missing animation uses `idle`, or frame zero if there is no idle clip.
+This config describes artwork. Hunting now supplies `hurt`, `walk` and `death` for the existing wildlife; the behavior and combat modules control when those states occur. A missing animation uses `idle`, or frame zero if there is no idle clip.
 
 Use `frames:[[x,y,width,height], ...]` instead of `frameSize` for irregular crops. `anchor:[.5,1]` pins the bottom centre; `offset` aligns it with the existing ground position. `scale` changes the artwork only. Set `mirror:'left'` for sheets whose default facing points left. Renderers can provide a named direction to select clips such as `walk:north`; mirror flipping stays a visual decision.
 

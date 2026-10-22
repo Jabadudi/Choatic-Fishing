@@ -6,10 +6,10 @@ The first version focuses on Reedwater Delta. Reedwater Landing, Windchime Path 
 
 - **Reedwater Landing** (2,800 × 2,200 world units): southern beach, wooden dock and
   boat, submerged road and pillars, three wind chimes, spring, hollow tree, and
-  ambient deer, turtle and eel sprites.
+  passive deer, turtle and eel entities with persistent health and movement.
   Five rabbits use the supplied `assets/bunny-sheet.png`: they rest, graze, hop,
   and flee when approached. Their movement respects water, trees, rocks and area
-  boundaries. Rabbit state persists when leaving and returning to the landing.
+  boundaries. Rabbit state persists when leaving and returning to the landing. All animals are passive and flee; fished weapons can hunt them for XP. Mara remains a talk-only NPC.
   All 23 sheet poses are mapped using their visible bounds and a shared foot
   anchor; rabbits are ambient wildlife, separate from combat actors and fishing.
 - **Windchime Path** (1,200 × 1,800): a short forest trail demonstrating area travel.

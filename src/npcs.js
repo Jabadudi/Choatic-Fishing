@@ -1,6 +1,6 @@
 import {drawEntitySprite} from './sprites.js';
 // Friendly world characters are separate from combat actors and landmark discoveries.
-export const createNpcs=()=>[{id:'mara',name:'Mara',areaId:'landing',x:1380,y:1810,npc:true,spriteId:'mara',greeting:'Hello!'}];
+export const createNpcs=()=>[{id:'mara',name:'Mara',entityType:'npc',huntable:false,interactions:['talk'],areaId:'landing',x:1380,y:1810,npc:true,spriteId:'mara',greeting:'Hello!'}];
 export const nearbyNpc=world=>world.adventure?(world.npcs||[]).find(n=>n.areaId===world.areaId&&Math.hypot(n.x-world.player.x,n.y-world.player.y)<=95)||null:null;
 export const visibleNpcs=(world,view)=>(world.npcs||[]).filter(n=>n.areaId===world.areaId&&(!view||(n.x>view.left-60&&n.x<view.right+60&&n.y>view.top-40&&n.y<view.bottom+100)));
 export function updateDialogue(world,dt){
