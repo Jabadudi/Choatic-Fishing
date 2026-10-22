@@ -1,5 +1,5 @@
 import {World,createActor} from './world.js';
-export const VERSION=4;
+export const VERSION=5;
 export const neutralInput=()=>({left:false,right:false,up:false,down:false,held:false,aim:{x:480,y:365}});
 export function cleanInput(raw){
  if(!raw||!Number.isFinite(raw.aim?.x)||!Number.isFinite(raw.aim?.y))return null;
@@ -9,6 +9,7 @@ export function applyAction(world,id,action,input){
  const actor=world.humans.find(actor=>actor.id===id);if(!actor||actor.health<=0||world.matchState!=='playing')return false;
  return world.asActor(actor,()=>{
   actor.angle=Math.atan2(input.aim.y-actor.y,input.aim.x-actor.x);
+  if(/^slot-[1-7]$/.test(action))return world.equip(Number(action.slice(5)));
   switch(action){
    case 'upgrade-hermes':return world.chooseUpgrade('hermes');
    case 'upgrade-dash':return world.chooseUpgrade('dash');
@@ -18,7 +19,7 @@ export function applyAction(world,id,action,input){
    case 'rod':return world.equip(1);
    case 'item':return world.equip(2);
    case 'use':return world.useItem();
-   case 'click':return actor.fishing.state==='idle'?(actor.inventory.selected===2?world.useItem():world.cast(input.aim)):false;
+   case 'click':return actor.fishing.state==='idle'?(actor.inventory.selected>1?world.useItem():world.cast(input.aim)):false;
    case 'dash':return world.dash(input);
    case 'tidal':return world.useSpecial('tidal');
    case 'whirlpool':return world.useSpecial('whirlpool');

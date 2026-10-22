@@ -1,10 +1,12 @@
+import {CROSSROADS,CROSSROADS_ROADS,CROSSROADS_PLACES,crossroadsWaterDistance,crossroadsBlocked,onCrossroadsDeck,drawCrossroads,drawCrossroadsLabels} from './crossroads.js';
 import {leafyTree,meadowRock,meadowBush,grassDetail,wildflower} from './plains-art.js';
 import {drawGrassBase} from './grass-texture.js';
 import {pathPattern} from './path-texture.js';
 // Original, repeatable pixel-art areas. Exit coordinates connect actual map edges.
 export const AREAS={
  landing:{id:'landing',name:'Reedwater Landing',width:2800,height:2200,seed:7319,spawn:{x:1250,y:1650},exits:[{edge:'north',from:1280,to:1520,target:'windchime',entry:{x:600,y:1510},label:'Windchime Path'}]},
- windchime:{id:'windchime',name:'Windchime Path',width:1200,height:1800,seed:7321,spawn:{x:600,y:1510},exits:[{edge:'south',from:480,to:720,target:'landing',entry:{x:1400,y:120},label:'Reedwater Landing'}]}
+ crossroads:CROSSROADS,
+ windchime:{id:'windchime',name:'Windchime Path',width:1200,height:1800,seed:7321,spawn:{x:600,y:1510},exits:[{edge:'north',from:480,to:720,target:'crossroads',entry:{x:800,y:1130},label:'Willowbank Crossroads'},{edge:'south',from:480,to:720,target:'landing',entry:{x:1400,y:120},label:'Reedwater Landing'}]}
 };
 export const WORLD=AREAS.landing;
 export const SPAWN=WORLD.spawn;
@@ -16,25 +18,26 @@ const LANDING_PLACES=[
  {id:'spring',name:'Reedwater Spring',x:1820,y:980,kind:'spring',text:'Warm water bubbles beneath the reeds. Tiny silver fish gather at the edge of the spring.'},
  {id:'tree',name:'The Hollow Tree',x:1010,y:600,kind:'tree',text:'A deer pauses beside the hollow trunk. Your footsteps echo from somewhere deeper in the roots.'}
 ];
-const PATH_PLACES=[{id:'path-chimes',name:'Windchime Path',x:600,y:1330,kind:'chimes',text:'Behind you lies Reedwater Landing. The chimes carry the sound of the shore into the trees.'},{id:'trail-end',name:'The Old Trail',x:600,y:320,kind:'sign',text:'The trail continues toward Willowbank. This next area is not built yet; return south to the landing for now.'}];
+const PATH_PLACES=[{id:'path-chimes',name:'Windchime Path',x:600,y:1330,kind:'chimes',text:'Behind you lies Reedwater Landing. The chimes carry the sound of the shore into the trees.'},{id:'trail-end',name:'The Old Trail',x:600,y:320,kind:'sign',text:'The trail continues north to Willowbank Crossroads. There, the road divides: west toward the village, east toward Shellback Marsh.'}];
 export const LANDMARKS=LANDING_PLACES;
-export const placesFor=id=>id==='windchime'?PATH_PLACES:LANDING_PLACES;
+export const placesFor=id=>id==='crossroads'?CROSSROADS_PLACES:id==='windchime'?PATH_PLACES:LANDING_PLACES;
 export const areaFor=id=>AREAS[id]||WORLD;
 export const LAKES=[{x:2020,y:1050,rx:130,ry:150},{x:650,y:1910,rx:390,ry:190}];
 export const RIVERS=[[[2370,-100],[2290,500],[2320,1000],[2440,1500],[2310,2300]]];
 export const ROADS=[[[1250,1650],[1400,1500],[1380,1180],[1350,800],[1400,0]],[[1380,1180],[1620,1000],[1820,980]],[[1350,800],[1100,700],[1010,600]],[[1250,1650],[960,1610],[620,1640]]];
-const PATH_ROADS=[[[600,1800],[600,1330],[520,1000],[650,650],[600,320]]];
-const pathsFor=id=>id==='windchime'?PATH_ROADS:ROADS;
+const PATH_ROADS=[[[600,1800],[600,1330],[520,1000],[650,650],[600,320],[600,0]]];
+const pathsFor=id=>id==='crossroads'?CROSSROADS_ROADS:id==='windchime'?PATH_ROADS:ROADS;
 export function hash(x,y,s=0){let h=Math.imul(x+WORLD.seed,374761393)^Math.imul(y+s,668265263);h=Math.imul(h^(h>>>13),1274126177);return ((h^(h>>>16))>>>0)/4294967296;}
 export function ellipseDistance(x,y,l){return (Math.hypot((x-l.x)/l.rx,(y-l.y)/l.ry)-1)*Math.min(l.rx,l.ry);}
 function lineDistance(x,y,lines){let d=Infinity;for(const line of lines)for(let i=1;i<line.length;i++){const a=line[i-1],b=line[i],dx=b[0]-a[0],dy=b[1]-a[1],t=Math.max(0,Math.min(1,((x-a[0])*dx+(y-a[1])*dy)/(dx*dx+dy*dy)));d=Math.min(d,Math.hypot(x-a[0]-t*dx,y-a[1]-t*dy));}return d;}
 export const roadDistance=(x,y,id='landing')=>lineDistance(x,y,pathsFor(id));
 export const riverDistance=(x,y)=>lineDistance(x,y,RIVERS);
 export const coastDistance=(x,y)=>y-(1910+Math.sin(x*.004)*35+Math.sin(x*.009)*12);
-export function waterDistance(x,y,id='landing'){return id==='windchime'?Infinity:Math.min(-coastDistance(x,y),...LAKES.map(l=>ellipseDistance(x,y,l)),riverDistance(x,y)-36);}
+export function waterDistance(x,y,id='landing'){return id==='crossroads'?crossroadsWaterDistance(x,y):id==='windchime'?Infinity:Math.min(-coastDistance(x,y),...LAKES.map(l=>ellipseDistance(x,y,l)),riverDistance(x,y)-36);}
 export const isWater=(x,y,id='landing')=>waterDistance(x,y,id)<0;
 export const nearWater=(x,y,id='landing')=>waterDistance(x,y,id)<=110;
 export function regionAt(x,y,id='landing'){
+ if(id==='crossroads')return 'Willowbank Crossroads';
  if(id==='windchime')return 'Windchime Path';
  if(coastDistance(x,y)>0)return 'Reedwater Shore';
  if(y<900)return 'Forest Approach';
@@ -42,8 +45,9 @@ export function regionAt(x,y,id='landing'){
  if(x<960&&y>1450)return 'The Drowned Road';
  return 'Reedwater Landing';
 }
-const COLORS={'Reedwater Shore':['#247b9a','#2989a4','#3193ac'],'Reedwater Landing':['#88b447','#8bb748','#90ba4b'],'Forest Approach':['#7aa344','#7ea846','#82ad47'],'Windchime Path':['#7aa344','#7ea846','#82ad47'],'Springbank':['#88b447','#8bb748','#90ba4b'],'The Drowned Road':['#88b447','#8bb748','#90ba4b']};
+const COLORS={'Willowbank Crossroads':['#87ad4c','#8cb452','#93b958'],'Reedwater Shore':['#247b9a','#2989a4','#3193ac'],'Reedwater Landing':['#88b447','#8bb748','#90ba4b'],'Forest Approach':['#7aa344','#7ea846','#82ad47'],'Windchime Path':['#7aa344','#7ea846','#82ad47'],'Springbank':['#88b447','#8bb748','#90ba4b'],'The Drowned Road':['#88b447','#8bb748','#90ba4b']};
 export function surfaceAt(x,y,id='landing'){
+ if(id==='crossroads'&&onCrossroadsDeck(x,y))return 'path';
  if(id==='windchime')return roadDistance(x,y,id)<29?'path':'ground';
  if(isWater(x,y,id))return coastDistance(x,y)>0?'sea':'water';
  if(roadDistance(x,y,id)<29)return 'path';
@@ -51,6 +55,7 @@ export function surfaceAt(x,y,id='landing'){
 }
 export function sceneryAt(gx,gy,id='landing'){
  const x=gx*72+12+hash(gx,gy)*48,y=gy*72+12+hash(gx,gy,3)*48,r=hash(gx,gy,9),region=regionAt(x,y,id);
+ if(id==='crossroads'&&((x>475&&x<900&&y>440&&y<860)||(x>1200&&y>570&&y<1000)||(x<430&&y>340&&y<530)))return null;
  if(waterDistance(x,y,id)<95||roadDistance(x,y,id)<65||placesFor(id).some(p=>Math.hypot(x-p.x,y-p.y)<100))return null;
  let kind=region==='Windchime Path'||region==='Forest Approach'?(r<.78?'tree':r<.87?'bush':null):r<.13?'tree':r<.21?'rock':r<.35?'bush':null;
  return kind?{x,y,kind,r:kind==='tree'?12:kind==='rock'?15:0}:null;
@@ -61,8 +66,8 @@ export function walkable(x,y,id='landing'){
  if(edge)return true;
  if(x<24||x>area.width-24||y<24||y>area.height-24)return false;
  if(id==='landing'&&x>=1225&&x<=1275&&y>=1730&&y<=1935)return true;
+ if(id==='crossroads'){if(crossroadsBlocked(x,y))return false;if(onCrossroadsDeck(x,y))return true;}
  if(waterDistance(x,y,id)<15)return false;
- if(id==='windchime'&&y<250)return false;
  if(roadDistance(x,y,id)<29)return true;
  const gx=Math.floor(x/72),gy=Math.floor(y/72);
  for(let ix=gx-1;ix<=gx+1;ix++)for(let iy=gy-1;iy<=gy+1;iy++){const o=sceneryAt(ix,iy,id);if(o&&o.r&&(x-o.x)**2+(y-o.y)**2<(o.r+14)**2)return false;}
@@ -139,7 +144,7 @@ function staticArea(ctx,left,top,width,height,id){
  for(let y=Math.floor(top/8)*8;y<top+height;y+=8)for(let x=Math.floor(left/8)*8;x<left+width;x+=8){
   const px=x+4,py=y+4,wet=waterDistance(px,py,id),road=roadDistance(px,py,id),r=hash(x,y,4),palette=COLORS[regionAt(px,py,id)];
   // Visual fringes soften the shoreline and trail without changing collision geometry.
-  const water=wet<0,path=!water&&road<24+r*12,sand=!water&&!path&&wet< (coastDistance(px,py)>-70?58:20)+r*8;
+  const deck=id==='crossroads'&&onCrossroadsDeck(px,py),water=wet<0&&!deck,path=!water&&road<24+r*12,sand=!water&&!path&&wet< (coastDistance(px,py)>-70?58:20)+r*8;
   if(water||path||sand||!texturedGrass){ctx.fillStyle=water?waterColor(wet,coastDistance(px,py)>0):path?['#d6bd7a','#dfc885','#d9c17e'][Math.floor(r*3)]:sand?['#c5ba77','#d1c487','#cabe7d'][Math.floor(r*3)]:palette[Math.floor(hash(Math.floor(x/48),Math.floor(y/48))*3)];ctx.fillRect(x,y,8,8);}
   if(path&&dirt){ctx.fillStyle=dirt;ctx.fillRect(x,y,8,8);}
   if(water)continue;
@@ -229,7 +234,7 @@ export function drawDepthSorted(ctx,world,view,actors,drawActor){
 const shores=new Map(),MAX_SHORES=60;
 // The pier, and the beached dinghy's hull (tested in its own rotated frame), stay free of foam and sparkles.
 const onDinghy=(x,y)=>{const dx=x-1400,dy=y-1884,lx=dx*Math.cos(.32)-dy*Math.sin(.32),ly=dx*Math.sin(.32)+dy*Math.cos(.32);return lx>-36&&lx<44&&Math.abs(ly)<17;};
-const onDock=(x,y,id)=>id==='landing'&&((x>=1200&&x<=1300&&y>=1725&&y<=1955)||onDinghy(x,y));
+const onDock=(x,y,id)=>id==='crossroads'?onCrossroadsDeck(x,y):id==='landing'&&((x>=1200&&x<=1300&&y>=1725&&y<=1955)||onDinghy(x,y));
 export function shorePoints(id,cx,cy){
  const key=`${id}:${cx},${cy}`;let points=shores.get(key);if(points)return points;
  points={foam:[],sparkle:[]};
@@ -276,7 +281,7 @@ function lantern(ctx){
  ctx.fillStyle='#4a3a28';ctx.fillRect(1290,1712,4,26);ctx.fillStyle='#ffd27a';ctx.fillRect(1287,1726,10,9);ctx.fillStyle='#2a2018';ctx.fillRect(1286,1724,12,2);
 }
 function wildlife(ctx,world,id){
- const list=id==='landing'?[{x:1080,y:660,kind:'deer'},{x:1980,y:1060,kind:'turtle'},{x:675,y:1910,kind:'eel'}]:[{x:850,y:950,kind:'deer'}];
+ const list=id==='crossroads'?[]:id==='landing'?[{x:1080,y:660,kind:'deer'},{x:1980,y:1060,kind:'turtle'},{x:675,y:1910,kind:'eel'}]:[{x:850,y:950,kind:'deer'}];
  for(let i=0;i<list.length;i++){const a=list[i],t=world.elapsed*.35+i,x=a.x+Math.sin(t)*10,y=a.y+Math.cos(t)*6;
   if(a.kind==='deer'){ctx.fillStyle='#a58d64';ctx.fillRect(x-12,y-4,24,15);ctx.fillRect(x+7,y-17,11,18);ctx.fillStyle='#735e43';ctx.fillRect(x-10,y+8,4,12);ctx.fillRect(x+6,y+8,4,12);ctx.fillStyle='#9eb47c';ctx.fillRect(x+5,y-28,3,13);ctx.fillRect(x+17,y-29,3,14);ctx.fillRect(x+1,y-26,6,3);ctx.fillRect(x+19,y-25,6,3);}
   else if(a.kind==='turtle'){ctx.fillStyle='#bac69c';ctx.fillRect(x-21,y-4,9,10);ctx.fillStyle='#3e7058';ctx.fillRect(x-14,y-12,29,27);ctx.fillStyle='#7aa576';ctx.fillRect(x-10,y-9,20,19);ctx.fillStyle='#babf85';ctx.fillRect(x-2,y-20,3,19);ctx.fillRect(x+4,y-26,3,23);}
@@ -290,13 +295,14 @@ export function drawWilds(ctx,world,view={left:world.player.x-700,right:world.pl
  for(const p of placesFor(id))if(p.x>view.left-120&&p.x<view.right+120&&p.y>view.top-100&&p.y<view.bottom+100)drawLandmark(ctx,p,world.elapsed||0);
  if(id==='landing'&&view.right>1220&&view.left<1370&&view.bottom>1660&&view.top<1810)lantern(ctx);
  if(id==='landing'&&view.right>520&&view.left<590&&view.bottom>1660&&view.top<1730)milestoneGlyph(ctx,world.elapsed||0);
- if(id==='windchime'){ctx.fillStyle='#7c8b6c';for(let x=470;x<730;x+=35)ctx.fillRect(x,230,28,27);}
+ if(id==='crossroads')drawCrossroads(ctx,world.elapsed||0);
  wildlife(ctx,world,id);
 }
 // Labels go last so canopies and characters never cover a place name or exit sign.
 export function drawWildsLabels(ctx,world,view){
  const id=world.areaId||'landing',area=areaFor(id);
  for(const p of placesFor(id))if(p.x>view.left-120&&p.x<view.right+120&&p.y>view.top-100&&p.y<view.bottom+100)parchmentTag(ctx,p.x,p.y+34,p.name,labelAlpha(Math.hypot(world.player.x-p.x,world.player.y-p.y)));
+ if(id==='crossroads')drawCrossroadsLabels(ctx);
  for(const exit of area.exits){const x=(exit.from+exit.to)/2,y=exit.edge==='north'?110:area.height-200;parchmentTag(ctx,x,y-12,`${exit.edge==='north'?'↑':'↓'} ${exit.label}`,1);}
 }
 export function drawExplorer(ctx,p){

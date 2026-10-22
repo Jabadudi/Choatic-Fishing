@@ -1,5 +1,8 @@
 // Shared combat rules for the human player and bots. No fishing physics dependencies.
 export const WEAPONS={
+ 'Reed Spear':{kind:'melee',damage:22,range:110,knockback:90,cooldown:.3},
+ 'Crab Maul':{kind:'melee',damage:52,range:70,knockback:340,cooldown:1},
+ 'Shell Sling':{kind:'projectile',damage:18,speed:520,range:460,knockback:70,cooldown:.35},
  'Frying Pan':{kind:'melee',damage:25,range:65,knockback:220,cooldown:.4},
  'Swordfish':{kind:'melee',damage:34,range:85,knockback:130,cooldown:.55},
  'Anchor':{kind:'melee',damage:60,range:76,knockback:300,cooldown:1.2},

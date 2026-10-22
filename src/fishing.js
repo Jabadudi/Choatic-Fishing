@@ -6,7 +6,10 @@ export const ITEMS = Object.freeze([
   {name:'Pufferfish Bomb',description:'Handle with care. Throwable explosive.'},
   {name:'Grappling Squid',description:'Eight arms. One excellent escape plan.'},
   {name:'Sardine',description:'A small snack. Restores 35 health.'},
-  {name:'Old Boot',description:'You risked it all for someone else’s shoe.'}
+  {name:'Old Boot',description:'You risked it all for someone else’s shoe.'},
+  {name:'Reed Spear',description:'Five quick thrusts with extra reach. 22 damage.'},
+  {name:'Crab Maul',description:'Three heavy blows. 52 damage and crushing knockback.'},
+  {name:'Shell Sling',description:'Six fast shell shots. 18 damage each.'}
 ]);
 export const KEY={name:'Treasure Key',description:'Rare key. Equip near a chest and press F to restore full health.'};
 export class Fishing {

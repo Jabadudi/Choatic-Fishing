@@ -41,7 +41,7 @@ export class World {
  equip(slot){if(this.matchState!=='playing')return false;if(this.fishing.state!=='idle')this.cancel();return this.inventory.equip(slot);}
  useActorItem(actor){
   if(this.matchState!=='playing'||actor.health<=0||actor.fishing.state!=='idle'||actor.cooldown>0)return false;
-  if(actor.inventory.selected===2&&actor.inventory.item?.name==='Treasure Key'){
+  if(actor.inventory.selected>1&&actor.inventory.item?.name==='Treasure Key'){
    if(this.chests.every(c=>c.opened)){actor.inventory.use();actor.message='All chests are open. Spare key discarded.';return true;}
    const chest=this.chests.find(c=>!c.opened&&Math.hypot(actor.x-c.x,actor.y-c.y)<=70);
    if(!chest){actor.message='Find an unopened chest and stand close to use your key.';return false;}
@@ -52,7 +52,7 @@ export class World {
  }
  useItem(){
   const name=this.inventory.item?.name;
-  if(!this.useActorItem(this.player)){if(!this.inventory.item)this.message='Slot 2 is empty. Fish for an item.';return false;}
+  if(!this.useActorItem(this.player)){if(!this.inventory.item)this.message='Selected slot is empty. Choose a filled slot with 2–7.';return false;}
   if(name==='Treasure Key')return true;
   this.message=this.inventory.item?`${name} · ${this.inventory.item.uses} uses left.`:`${name} used up. Slot clear — fish again.`;return true;
  }
@@ -85,7 +85,7 @@ export class World {
    const steps=Math.max(1,Math.ceil(Math.hypot(dx,dy)/5)),sx=dx/steps,sy=dy/steps;
    for(let i=0;i<steps;i++){if(Wilds.walkable(p.x+sx,p.y,this.areaId)&&(!shoreOnly||Wilds.nearWater(p.x+sx,p.y,this.areaId)))p.x+=sx;if(Wilds.walkable(p.x,p.y+sy,this.areaId)&&(!shoreOnly||Wilds.nearWater(p.x,p.y+sy,this.areaId)))p.y+=sy;}
    const next=Wilds.transitionAt(p.x,p.y,this.areaId);
-   if(next){this.areaId=next.areaId;p.x=next.x;p.y=next.y;p.vx=0;p.vy=0;this.cancel();this.message=`${Wilds.areaFor(this.areaId).name} · Walk back through the edge to return.`;}
+   if(next){this.areaId=next.areaId;p.x=next.x;p.y=next.y;p.vx=0;p.vy=0;this.cancel();this.message=this.areaId==='crossroads'?'Willowbank Crossroads · West: village approach · East: marsh crossing · South: Windchime Path.':`${Wilds.areaFor(this.areaId).name} · Follow the trail; walk back through the edge to return.`;}
    p.walkTime=(p.walkTime||0)+Math.hypot(dx,dy)*.14;return;
   }
   let x=Math.max(LAND.left+15,Math.min(LAND.right-15,p.x+dx));
@@ -100,7 +100,7 @@ export class World {
  castActor(actor,aim){
   if(this.matchState!=='playing'||actor.health<=0||actor.fishing.state!=='idle')return false;
   if(actor.inventory.selected!==1){if(actor===this.player)this.message='Equip the fishing rod with 1 first.';return false;}
-  if(actor.inventory.item){if(actor===this.player)this.message='Item slot full. Equip 2 and use your item before fishing again.';return false;}
+  if(actor.inventory.full){if(actor===this.player)this.message='Backpack full. Equip 2–7 and use an item to make room.';return false;}
   if(!this.nearestWater(actor)){if(actor===this.player)this.message='Move closer to the shoreline to cast.';return false;}
   if(!(this.adventure?Wilds.isWater(aim.x,aim.y,this.areaId):isWater(aim.x,aim.y))){if(actor===this.player)this.message='Aim out over the water, then cast.';return false;}
   if(!actor.fishing.cast())return false;actor.bobber={...aim};return true;

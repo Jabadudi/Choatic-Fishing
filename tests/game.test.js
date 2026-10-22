@@ -7,7 +7,7 @@ test('loot is sampled only upon completion; tracking can land a catch',()=>{
  for(let i=0;i<400;i++)f.update(1/120,false);
  assert.equal(f.state,'reeling');assert.equal(calls,1);
  for(let i=0;i<4000&&f.state==='reeling';i++){const predicted=f.bar+f.velocity*.2;f.update(1/120,predicted+.135<f.target);}
- assert.equal(f.state,'caught');assert.equal(f.result,ITEMS[7]);assert.equal(calls,2);
+ assert.equal(f.state,'caught');assert.equal(f.result,ITEMS.at(-1));assert.equal(calls,2);
 });
 test('missed contact loses the catch without awarding an item',()=>{const f=new Fishing(()=>0);f.cast();for(let i=0;i<2400;i++)f.update(1/120,false);assert.equal(f.state,'escaped');assert.equal(f.result,null);});
 test('cast requires shore and water aim; bite waiting locks movement; cancel restores it immediately',()=>{

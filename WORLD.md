@@ -1,7 +1,6 @@
 # The Wilds — Reedwater Landing
 
-The first version focuses on Reedwater Delta. Only Reedwater Landing and its first
-connecting path are implemented so far; the rest of the regional atlas is future work.
+The first version focuses on Reedwater Delta. Reedwater Landing, Windchime Path and Willowbank Crossroads are playable; the rest of the regional atlas is future work.
 
 ## Playable areas
 
@@ -14,10 +13,17 @@ connecting path are implemented so far; the rest of the regional atlas is future
   All 23 sheet poses are mapped using their visible bounds and a shared foot
   anchor; rabbits are ambient wildlife, separate from combat actors and fishing.
 - **Windchime Path** (1,200 × 1,800): a short forest trail demonstrating area travel.
-  Its north end is closed until the next area is built.
+  Its north end leads into Willowbank Crossroads.
 
 Walk north through the marked opening at the landing's map edge to enter the path.
-Walk south through the path's edge to return. These are movement-triggered area
+Walk south through the path's edge to return. Continue north to reach the crossroads.
+
+- **Willowbank Crossroads** (1,600 × 1,280): the atlas fork, with Willowbank Village
+  to the west and Shellback Marsh to the east. Explore both approaches, a sheltered
+  rest stop, wind chimes and a fishable reed pool. Destination ropes mark the
+  unfinished village and marsh boundaries; only the south edge changes areas.
+  Six examinable landmarks appear on the area map. All inventory and progression
+  carry through the journey in either direction. These are movement-triggered area
 changes; there is no teleport menu or interaction key. The camera keeps its zoom
 and clamps to each area's bounds. Area maps, geography, scenery caches and
 discovery counts switch with the active area; prior discoveries remain in memory.

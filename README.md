@@ -1,8 +1,10 @@
 # The Wilds — an exploration world
 
 The first playable area is Reedwater Landing: explore its beach, dock, drowned
-road, spring and forest approach. Walk off the marked north edge to enter a short
-section of Windchime Path; walk off that path's south edge to return.
+road, spring and forest approach. Walk north into Windchime Path, then continue north to Willowbank Crossroads.
+The fork leads west toward the village approach and east to the marsh boardwalk
+and a fishable pool. The village and marsh maps remain closed beyond their approach
+ropes. Walk south to return through Windchime Path to Reedwater Landing.
 Press **M** for the current area map and **G** to examine a nearby landmark.
 See [WORLD.md](WORLD.md) for the world layout, controls, art approach and current limits.
 The earlier PvP lobby is no longer part of the player flow. The notes below describe
@@ -19,7 +21,7 @@ Run `node --test` for the simulation tests.
 
 - WASD: move; mouse: aim.
 - Left Shift: dash in your movement direction, or toward aim when stationary. Travels up to 136 units over 0.16 seconds, then recharges for 2 seconds. Invulnerable to damage and new knockback during the 0.16-second dash; vulnerability returns during recharge. Reeling dashes stay in the shoreline; dashing is unavailable during the bite wait or countdown.
-- 1 / 2 or hotbar buttons: equip the permanent fishing rod / caught item.
+- 1: rod; 2–7 or hotbar buttons: equip a caught item.
 - E: cast to the exact water point under the cursor, or abandon an active cast.
 - Left click: cast with the rod, use an equipped item, or hold to reel.
 - Space held: raise the fishing bar; release to lower it.
@@ -36,9 +38,11 @@ Living players and bots regenerate 1 HP per second during the match, including w
 
 Fishing gives no protection from damage. Attacks apply health damage and knockback without changing fishing controls, catch movement, or progress. There are no approaching-enemy warnings or camera shakes. Water remains an impassable boundary.
 
-## Two-slot inventory and combat
+## Backpack and combat
 
-Exactly two equipment slots exist: the permanent rod and one caught item. A full item slot blocks casting. Using the item up clears the slot and selects the rod again; there is no discard/replacement button.
+The permanent rod uses key **1**. Six separate catch slots use **2–7**; click a slot or press its number to equip it, then click or press **F** to use it. Fishing continues while any backpack slot is empty. A full backpack blocks casting; consuming an item frees that slot without removing the other catches.
+
+New fishable weapons: **Reed Spear** (5 uses, 22 damage, 110 reach, 0.3s cooldown), **Crab Maul** (3 uses, 52 damage, heavy knockback, 1s cooldown), and **Shell Sling** (6 uses, 18 damage per projectile, 0.35s cooldown).
 
 | Item | Uses | Effect before buffs |
 | --- | --- | --- |

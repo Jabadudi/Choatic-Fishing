@@ -70,3 +70,9 @@ body.exploring .special-hud{display:none}
 .lobby-card h1{font-family:Georgia,serif;color:#f3e6bf}
 #explore-world{border-radius:4px;background:#e6c98a;box-shadow:0 3px 0 #8a6d3b}
 @media(max-width:800px){body.exploring #exploration-hud{width:190px}body.exploring #timed-upgrades{width:190px;top:122px}body.exploring #explore-hint{display:none}}
+
+.hotbar{flex-wrap:wrap;max-width:95vw}.backpack-slot{font:inherit;font-size:11px;padding:10px;min-height:56px;max-width:125px;color:#e9dcc0;background:#203b36;border:1px solid #79947b;cursor:pointer}.backpack-slot.selected{outline:2px solid #e8be65}.hotbar #slot-rod{order:0}.hotbar #slot-item{order:1}
+.hotbar #slot-3{order:2}.hotbar #slot-4{order:3}.hotbar #slot-5{order:4}.hotbar #slot-6{order:5}.hotbar #slot-7{order:6}
+.hotbar{width:min(920px,95vw)}.hotbar .slot{flex:1;min-width:62px;width:auto}.hotbar .dash-mini{order:8}@media(max-width:600px){.hotbar{bottom:10px;gap:3px}.hotbar .slot{min-width:56px;height:60px}.hotbar .backpack-slot{font-size:9px;padding:4px}}
+
+body.exploring .hotbar{width:auto;max-width:96vw}body.exploring .hotbar .slot{flex:0 0 56px;min-width:0}body.exploring .backpack-slot strong{max-width:68px;overflow:hidden;text-overflow:ellipsis}body.exploring .backpack-slot{padding:4px}@media(max-width:600px){body.exploring .hotbar{gap:4px}body.exploring .hotbar .slot{flex-basis:38px;width:38px;height:48px;min-height:48px}body.exploring .backpack-slot strong{font-size:7px;max-width:43px}}

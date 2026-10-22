@@ -20,7 +20,7 @@ const elements=new Map();
 const $=id=>{if(!elements.has(id))elements.set(id,document.getElementById(id));return elements.get(id);};const keys=new Set();let mouseHeld=false,spaceHeld=false,aim={x:480,y:0};
 const currentInput=()=>{camera();return ({left:keys.has('KeyA'),right:keys.has('KeyD'),up:keys.has('KeyW'),down:keys.has('KeyS'),aim,held:mouseHeld||spaceHeld});};
 const act=action=>lobby.action(action,currentInput());
-const equip=slot=>act(slot===1?'rod':'item');
+const equip=slot=>act(`slot-${slot}`);
 addEventListener('keydown',e=>{
   if(e.code==='KeyM'&&lobby.world?.adventure&&!e.repeat){e.preventDefault();toggleAtlas();return;}
   if(atlasOpen){if(e.code==='Escape'){e.preventDefault();toggleAtlas(false);}return;}
@@ -33,8 +33,7 @@ addEventListener('keydown',e=>{
     if(e.code==='KeyE'){
       act('toggle');
     }
-    if(e.code==='Digit1')equip(1);
-    if(e.code==='Digit2')equip(2);
+    if(/^Digit[1-7]$/.test(e.code))equip(Number(e.code.slice(5)));
     if(e.code==='KeyF')act('use');
     if(e.code==='KeyR')act('tidal');
     if(e.code==='KeyT')act('whirlpool');
@@ -51,6 +50,7 @@ canvas.addEventListener('pointerdown',e=>{if(e.button!==0||!lobby.world||atlasOp
 addEventListener('pointerup',()=>mouseHeld=false);
 function release(){keys.clear();mouseHeld=false;spaceHeld=false;}
 addEventListener('blur',release);document.addEventListener('visibilitychange',release);
+for(let slot=3;slot<=7;slot++){const button=document.createElement('button');button.id=`slot-${slot}`;button.className='slot backpack-slot';button.innerHTML=`<kbd>${slot}</kbd><span class="slot-icon">—</span><strong>Empty</strong><small>Fish to fill</small>`;button.onclick=()=>{equip(slot);canvas.focus();};$('slot-item').after(button);}
 $('slot-rod').onclick=()=>equip(1);$('slot-item').onclick=()=>equip(2);$('cancel').onclick=()=>act('cancel');
 $('choose-whirlpool').onclick=()=>chooseReward('whirlpool');$('choose-special').onclick=()=>chooseReward('tidal');
 $('fire-tidal').onclick=()=>act('tidal');$('fire-whirlpool').onclick=()=>act('whirlpool');
@@ -68,7 +68,7 @@ function updateProgression(){
  $('fire-tidal').textContent=`R · Tidal Cannon ×${p.specials.tidal}`;$('fire-whirlpool').textContent=`T · Whirlpool ×${p.specials.whirlpool}`;
  $('reward-choice').hidden=p.pendingChoices===0||world.matchState!=='playing';$('reward-heading').textContent=`Level up · Choose a special (${p.pendingChoices})`;
 }
-const ICONS={'Treasure Key':'⚿','Frying Pan':'◉','Swordfish':'⚔','Harpoon Gun':'➶','Anchor':'⚓','Pufferfish Bomb':'✹','Grappling Squid':'↗','Sardine':'♢','Old Boot':'♟'};
+const ICONS={'Reed Spear':'♆','Crab Maul':'⚒','Shell Sling':'◌','Treasure Key':'⚿','Frying Pan':'◉','Swordfish':'⚔','Harpoon Gun':'➶','Anchor':'⚓','Pufferfish Bomb':'✹','Grappling Squid':'↗','Sardine':'♢','Old Boot':'♟'};
 let lastAtlasDraw=0;
 function updateUI(){
  const f=world.fishing,active=f.state==='reeling',busy=f.state!=='idle',inventory=world.inventory;
@@ -89,8 +89,9 @@ function updateUI(){
  for(const kind of ['tidal','whirlpool'])$('fire-'+kind).disabled=busy||world.player.cooldown>0||world.progression.specials[kind]===0||world.matchState!=='playing';
  $('world-state').textContent=world.matchState==='countdown'?'GET READY':active?'REELING':busy?'WAITING FOR A BITE':'EXPLORING';
  $('catch-bar').style.bottom=`${(f.bar||0)*100}%`;$('target').style.bottom=`${(f.target||0)*100}%`;$('progress-fill').style.height=active?`${f.progress*100}%`:'0%';$('percent').textContent=active?`${Math.floor(f.progress*100)}%`:'0%';
+ for(let slot=3;slot<=7;slot++){const button=$(`slot-${slot}`),item=inventory.slots[slot-2];button.querySelector('.slot-icon').textContent=item?ICONS[item.name]||'◆':'—';button.querySelector('strong').textContent=item?.name||'Empty';button.querySelector('small').textContent=item?`${item.uses} uses · F`:'Fish to fill';button.setAttribute('aria-label',`Slot ${slot}: ${item?.name||'empty'}${item?', '+item.uses+' uses':''}`);button.classList.toggle('selected',inventory.selected===slot);button.setAttribute('aria-pressed',inventory.selected===slot);button.title=item?.description||'Fish to fill this slot';}
  for(const slot of [1,2]){const button=$(slot===1?'slot-rod':'slot-item');button.classList.toggle('selected',inventory.selected===slot);button.setAttribute('aria-pressed',inventory.selected===slot);}
- $('item-name').textContent=inventory.item?.name||'Empty slot';$('item-icon').textContent=inventory.item?ICONS[inventory.item.name]||'◆':'—';$('item-uses').textContent=inventory.item?`${inventory.item.uses} use${inventory.item.uses===1?'':'s'} · Click or F`:'Reel in your next item';
+ $('item-name').textContent=inventory.slots[0]?.name||'Empty slot';$('item-icon').textContent=inventory.slots[0]?ICONS[inventory.slots[0].name]||'◆':'—';$('item-uses').textContent=inventory.slots[0]?`${inventory.slots[0].uses} uses · Click or F`:'Reel in your next item';
  $('status').textContent=active?'WASD move along shore · Hold Space / mouse to reel · E to abandon.':busy?'Waiting for a bite… E / Esc to abandon.':world.message||'Walk to shore, aim into water, press E.';
  if(world.adventure){
   const places=placesFor(world.areaId),place=nearestLandmark(world.player.x,world.player.y,world.areaId);
