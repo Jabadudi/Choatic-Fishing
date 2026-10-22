@@ -99,7 +99,7 @@ function staticArea(ctx,left,top,width,height,id){
   else if(wet>0&&wet<17&&r>.35)rock(ctx,px,py,true);
   else if(wet< -30&&wet> -150&&r>.91){ctx.fillStyle='#226f6b';ctx.fillRect(px-6,py-2,15,6);ctx.fillStyle='#85b746';ctx.fillRect(px-6,py-4,12,6);ctx.fillStyle='#b5cf58';ctx.fillRect(px-4,py-4,5,2);if(r>.97)wildflower(ctx,Math.round(px+2),Math.round(py-5));}
  }
- for(let gy=Math.floor(top/72)-2;gy<Math.ceil((top+height)/72)+2;gy++)for(let gx=Math.floor(left/72)-2;gx<Math.ceil((left+width)/72)+2;gx++){const o=sceneryAt(gx,gy,id);if(!o)continue;if(o.kind==='tree')tree(ctx,o.x,o.y);else if(o.kind==='rock')rock(ctx,o.x,o.y);else meadowBush(ctx,o.x,o.y);}
+ for(let gy=Math.floor(top/72)-2;gy<Math.ceil((top+height)/72)+2;gy++)for(let gx=Math.floor(left/72)-2;gx<Math.ceil((left+width)/72)+2;gx++){const o=sceneryAt(gx,gy,id);if(!o)continue;if(o.kind==='tree')tree(ctx,o.x,o.y,false,typeof document!=='undefined'?'trunk':'all');else if(o.kind==='rock')rock(ctx,o.x,o.y);else meadowBush(ctx,o.x,o.y);}
  if(id==='landing'){
   // The old road stays beneath the water; its shoreline is the examinable location.
   for(let i=0;i<12;i++){ctx.fillStyle=i%2?'#80b3a6':'#8dbdb0';ctx.fillRect(520+i*21,1800+i*7,19,24);}
@@ -117,6 +117,23 @@ function drawChunks(ctx,view,id){
   const key=`${id}:${cx},${cy}`;let canvas=chunks.get(key);
   if(!canvas){canvas=document.createElement('canvas');canvas.width=CHUNK;canvas.height=CHUNK;const c=canvas.getContext('2d');c.translate(-cx*CHUNK,-cy*CHUNK);staticArea(c,cx*CHUNK,cy*CHUNK,CHUNK,CHUNK,id);chunks.set(key,canvas);if(chunks.size>MAX_CHUNKS)chunks.delete(chunks.keys().next().value);}
   else{chunks.delete(key);chunks.set(key,canvas);}ctx.drawImage(canvas,cx*CHUNK,cy*CHUNK);
+ }
+}
+// Crowns are painted once into a sprite and drawn per frame with a gentle sway; trunks stay in the chunk cache.
+const crowns=new Map();
+export const crownCacheSize=()=>crowns.size;
+export function crownSprite(big=false){
+ if(typeof document==='undefined')return null;
+ let sprite=crowns.get(big);
+ if(!sprite){sprite=document.createElement('canvas');sprite.width=96;sprite.height=112;leafyTree(sprite.getContext('2d'),48,100,big,'crown');crowns.set(big,sprite);}
+ return sprite;
+}
+function drawCrowns(ctx,world,view,id){
+ const sprite=crownSprite();if(!sprite)return;
+ for(let gy=Math.floor(view.top/72)-1;gy<=Math.ceil((view.bottom+100)/72);gy++)for(let gx=Math.floor(view.left/72)-1;gx<=Math.ceil(view.right/72)+1;gx++){
+  const o=sceneryAt(gx,gy,id);if(!o||o.kind!=='tree')continue;
+  const sway=Math.round(Math.sin((world.elapsed||0)*1.2+hash(gx,gy,21)*6)*1.5);
+  ctx.drawImage(sprite,Math.round(o.x)-48+sway,Math.round(o.y)-100);
  }
 }
 function chimes(ctx,x,y){ctx.fillStyle='#776040';ctx.fillRect(x-34,y-46,68,6);ctx.fillRect(x+29,y-46,6,65);ctx.fillStyle='#d8c48d';for(let i=0;i<3;i++){ctx.fillRect(x-23+i*18,y-40,2,10);ctx.fillRect(x-26+i*18,y-30,8,19+i*6);}}
@@ -141,12 +158,13 @@ export function drawWilds(ctx,world,view={left:world.player.x-700,right:world.pl
  if(typeof document!=='undefined')drawChunks(ctx,view,id);else staticArea(ctx,view.left,view.top,view.right-view.left,view.bottom-view.top,id);
  for(const p of placesFor(id))if(p.x>view.left-120&&p.x<view.right+120&&p.y>view.top-100&&p.y<view.bottom+100)drawLandmark(ctx,p);
  for(const exit of area.exits){const x=(exit.from+exit.to)/2,y=exit.edge==='north'?110:area.height-200;ctx.textAlign='center';ctx.fillStyle='#1b3832';ctx.fillRect(x-125,y-15,250,30);ctx.fillStyle='#f2dfaa';ctx.font='bold 12px monospace';ctx.fillText(`${exit.edge==='north'?'↑':'↓'} ${exit.label}`,x,y+5);}
+ drawCrowns(ctx,world,view,id);
  if(id==='windchime'){ctx.fillStyle='#7c8b6c';for(let x=470;x<730;x+=35)ctx.fillRect(x,230,28,27);}
  wildlife(ctx,world,id);
 }
 export function drawExplorer(ctx,p){
  const x=Math.round(p.x),y=Math.round(p.y),step=Math.sin(p.walkTime||0)*2;
- ctx.fillStyle='#18323855';ctx.fillRect(x-12,y+10,25,7);ctx.fillStyle='#423d3c';ctx.fillRect(x-8,y+6+step,6,9);ctx.fillRect(x+3,y+6-step,6,9);
+ ctx.fillStyle='rgba(30,40,50,.3)';ctx.beginPath();ctx.ellipse(x+5,y+14,15,5,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#423d3c';ctx.fillRect(x-8,y+6+step,6,9);ctx.fillRect(x+3,y+6-step,6,9);
  ctx.fillStyle='#71885f';ctx.fillRect(x-11,y-8,22,17);ctx.fillStyle='#a2b580';ctx.fillRect(x-8,y-8,7,10);ctx.fillStyle='#c6a276';ctx.fillRect(x-7,y-20,14,12);ctx.fillStyle='#554739';ctx.fillRect(x-9,y-23,18,6);ctx.fillStyle='#d0b77e';ctx.fillRect(x-13,y-22,26,4);ctx.fillStyle='#775b44';ctx.fillRect(x-6,y-5,13,14);ctx.fillStyle='#c78066';ctx.fillRect(x-8,y-8,17,3);ctx.fillRect(x-11,y-5,5,8);
  ctx.strokeStyle='#c6ae78';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+10,y);ctx.lineTo(x+Math.cos(p.angle)*30,y+Math.sin(p.angle)*30);ctx.stroke();
 }

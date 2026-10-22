@@ -40,3 +40,16 @@ test('scenery is deterministic and rendering keeps a bounded chunk cache',()=>{
  assert.ok(cachedChunkCount()<=30);
  }finally{globalThis.document=original;clearTerrainCache();}
 });
+
+import {leafyTree} from '../src/plains-art.js';
+import {crownCacheSize} from '../src/wilds.js';
+test('tree crowns use one cached sprite per variant and leafyTree supports parts',()=>{
+ const calls=[];const ctx=new Proxy({fillRect(){calls.push(1);}},{get:(t,k)=>k in t?t[k]:()=>{},set:(t,k,v)=>{t[k]=v;return true;}});
+ leafyTree(ctx,0,0,false,'trunk');const trunk=calls.length;calls.length=0;leafyTree(ctx,0,0,false,'crown');
+ assert.ok(trunk>0&&calls.length>trunk);
+ const draws=[],c=new Proxy({drawImage(){draws.push(1);}},{get:(t,k)=>k in t?t[k]:()=>{},set:(t,k,v)=>{t[k]=v;return true;}}),original=globalThis.document;
+ try{globalThis.document={createElement:()=>({getContext:()=>c})};clearTerrainCache();const world=new World(Math.random,{adventure:true});world.areaId='windchime';
+  drawWilds(c,world,{left:0,top:300,right:1200,bottom:1500});drawWilds(c,world,{left:0,top:300,right:1200,bottom:1500});
+  assert.equal(crownCacheSize(),1);assert.ok(draws.length>20);
+ }finally{globalThis.document=original;clearTerrainCache();}
+});
