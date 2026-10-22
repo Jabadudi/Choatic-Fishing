@@ -3,6 +3,7 @@ import {render} from './renderer.js';
 import './music.js';
 import {Lobby} from './lobby.js';
 import {areaFor,placesFor,regionAt,nearestLandmark,paintAtlas} from './wilds.js';
+import {explorationHud} from './hud.js';
 let world=new World(Math.random,{botCount:0});
 const canvas=document.querySelector('#arena'),ctx=canvas.getContext('2d',{alpha:false});
 // Keep the original zoom while following the local player.
@@ -96,7 +97,16 @@ function updateUI(){
   $('region-name').textContent=regionAt(world.player.x,world.player.y,world.areaId);
   $('discovery-count').textContent=`${places.filter(p=>world.discovered.has(p.id)).length} / ${places.length} places found here`;
   document.querySelector('.atlas-heading h2').textContent=areaFor(world.areaId).name;
-  $('inspect-place').hidden=!place;$('inspect-place').textContent=place?`G · Examine ${place.name}`:'';
+  const hud=explorationHud(world,(performance.now()-exploreStart)/1000);
+  $('area-kicker').textContent=areaFor(world.areaId).name.toUpperCase();
+  $('inspect-place').hidden=!hud.prompt;$('inspect-place').textContent=hud.prompt?`G · ${hud.prompt}`:'';
+  $('explore-hint').hidden=!hud.hintVisible;
+  const key=hud.dots.join();if(key!==dotsKey){dotsKey=key;$('discovery-dots').replaceChildren(...hud.dots.map(found=>{const dot=document.createElement('i');if(found)dot.className='found';return dot;}));}
+  $('upgrade-fill').style.width=`${hud.upgradeFraction*100}%`;
+  const pips=$('dash-pips');if(pips.childElementCount!==world.progression.maxDashes)pips.replaceChildren(...Array.from({length:world.progression.maxDashes},()=>document.createElement('i')));
+  [...pips.children].forEach((pip,i)=>pip.classList.toggle('spent',i>=world.player.dashCharges));
+  const message=$('status').textContent;if(message!==lastMessage){lastMessage=message;messageSince=performance.now();}
+  document.querySelector('.status').classList.toggle('quiet',!busy&&performance.now()-messageSince>8000);
   if(performance.now()-lastAtlasDraw>250){lastAtlasDraw=performance.now();drawMap($('mini-atlas'));if(atlasOpen)drawMap($('atlas-canvas'));}
  }
 }
@@ -108,8 +118,11 @@ document.querySelector('.lobby-note').textContent='WASD explore · Mouse aim · 
 document.querySelector('header h1').textContent='THE WILDS';
 document.querySelector('.controls').textContent='WASD MOVE · E FISH · G EXAMINE · M ATLAS · L-SHIFT DASH';
 document.querySelector('.lobby-actions').insertAdjacentHTML('afterbegin','<button id="explore-world">Enter the Wilds</button>');
-document.querySelector('.playfield').insertAdjacentHTML('beforeend',`<section id="exploration-hud" hidden><span class="exploration-kicker">YOUR JOURNEY</span><h2 id="region-name">Reedwater Delta</h2><p id="discovery-count">0 / 10 places found</p><button id="inspect-place" hidden>G · Examine</button></section><button id="open-atlas" hidden aria-label="Open world atlas"><canvas id="mini-atlas" width="192" height="144"></canvas><span>M · WORLD ATLAS</span></button><section id="world-atlas" hidden role="dialog" aria-modal="true" aria-label="World atlas"><div class="atlas-card"><div class="atlas-heading"><div><small>THE WILDS</small><h2>World Atlas</h2></div><button id="close-atlas">Close · M / Esc</button></div><canvas id="atlas-canvas" width="800" height="600"></canvas><p>Follow the old trails and bridges. Gold marks the places you have found. Your position is the bright marker.</p></div></section>`);
-let atlasOpen=false;
+document.querySelector('.playfield').insertAdjacentHTML('beforeend',`<section id="exploration-hud" hidden><span class="exploration-kicker" id="area-kicker">YOUR JOURNEY</span><h2 id="region-name">Reedwater Delta</h2><p id="discovery-count">0 / 10 places found</p><div class="discovery-dots" id="discovery-dots"></div></section><button id="inspect-place" hidden>G · Examine</button><div id="explore-hint" hidden><kbd>WASD</kbd> walk · <kbd>E</kbd> fish · <kbd>G</kbd> examine · <kbd>M</kbd> map · <kbd>Shift</kbd> dash</div><button id="music-icon" aria-label="Music settings" aria-expanded="false">♪</button><button id="open-atlas" hidden aria-label="Open world atlas"><canvas id="mini-atlas" width="192" height="144"></canvas><span>M · WORLD ATLAS</span></button><section id="world-atlas" hidden role="dialog" aria-modal="true" aria-label="World atlas"><div class="atlas-card"><div class="atlas-heading"><div><small>THE WILDS</small><h2>World Atlas</h2></div><button id="close-atlas">Close · M / Esc</button></div><canvas id="atlas-canvas" width="800" height="600"></canvas><p>Follow the old trails and bridges. Gold marks the places you have found. Your position is the bright marker.</p></div></section>`);
+let atlasOpen=false,exploreStart=performance.now(),lastMessage='',messageSince=0,dotsKey='';
+$('upgrade-timer').insertAdjacentHTML('afterend','<div id="upgrade-bar"><i id="upgrade-fill"></i></div>');
+document.querySelector('.hotbar').insertAdjacentHTML('beforeend','<div class="dash-mini"><div id="dash-pips"></div><span>DASH</span></div>');
+$('music-icon').onclick=()=>{const open=document.querySelector('.music-hud').classList.toggle('open');$('music-icon').setAttribute('aria-expanded',open);canvas.focus();};
 $('open-atlas').setAttribute('aria-label','Open area map');$('open-atlas').querySelector('span').textContent='M · AREA MAP';
 $('world-atlas').setAttribute('aria-label','Area map');document.querySelector('.atlas-card p').textContent='Walk through the marked map edge to reach the connecting path. Gold marks places you have found; the bright marker shows your position.';
 canvas.setAttribute('aria-label','Reedwater exploration. WASD move, E fish, G examine, M area map, Left Shift dash.');
@@ -143,7 +156,7 @@ function updateLobby(){
  else {release();for(const id of ['countdown','match-end','reward-choice','line-panel'])$(id).hidden=true;}
 }
 $('practice').onclick=()=>{lobby.practice();progressionKey='';canvas.focus();};
-$('explore-world').onclick=()=>{lobby.explore();progressionKey='';canvas.focus();};
+$('explore-world').onclick=()=>{exploreStart=performance.now();lobby.explore();progressionKey='';canvas.focus();};
 $('create-room').onclick=()=>lobby.connect($('player-name').value);
 $('join-room').onclick=()=>{let code=$('join-code').value.trim();try{if(code.includes('://'))code=new URL(code).searchParams.get('room')||'';}catch{}if(!/^fish-[a-f0-9]{12}$/.test(code)){lobby.status='Paste a valid invite link or room code.';updateLobby();return;}lobby.connect($('player-name').value,code);};
 $('ready-up').onclick=()=>lobby.toggleReady();$('start-match').onclick=()=>{if(lobby.start()){release();canvas.focus();}};
