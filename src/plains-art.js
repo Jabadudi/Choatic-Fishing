@@ -4,12 +4,17 @@ function oval(ctx,x,y,rx,ry,color,step=3){
  ctx.fillStyle=color;
  for(let row=-ry;row<=ry;row+=step){const w=Math.round(rx*Math.sqrt(Math.max(0,1-row*row/(ry*ry)))/step)*step;ctx.fillRect(Math.round(x-w),Math.round(y+row),w*2,step);}
 }
-export function leafyTree(ctx,x,y,big=false){
+// part: 'trunk' (cached with terrain), 'crown' (sprite drawn per frame so it can sway) or 'all'.
+export function leafyTree(ctx,x,y,big=false,part='all'){
  ctx.save();ctx.translate(Math.round(x),Math.round(y));if(big)ctx.scale(2,2);
- oval(ctx,4,10,35,10,'#284d3448');
+ if(part!=='crown'){
+ oval(ctx,18,10,34,10,'#1f3a3550');
  ctx.fillStyle='#514329';ctx.fillRect(-7,-38,14,53);ctx.fillRect(-15,11,11,5);ctx.fillRect(5,10,12,5);
  ctx.fillStyle='#936237';ctx.fillRect(-4,-35,6,47);ctx.fillRect(-13,-34,10,5);ctx.fillRect(4,-41,12,5);
  ctx.fillStyle='#c38d48';ctx.fillRect(-4,-23,3,27);
+ if(big){oval(ctx,0,5,5,10,'#253a29',2);ctx.fillStyle='#75934c';ctx.fillRect(-13,10,7,3);}
+ }
+ if(part==='trunk'){ctx.restore();return;}
  const crowns=[[-22,-40,24,19],[21,-43,25,19],[-17,-61,26,24],[13,-66,26,24],[0,-79,23,17],[0,-48,34,23]];
  for(const [cx,cy,rx,ry]of crowns){oval(ctx,cx+3,cy+5,rx,ry,'#164c38');oval(ctx,cx,cy-1,rx-2,ry-3,'#28733d');}
  // Leaf clusters catch the light from the upper left, leaving dark pockets below.
@@ -21,12 +26,11 @@ export function leafyTree(ctx,x,y,big=false){
   const w=4+Math.floor(noise(i,12)*3)*2,h=3+Math.floor(noise(i,13)*2)*2;
   ctx.fillStyle=colors[i%2];ctx.fillRect(Math.round(cx/2)*2,Math.round(cy/2)*2,w,h);ctx.fillRect(Math.round(cx/2)*2-2,Math.round(cy/2)*2+2,4,h);
  }
- if(big){oval(ctx,0,5,5,10,'#253a29',2);ctx.fillStyle='#75934c';ctx.fillRect(-13,10,7,3);}
  ctx.restore();
 }
 export function meadowRock(ctx,x,y,small=false){
  ctx.save();ctx.translate(Math.round(x),Math.round(y));if(small)ctx.scale(.45,.45);
- oval(ctx,2,8,24,8,'#31593444');
+ oval(ctx,8,9,22,7,'#1f3a3550');
  const face=(color,points)=>{ctx.fillStyle=color;ctx.beginPath();points.forEach(([a,b],i)=>i?ctx.lineTo(a,b):ctx.moveTo(a,b));ctx.closePath();ctx.fill();};
  face('#575f59',[[-23,7],[-20,-8],[-9,-22],[7,-25],[20,-12],[25,9],[10,14],[-13,13]]);
  face('#9a9b7b',[[-20,-8],[-9,-22],[7,-25],[15,-13],[2,-7],[-10,-9],[-16,3]]);
@@ -37,7 +41,7 @@ export function meadowRock(ctx,x,y,small=false){
  ctx.restore();
 }
 export function meadowBush(ctx,x,y){
- oval(ctx,x,y+4,21,7,'#31593433');
+ oval(ctx,x+6,y+6,20,6,'#1f3a3550');
  for(let i=0;i<5;i++){const cx=x-15+i*7,cy=y-3-noise(i,Math.floor(x))*9;oval(ctx,cx,cy,9,8,'#327d3c',2);oval(ctx,cx-2,cy-3,6,4,'#73a83d',2);ctx.fillStyle='#b1c94e';ctx.fillRect(cx-3,cy-5,3,2);}
 }
 export function grassDetail(ctx,x,y,seed){

@@ -34,9 +34,46 @@ test('walking over connected map edges changes areas and returns without a menu'
 });
 test('scenery is deterministic and rendering keeps a bounded chunk cache',()=>{
  assert.deepEqual(sceneryAt(20,25),sceneryAt(20,25));
- const ctx=new Proxy({},{get:(o,k)=>o[k]||(()=>{}),set:(o,k,v)=>(o[k]=v,true)}),original=globalThis.document;
+ const ctx=new Proxy({createRadialGradient:()=>({addColorStop(){}})},{get:(o,k)=>o[k]||(()=>{}),set:(o,k,v)=>(o[k]=v,true)}),original=globalThis.document;
  try{globalThis.document={createElement:()=>({getContext:()=>ctx})};clearTerrainCache();const world=new World(Math.random,{adventure:true});
  for(let x=0;x<WORLD.width;x+=512)drawWilds(ctx,world,{left:x,right:x+960,top:1800,bottom:2520});
  assert.ok(cachedChunkCount()<=30);
  }finally{globalThis.document=original;clearTerrainCache();}
+});
+
+import {leafyTree} from '../src/plains-art.js';
+import {crownCacheSize} from '../src/wilds.js';
+test('tree crowns use one cached sprite per variant and leafyTree supports parts',()=>{
+ const calls=[];const ctx=new Proxy({fillRect(){calls.push(1);}},{get:(t,k)=>k in t?t[k]:()=>{},set:(t,k,v)=>{t[k]=v;return true;}});
+ leafyTree(ctx,0,0,false,'trunk');const trunk=calls.length;calls.length=0;leafyTree(ctx,0,0,false,'crown');
+ assert.ok(trunk>0&&calls.length>trunk);
+ const draws=[],c=new Proxy({drawImage(){draws.push(1);}},{get:(t,k)=>k in t?t[k]:()=>{},set:(t,k,v)=>{t[k]=v;return true;}}),original=globalThis.document;
+ try{globalThis.document={createElement:()=>({getContext:()=>c})};clearTerrainCache();const world=new World(Math.random,{adventure:true});world.areaId='windchime';
+  drawWilds(c,world,{left:0,top:300,right:1200,bottom:1500});drawWilds(c,world,{left:0,top:300,right:1200,bottom:1500});
+  assert.equal(crownCacheSize(),1);assert.ok(draws.length>20);
+ }finally{globalThis.document=original;clearTerrainCache();}
+});
+
+import {shorePoints} from '../src/wilds.js';
+test('shore points are cached per area and empty in Windchime Path',()=>{
+ const a=shorePoints('landing',1,3);assert.ok(a.foam.length>0);assert.ok(a.sparkle.length>0);assert.equal(shorePoints('landing',1,3),a);
+ assert.equal(shorePoints('windchime',1,3).foam.length,0);
+});
+
+import {labelAlpha} from '../src/wilds.js';
+test('landmark labels fade in near the player',()=>{
+ assert.equal(labelAlpha(100),1);assert.equal(labelAlpha(220),0);assert.equal(labelAlpha(500),0);assert.ok(Math.abs(labelAlpha(180)-.5)<1e-9);
+});
+
+test('labels and exit signs draw above swaying crowns',()=>{
+ const ops=[],c=new Proxy({drawImage(){ops.push('img');},fillText(){ops.push('text');},createRadialGradient:()=>({addColorStop(){}})},{get:(t,k)=>k in t?t[k]:()=>{},set:(t,k,v)=>{t[k]=v;return true;}}),original=globalThis.document;
+ try{globalThis.document={createElement:()=>({getContext:()=>c})};clearTerrainCache();const world=new World(Math.random,{adventure:true});world.areaId='windchime';Object.assign(world.player,{x:600,y:1600});
+  drawWilds(c,world,{left:100,top:1200,right:1100,bottom:1800});
+  assert.ok(ops.includes('text'));assert.ok(ops.lastIndexOf('img')<ops.indexOf('text'));
+ }finally{globalThis.document=original;clearTerrainCache();}
+});
+test('shore foam and sparkles skip the pier and boat and use the coarse grid',()=>{
+ const {foam,sparkle}=shorePoints('landing',2,3),onDock=([x,y])=>(x>=1200&&x<=1300&&y>=1725&&y<=1955)||(x>=1295&&x<=1400&&y>=1875&&y<=1915);
+ assert.ok(foam.length>0);assert.equal(foam.filter(onDock).length,0);assert.equal(sparkle.filter(onDock).length,0);
+ assert.ok(foam.every(([x,y])=>x%8===0&&y%8===0));
 });

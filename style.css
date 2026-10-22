@@ -32,3 +32,41 @@ canvas{image-rendering:pixelated}
 .atlas-card p{font:11px monospace;color:#c2cbb2;line-height:1.7;margin:12px 0 0}
 @media(max-width:800px){#open-atlas{top:80px;right:12px}#mini-atlas{width:128px;height:96px}#exploration-hud{width:195px}.exploring #reward-choice{top:220px;right:12px}.exploring .music-hud{display:none}}
 @media(max-height:600px){#exploration-hud{top:60px;padding:8px}#region-name{font-size:12px}#mini-atlas{width:120px;height:90px}.exploring .music-hud{display:none}.exploring #timed-upgrades{top:180px}}
+
+/* Exploration HUD: a quiet frame around the world. Arena mode keeps the full combat HUD. */
+#explore-hint,#music-icon,.dash-mini{display:none}
+body.exploring .health-hud,body.exploring .progression,body.exploring #alive-text,body.exploring #fire-tidal,body.exploring #fire-whirlpool,body.exploring #leave-lobby,body.exploring .controls,body.exploring #build-summary,body.exploring #buff-text,body.exploring #upgrade-stacks,body.exploring .dash-hud,body.exploring header{display:none!important}
+body.exploring #exploration-hud{left:16px;top:16px;width:220px;padding:10px 12px;background:linear-gradient(#1a2f2ccc,#132623cc);border:1px solid #c9b98a55;border-radius:6px;box-shadow:0 4px 18px #0006}
+body.exploring .exploration-kicker{font:8px monospace;letter-spacing:3px;color:#c9b98a}
+body.exploring #region-name{font:bold 17px Georgia,serif;color:#f3e6bf;margin:4px 0 2px;text-shadow:0 1px 0 #0008}
+body.exploring #discovery-count{font:10px monospace;color:#b7cdb0}
+.discovery-dots{display:flex;gap:4px;margin-top:7px}.discovery-dots i{width:8px;height:8px;border-radius:50%;background:#3c5148;border:1px solid #c9b98a66}.discovery-dots i.found{background:#e6bd65;box-shadow:0 0 6px #e6bd65}
+body.exploring #timed-upgrades{left:16px;top:128px;width:220px;padding:0;background:none;border:0;text-shadow:0 1px 2px #000}
+body.exploring #upgrade-timer{font:9px monospace;color:#e9d4aa}
+#upgrade-bar{display:none}body.exploring #upgrade-bar{display:block;height:3px;margin-top:4px;background:#0006;border-radius:2px}#upgrade-fill{display:block;height:100%;width:0;background:#e6bd65;border-radius:2px}
+body.exploring #upgrade-options{padding:10px;margin-top:8px;background:#15312ced;border:1px solid #c9b98a66;border-radius:6px}
+body.exploring #explore-hint{display:block;position:absolute;z-index:3;left:50%;bottom:96px;transform:translateX(-50%);padding:6px 12px;background:#0d1d22aa;border-radius:20px;font:10px monospace;color:#e3dcc4;letter-spacing:.5px;white-space:nowrap;pointer-events:none}
+body.exploring #explore-hint[hidden]{display:none}
+#explore-hint kbd{color:#f1e3bd;border:1px solid #c9b98a77;border-radius:3px;padding:0 4px;margin:0 2px;font:inherit}
+body.exploring #open-atlas{top:16px;right:16px;padding:6px;background:#e9d9ad;border:3px solid #6b5530;border-radius:4px;box-shadow:0 4px 14px #0007,inset 0 0 0 1px #fff6}
+body.exploring #mini-atlas{border:1px solid #6b553088;filter:sepia(.25) saturate(.9)}
+body.exploring #open-atlas span{color:#4b3b22;letter-spacing:2px}
+body.exploring #inspect-place{position:absolute;z-index:3;left:50%;bottom:132px;transform:translateX(-50%);width:auto;margin:0;padding:5px 10px;background:#f1e3bdee;color:#2b2a1e;border:2px solid #6b5530;border-radius:3px;font:11px monospace;box-shadow:2px 2px 0 #0005}
+body.exploring #music-icon{display:grid;place-items:center;position:absolute;z-index:3;right:16px;top:214px;width:30px;height:30px;padding:0;border-radius:50%;background:#1a2f2ccc;border:1px solid #c9b98a66;font-size:14px;color:#e9d9ad;pointer-events:auto}
+body.exploring .music-hud{display:none;top:252px;bottom:auto;left:auto;right:16px;border-radius:6px}
+body.exploring .music-hud.open{display:grid}
+body.exploring .hotbar{bottom:22px;gap:8px;padding:0;background:none;border:0;box-shadow:none;align-items:flex-end}
+body.exploring .slot{width:56px;height:56px;padding:0;border:2px solid #c9b98a55;border-radius:6px;background:#132623d9;box-shadow:none;overflow:visible}
+body.exploring .slot.selected{border-color:#f1e3bd;background:#132623d9;box-shadow:0 0 0 2px #00000055,0 0 12px #f1e3bd55}
+body.exploring .slot strong{position:absolute;bottom:-15px;font-size:8px;font-weight:normal;color:#d9cfae;white-space:nowrap;text-shadow:0 1px 2px #000}
+body.exploring .slot small{display:none}
+body.exploring .dash-mini{display:flex;flex-direction:column;align-items:center;gap:4px;font:8px monospace;color:#c9eddb;text-shadow:0 1px 2px #000}
+#dash-pips{display:flex;gap:3px}#dash-pips i{width:14px;height:5px;background:#9ce7de;border-radius:2px;box-shadow:0 0 6px #9ce7de88}#dash-pips i.spent{background:#2c4a47;box-shadow:none}
+body.exploring .status{top:16px;transition:opacity .8s}
+body.exploring .status.quiet{opacity:0}
+body.exploring .special-hud{display:none}
+#lobby-screen{background:radial-gradient(ellipse at 30% 20%,#2f4a3ce6,#0d1d22f2)}
+.lobby-card{border-radius:8px;border-color:#c9b98a;background:linear-gradient(#233936,#18292a);box-shadow:0 14px 60px #000a}
+.lobby-card h1{font-family:Georgia,serif;color:#f3e6bf}
+#explore-world{border-radius:4px;background:#e6c98a;box-shadow:0 3px 0 #8a6d3b}
+@media(max-width:800px){body.exploring #exploration-hud{width:190px}body.exploring #timed-upgrades{width:190px;top:122px}body.exploring #explore-hint{display:none}}
