@@ -121,3 +121,11 @@ and press **G**, or tap the mobile **Talk** button (which replaces Examine nearb
 She says **Hello!** in a speech bubble. The greeting can be repeated and fades
 after five seconds or when you walk away. She is a friendly character, separate
 from combat, fishing rewards and landmark discovery counts.
+
+## Entity sprites
+
+New entities use a shared artwork registry. Replace files in `assets/` and adjust
+`src/sprite-definitions.js` for different frames, animations or visual scale;
+behaviour, health, collision sizes and drops stay separate. Existing rabbits,
+Mara, the explorer, wildlife and projectiles are connected, with drawn fallbacks
+where no image is configured. See [the replacement guide](docs/ENTITY-SPRITES.md).

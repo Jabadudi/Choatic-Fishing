@@ -1,15 +1,7 @@
 import {walkable,waterDistance,areaFor} from './wilds.js';
 
-// Tight bounds from the supplied 220 × 444 sheet, including its final three poses.
-// All poses share a bottom-centre foot anchor instead of stretching into a grid.
-export const RABBIT_FRAMES=[
- [15,14,33,54],[70,14,33,54],[125,14,33,54],[178,17,35,51],
- [12,96,36,46],[66,108,37,37],[121,108,37,37],[176,107,37,37],
- [6,178,42,41],[61,175,46,44],[119,178,35,44],[175,179,36,42],
- [11,252,37,43],[63,260,42,35],[124,261,34,32],[179,261,34,32],
- [14,335,34,32],[70,310,33,54],[126,306,32,58],[183,303,30,61],
- [23,373,25,65],[78,373,25,65],[133,373,25,65]
-];
+import {drawEntitySprite,spriteFrame} from './sprites.js';
+export {RABBIT_FRAMES} from './sprite-definitions.js';
 const HOMES=[{x:1460,y:1540},{x:1000,y:1450},{x:1680,y:1300},{x:1070,y:850},{x:1670,y:770}];
 function random(r){let n=r.seed;n^=n<<13;n^=n>>>17;n^=n<<5;r.seed=n>>>0;return r.seed/4294967296;}
 export function rabbitGround(x,y,areaId){
@@ -58,26 +50,16 @@ export function updateRabbits(world,dt){
   else if(r.state==='graze'&&r.time>=r.wait)startHop(r,world.player);
  }
 }
-export function rabbitFrame(r){
- if(r.state==='hop')return 8+Math.min(7,Math.floor(r.time/r.hopDuration*8));
- if(r.state==='settle')return 16+Math.min(6,Math.floor(r.time/.7*7));
- if(r.state==='graze')return 4+Math.floor(r.time*5)%4;
- return [0,0,0,1,2,3,1,0][Math.floor(r.time*4)%8];
-}
-let sheet;
+export function rabbitFrame(r){return spriteFrame('rabbit',r.state,r.time,{duration:r.state==='hop'?r.hopDuration:undefined});}
 export function drawRabbits(ctx,world,view){
- if(!world.adventure||!world.rabbits?.length||typeof Image==='undefined')return;
- if(!sheet){sheet=new Image();sheet.src=new URL('../assets/bunny-sheet.png',import.meta.url).href;}
- if(!sheet.complete||!sheet.naturalWidth)return;
+ if(!world.adventure||!world.rabbits?.length)return;
  for(const r of visibleRabbits(world,view).sort((a,b)=>a.y-b.y))drawRabbit(ctx,r);
 }
 export const visibleRabbits=(world,view)=>(world.rabbits||[]).filter(r=>r.areaId===world.areaId&&(!view||(r.x>view.left-40&&r.x<view.right+40&&r.y>view.top-50&&r.y<view.bottom+40)));
 export function drawRabbit(ctx,r){
- if(typeof Image==='undefined')return;
- if(!sheet){sheet=new Image();sheet.src=new URL('../assets/bunny-sheet.png',import.meta.url).href;}
- if(!sheet.complete||!sheet.naturalWidth)return;
- const [sx,sy,sw,sh]=RABBIT_FRAMES[rabbitFrame(r)],w=sw*.5,h=sh*.5,hop=r.state==='hop'?Math.sin(Math.min(1,r.time/r.hopDuration)*Math.PI)*5:0;
- ctx.save();ctx.imageSmoothingEnabled=false;ctx.fillStyle='#263d3438';ctx.beginPath();ctx.ellipse(r.x,r.y+1,8-hop*.3,3,0,0,Math.PI*2);ctx.fill();
- ctx.translate(Math.round(r.x),Math.round(r.y-hop));if(r.direction.x>0)ctx.scale(-1,1);
- ctx.drawImage(sheet,sx,sy,sw,sh,-w/2,-h,w,h);ctx.restore();
+ const hop=r.state==='hop'?Math.sin(Math.min(1,r.time/r.hopDuration)*Math.PI)*5:0;
+ ctx.save();ctx.fillStyle='#263d3438';ctx.beginPath();ctx.ellipse(r.x,r.y+1,8-hop*.3,3,0,0,Math.PI*2);ctx.fill();ctx.restore();
+ if(drawEntitySprite(ctx,r.spriteId||'rabbit',{x:r.x,y:r.y-hop,state:r.state,time:r.time,duration:r.state==='hop'?r.hopDuration:undefined,facingX:r.direction.x}))return;
+ // Visible fallback while a replacement is loading or has incompatible crops.
+ ctx.fillStyle='#d2cfdf';ctx.fillRect(r.x-7,r.y-hop-12,14,12);ctx.fillRect(r.x-5,r.y-hop-23,3,13);ctx.fillRect(r.x+1,r.y-hop-22,3,12);
 }

@@ -1,5 +1,6 @@
+import {drawEntitySprite} from './sprites.js';
 // Friendly world characters are separate from combat actors and landmark discoveries.
-export const createNpcs=()=>[{id:'mara',name:'Mara',areaId:'landing',x:1380,y:1810,npc:true,greeting:'Hello!'}];
+export const createNpcs=()=>[{id:'mara',name:'Mara',areaId:'landing',x:1380,y:1810,npc:true,spriteId:'mara',greeting:'Hello!'}];
 export const nearbyNpc=world=>world.adventure?(world.npcs||[]).find(n=>n.areaId===world.areaId&&Math.hypot(n.x-world.player.x,n.y-world.player.y)<=95)||null:null;
 export const visibleNpcs=(world,view)=>(world.npcs||[]).filter(n=>n.areaId===world.areaId&&(!view||(n.x>view.left-60&&n.x<view.right+60&&n.y>view.top-40&&n.y<view.bottom+100)));
 export function updateDialogue(world,dt){
@@ -10,6 +11,7 @@ export function updateDialogue(world,dt){
 }
 export function drawNpc(c,n,t=0){
  const x=Math.round(n.x),y=Math.round(n.y),bob=Math.sin(t*1.8)*.6;
+ if(!drawEntitySprite(c,n.spriteId||'mara',{x:n.x,y:n.y,state:n.animationState||'idle',time:t})){
  c.fillStyle='#20352c55';c.beginPath();c.ellipse(x+2,y+14,15,5,0,0,Math.PI*2);c.fill();
  const r=(color,dx,dy,w,h)=>{c.fillStyle=color;c.fillRect(x+dx,Math.round(y+dy+bob),w,h);};
  r('#443f38',-8,8,6,8);r('#443f38',3,8,6,8);
@@ -21,6 +23,7 @@ export function drawNpc(c,n,t=0){
  r('#dbbb95',-14,-3,4,11);r('#dbbb95',11,-2,4,10);
  // A little fishing basket beside the coat.
  r('#765338',13,2,13,12);r('#b88e57',13,2,13,3);r('#d1ae75',16,6,2,6);
+ }
  c.textAlign='center';c.font='bold 10px monospace';c.fillStyle='#183c35';c.fillRect(x-23,y+21,46,15);c.fillStyle='#f2e4bf';c.fillText(n.name,x,y+32);
 }
 export function drawDialogue(c,world){
