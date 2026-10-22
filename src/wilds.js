@@ -163,7 +163,7 @@ function drawWater(ctx,world,view,id){
   ctx.fillStyle='#fffff5';
   for(const [x,y,d]of foam){if(d< -1-3.5*(1+Math.sin(t*1.6+x*.03)))continue;ctx.globalAlpha=.55+.3*Math.sin(t*2+x*.1);ctx.fillRect(x,y,8,2);}
   ctx.globalAlpha=.9;ctx.fillStyle='#fffadc';
-  for(const [x,y,phase]of sparkle){const k=(phase+t*.25)%1;if(k<.06){const big=k<.03;ctx.fillRect(x,y,big?4:2,2);ctx.fillRect(x+1,y-1,1,big?4:2);}}
+  for(const [x,y,phase]of sparkle){const k=(phase+t*.25)%1;if(k<.02){const big=k<.01;ctx.fillRect(x,y,big?4:2,2);ctx.fillRect(x+1,y-1,1,big?4:2);}}
  }
  ctx.restore();
 }
