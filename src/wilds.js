@@ -10,7 +10,7 @@ export const WORLD=AREAS.landing;
 export const SPAWN=WORLD.spawn;
 export const LAND={left:0,right:WORLD.width,top:0,bottom:WORLD.height};
 const LANDING_PLACES=[
- {id:'landing',name:'Reedwater Landing',x:1250,y:1650,kind:'landing',text:'Your boat rests beside the sand. Above the tideline, a trail leads north toward three wooden chimes.'},
+ {id:'landing',name:'Reedwater Landing',x:1250,y:1650,kind:'landing',text:'Your boat lies wrecked on the sand, its hull stove in. Above the tideline, a trail leads north toward three wooden chimes.'},
  {id:'drowned',name:'The Drowned Road',x:620,y:1640,kind:'drowned',text:'Through the shallows, squared stones lead to a doorway below the water. This shore was once a street.'},
  {id:'chimes',name:'The Three Chimes',x:1380,y:1180,kind:'chimes',text:'Three hollow wooden notes drift inland. Follow the worn trail north to enter Windchime Path.'},
  {id:'spring',name:'Reedwater Spring',x:1820,y:980,kind:'spring',text:'Warm water bubbles beneath the reeds. Tiny silver fish gather at the edge of the spring.'},
@@ -79,6 +79,28 @@ const tree=leafyTree,rock=meadowRock;
 const WATER_RAMP=['#7cc8bd','#3ea6b0','#2a86a3','#1f6690','#1a5578'];
 function waterColor(wet,sea){const i=wet> -14?0:wet> -40?1:wet> -110?2:3;return WATER_RAMP[sea?Math.min(4,i+1):i];}
 function lilyPad(ctx,x,y,flower){ctx.fillStyle='#2f7a45';ctx.beginPath();ctx.ellipse(x,y,8,5,0,.5,6);ctx.lineTo(x,y);ctx.fill();ctx.fillStyle='#5aa552';ctx.fillRect(x-5,y-3,6,2);if(flower){ctx.fillStyle='#f6c6d6';ctx.fillRect(x-2,y-3,5,4);ctx.fillStyle='#ffeaa8';ctx.fillRect(x,y-2,1,2);}}
+// The arrival dinghy, run aground at an angle with its hull stove in. Local coords: bow toward +x, flat transom at -x.
+const HULL=[[-32,-12],[8,-14],[28,-9],[40,0],[28,9],[8,14],[-32,12]];
+function hullShape(ctx,pts,color,k=1){ctx.fillStyle=color;ctx.beginPath();pts.forEach(([x,y],i)=>i?ctx.lineTo(x*k,y*k):ctx.moveTo(x*k,y*k));ctx.closePath();ctx.fill();}
+function beachedDinghy(ctx,x,y){
+ const a=-.32,R=(c,px,py,w,h)=>{ctx.fillStyle=c;ctx.fillRect(Math.round(px),Math.round(py),w,h);};
+ // wet sand, the drag furrow from the waterline, and footprints leading up toward the dock
+ ctx.fillStyle='rgba(120,100,60,.28)';ctx.beginPath();ctx.ellipse(x-4,y+4,52,20,a,0,Math.PI*2);ctx.fill();
+ ctx.save();ctx.translate(x,y);ctx.rotate(a);R('rgba(110,90,55,.35)',-90,-5,58,3);R('rgba(110,90,55,.35)',-90,4,58,3);ctx.restore();
+ for(let i=0;i<7;i++){const fx=x-48-i*13,fy=y-22-i*10+(i%2?4:-4);R('rgba(95,78,48,.55)',fx,fy,4,3);R('rgba(95,78,48,.55)',fx+1,fy-3,2,2);}
+ ctx.save();ctx.translate(x,y);ctx.rotate(a);
+ ctx.fillStyle='rgba(20,30,30,.35)';ctx.beginPath();ctx.ellipse(4,6,40,13,0,0,Math.PI*2);ctx.fill();
+ hullShape(ctx,HULL,'#4a3320');hullShape(ctx,HULL,'#7a5434',.92);hullShape(ctx,HULL,'#a77b4c',.78);
+ for(let i=-26;i<=26;i+=6)R('#93693f',i,-9,1,18);
+ R('#5e4026',-14,-11,5,22);R('#5e4026',10,-10,5,20);R('#c49a62',-14,-11,5,2);R('#c49a62',10,-10,5,2);R('#c9a36c',-33,-12,2,24);
+ hullShape(ctx,[[2,9],[8,6],[13,10],[10,14],[4,14]],'#2a1c10');R('#c49a62',6,6,2,2);R('#c49a62',12,9,2,2);
+ R('#e8dcc0',-30,-6,8,3);ctx.restore();
+ // snapped oar up the beach, its loose end at the waterline, a rope trailing into the water and a small crate
+ ctx.save();ctx.translate(x+34,y-30);ctx.rotate(.5);R('#8a6239',-20,-1,24,3);R('#a77b4c',4,-3,9,7);ctx.restore();
+ ctx.save();ctx.translate(x-40,y+20);ctx.rotate(-.2);R('#8a6239',-6,-1,16,3);ctx.restore();
+ ctx.strokeStyle='#d8c08a';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x-30,y+6);ctx.quadraticCurveTo(x-48,y+24,x-34,y+34);ctx.stroke();
+ R('#6b4a2a',x+20,y+12,12,10);R('#8a6239',x+20,y+12,12,3);R('#4a3420',x+25,y+12,2,10);
+}
 function reeds(ctx,x,y,seed){for(let i=0;i<4;i++){const h=12+Math.floor(hash(seed,i,8)*10);ctx.fillStyle=i%2?'#6d9a3a':'#8bb04a';ctx.fillRect(x+i*3-4,y-h,2,h);if(i===1){ctx.fillStyle='#6b4a2a';ctx.fillRect(x+i*3-5,y-h-5,4,7);}}}
 function staticArea(ctx,left,top,width,height,id){
  const texturedGrass=drawGrassBase(ctx,left,top,width,height,clearTerrainCache);
@@ -113,10 +135,10 @@ function staticArea(ctx,left,top,width,height,id){
    ctx.fillStyle='#5f8a4a';ctx.fillRect(x-3,y-33,7,3);ctx.fillRect(x+9,y-33,6,2);ctx.fillRect(x,y-12,4,6);ctx.fillStyle='#86b05a';ctx.fillRect(x-1,y-34,4,2);
    ctx.fillStyle='rgba(20,60,70,.45)';ctx.fillRect(x,y,12,6);ctx.fillStyle='rgba(255,255,245,.6)';ctx.fillRect(x-3,y-1,18,2);
   }
-  // Wooden pier and the arrival boat on the southern shore.
+  // Wooden pier, and the dinghy you arrived in, wrecked on the shore beside it.
   ctx.fillStyle='#604b38';ctx.fillRect(1210,1730,80,220);
   for(let y=1735,i=0;y<1950;y+=12,i++){ctx.fillStyle=i%2?'#9a8058':'#a58b62';ctx.fillRect(1213,y,74,7);ctx.fillStyle='#c2a678';ctx.fillRect(1213,y,74,1);if(i%3===0){ctx.fillStyle='#4a3a28';ctx.fillRect(1206,y-2,7,12);ctx.fillRect(1287,y-2,7,12);}}
-  ctx.fillStyle='#77563d';ctx.fillRect(1300,1880,95,31);ctx.fillStyle='#b99b6c';ctx.fillRect(1310,1885,75,5);ctx.fillRect(1310,1901,75,5);
+  beachedDinghy(ctx,1400,1884);
  }
 }
 const chunks=new Map(),CHUNK=512,MAX_CHUNKS=30;
@@ -180,7 +202,9 @@ export function drawDepthSorted(ctx,world,view,actors,drawActor){
 }
 // Shore foam and sparkle positions are found once per chunk on a coarse grid, so the live water layer never samples distance per frame.
 const shores=new Map(),MAX_SHORES=60;
-const onDock=(x,y,id)=>id==='landing'&&((x>=1200&&x<=1300&&y>=1725&&y<=1955)||(x>=1295&&x<=1400&&y>=1875&&y<=1915));
+// The pier, and the beached dinghy's hull (tested in its own rotated frame), stay free of foam and sparkles.
+const onDinghy=(x,y)=>{const dx=x-1400,dy=y-1884,lx=dx*Math.cos(.32)-dy*Math.sin(.32),ly=dx*Math.sin(.32)+dy*Math.cos(.32);return lx>-36&&lx<44&&Math.abs(ly)<17;};
+const onDock=(x,y,id)=>id==='landing'&&((x>=1200&&x<=1300&&y>=1725&&y<=1955)||onDinghy(x,y));
 export function shorePoints(id,cx,cy){
  const key=`${id}:${cx},${cy}`;let points=shores.get(key);if(points)return points;
  points={foam:[],sparkle:[]};
