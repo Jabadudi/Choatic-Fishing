@@ -8,6 +8,11 @@ connecting path are implemented so far; the rest of the regional atlas is future
 - **Reedwater Landing** (2,800 × 2,200 world units): southern beach, wooden dock and
   boat, submerged road and pillars, three wind chimes, spring, hollow tree, and
   ambient deer, turtle and eel sprites.
+  Five rabbits use the supplied `assets/bunny-sheet.png`: they rest, graze, hop,
+  and flee when approached. Their movement respects water, trees, rocks and area
+  boundaries. Rabbit state persists when leaving and returning to the landing.
+  All 23 sheet poses are mapped using their visible bounds and a shared foot
+  anchor; rabbits are ambient wildlife, separate from combat actors and fishing.
 - **Windchime Path** (1,200 × 1,800): a short forest trail demonstrating area travel.
   Its north end is closed until the next area is built.
 
@@ -21,7 +26,8 @@ WASD moves, mouse aims, E casts or abandons fishing, Space reels, Left Shift das
 G examines landmarks, and M opens/closes the area map. Fishing, inventory,
 regeneration and timed upgrades remain available. The dock can be walked on.
 
-All pixel artwork is original. Nearby terrain is cached in 512-unit sections,
+Scenery and explorer artwork are original; rabbits use the user-supplied sprite
+sheet. Nearby terrain is cached in 512-unit sections,
 capped at 30 sections, with separate keys per area. Full-region maps are never
 allocated as large images.
 

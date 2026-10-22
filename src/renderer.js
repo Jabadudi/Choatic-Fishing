@@ -1,8 +1,10 @@
 import {drawTerrain} from './terrain.js';
 import {drawWilds,drawExplorer} from './wilds.js';
+import {drawRabbits} from './rabbits.js';
 export function render(ctx,world,view){
  const {elapsed:t,player:p,bobber}=world;
  if(world.adventure)drawWilds(ctx,world,view);else drawTerrain(ctx,world);
+ drawRabbits(ctx,world,view);
   for(const bot of world.actors.filter(actor=>actor!==world.player)){
     if(bot.health<=0)continue;
     if(bot.bobber){ctx.strokeStyle='#eee3bf99';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(bot.x,bot.y);ctx.lineTo(bot.bobber.x,bot.bobber.y);ctx.stroke();ctx.fillStyle=bot.color;ctx.beginPath();ctx.arc(bot.bobber.x,bot.bobber.y,4,0,Math.PI*2);ctx.fill();}
