@@ -135,28 +135,36 @@ export const crownCacheSize=()=>crowns.size;
 export function crownSprite(big=false){
  if(typeof document==='undefined')return null;
  let sprite=crowns.get(big);
- if(!sprite){sprite=document.createElement('canvas');sprite.width=96;sprite.height=112;leafyTree(sprite.getContext('2d'),48,100,big,'crown');crowns.set(big,sprite);}
+ if(!sprite){const k=big?2:1;sprite=document.createElement('canvas');sprite.width=96*k;sprite.height=112*k;leafyTree(sprite.getContext('2d'),48*k,100*k,big,'crown');crowns.set(big,sprite);}
  return sprite;
 }
 // Depth: scenery and characters are drawn in order of where they touch the ground, so whatever stands lower on screen is in front.
 // Static scenery stays in the chunk cache; only canopies (always) and trunks, rocks and bushes near a character are redrawn here.
 const fades=new Map(),slots=[],order=[];let fadeTime=0;
 export const canopyAlpha=(gx,gy)=>fades.get(`${gx},${gy}`)??1;
-const slot=i=>slots[i]??=({y:0,kind:'',x:0,oy:0,gx:0,gy:0,near:false,ref:null});
+export const landmarkCanopyAlpha=id=>fades.get(`landmark:${id}`)??1;
+const slot=i=>slots[i]??=({y:0,kind:'',x:0,oy:0,key:'',sway:0,big:false,near:false,ref:null});
 const nearActor=(x,y,actors)=>actors.some(a=>Math.abs(a.ref.x-x)<70&&a.ref.y>y-130&&a.ref.y<y+40);
+// A canopy that stands in front of the player and overlaps them eases to 30% so they stay visible.
+function fadeCanopy(key,x,y,big,p,step){
+ const k=big?2:1,target=y>p.y+12&&Math.abs(p.x-x)<48*k+8&&p.y>y-100*k-15?.3:1,cur=fades.get(key)??1,next=cur+(target-cur)*step;
+ if(next>.999)fades.delete(key);else fades.set(key,next);
+}
+function pushTree(it,x,y,key,sway,big,near){it.kind='tree';it.x=x;it.oy=y;it.y=y;it.key=key;it.sway=sway;it.big=big;it.near=near;}
 export function drawDepthSorted(ctx,world,view,actors,drawActor){
- const id=world.areaId||'landing',p=world.player,sprite=crownSprite(),t=world.elapsed||0,step=Math.min(1,Math.max(0,t-fadeTime)*8);fadeTime=t;
+ const id=world.areaId||'landing',p=world.player,sprite=crownSprite(),bigSprite=crownSprite(true),t=world.elapsed||0,step=Math.min(1,Math.max(0,t-fadeTime)*8);fadeTime=t;
  let n=0;
  for(const a of actors){const it=slot(n++);it.kind='actor';it.y=a.y;it.ref=a.ref;}
  for(let gy=Math.floor(view.top/72)-1;gy<=Math.ceil((view.bottom+100)/72);gy++)for(let gx=Math.floor(view.left/72)-1;gx<=Math.ceil(view.right/72)+1;gx++){
   const o=sceneryAt(gx,gy,id);if(!o)continue;
   const near=nearActor(o.x,o.y,actors);if(o.kind!=='tree'&&!near)continue;if(o.kind==='tree'&&!near&&!sprite)continue;
-  const it=slot(n++);it.kind=o.kind;it.x=o.x;it.oy=o.y;it.gx=gx;it.gy=gy;it.near=near;it.y=o.y+(o.kind==='rock'?8:o.kind==='bush'?4:0);
-  if(o.kind==='tree'&&sprite){
-   // A canopy that hides the player eases to 30% so they stay visible.
-   const key=`${gx},${gy}`,target=o.y>p.y+12&&Math.abs(p.x-o.x)<56&&p.y>o.y-115?.3:1,cur=fades.get(key)??1,next=cur+(target-cur)*step;
-   if(next>.999)fades.delete(key);else fades.set(key,next);
-  }
+  const it=slot(n++);
+  if(o.kind==='tree'){const key=`${gx},${gy}`;pushTree(it,o.x,o.y,key,hash(gx,gy,21)*6,false,near);if(sprite)fadeCanopy(key,o.x,o.y,false,p,step);}
+  else{it.kind=o.kind;it.x=o.x;it.oy=o.y;it.y=o.y+(o.kind==='rock'?8:4);}
+ }
+ // Landmark trees (the Hollow Tree) sort the same way; their trunk base stays in the landmark layer.
+ if(bigSprite)for(const place of placesFor(id))if(place.kind==='tree'&&place.x>view.left-120&&place.x<view.right+120&&place.y>view.top-40&&place.y<view.bottom+240){
+  const key=`landmark:${place.id}`;pushTree(slot(n++),place.x,place.y,key,hash(place.x,place.y,21)*6,true,nearActor(place.x,place.y,actors));fadeCanopy(key,place.x,place.y,true,p,step);
  }
  order.length=0;for(let i=0;i<n;i++)order.push(slots[i]);order.sort((a,b)=>a.y-b.y);
  for(const it of order){
@@ -164,8 +172,9 @@ export function drawDepthSorted(ctx,world,view,actors,drawActor){
   else if(it.kind==='rock')meadowRock(ctx,it.x,it.oy,false,false);
   else if(it.kind==='bush')meadowBush(ctx,it.x,it.oy,false);
   else{
-   if(it.near)leafyTree(ctx,it.x,it.oy,false,'stem');
-   if(sprite){const sway=Math.round(Math.sin(t*1.2+hash(it.gx,it.gy,21)*6)*1.5);ctx.globalAlpha=canopyAlpha(it.gx,it.gy);ctx.drawImage(sprite,Math.round(it.x)-48+sway,Math.round(it.oy)-100);ctx.globalAlpha=1;}
+   const crown=it.big?bigSprite:sprite,k=it.big?2:1;
+   if(it.near)leafyTree(ctx,it.x,it.oy,it.big,'stem');
+   if(crown){const sway=Math.round(Math.sin(t*1.2+it.sway)*1.5);ctx.globalAlpha=fades.get(it.key)??1;ctx.drawImage(crown,Math.round(it.x)-48*k+sway,Math.round(it.oy)-100*k);ctx.globalAlpha=1;}
   }
  }
 }
@@ -204,7 +213,7 @@ function parchmentTag(ctx,x,y,text,alpha){
 }
 function drawLandmark(ctx,p,t=0){
  const {x,y,kind}=p;
- if(kind==='tree')tree(ctx,x,y,true);
+ if(kind==='tree')tree(ctx,x,y,true,crownSprite(true)?'trunk':'all');
  else if(kind==='landing'||kind==='chimes')chimes(ctx,x,y,t);
  else if(kind==='sign'){ctx.fillStyle='#7d6244';ctx.fillRect(x-4,y-10,8,33);ctx.fillStyle='#c2a878';ctx.fillRect(x-40,y-23,80,23);}
  else if(kind==='spring'){

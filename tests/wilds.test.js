@@ -51,7 +51,7 @@ test('tree crowns use one cached sprite per variant and leafyTree supports parts
  const draws=[],c=new Proxy({drawImage(){draws.push(1);},createLinearGradient:()=>({addColorStop(){}}),createRadialGradient:()=>({addColorStop(){}})},{get:(t,k)=>k in t?t[k]:()=>{},set:(t,k,v)=>{t[k]=v;return true;}}),original=globalThis.document;
  try{globalThis.document={createElement:()=>({getContext:()=>c})};clearTerrainCache();const world=new World(Math.random,{adventure:true});world.areaId='windchime';
   world.rabbits=[];render(c,world,{left:0,top:300,right:1200,bottom:1500});render(c,world,{left:0,top:300,right:1200,bottom:1500});
-  assert.equal(crownCacheSize(),1);assert.ok(draws.length>20);
+  assert.equal(crownCacheSize(),2);assert.ok(draws.length>20);
  }finally{globalThis.document=original;clearTerrainCache();}
 });
 

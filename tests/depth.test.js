@@ -54,3 +54,19 @@ test('the canopy eases to 30% while the player is behind it and back when they l
   assert.ok(canopyAlpha(tree.gx,tree.gy)>.98,'restores when the player leaves');
  });
 });
+
+import {LANDMARKS,landmarkCanopyAlpha} from '../src/wilds.js';
+test('the Hollow Tree joins the depth sort and fades its big canopy over a player behind it',()=>{
+ const tree=LANDMARKS.find(p=>p.kind==='tree'),bigCrown=ops=>ops.findIndex(op=>op[0]==='drawImage'&&op.length===4&&Math.abs(op[2]-(tree.x-96))<=2&&op[3]===tree.y-200);
+ for(const [dy,front] of [[-70,true],[25,false]]){
+  const ctx=recorder(),w=scene({x:tree.x+50,y:tree.y+dy});
+  withDocument(ctx,()=>{
+   render(ctx,w,viewAt(w.player));
+   const player=explorerAt(ctx.ops,w.player),crown=bigCrown(ctx.ops);
+   assert.ok(player>=0&&crown>=0,'both drawn');
+   assert.equal(crown>player,front,front?'canopy over player':'player over canopy');
+   for(let i=0;i<120;i++){w.elapsed+=1/60;render(ctx,w,viewAt(w.player));}
+   assert.ok(Math.abs(landmarkCanopyAlpha(tree.id)-(front?.3:1))<.02,front?'fades to 30%':'stays solid');
+  });
+ }
+});
