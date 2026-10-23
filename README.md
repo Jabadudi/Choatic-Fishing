@@ -143,3 +143,7 @@ Equip a weapon caught while fishing, aim at an animal, and click or use the mobi
 ## Mara's first quest
 
 Talk to Mara by the broken boat to accept **Mara's supper**: catch and bring her one Sardine. Talk again with a Sardine anywhere in your backpack to hand over exactly one and earn **15 XP**, in addition to the normal fishing catch XP. The objective beneath the upgrade timer shows whether you have a Sardine ready. Eating it removes readiness. Mara thanks you on later visits and never repeats the reward. Quest progress persists across area travel within a journey; starting a new journey or reloading resets it, like inventory and hunting progress.
+
+## Backpack
+
+The backpack icon above the hotbar (or **B**) opens the categorized inventory. Filter by Consumables, Weapons, Armor, Quest items, Trophies, or Upgrade materials; All items shows everything. Select an item to equip its hotbar slot. Escape, Close, or tapping outside dismisses the panel. Exploration pauses while it is open. Storage retains the existing six slots, and quest delivery reads the same inventory. New items can declare a category using the IDs in `src/inventory.js`.

@@ -1,3 +1,4 @@
+import {mountBackpack} from './backpack.js';
 import {TouchInput,mountMobileControls,gameScale} from './mobile.js';
 import {nearbyNpc} from './npcs.js';
 import {World} from './world.js';
@@ -9,6 +10,7 @@ import {explorationHud} from './hud.js';
 let world=new World(Math.random,{botCount:0});
 const canvas=document.querySelector('#arena'),ctx=canvas.getContext('2d',{alpha:false});
 const touchState=new TouchInput(),touchMedia=matchMedia('(any-pointer: coarse), (max-width: 700px)');
+let backpackUI=null;
 let touchMode=touchMedia.matches,touchUI=null;document.body.classList.toggle('touch-mode',touchMode);
 // Keep the explorer readable on a narrow portrait viewport.
 let view={scale:1,x:0,y:0,width:960,height:720,dpr:1};
@@ -23,9 +25,11 @@ new ResizeObserver(resize).observe(canvas);resize();
 const elements=new Map();
 const $=id=>{if(!elements.has(id))elements.set(id,document.getElementById(id));return elements.get(id);};const keys=new Set();let mouseHeld=false,spaceHeld=false,aim={x:480,y:0};
 const currentInput=()=>{camera();if(touchMode&&touchState.enabled){pointer=null;aim=touchState.aim(world.player);}const stick=touchMode&&touchState.movePointer!==null;return ({left:keys.has('KeyA')||(stick&&touchState.x<-.1),right:keys.has('KeyD')||(stick&&touchState.x>.1),up:keys.has('KeyW')||(stick&&touchState.y<-.1),down:keys.has('KeyS')||(stick&&touchState.y>.1),...(stick?{moveX:touchState.x,moveY:touchState.y}:{}),aim,held:mouseHeld||spaceHeld||touchState.held});};
-const act=action=>lobby.action(action,currentInput());
+const act=action=>{if(!backpackUI?.open)lobby.action(action,currentInput());};
 const equip=slot=>act(`slot-${slot}`);
 addEventListener('keydown',e=>{
+  if(backpackUI?.open){if(e.code==='KeyB'&&!e.repeat){e.preventDefault();backpackUI.toggle();}return;}
+  if(e.code==='KeyB'&&lobby.world?.adventure&&!e.repeat){e.preventDefault();backpackUI.toggle();return;}
   if(e.code==='KeyM'&&lobby.world?.adventure&&!e.repeat){e.preventDefault();toggleAtlas();return;}
   if(atlasOpen){if(e.code==='Escape'){e.preventDefault();toggleAtlas(false);}return;}
   if(e.target.closest('.music-hud, #lobby-screen')||!lobby.world)return;
@@ -62,7 +66,7 @@ $('choose-whirlpool').onclick=()=>chooseReward('whirlpool');$('choose-special').
 $('fire-tidal').onclick=()=>act('tidal');$('fire-whirlpool').onclick=()=>act('whirlpool');
 $('restart').onclick=restart;
 for(const kind of ['hermes','dash','health'])$('upgrade-'+kind).onclick=()=>{act('upgrade-'+kind);canvas.focus();};
-function restart(){release();lobby.rematch();progressionKey='';canvas.focus();}
+function restart(){backpackUI?.close();release();lobby.rematch();progressionKey='';canvas.focus();}
 function chooseReward(reward){act('choose-'+reward);}
 let progressionKey='';
 function updateProgression(){
@@ -77,6 +81,7 @@ function updateProgression(){
 const ICONS={'Reed Spear':'♆','Crab Maul':'⚒','Shell Sling':'◌','Treasure Key':'⚿','Frying Pan':'◉','Swordfish':'⚔','Harpoon Gun':'➶','Anchor':'⚓','Pufferfish Bomb':'✹','Grappling Squid':'↗','Sardine':'♢','Old Boot':'♟'};
 let lastAtlasDraw=0;
 function updateUI(){
+ backpackUI?.update(!!lobby.world?.adventure&&!atlasOpen&&world.player.health>0);
  $('close-atlas').textContent=touchMode?'Close':'Close · M / Esc';
  $('cancel').textContent=touchMode?'Abandon':'Abandon · E / Esc';
  touchUI?.update(world,!touchMode||!lobby.world||atlasOpen||world.player.health<=0);
@@ -149,10 +154,12 @@ function drawMap(target){
  for(const p of placesFor(area.id))if(world.discovered.has(p.id)){c.fillStyle='#e8be65';c.fillRect(p.x*sx-3,p.y*sy-3,6,6);}
  c.fillStyle='#fff4c1';c.strokeStyle='#20383d';c.lineWidth=2;c.beginPath();c.arc(world.player.x*sx,world.player.y*sy,4,0,Math.PI*2);c.fill();c.stroke();
 }
-function toggleAtlas(open=!atlasOpen){atlasOpen=open;release();if(open&&touchUI)touchUI.update(world,true);$('world-atlas').hidden=!open;if(open)drawMap($('atlas-canvas'));else canvas.focus();}
+function toggleAtlas(open=!atlasOpen){if(open)backpackUI?.close();atlasOpen=open;release();if(open&&touchUI)touchUI.update(world,true);$('world-atlas').hidden=!open;if(open)drawMap($('atlas-canvas'));else canvas.focus();}
 $('open-atlas').onclick=()=>toggleAtlas(true);$('close-atlas').onclick=()=>toggleAtlas(false);$('inspect-place').onclick=()=>{world.inspect();canvas.focus();};
 const lobby=new Lobby(updateLobby);
+backpackUI=mountBackpack({getWorld:()=>world,icons:ICONS,onOpen:()=>{toggleAtlas(false);release();},onClose:()=>{release();canvas.focus();},onEquip:slot=>lobby.action(`slot-${slot}`,currentInput())});
 function updateLobby(){
+ backpackUI?.close();
  document.body.classList.toggle('exploring',!!lobby.world?.adventure);
  $('exploration-hud').hidden=!lobby.world?.adventure;$('open-atlas').hidden=!lobby.world?.adventure;
  if(!lobby.world)toggleAtlas(false);
@@ -180,7 +187,7 @@ $('copy-invite').onclick=async()=>{const url=new URL(location.href);url.search='
 const invitation=new URL(location.href).searchParams.get('room');if(invitation)$('join-code').value=invitation;
 updateLobby();
 let accumulator=0,last=performance.now(),lastUI=0,lastRender=0;
-function frame(now){accumulator+=Math.min((now-last)/1000,.1);last=now;while(accumulator>=1/120){lobby.tick(1/120,currentInput());accumulator-=1/120;}
+function frame(now){accumulator+=Math.min((now-last)/1000,.1);last=now;while(accumulator>=1/120){if(!backpackUI?.open)lobby.tick(1/120,currentInput());accumulator-=1/120;}
  if(lobby.world)world=lobby.world;
  if(now-lastRender<1000/60){requestAnimationFrame(frame);return;}lastRender=now-((now-lastRender)%(1000/60));
  const display=lobby.presentation();camera(display?.player||world.player);const dpr=view.dpr;

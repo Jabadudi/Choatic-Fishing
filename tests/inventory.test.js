@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Inventory} from '../src/inventory.js';
+import {Inventory,ITEM_CATEGORIES,itemCategory,backpackItems} from '../src/inventory.js';
 import {Fishing,ITEMS} from '../src/fishing.js';
 import {updateProjectiles} from '../src/combat.js';
 import {applyAction,snapshot,fromSnapshot} from '../src/protocol.js';
@@ -62,3 +62,21 @@ test('remote slot selection and snapshot hydration preserve all six items',()=>{
  assert.equal(copy.inventory.item.uses,4);assert.equal(w.inventory.item.uses,5);
 });
 
+
+test('backpack filters classify every existing catch and preserve actual hotbar slots',()=>{
+ const bag=new Inventory();for(const name of ['Sardine','Reed Spear','Treasure Key','Old Boot','Pufferfish Bomb','Grappling Squid'])bag.receive({name});
+ const before=JSON.stringify(bag);
+ assert.deepEqual(ITEM_CATEGORIES.map(c=>c.label),['Consumables','Weapons','Armor','Quest items','Trophies','Upgrade materials']);
+ assert.deepEqual(backpackItems(bag,'consumables').map(e=>e.slot),[2,7]);
+ assert.deepEqual(backpackItems(bag,'weapons').map(e=>e.slot),[3,6]);
+ assert.deepEqual(backpackItems(bag,'quest-items').map(e=>e.slot),[4]);
+ assert.deepEqual(backpackItems(bag,'trophies').map(e=>e.slot),[5]);
+ assert.deepEqual(backpackItems(bag,'armor'),[]);assert.deepEqual(backpackItems(bag,'upgrade-materials'),[]);
+ assert.equal(backpackItems(bag).length,6);assert.equal(JSON.stringify(bag),before);
+ bag.equip(backpackItems(bag,'weapons')[0].slot);assert.equal(bag.item.name,'Reed Spear');bag.use();assert.equal(bag.item.uses,4);
+ for(const item of ITEMS)assert.ok(ITEM_CATEGORIES.some(c=>c.id===itemCategory(item)));
+});
+test('explicit categories support future armor and materials without relying on their names',()=>{
+ const bag=new Inventory();bag.receive({name:'Reed Vest',category:'armor'});bag.receive({name:'Copper',category:'upgrade-materials'});
+ assert.equal(backpackItems(bag,'armor')[0].item.name,'Reed Vest');assert.equal(backpackItems(bag,'upgrade-materials')[0].item.name,'Copper');
+});
