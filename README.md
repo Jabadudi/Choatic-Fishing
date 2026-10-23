@@ -2,8 +2,8 @@
 
 The first playable area is Reedwater Landing: explore its beach, dock, drowned
 road, spring and forest approach. Walk north into Windchime Path, then continue north to Willowbank Crossroads.
-The fork leads west into Willowback Village and east to the marsh boardwalk
-and a fishable pool. The marsh beyond the eastern rope remains a future area. Walk south to return through Windchime Path to Reedwater Landing.
+The fork leads west into Willowback Village and east through a boardwalk into
+Shellback Marsh. Explore its islands, lookout, sunken ruins and fishing landings. Walk south to return through Windchime Path to Reedwater Landing.
 Press **M** for the current area map and **G** to examine a nearby landmark.
 See [WORLD.md](WORLD.md) for the world layout, controls, art approach and current limits.
 The earlier PvP lobby is no longer part of the player flow. The notes below describe
@@ -164,3 +164,9 @@ Exploration saves locally in IndexedDB (`the-wilds-progress`, independent of dep
 ## Willowback Village
 
 From the crossroads, follow the western village road and walk through the map edge. The east edge of Willowback Village returns to the crossroads. Explore the Willow Commons, Willow Hearth inn exterior, kitchen gardens, netmaker yard, gate and docks. Buildings block movement and draw in ground order with the player. The jetty can be walked and fished from, and the area map shows village buildings and six landmarks. Interiors, shop trading and additional village quests are future additions. Existing saves remain compatible; village location, discoveries and dropped items use the same save format.
+
+## Shellback Marsh
+
+Take the eastern boardwalk at Willowbank Crossroads to enter Shellback Marsh, a 2,100 × 2,400 wetland area. Six connected hummocks are linked by timber walkways with six examinable landmarks: the Reed Threshold, Shellback Glade, Reedwatch Lookout, Angler's Reach, the Sunken Steps and Lantern Pools. Open channels block walking; the boardwalks remain walkable over water and offer fishing access. The western crossing returns to the crossroads.
+
+The area has its own muted water/ground palette, cattails, cypress silhouettes, mossy planks, lanterns, an ancient empty shell and ruined stonework. Terrain and static decoration are cached, while tall structures sort with the player. Location, discoveries and dropped items use the existing save format; older saves remain compatible. This pass adds exploration geography and lore, with no new enemy types, quests or climbable tower mechanics.

@@ -34,7 +34,7 @@ export function drawAtmosphere(ctx,world,view){
  if(!world.adventure)return;
  const t=world.elapsed||0,W=view.right-view.left,H=view.bottom-view.top,p=world.player,g=gradients(ctx,W,H);
  particles??=createParticles();stepParticles(particles,Math.max(0,Math.min(.1,t-lastT)),t);lastT=t;
- const fireflies=nearWater(p.x,p.y,world.areaId)||['Forest Approach','Windchime Path'].includes(regionAt(p.x,p.y,world.areaId))?glow():null;
+ const fireflies=nearWater(p.x,p.y,world.areaId)||['Forest Approach','Windchime Path','Shellback Marsh'].includes(regionAt(p.x,p.y,world.areaId))?glow():null;
  ctx.save();ctx.translate(view.left,view.top);
  ctx.globalCompositeOperation='soft-light';ctx.fillStyle=g.warm;ctx.fillRect(0,0,W,H);
  ctx.globalCompositeOperation='multiply';ctx.fillStyle=g.cool;ctx.fillRect(0,0,W,H);

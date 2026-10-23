@@ -1,6 +1,6 @@
 # The Wilds — Reedwater Landing
 
-The first version focuses on Reedwater Delta. Reedwater Landing, Windchime Path, Willowbank Crossroads and Willowback Village are playable; the rest of the regional atlas is future work.
+The first version focuses on Reedwater Delta. Reedwater Landing, Windchime Path, Willowbank Crossroads, Willowback Village and Shellback Marsh are playable; the rest of the regional atlas is future work.
 
 ## Playable areas
 
@@ -21,7 +21,7 @@ Walk south through the path's edge to return. Continue north to reach the crossr
 - **Willowbank Crossroads** (1,600 × 1,280): the atlas fork, with Willowback Village
   to the west and Shellback Marsh to the east. Explore both approaches, a sheltered
   rest stop, wind chimes and a fishable reed pool. The west edge enters the village, and the south edge returns to Windchime Path.
-  The eastern rope still marks the unfinished marsh boundary.
+  The eastern boardwalk enters Shellback Marsh.
   Six examinable landmarks appear on the area map. All inventory and progression
   carry through the journey in either direction. These are movement-triggered area
 changes; there is no teleport menu or interaction key. The camera keeps its zoom
@@ -37,7 +37,7 @@ sheet. Nearby terrain is cached in 512-unit sections,
 capped at 30 sections, with separate keys per area. Full-region maps are never
 allocated as large images.
 
-Shellback Marsh, Glasswater Pools, the sluice ruins, Heron
+Glasswater Pools, the sluice ruins, Heron
 Islands, quarry and cave remain planned locations. The larger continent, story illustration checkpoints and interiors are not included in this
 pass. Reloading starts a new journey. Internal arena fixtures still test the shared
 fishing/combat systems, but the PvP menu is hidden from the player flow.
@@ -47,3 +47,9 @@ fishing/combat systems, but the PvP menu is hidden from the player flow.
 The atlas village (labelled Willowbank in the original reference) is the next playable area, reached by walking west from Willowbank Crossroads. **Willowback Village** is 1,920 × 2,000 world units, with an eastern return path, six solid buildings, a cobbled commons and well, market stalls, a netmaker yard, kitchen gardens and a fishable timber jetty. Six examinable landmarks appear on the area map. Roofs and front walls participate in character/scenery depth sorting. Buildings have exterior details but no enterable interiors or trading yet.
 
 The lower river provides enough camera space for portrait fishing above the touch controls. Water blocks walking except on the dock; save files restore the new area and its discoveries and drops using the existing versioned format. Older saves continue to load.
+
+## Shellback Marsh
+
+The eastern branch of the crossroads now leads to the atlas wetlands. Six dry islands and a network of 74–86 unit boardwalks connect the Reed Threshold, Shellback Glade, Reedwatch Lookout, Angler's Reach, the Sunken Steps and Lantern Pools. The centre glade contains an ancient empty shell as a landscape relic. Fish from the eastern landing or the smaller western pools. The west edge returns to the crossroads.
+
+The 2,100 × 2,400 area leaves water space below its southern landmarks for portrait camera framing. Wet channels block movement outside timber crossings; fixed tree roots and structures have explicit collision. Marsh art and gameplay data live separately in `src/marsh-art.js` and `src/marsh.js`. The active area map shows islands, crossings and discoveries, and existing save version 1 restores marsh journeys without dropping prior progress.
