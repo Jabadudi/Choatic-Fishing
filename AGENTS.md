@@ -20,3 +20,9 @@ See `docs/ENTITY-SPRITES.md` for the replacement workflow and examples.
 - Keep movement and damage in simulation updates. Renderers must not move animals or consume simulation randomness.
 
 See `docs/ENTITY-BEHAVIORS.md` for current assignments and hunting rules.
+
+# Saved progress
+
+- `src/save-format.js` owns the versioned exploration save contract. Preserve save compatibility when adding quests, items, progression or world state; add a deliberate migration when changing the contract. Never derive save versions or database names from asset/build hashes.
+- Restore into current class instances and reconnect hotbar references to backpack items. Never assign imported arbitrary objects onto gameplay prototypes. Validate before replacing stored progress.
+- Save writes use one IndexedDB transaction for current/backup/manual data. Keep manual saves separate, retain three older autosaves, and test failed writes and duplicate rewards.

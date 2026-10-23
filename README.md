@@ -79,7 +79,7 @@ Catches grant 30 XP; confirmed eliminations grant 90 XP once per opponent. Level
 - Tidal Cannon: one R charge; aimed piercing wave, 65 damage, strong knockback.
 - Whirlpool Burst: one T charge; radial blast within 155 units, 45 damage, strong knockback.
 
-Passive damage and armor apply to specials as well. Specials consume one charge and share attack recovery. They cannot fire during fishing. Charges are abilities shown separately from the two equipment slots. Choice panels do not pause gameplay. All health, items, buffs, XP, and charges reset on restart/reload.
+Passive damage and armor apply to specials as well. Specials consume one charge and share attack recovery. They cannot fire during fishing. Charges are abilities shown separately from the two equipment slots. Choice panels do not pause gameplay. Exploration progress is saved between visits; legacy arena matches reset on restart.
 
 ## HUD and architecture
 
@@ -142,7 +142,7 @@ Equip a weapon caught while fishing, aim at an animal, and click or use the mobi
 
 ## Mara's first quest
 
-Talk to Mara by the broken boat to accept **Mara's supper**: catch and bring her one Sardine. Talk again with a Sardine anywhere in your backpack to hand over exactly one and earn **15 XP**, in addition to the normal fishing catch XP. The objective beneath the upgrade timer shows whether you have a Sardine ready. Eating it removes readiness. Mara thanks you on later visits and never repeats the reward. Quest progress persists across area travel within a journey; starting a new journey or reloading resets it, like inventory and hunting progress.
+Talk to Mara by the broken boat to accept **Mara's supper**: catch and bring her one Sardine. Talk again with a Sardine anywhere in your backpack to hand over exactly one and earn **15 XP**, in addition to the normal fishing catch XP. The objective beneath the upgrade timer shows whether you have a Sardine ready. Eating it removes readiness. Mara thanks you on later visits and never repeats the reward. Quest progress persists across area travel within a journey; confirmed New Game replaces it; Continue restores it after reload.
 
 ## Backpack
 
@@ -150,4 +150,14 @@ The backpack icon above the hotbar (or **B**) opens inventory. Catches go direct
 
 Filter by Consumables, Weapons, Armor, Quest items, Trophies, or Upgrade materials. Selecting an item offers Use, Throw into world, Discard, and Add to hotbar. Add to hotbar lets you choose slot 2–7; replacing a shortcut keeps the old item in your backpack. Using or removing an item updates all shortcuts to that item. Use activates one charge in your current facing direction without assigning a shortcut. Armor and materials without a gameplay use have Use disabled.
 
-Thrown items land on nearby walkable ground. Approach and Examine (G, or mobile Pick up) to recover them with their remaining uses. Drops persist in their area during the current journey. Discard removes the item permanently. Mara can accept a sardine directly from backpack storage. Escape, Close, or tapping outside dismisses the panel. Exploration pauses while it is open; finish or abandon fishing before item actions. Starting a new journey or reloading resets inventory and dropped items. New items declare a category using the IDs in `src/inventory.js`.
+Thrown items land on nearby walkable ground. Approach and Examine (G, or mobile Pick up) to recover them with their remaining uses. Drops persist in their area during the current journey. Discard removes the item permanently. Mara can accept a sardine directly from backpack storage. Escape, Close, or tapping outside dismisses the panel. Exploration pauses while it is open; finish or abandon fishing before item actions. Continue restores inventory and dropped items after a reload; confirmed New Game starts fresh. New items declare a category using the IDs in `src/inventory.js`.
+
+## Progress saving
+
+Exploration saves locally in IndexedDB (`the-wilds-progress`, independent of deployment hashes). Continue resumes the newest readable manual/autosave; a damaged latest autosave falls back to a readable backup. Save next to the backpack opens manual saving, checkpoint loading, Export/Import JSON, and Return to title. New Game and imports ask before replacing an existing journey.
+
+- Completed catches, inventory actions, XP, upgrades, quests, discoveries, hunts, damage, and area changes trigger an autosave after the completed simulation step (checked every 200 ms). Exploration also checkpoints changed state every 30 seconds. Hiding the page or switching away attempts a save; this is a best-effort supplement to regular autosaves.
+- A current autosave, three older autosave backups, and an independent manual save are written atomically. Pending writes are serialized. Another tab claiming the journey prevents stale tabs from silently overwriting it.
+- Saves contain position/area, health, progression and timers, backpack items and uses, hotbar references, quest state, discoveries, wildlife state, hunt counts and dropped items. Transient casts, projectiles, knockback, and dialogue are put away on resume. A map edit that blocks an old saved position moves it to the area's spawn.
+- The explicit save format version is independent of game builds. Known fields restore into current gameplay defaults; incompatible newer versions are rejected without replacing existing saves. New schema versions need deliberate migrations and roundtrip tests in `tests/saves.test.js`.
+- Export downloads a portable JSON backup; Import validates it before asking to replace the local journey. Clearing browser data, private sessions, or browser storage eviction can lose local saves. Export a backup for safekeeping or moving devices. There are no cloud saves or accounts. A visible error reports failed writes, and the manual save button requests persistent browser storage where available.
