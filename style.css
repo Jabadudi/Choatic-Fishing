@@ -76,3 +76,5 @@ body.exploring .special-hud{display:none}
 .hotbar{width:min(920px,95vw)}.hotbar .slot{flex:1;min-width:62px;width:auto}.hotbar .dash-mini{order:8}@media(max-width:600px){.hotbar{bottom:10px;gap:3px}.hotbar .slot{min-width:56px;height:60px}.hotbar .backpack-slot{font-size:9px;padding:4px}}
 
 body.exploring .hotbar{width:auto;max-width:96vw}body.exploring .hotbar .slot{flex:0 0 56px;min-width:0}body.exploring .backpack-slot strong{max-width:68px;overflow:hidden;text-overflow:ellipsis}body.exploring .backpack-slot{padding:4px}@media(max-width:600px){body.exploring .hotbar{gap:4px}body.exploring .hotbar .slot{flex-basis:38px;width:38px;height:48px;min-height:48px}body.exploring .backpack-slot strong{font-size:7px;max-width:43px}}
+
+body.exploring #quest-objective{font:11px/1.5 monospace;color:#f3e6bf;margin:10px 0 0;padding:8px;background:#132623e6;border:1px solid #c9b98a55;border-radius:4px}body:not(.exploring) #quest-objective{display:none}

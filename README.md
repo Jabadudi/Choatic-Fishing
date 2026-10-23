@@ -139,3 +139,7 @@ Five rabbits, one turtle and one eel are **passive** and flee from disturbance o
 Equip a weapon caught while fishing, aim at an animal, and click or use the mobile **Use** button. Melee needs facing and reach; projectiles can hit swimming animals. Injured animals show health and category labels. A successful hunt awards XP once and records the species in the journey's hunt tally. Defeated animals fade out and stay hunted for this journey; a new game resets them. Mara and landmark discovery counts stay separate from hunting.
 
 `src/entities.js` defines **passive**, **defensive** (retaliates when provoked) and **aggressive** (initiates pursuit) reaction policies. Passive animal AI and defensive deer retaliation are active; aggressive AI is a future addition. Species health, hit radius, habitat, speeds and hunting XP are configured independently of `src/sprite-definitions.js`. No crafting drops or harvesting economy have been added yet.
+
+## Mara's first quest
+
+Talk to Mara by the broken boat to accept **Mara's supper**: catch and bring her one Sardine. Talk again with a Sardine anywhere in your backpack to hand over exactly one and earn **15 XP**, in addition to the normal fishing catch XP. The objective beneath the upgrade timer shows whether you have a Sardine ready. Eating it removes readiness. Mara thanks you on later visits and never repeats the reward. Quest progress persists across area travel within a journey; starting a new journey or reloading resets it, like inventory and hunting progress.

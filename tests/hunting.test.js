@@ -13,7 +13,7 @@ test('nine animals have their assigned behavior; Mara is a talk-only, untargetab
  for(const a of w.animals){assert.equal(a.entityType,ENTITY_TYPES.ANIMAL);assert.equal(a.behavior,a.species==='deer'?BEHAVIORS.DEFENSIVE:BEHAVIORS.PASSIVE);assert.equal(a.health,a.maxHealth);assert.ok(animalGround(a,a.x,a.y),a.id);}
  const mara=w.npcs[0];assert.equal(mara.entityType,ENTITY_TYPES.NPC);assert.equal(mara.huntable,false);assert.deepEqual(mara.interactions,['talk']);
  assert.equal(combatTargets(w).includes(mara),false);assert.equal(damage(w,mara,100,w.player,0,300),false);
- Object.assign(w.player,{x:mara.x-25,y:mara.y});assert.ok(w.inspect());assert.equal(w.message,'Mara: Hello!');
+ Object.assign(w.player,{x:mara.x-25,y:mara.y});assert.ok(w.inspect());assert.match(w.message,/Mara: Hello! Catch me 1 sardine/);
 });
 
 test('behavior policy distinguishes fleeing, retaliation and aggression without assigning hostile animals',()=>{

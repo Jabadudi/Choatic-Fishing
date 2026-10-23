@@ -39,3 +39,5 @@ body.touch-mode .lobby-card{width:calc(100vw - 32px);max-width:480px;padding:22p
 
 body.touch-mode.exploring #inspect-place{display:none}
 @media(max-height:650px){body.touch-mode.exploring #line-panel{top:40%}body.touch-mode.exploring #line-panel .fishing{height:18dvh}}
+
+body.touch-mode.exploring.has-quest .status{top:calc(232px + env(safe-area-inset-top))}

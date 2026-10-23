@@ -1,3 +1,4 @@
+import {createQuests,maraQuestDialogue} from './quests.js';
 import {createWildlife,updateWildlife,updateAnimalCombat} from './wildlife.js';
 import {Fishing,ITEMS} from './fishing.js';
 import {Progression,XP} from './progression.js';
@@ -29,7 +30,7 @@ export class World {
   }
   this.adventure=adventure;
   this.rabbits=adventure?createRabbits():[];this.wildlife=adventure?createWildlife():[];this.hunting={total:0,bySpecies:{}};
-  this.npcs=adventure?createNpcs():[];this.dialogue=null;
+  this.npcs=adventure?createNpcs():[];this.dialogue=null;this.quests=createQuests();
   if(adventure){this.areaId='landing';Object.assign(this.player,Wilds.SPAWN);this.bots=[];this.actors=[this.player];this.humans=[this.player];this.chests=[];this.countdownRemaining=0;this.matchState='playing';this.discovered=new Set();this.message='Welcome to Reedwater Landing. Follow the north trail to walk into Windchime Path. M opens the area map.';}
  }
  get animals(){return [...this.rabbits,...this.wildlife];}
@@ -64,9 +65,9 @@ export class World {
  recordElimination(victimId){return this.progression.recordElimination(victimId);}
  nearestWater(actor=this.player){return this.adventure?Wilds.nearWater(actor.x,actor.y,this.areaId):nearWater(actor.x,actor.y);}
  inspect(){
-  if(!this.adventure||this.matchState!=='playing')return false;
+  if(!this.adventure||this.matchState!=='playing'||this.player.health<=0)return false;
   const npc=nearbyNpc(this);
-  if(npc){this.dialogue={npcId:npc.id,text:npc.greeting,remaining:5};this.message=`${npc.name}: ${npc.greeting}`;return true;}
+  if(npc){const text=npc.id==='mara'?maraQuestDialogue(this):npc.greeting;this.dialogue={npcId:npc.id,text,remaining:12};this.message=`${npc.name}: ${text}`;return true;}
   const place=Wilds.nearestLandmark(this.player.x,this.player.y,this.areaId);
   if(!place)return false;
   this.discovered.add(place.id);this.message=place.text;return true;

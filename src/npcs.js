@@ -29,8 +29,14 @@ export function drawNpc(c,n,t=0){
 export function drawDialogue(c,world){
  const d=world.dialogue;if(!d)return;
  const n=world.npcs.find(n=>n.id===d.npcId);if(!n||n.areaId!==world.areaId)return;
- const w=104,x=n.x-w/2,y=n.y-85;
- c.fillStyle='#20372b66';c.fillRect(x+3,y+3,w,34);c.fillStyle='#624d30';c.fillRect(x-2,y-2,w+4,38);
- c.fillStyle='#fff0cb';c.fillRect(x,y,w,34);c.beginPath();c.moveTo(n.x-7,y+34);c.lineTo(n.x,y+44);c.lineTo(n.x+7,y+34);c.fill();
- c.font='bold 14px monospace';c.textAlign='center';c.fillStyle='#344431';c.fillText(d.text,n.x,y+22);
+ const lines=dialogueLines(d.text),w=234,h=18+lines.length*18,x=n.x-w/2,y=n.y-50-h;
+ c.fillStyle='#20372b66';c.fillRect(x+3,y+3,w,h);c.fillStyle='#624d30';c.fillRect(x-2,y-2,w+4,h+4);
+ c.fillStyle='#fff0cb';c.fillRect(x,y,w,h);c.beginPath();c.moveTo(n.x-7,y+h);c.lineTo(n.x,y+h+10);c.lineTo(n.x+7,y+h);c.fill();
+ c.font='bold 14px monospace';c.textAlign='center';c.fillStyle='#344431';
+ lines.forEach((line,i)=>c.fillText(line,n.x,y+21+i*18));
+}
+export function dialogueLines(text){
+ const lines=[];let line='';
+ for(const word of text.split(/\s+/)){if(line&&line.length+word.length+1>25){lines.push(line);line=word;}else line+=(line?' ':'')+word;}
+ if(line)lines.push(line);return lines;
 }
