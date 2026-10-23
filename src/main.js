@@ -120,7 +120,7 @@ function updateUI(){
   $('discovery-count').textContent=`${places.filter(p=>world.discovered.has(p.id)).length} / ${places.length} places found here`;
   document.querySelector('.atlas-heading h2').textContent=areaFor(world.areaId).name;
   const hud=explorationHud(world,(performance.now()-exploreStart)/1000);
-  $('area-kicker').textContent=areaFor(world.areaId).name.toUpperCase();
+  $('area-kicker').textContent=areaFor(world.areaId).name.toUpperCase();document.title=`The Wilds · ${areaFor(world.areaId).name}`;
   $('inspect-place').hidden=!hud.prompt;$('inspect-place').textContent=hud.prompt?(touchMode?hud.prompt:`G · ${hud.prompt}`):'';
   $('explore-hint').hidden=!hud.hintVisible;
   $('quest-objective').hidden=!hud.quest;if($('quest-objective').textContent!==(hud.quest||''))$('quest-objective').textContent=hud.quest||'';document.body.classList.toggle('has-quest',!!hud.quest);

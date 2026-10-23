@@ -2,9 +2,8 @@
 
 The first playable area is Reedwater Landing: explore its beach, dock, drowned
 road, spring and forest approach. Walk north into Windchime Path, then continue north to Willowbank Crossroads.
-The fork leads west toward the village approach and east to the marsh boardwalk
-and a fishable pool. The village and marsh maps remain closed beyond their approach
-ropes. Walk south to return through Windchime Path to Reedwater Landing.
+The fork leads west into Willowback Village and east to the marsh boardwalk
+and a fishable pool. The marsh beyond the eastern rope remains a future area. Walk south to return through Windchime Path to Reedwater Landing.
 Press **M** for the current area map and **G** to examine a nearby landmark.
 See [WORLD.md](WORLD.md) for the world layout, controls, art approach and current limits.
 The earlier PvP lobby is no longer part of the player flow. The notes below describe
@@ -161,3 +160,7 @@ Exploration saves locally in IndexedDB (`the-wilds-progress`, independent of dep
 - Saves contain position/area, health, progression and timers, backpack items and uses, hotbar references, quest state, discoveries, wildlife state, hunt counts and dropped items. Transient casts, projectiles, knockback, and dialogue are put away on resume. A map edit that blocks an old saved position moves it to the area's spawn.
 - The explicit save format version is independent of game builds. Known fields restore into current gameplay defaults; incompatible newer versions are rejected without replacing existing saves. New schema versions need deliberate migrations and roundtrip tests in `tests/saves.test.js`.
 - Export downloads a portable JSON backup; Import validates it before asking to replace the local journey. Clearing browser data, private sessions, or browser storage eviction can lose local saves. Export a backup for safekeeping or moving devices. There are no cloud saves or accounts. A visible error reports failed writes, and the manual save button requests persistent browser storage where available.
+
+## Willowback Village
+
+From the crossroads, follow the western village road and walk through the map edge. The east edge of Willowback Village returns to the crossroads. Explore the Willow Commons, Willow Hearth inn exterior, kitchen gardens, netmaker yard, gate and docks. Buildings block movement and draw in ground order with the player. The jetty can be walked and fished from, and the area map shows village buildings and six landmarks. Interiors, shop trading and additional village quests are future additions. Existing saves remain compatible; village location, discoveries and dropped items use the same save format.
