@@ -35,7 +35,7 @@ test('melee hunting respects facing and distance, counts one hunt and grants hun
 
 test('finite-use weapons hunt animals through the existing Use action and preserve the kill message',()=>{
  const w=fresh(),rabbit=w.rabbits[0];Object.assign(w.player,{x:rabbit.x-40,y:rabbit.y,angle:0});
- w.inventory.receive({name:'Reed Spear'});w.equip(2);assert.ok(w.useItem());
+ w.inventory.receive({name:'Reed Spear'});w.inventory.assignHotbar(w.inventory.allItems.at(-1).id,2);w.equip(2);assert.ok(w.useItem());
  assert.equal(rabbit.health,0);assert.equal(w.inventory.item.uses,4);assert.match(w.message,/Rabbit hunted/);
  w.update(2.1,neutralInput());assert.equal(visibleRabbits(w).includes(rabbit),false);
  assert.equal(w.hunting.total,1);

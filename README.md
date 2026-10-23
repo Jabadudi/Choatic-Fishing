@@ -40,7 +40,7 @@ Fishing gives no protection from damage. Attacks apply health damage and knockba
 
 ## Backpack and combat
 
-The permanent rod uses key **1**. Six separate catch slots use **2–7**; click a slot or press its number to equip it, then click or press **F** to use it. Fishing continues while any backpack slot is empty. A full backpack blocks casting; consuming an item frees that slot without removing the other catches.
+The permanent rod uses key **1**. In exploration, catches go to independent backpack storage. Assign items to the six hotbar shortcuts **2–7**, then click a shortcut or press its number to equip it. Click or press **F** to use the equipped item. A full hotbar never blocks exploration fishing. Legacy arena fixtures retain their six catch slots.
 
 New fishable weapons: **Reed Spear** (5 uses, 22 damage, 110 reach, 0.3s cooldown), **Crab Maul** (3 uses, 52 damage, heavy knockback, 1s cooldown), and **Shell Sling** (6 uses, 18 damage per projectile, 0.35s cooldown).
 
@@ -83,7 +83,7 @@ Passive damage and armor apply to specials as well. Specials consume one charge 
 
 ## HUD and architecture
 
-The canvas fills the viewport with no scrolling. The two-slot hotbar, health, XP, and abilities overlay gameplay. The compact reeling meter appears on the right only after a bite, without shifting the camera. Mouse aiming uses the same camera transform as rendering.
+The canvas fills the viewport with no scrolling. The hotbar, backpack button, health, XP, and abilities overlay gameplay. The compact reeling meter appears on the right only after a bite, without shifting the camera. Mouse aiming uses the same camera transform as rendering.
 
 - `src/fishing.js`: catch state machine and loot pool.
 - `src/inventory.js`: permanent rod, one finite-use item.
@@ -146,4 +146,8 @@ Talk to Mara by the broken boat to accept **Mara's supper**: catch and bring her
 
 ## Backpack
 
-The backpack icon above the hotbar (or **B**) opens the categorized inventory. Filter by Consumables, Weapons, Armor, Quest items, Trophies, or Upgrade materials; All items shows everything. Select an item to equip its hotbar slot. Escape, Close, or tapping outside dismisses the panel. Exploration pauses while it is open. Storage retains the existing six slots, and quest delivery reads the same inventory. New items can declare a category using the IDs in `src/inventory.js`.
+The backpack icon above the hotbar (or **B**) opens inventory. Catches go directly to backpack storage and do not fill the hotbar. Backpack storage has no item limit in exploration; filling all six hotbar shortcuts does not block fishing. Each item keeps its own remaining uses.
+
+Filter by Consumables, Weapons, Armor, Quest items, Trophies, or Upgrade materials. Selecting an item offers Use, Throw into world, Discard, and Add to hotbar. Add to hotbar lets you choose slot 2–7; replacing a shortcut keeps the old item in your backpack. Using or removing an item updates all shortcuts to that item. Use activates one charge in your current facing direction without assigning a shortcut. Armor and materials without a gameplay use have Use disabled.
+
+Thrown items land on nearby walkable ground. Approach and Examine (G, or mobile Pick up) to recover them with their remaining uses. Drops persist in their area during the current journey. Discard removes the item permanently. Mara can accept a sardine directly from backpack storage. Escape, Close, or tapping outside dismisses the panel. Exploration pauses while it is open; finish or abandon fishing before item actions. Starting a new journey or reloading resets inventory and dropped items. New items declare a category using the IDs in `src/inventory.js`.

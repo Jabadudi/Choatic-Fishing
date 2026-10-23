@@ -13,21 +13,21 @@ test('Mara offers the quest on first talk and reminds without rewarding empty ha
 test('caught sardine can be handed over from any slot, exactly once, for 15 additional XP',()=>{
  const w=fresh();w.inspect();w.inventory.receive({name:'Reed Spear'});
  w.fishing.state='caught';w.fishing.result={name:'Sardine'};w.advanceFishing(w.player,0,false);
- w.inventory.receive({name:'Sardine'});w.equip(3);const xp=w.progression.totalXp;
+ w.inventory.receive({name:'Sardine'});w.inventory.assignHotbar(w.inventory.allItems[1].id,3);w.equip(3);const xp=w.progression.totalXp;
  assert.equal(xp,30);assert.match(questObjective(w),/1\/1/);w.player.health=40;w.inspect();
  assert.equal(w.progression.totalXp,xp+15);assert.equal(w.player.health,40);
- assert.equal(w.inventory.slots[0].name,'Reed Spear');assert.equal(w.inventory.slots[1],null);
- assert.equal(w.inventory.slots[2].name,'Sardine');assert.equal(w.inventory.selected,1);
+ assert.equal(w.inventory.allItems[0].name,'Reed Spear');assert.equal(w.inventory.slots[1],null);
+ assert.equal(w.inventory.allItems[1].name,'Sardine');assert.equal(w.inventory.selected,1);
  assert.equal(w.quests['mara-sardine'].status,'complete');assert.match(w.dialogue.text,/\+15 XP/);
- for(let i=0;i<10;i++)w.inspect();assert.equal(w.progression.totalXp,xp+15);assert.ok(w.inventory.slots[2]);
+ for(let i=0;i<10;i++)w.inspect();assert.equal(w.progression.totalXp,xp+15);assert.equal(w.inventory.allItems.length,2);
 });
 test('existing sardine still requires accepting first, and unrelated selection is preserved',()=>{
- const w=fresh();w.inventory.receive({name:'Sardine'});w.inventory.receive({name:'Crab Maul'});w.equip(3);
- w.inspect();assert.ok(w.inventory.slots[0]);assert.equal(w.progression.totalXp,0);
+ const w=fresh();w.inventory.receive({name:'Sardine'});w.inventory.receive({name:'Crab Maul'});w.inventory.assignHotbar(w.inventory.allItems[1].id,3);w.equip(3);
+ w.inspect();assert.equal(w.inventory.allItems[0].name,'Sardine');assert.equal(w.progression.totalXp,0);
  w.inspect();assert.equal(w.inventory.slots[0],null);assert.equal(w.inventory.selected,3);assert.equal(w.inventory.item.name,'Crab Maul');
 });
 test('eating the sardine removes readiness; quest persists across travel but resets for a new journey',()=>{
- const w=fresh();w.inspect();w.inventory.receive({name:'Sardine'});w.equip(2);w.useItem();
+ const w=fresh();w.inspect();w.inventory.receive({name:'Sardine'});w.backpackAction(w.inventory.allItems[0].id,'use');
  assert.match(questObjective(w),/0\/1/);w.inspect();assert.equal(w.progression.totalXp,0);
  w.areaId='windchime';assert.equal(w.quests['mara-sardine'].status,'active');
  assert.equal(fresh().quests['mara-sardine'].status,'available');

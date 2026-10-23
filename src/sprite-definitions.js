@@ -9,6 +9,7 @@ export const RABBIT_FRAMES=[
  [23,373,25,65],[78,373,25,65],[133,373,25,65]
 ];
 export const SPRITES={
+ pickup:{asset:null,scale:1,anchor:[.5,1],offset:[0,5]},
  rabbit:{asset:'bunny-sheet.png',frames:RABBIT_FRAMES,scale:.5,anchor:[.5,1],offset:[0,0],mirror:'left',animations:{
   idle:{frames:[0,0,0,1,2,3,1,0],fps:4},graze:{frames:[4,5,6,7],fps:5},
   hop:{frames:[8,9,10,11,12,13,14,15],fps:12,loop:false},settle:{frames:[16,17,18,19,20,21,22],fps:10,loop:false}

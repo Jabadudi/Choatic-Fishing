@@ -1,8 +1,9 @@
+import {nearbyDrop,dropItem} from './drops.js';
 import {createQuests,maraQuestDialogue} from './quests.js';
 import {createWildlife,updateWildlife,updateAnimalCombat} from './wildlife.js';
 import {Fishing,ITEMS} from './fishing.js';
 import {Progression,XP} from './progression.js';
-import {Inventory} from './inventory.js';
+import {Inventory,canUseItem} from './inventory.js';
 import {attack,special,updateProjectiles} from './combat.js';
 import {updateBot} from './bots.js';
 import {LAND,CHESTS,LAKES,lakeDistance,isWater,nearWater,walkable} from './terrain.js';
@@ -28,7 +29,8 @@ export class World {
    this.humans=humans.map((human,i)=>Object.assign(createActor(human.id,human.name,...positions[i],random),{color:['#b8db94','#ef947a','#d4a7dc','#f0c67c'][i]}));
    this.player=this.humans[0];this.bots=[];this.actors=[...this.humans];
   }
-  this.adventure=adventure;
+  this.adventure=adventure;this.drops=[];this.nextDropId=1;
+  if(adventure)this.player.inventory=new Inventory({separateStorage:true});
   this.rabbits=adventure?createRabbits():[];this.wildlife=adventure?createWildlife():[];this.hunting={total:0,bySpecies:{}};
   this.npcs=adventure?createNpcs():[];this.dialogue=null;this.quests=createQuests();
   if(adventure){this.areaId='landing';Object.assign(this.player,Wilds.SPAWN);this.bots=[];this.actors=[this.player];this.humans=[this.player];this.chests=[];this.countdownRemaining=0;this.matchState='playing';this.discovered=new Set();this.message='Welcome to Reedwater Landing. Follow the north trail to walk into Windchime Path. M opens the area map.';}
@@ -44,15 +46,18 @@ export class World {
  get bobber(){return this.player.bobber;}set bobber(value){this.player.bobber=value;}
  get useCooldown(){return this.player.cooldown;}set useCooldown(value){this.player.cooldown=value;}
  equip(slot){if(this.matchState!=='playing')return false;if(this.fishing.state!=='idle')this.cancel();return this.inventory.equip(slot);}
- useActorItem(actor){
+ useActorItem(actor,itemId=null){
   if(this.matchState!=='playing'||actor.health<=0||actor.fishing.state!=='idle'||actor.cooldown>0)return false;
-  if(actor.inventory.selected>1&&actor.inventory.item?.name==='Treasure Key'){
-   if(this.chests.every(c=>c.opened)){actor.inventory.use();actor.message='All chests are open. Spare key discarded.';return true;}
+  const chosen=itemId?actor.inventory.allItems.find(item=>item.id===itemId):actor.inventory.selected>1?actor.inventory.item:null;
+  if(chosen&&!canUseItem(chosen)){actor.message='This item cannot be used yet.';return false;}
+  const consume=()=>itemId?actor.inventory.useId(itemId):actor.inventory.use();
+  if(chosen?.name==='Treasure Key'){
+   if(this.chests.every(c=>c.opened)){consume();actor.message='All chests are open. Spare key discarded.';return true;}
    const chest=this.chests.find(c=>!c.opened&&Math.hypot(actor.x-c.x,actor.y-c.y)<=70);
    if(!chest){actor.message='Find an unopened chest and stand close to use your key.';return false;}
-   actor.inventory.use();chest.opened=true;actor.health=actor.progression.maxHealth;actor.message='Treasure unlocked! Health fully restored.';return true;
+   consume();chest.opened=true;actor.health=actor.progression.maxHealth;actor.message='Treasure unlocked! Health fully restored.';return true;
   }
-  const item=actor.inventory.use();if(!item)return false;
+  const item=consume();if(!item)return false;
   attack(this,actor,item);return true;
  }
  useItem(){
@@ -61,11 +66,24 @@ export class World {
   if(name==='Treasure Key'||this.hunting.total>huntsBefore)return true;
   this.message=this.inventory.item?`${name} · ${this.inventory.item.uses} uses left.`:`${name} used up. Slot clear — fish again.`;return true;
  }
+ backpackAction(id,action,slot){
+  if(!this.adventure||this.matchState!=='playing'||this.player.health<=0||this.fishing.state!=='idle')return false;
+  const item=this.inventory.allItems.find(item=>item.id===id);if(!item)return false;
+  if(action==='hotbar')return this.inventory.assignHotbar(id,slot);
+  if(action==='discard'){this.inventory.removeId(id);this.message=`${item.name} discarded.`;return true;}
+  if(action==='drop')return dropItem(this,item);
+  if(action==='use'){
+   if(!canUseItem(item)){this.message='This item cannot be used yet.';return false;}
+   const used=this.useActorItem(this.player,id);if(used)this.message=`Used ${item.name}.`;return used;
+  }
+  return false;
+ }
  useSpecial(kind,actor=this.player){const used=special(this,actor,kind);if(actor===this.player)this.message=used?`${kind==='tidal'?'Tidal Cannon':'Whirlpool Burst'} unleashed!`:'Special unavailable. Earn a charge, abandon fishing, and let your attack recover.';return used;}
  recordElimination(victimId){return this.progression.recordElimination(victimId);}
  nearestWater(actor=this.player){return this.adventure?Wilds.nearWater(actor.x,actor.y,this.areaId):nearWater(actor.x,actor.y);}
  inspect(){
   if(!this.adventure||this.matchState!=='playing'||this.player.health<=0)return false;
+  const drop=nearbyDrop(this);if(drop){this.inventory.receive(drop.item);this.drops=this.drops.filter(item=>item.id!==drop.id);this.message=`Picked up ${drop.item.name}.`;return true;}
   const npc=nearbyNpc(this);
   if(npc){const text=npc.id==='mara'?maraQuestDialogue(this):npc.greeting;this.dialogue={npcId:npc.id,text,remaining:12};this.message=`${npc.name}: ${text}`;return true;}
   const place=Wilds.nearestLandmark(this.player.x,this.player.y,this.areaId);

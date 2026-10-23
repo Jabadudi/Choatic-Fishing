@@ -44,3 +44,5 @@ if(!drawn)drawExistingPlaceholder(ctx,entity);
 ```
 
 The shared loader caches each image, validates crops against the loaded sheet, and returns `false` for missing images or incompatible frames. It never receives or changes the entity's gameplay state. Names, health bars and dialogue remain separate overlays.
+
+Dropped inventory items use the `pickup` sprite definition and a visible bag fallback. Drop positions, pickup distance, item identity and remaining uses live in simulation, independently of this artwork.

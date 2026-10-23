@@ -89,3 +89,5 @@ body.exploring #quest-objective{font:11px/1.5 monospace;color:#f3e6bf;margin:10p
 body.touch-mode.exploring #open-backpack{bottom:calc(274px + env(safe-area-inset-bottom));min-height:44px}
 @media(max-width:500px){#backpack{padding:16px}.backpack-filters{grid-template-columns:repeat(2,1fr)}.backpack-heading h2{font-size:23px}}
 @media(orientation:landscape) and (max-height:560px){body.touch-mode.exploring #open-backpack{bottom:82px;left:50%;padding:5px 10px}}
+
+.backpack-actions{margin-top:16px;padding:14px;border:1px solid #d7c38a88;border-radius:9px;background:#14291f}.backpack-actions h3{margin:0 0 8px;font:18px Georgia,serif}.backpack-actions p{font:12px/1.5 Arial,sans-serif;color:#c4d0bc}.backpack-action-row,.backpack-slot-choices{display:grid;grid-template-columns:1fr 1fr;gap:7px}.backpack-actions button{min-height:44px;padding:9px;border:1px solid #b5b58c88;background:#35513c;color:#f3e6bf;border-radius:7px;font:12px Arial,sans-serif}.backpack-actions button:disabled{opacity:.4}.backpack-slot-choices button{font-size:11px}.backpack-action-row button:nth-child(3){background:#5b3d32}

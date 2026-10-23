@@ -1,3 +1,4 @@
+import {nearbyDrop} from './drops.js';
 import {mountBackpack} from './backpack.js';
 import {TouchInput,mountMobileControls,gameScale} from './mobile.js';
 import {nearbyNpc} from './npcs.js';
@@ -85,7 +86,7 @@ function updateUI(){
  $('close-atlas').textContent=touchMode?'Close':'Close · M / Esc';
  $('cancel').textContent=touchMode?'Abandon':'Abandon · E / Esc';
  touchUI?.update(world,!touchMode||!lobby.world||atlasOpen||world.player.health<=0);
- if(touchMode){const npc=nearbyNpc(world);$('touch-examine').disabled=!world.adventure||(!npc&&!nearestLandmark(world.player.x,world.player.y,world.areaId));$('touch-examine').querySelector('strong').textContent=npc?'Talk':'Examine';$('touch-examine').setAttribute('aria-label',npc?`Talk to ${npc.name}`:'Examine nearby landmark');}
+ if(touchMode){const npc=nearbyNpc(world);$('touch-examine').disabled=!world.adventure||(!npc&&!nearbyDrop(world)&&!nearestLandmark(world.player.x,world.player.y,world.areaId));$('touch-examine').querySelector('strong').textContent=nearbyDrop(world)?'Pick up':npc?'Talk':'Examine';$('touch-examine').setAttribute('aria-label',nearbyDrop(world)?`Pick up ${nearbyDrop(world).item.name}`:npc?`Talk to ${npc.name}`:'Examine nearby landmark');}
  const f=world.fishing,active=f.state==='reeling',busy=f.state!=='idle',inventory=world.inventory;
  $('line-panel').hidden=!active;
  $('health-text').textContent=`${Math.ceil(world.player.health)} / ${world.progression.maxHealth} HP`;
@@ -104,9 +105,9 @@ function updateUI(){
  for(const kind of ['tidal','whirlpool'])$('fire-'+kind).disabled=busy||world.player.cooldown>0||world.progression.specials[kind]===0||world.matchState!=='playing';
  $('world-state').textContent=world.matchState==='countdown'?'GET READY':active?'REELING':busy?'WAITING FOR A BITE':'EXPLORING';
  $('catch-bar').style.bottom=`${(f.bar||0)*100}%`;$('target').style.bottom=`${(f.target||0)*100}%`;$('progress-fill').style.height=active?`${f.progress*100}%`:'0%';$('percent').textContent=active?`${Math.floor(f.progress*100)}%`:'0%';
- for(let slot=3;slot<=7;slot++){const button=$(`slot-${slot}`),item=inventory.slots[slot-2];button.querySelector('.slot-icon').textContent=item?ICONS[item.name]||'◆':'—';button.querySelector('strong').textContent=item?.name||'Empty';button.querySelector('small').textContent=item?`${item.uses} uses · F`:'Fish to fill';button.setAttribute('aria-label',`Slot ${slot}: ${item?.name||'empty'}${item?', '+item.uses+' uses':''}`);button.classList.toggle('selected',inventory.selected===slot);button.setAttribute('aria-pressed',inventory.selected===slot);button.title=item?.description||'Fish to fill this slot';}
+ for(let slot=3;slot<=7;slot++){const button=$(`slot-${slot}`),item=inventory.slots[slot-2];button.querySelector('.slot-icon').textContent=item?ICONS[item.name]||'◆':'—';button.querySelector('strong').textContent=item?.name||'Empty';button.querySelector('small').textContent=item?`${item.uses} uses · F`:'Assign from backpack';button.setAttribute('aria-label',`Slot ${slot}: ${item?.name||'empty'}${item?', '+item.uses+' uses':''}`);button.classList.toggle('selected',inventory.selected===slot);button.setAttribute('aria-pressed',inventory.selected===slot);button.title=item?.description||'Open backpack to assign an item';}
  for(const slot of [1,2]){const button=$(slot===1?'slot-rod':'slot-item');button.classList.toggle('selected',inventory.selected===slot);button.setAttribute('aria-pressed',inventory.selected===slot);}
- $('item-name').textContent=inventory.slots[0]?.name||'Empty slot';$('item-icon').textContent=inventory.slots[0]?ICONS[inventory.slots[0].name]||'◆':'—';$('item-uses').textContent=inventory.slots[0]?`${inventory.slots[0].uses} uses · Click or F`:'Reel in your next item';
+ $('item-name').textContent=inventory.slots[0]?.name||'Empty slot';$('item-icon').textContent=inventory.slots[0]?ICONS[inventory.slots[0].name]||'◆':'—';$('item-uses').textContent=inventory.slots[0]?`${inventory.slots[0].uses} uses · Click or F`:'Assign from backpack';
  $('status').textContent=active?'WASD move along shore · Hold Space / mouse to reel · E to abandon.':busy?'Waiting for a bite… E / Esc to abandon.':world.message||'Walk to shore, aim into water, press E.';
  if(touchMode){$('status').textContent=$('status').textContent.replace('M opens the area map.','Tap the map to explore.');if(active)$('status').textContent='Hold Reel to raise the bar · Release to lower it';else if(busy)$('status').textContent='Waiting for a bite… Tap Cancel to abandon.';else if(!world.message)$('status').textContent='Drag the right stick to move · Tap water to aim · Use to cast';}
  if(world.adventure){
@@ -157,7 +158,7 @@ function drawMap(target){
 function toggleAtlas(open=!atlasOpen){if(open)backpackUI?.close();atlasOpen=open;release();if(open&&touchUI)touchUI.update(world,true);$('world-atlas').hidden=!open;if(open)drawMap($('atlas-canvas'));else canvas.focus();}
 $('open-atlas').onclick=()=>toggleAtlas(true);$('close-atlas').onclick=()=>toggleAtlas(false);$('inspect-place').onclick=()=>{world.inspect();canvas.focus();};
 const lobby=new Lobby(updateLobby);
-backpackUI=mountBackpack({getWorld:()=>world,icons:ICONS,onOpen:()=>{toggleAtlas(false);release();},onClose:()=>{release();canvas.focus();},onEquip:slot=>lobby.action(`slot-${slot}`,currentInput())});
+backpackUI=mountBackpack({getWorld:()=>world,icons:ICONS,onOpen:()=>{toggleAtlas(false);release();},onClose:()=>{release();canvas.focus();},onAction:(id,action,slot)=>world.backpackAction(id,action,slot)});
 function updateLobby(){
  backpackUI?.close();
  document.body.classList.toggle('exploring',!!lobby.world?.adventure);

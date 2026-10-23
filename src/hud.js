@@ -1,3 +1,4 @@
+import {nearbyDrop} from './drops.js';
 import {questObjective} from './quests.js';
 import {placesFor,nearestLandmark} from './wilds.js';
 import {nearbyNpc} from './npcs.js';
@@ -8,7 +9,7 @@ export function explorationHud(world,exploringSeconds){
   hintVisible:exploringSeconds<10,
   quest:questObjective(world),
   dots:placesFor(id).map(p=>world.discovered.has(p.id)),
-  prompt:npc?`Talk to ${npc.name}`:place?`Examine ${place.name}`:null,
+  prompt:nearbyDrop(world)?`Pick up ${nearbyDrop(world).item.name}`:npc?`Talk to ${npc.name}`:place?`Examine ${place.name}`:null,
   upgradeFraction:Math.max(0,Math.min(1,1-world.progression.upgradeRemaining/30))
  };
 }

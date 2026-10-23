@@ -6,7 +6,7 @@ import {CROSSROADS_ROADS,CROSSROADS_PLACES} from '../src/crossroads.js';
 
 test('Windchime north opens into the crossroads and south returns with equipment and discoveries',()=>{
  const w=new World(()=>.1,{adventure:true});w.areaId='windchime';
- w.inventory.receive({name:'Reed Spear'});w.discovered.add('landing');
+ w.inventory.receive({name:'Reed Spear'});w.inventory.assignHotbar(w.inventory.allItems.at(-1).id,2);w.discovered.add('landing');
  Object.assign(w.player,{x:600,y:4});w.move(0,-12,false);
  assert.equal(w.areaId,'crossroads');assert.equal(w.player.x,800);assert.equal(w.player.y,1130);
  assert.ok(walkable(w.player.x,w.player.y,w.areaId));assert.match(w.message,/West.*East/);
