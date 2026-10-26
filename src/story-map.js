@@ -1,4 +1,5 @@
-import {drawProp,drawTiles} from './sprites.js';
+import {drawProp} from './sprites.js';
+import {drawRoomShell} from './room-shell.js';
 import {CABIN,CAMP,cabinDamaged} from './story.js';
 export const CABIN_AREA={id:'cabin',name:'Grandpa’s Cabin',width:640,height:480,seed:7329,spawn:{x:320,y:395},exits:[{edge:'south',from:270,to:370,target:'landing',entry:{x:CABIN.x,y:1570},label:'Reedwater Shore'}]};
 export const CABIN_PLACES=[{id:'cabin-box',name:'The Lure Box',x:520,y:145,kind:'interior',text:'A wooden box leaks a faint blue light.'},{id:'cabin-photo',name:'The Photograph',x:110,y:270,kind:'interior',text:'A young man, a laughing woman, and an enormous gray wolf.'},{id:'cabin-stove',name:'The Stove',x:100,y:120,kind:'interior',text:'A small stove and a well-stocked spice rack.'},{id:'cabin-rack',name:'Weapon Rack',x:320,y:66,kind:'interior',text:'Grandpa’s weapon rack: fishing rods and an old recurve bow.'},{id:'cabin-bed',name:'The Bed',x:510,y:330,kind:'interior',text:'A wool blanket lies neatly folded at the foot of the bed.'}];
@@ -6,6 +7,7 @@ export const cabinBlocked=(x,y)=>x>CABIN.left-14&&x<CABIN.right+14&&y>CABIN.top-
 export const cabinClearing=(x,y)=>x>1400&&x<1930&&y>1230&&y<1760;
 // The back wall's face runs down to CABIN_WALL; furniture stands on the floor in front of it.
 export const CABIN_WALL=84;
+const CABIN_ROOM={width:640,height:480,wall:CABIN_WALL,door:[278,362]};
 export const cabinInteriorBlocked=(x,y)=>y<CABIN_WALL||x<40||x>600||(y>436&&(x<290||x>350))||[[65,45,180,90],[262,28,378,64],[476,65,582,111],[48,212,120,241],[462,255,575,378],[237,203,391,288]].some(([l,t,r,b])=>x>l-12&&x<r+12&&y>t-12&&y<b+12);
 export function drawCabin(c,story){
  const damaged=cabinDamaged(story),x=CABIN.left,y=CABIN.top;
@@ -24,23 +26,11 @@ export function drawCabin(c,story){
  drawProp(c,'firewood-stack',{x:-22,y:196,w:54,h:40});drawProp(c,'rain-barrel',{x:286,y:194,w:30,h:44});c.restore();
 }
 export function drawCabinInterior(c){
- // A Stardew-style room: the back wall shows its whole face, the side and front walls only their tops.
- const W=CABIN_WALL;c.fillStyle='#120e0b';c.fillRect(0,0,640,480);
- if(!drawTiles(c,'cabin-floor',{x:30,y:W,w:580,h:446-W,tw:96,th:58.5})){
-  c.fillStyle='#b18b59';c.fillRect(30,W,580,446-W);
-  for(let y=W,row=0;y<446;y+=16,row++){c.fillStyle='#8f6c45';c.fillRect(30,y,580,2);c.fillStyle='#c39a65';c.fillRect(30,y+2,580,1);for(let x=30+(row%3)*32;x<610;x+=96){c.fillStyle='#7d5d3c';c.fillRect(x,y,2,16);}}
- }
- if(!drawTiles(c,'cabin-wall',{x:30,y:10,w:580,h:W-10,tw:(W-10)*256/286,th:W-10})){
-  c.fillStyle='#5a3d29';c.fillRect(30,10,580,W-10);
-  for(let y=14;y<W-10;y+=11){c.fillStyle='#6f4c33';c.fillRect(30,y,580,8);c.fillStyle='#86603f';c.fillRect(30,y+1,580,2);c.fillStyle='#3e2a1d';c.fillRect(30,y+8,580,3);}
-  c.fillStyle='#3a281b';c.fillRect(30,10,580,5);c.fillStyle='#4b3322';c.fillRect(30,W-9,580,9);c.fillStyle='#7a5638';c.fillRect(30,W-9,580,2);
- }
- // Shadow where the floor meets the wall.
- const g=c.createLinearGradient(0,W,0,W+18);g.addColorStop(0,'rgba(20,12,6,.35)');g.addColorStop(1,'rgba(20,12,6,0)');c.fillStyle=g;c.fillRect(30,W,580,18);
- // Wall tops: dark timber edges framing the room, with the doorway gap at the bottom.
- const top=(x,y,w,h)=>{const side=h>w;if(!drawTiles(c,side?'cabin-wall-side':'cabin-wall-top',side?{x,y,w,h,tw:w,th:w*256/98}:{x,y,w,h,tw:h*256/98,th:h})){c.fillStyle='#3b2a1e';c.fillRect(x,y,w,h);c.fillStyle='#5b4130';c.fillRect(x+2,y+2,w-4,h-4);}};
- top(10,0,20,460);top(610,0,20,460);top(10,0,620,10);top(10,446,268,14);top(362,446,268,14);
- c.fillStyle='rgba(18,12,8,.35)';for(const [x,y,w,h] of [[10,0,20,460],[610,0,20,460],[10,0,620,10],[10,446,268,14],[362,446,268,14]])c.fillRect(x,y,w,h);
+ const W=CABIN_WALL;
+ drawRoomShell(c,CABIN_ROOM,'cabin',{floor:['#b18b59','#8f6c45','#c39a65'],wallFill:'#5a3d29',paintWall:(c,x,y,w,h)=>{
+  for(let j=y+4;j<y+h-10;j+=11){c.fillStyle='#6f4c33';c.fillRect(x,j,w,8);c.fillStyle='#86603f';c.fillRect(x,j+1,w,2);c.fillStyle='#3e2a1d';c.fillRect(x,j+8,w,3);}
+  c.fillStyle='#3a281b';c.fillRect(x,y,w,5);c.fillStyle='#4b3322';c.fillRect(x,y+h-9,w,9);c.fillStyle='#7a5638';c.fillRect(x,y+h-9,w,2);
+ }});
  // Sprites when loaded; the drawn shapes below are the fallback. Chairs and lamp exist only as sprites.
  if(!drawProp(c,'window-evening',{x:427,y:76,w:70,h:60})){c.fillStyle='#4a3322';c.fillRect(394,22,66,50);c.fillStyle='#9ec3c0';c.fillRect(399,27,56,40);c.fillStyle='#4a3322';c.fillRect(425,27,4,40);c.fillRect(399,45,56,3);}
  if(!drawProp(c,'cook-stove',{x:122,y:94,w:118,h:88})){
@@ -59,7 +49,6 @@ export function drawCabinInterior(c){
   c.fillStyle='#754f30';c.fillRect(237,203,154,85);c.fillStyle='#bd945d';c.fillRect(242,207,144,73);c.fillStyle='#d7be89';c.beginPath();c.arc(310,241,15,0,Math.PI*2);c.fill();
  }
  drawProp(c,'chair',{x:220,y:286,w:34,h:58,flipX:true});drawProp(c,'chair',{x:408,y:286,w:34,h:58});drawProp(c,'oil-lamp',{x:366,y:236,w:18,h:32});
- c.fillStyle='#2a1d14';c.fillRect(278,446,84,34);
  if(!drawProp(c,'door-mat',{x:320,y:446,w:80,h:34})){
   c.fillStyle='#c4b181';c.fillRect(282,414,76,30);
  }

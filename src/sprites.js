@@ -67,12 +67,15 @@ export function drawProp(ctx,id,{x,y,w,h,flipX=false}){
  ctx.drawImage(img,-dw/2,-dh,dw,dh);ctx.restore();return true;
 }
 // Repeats a tile image across a rectangle, each tile drawn tw×th, starting at the rectangle's corner.
+// Tile ids are listed in PROPS like any other prop.
 export function drawTiles(ctx,id,{x,y,w,h,tw,th}){
  if(!PROPS[id]||typeof Image==='undefined')return false;
  const url=spriteAssetUrl(PROPS[id]);let img=images.get(url);
  if(!img){img=new Image();img.onload=()=>propListeners.forEach(fn=>fn());images.set(url,img);img.src=url;}
  if(!img.complete||!img.naturalWidth||!img.naturalHeight)return false;
  const pattern=ctx.createPattern(img,'repeat');if(!pattern)return false;
+ // Give one side of the tile and the other follows the image's proportions.
+ tw??=th*img.naturalWidth/img.naturalHeight;th??=tw*img.naturalHeight/img.naturalWidth;
  if(pattern.setTransform&&typeof DOMMatrix!=='undefined')pattern.setTransform(new DOMMatrix().translate(x,y).scale(tw/img.naturalWidth,th/img.naturalHeight));
  ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.fillStyle=pattern;ctx.fillRect(x,y,w,h);ctx.restore();return true;
 }
