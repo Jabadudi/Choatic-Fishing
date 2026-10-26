@@ -1,0 +1,17 @@
+{
+ "name": "Chaotic Fishing",
+ "short_name": "Chaotic Fishing",
+ "description": "Explore the Reedwater Delta, fish, hunt and follow Eli's journey.",
+ "start_url": "./",
+ "scope": "./",
+ "display": "fullscreen",
+ "display_override": ["fullscreen", "standalone"],
+ "orientation": "landscape",
+ "background_color": "#10272c",
+ "theme_color": "#10272c",
+ "icons": [
+  {"src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png"},
+  {"src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png"},
+  {"src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+ ]
+}

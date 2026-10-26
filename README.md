@@ -66,6 +66,10 @@ checkpoints are described in [docs/STORY.md](docs/STORY.md).
 - **Settings.** Music and sound effect volumes, dialogue box themes and fully
   rebindable keys (**F10** or the ⚙ button).
 - **Phones and tablets.** A touch joystick plus Use and Examine/Talk buttons.
+  Plays best sideways: the ⛶ button goes full screen and, on Android, locks
+  landscape. iPhone can't do either for web pages, so it shows a rotate prompt
+  and Add to Home Screen steps instead. `node scripts/landscape-preview.cjs`
+  takes phone-size screenshots and checks the landscape HUD for overlaps.
 
 ## Controls
 
