@@ -15,7 +15,7 @@ const BLOCKS=[[28,28,168,128],[214,28,432,70],[262,206,378,284],[486,316,604,360
 export const chiefHouseBlocked=(x,y)=>WALLS.blocked(x,y)||BLOCKS.some(([l,t,r,b])=>x>l-12&&x<r+12&&y>t-12&&y<b+12);
 export function drawChiefHouse(c,t=0){
  // Red plaster back wall with white timber, red-oak floor.
- drawRoomShell(c,ROOM,'chief',{floor:['#9a6a43','#7a5133','#b07c50'],wallFill:'#8e3b33',paintWall:(c,x,y,w,h)=>{
+ drawRoomShell(c,ROOM,'chief',{floorTile:[112],floor:['#9a6a43','#7a5133','#b07c50'],wallFill:'#8e3b33',paintWall:(c,x,y,w,h)=>{
   c.fillStyle='#7b3531';for(let i=0;i<w;i+=6)c.fillRect(x+i,y+((i*7)%h),3,2);
   c.fillStyle='#e4d8bb';for(let i=x+60;i<x+w;i+=120)c.fillRect(i,y,8,h);c.fillRect(x,y,w,6);c.fillRect(x,y+h-8,w,8);
   c.fillStyle='#5f3a26';c.fillRect(x,y,w,3);

@@ -15,7 +15,7 @@ const BLOCKS=[[40,110,152,300],[180,136,212,166],[486,306,516,336],[448,40,532,9
 export const guestLodgeBlocked=(x,y)=>WALLS.blocked(x,y)||BLOCKS.some(([l,t,r,b])=>x>l-12&&x<r+12&&y>t-12&&y<b+12);
 export function drawGuestLodge(c,{night=false,morning=false}={}){
  // Plain pine floor and a back wall of vertical timber boards.
- drawRoomShell(c,ROOM,'lodge',{floor:['#a07a52','#7f5d3c','#b9915f'],wallFill:'#6e4d32',paintWall:(c,x,y,w,h)=>{
+ drawRoomShell(c,ROOM,'lodge',{floorTile:[112],floor:['#a07a52','#7f5d3c','#b9915f'],wallFill:'#6e4d32',paintWall:(c,x,y,w,h)=>{
   for(let i=x;i<x+w;i+=18){c.fillStyle='#5a3d27';c.fillRect(i,y,2,h);c.fillStyle='#836043';c.fillRect(i+2,y,2,h);}
   c.fillStyle='#4a321f';c.fillRect(x,y,w,6);c.fillRect(x,y+h-8,w,8);c.fillStyle='#9a7650';c.fillRect(x,y+h-8,w,2);
  }});
