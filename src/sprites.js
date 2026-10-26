@@ -1,4 +1,4 @@
-import {SPRITES} from './sprite-definitions.js';
+import {SPRITES,PROPS} from './sprite-definitions.js';
 const images=new Map();
 const keyedImages=new Map();
 export function greenMattePixel(r,g,b){return g>100&&g>r*1.45&&g>b*1.35;}
@@ -52,5 +52,18 @@ export function drawEntitySprite(ctx,id,pose={}){
  const def=SPRITES[id];
  const flipX=pose.flipX??(def?.mirror==='left'?pose.facingX>0:def?.mirror==='right'?pose.facingX<0:false);
  return drawSprite(ctx,def,{...pose,flipX});
+}
+const propListeners=new Set();
+// Cached scenery (terrain chunks) registers here to repaint once a prop image arrives.
+export const onPropLoad=fn=>propListeners.add(fn);
+// Fits a prop inside a w×h box whose bottom centre sits at (x,y). Returns false until the image is ready.
+export function drawProp(ctx,id,{x,y,w,h,flipX=false}){
+ if(!PROPS[id]||typeof Image==='undefined')return false;
+ const url=spriteAssetUrl(PROPS[id]);let img=images.get(url);
+ if(!img){img=new Image();img.onload=()=>propListeners.forEach(fn=>fn());images.set(url,img);img.src=url;}
+ if(!img.complete||!img.naturalWidth||!img.naturalHeight)return false;
+ const k=Math.min(w/img.naturalWidth,h/img.naturalHeight),dw=img.naturalWidth*k,dh=img.naturalHeight*k;
+ ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.translate(Math.round(x),Math.round(y));if(flipX)ctx.scale(-1,1);
+ ctx.drawImage(img,-dw/2,-dh,dw,dh);ctx.restore();return true;
 }
 export const clearSpriteCache=()=>{images.clear();keyedImages.clear();};
