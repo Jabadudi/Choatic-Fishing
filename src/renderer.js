@@ -8,6 +8,7 @@ import {drawWilds,drawWildsLabels,drawDepthSorted,drawExplorer} from './wilds.js
 import {drawRabbits,drawRabbit,visibleRabbits} from './rabbits.js';
 import {drawAtmosphere} from './atmosphere.js';
 import {visibleNpcs,drawNpc} from './npcs.js';
+import {nightAttackActors} from './story-action.js';
 export function render(ctx,world,view){
  const {elapsed:t,player:p,bobber}=world;
  const actors=[];
@@ -18,7 +19,8 @@ export function render(ctx,world,view){
   for(const a of visibleWildlife(world,view))actors.push({y:a.y+14,ref:a});
   for(const drop of world.drops||[])if(drop.areaId===world.areaId)actors.push({y:drop.y+5,ref:drop});
   for(const n of visibleNpcs(world,view))actors.push({y:n.sortY??n.y+14,ref:n});
-  drawDepthSorted(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500},actors,(c,ref)=>ref===p?drawPlayer(c,world):ref.entityType==='pickup'?drawDrop(c,ref,t):ref.npc?drawNpc(c,ref,t):ref.species==='rabbit'?drawRabbit(c,ref):drawWildlife(c,ref));
+  for(const a of nightAttackActors(world))actors.push({y:a.y+14,ref:{...a,cutscene:true}});
+  drawDepthSorted(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500},actors,(c,ref)=>ref===p?drawPlayer(c,world):ref.cutscene?drawCutsceneActor(c,ref):ref.entityType==='pickup'?drawDrop(c,ref,t):ref.npc?drawNpc(c,ref,t):ref.species==='rabbit'?drawRabbit(c,ref):drawWildlife(c,ref));
  }else{drawTerrain(ctx,world);drawRabbits(ctx,world,view);}
   for(const bot of world.actors.filter(actor=>actor!==world.player)){
     if(bot.health<=0)continue;
@@ -57,7 +59,24 @@ function drawBobber(ctx,world){
 }
 function drawPlayer(ctx,world){
  drawBobber(ctx,world);
- const fallen=world.story?.scene==='storm'&&world.story.page===3;
+ // Eli stays down in the mud from the collapse until the blackout.
+ const fallen=world.story?.scene==='storm'&&[3,4].includes(world.story.page);
  if(fallen){const p=world.player;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(Math.PI/2);drawExplorer(ctx,{...p,x:0,y:0},world.elapsed||0);ctx.restore();}
  else drawExplorer(ctx,world.player,world.elapsed||0);
+}
+// Cutscene actors are poses computed by story-action.js. Visible silhouettes stand in while sheets load.
+function drawCutsceneActor(ctx,a){
+ const y=a.y-(a.lift||0);
+ ctx.fillStyle='#0b101855';ctx.beginPath();ctx.ellipse(a.x,a.y+14,a.spriteId==='nightwalker'?17:22,6,0,0,Math.PI*2);ctx.fill();
+ if(drawEntitySprite(ctx,a.spriteId,{...a,y}))return;
+ ctx.save();ctx.translate(Math.round(a.x),Math.round(y));
+ if(a.spriteId==='nightwalker'){
+  ctx.globalAlpha=a.state==='death'?Math.max(0,1-a.time/1.3):1;
+  ctx.fillStyle='#1c1820';ctx.beginPath();ctx.moveTo(-13,15);ctx.lineTo(-8,-30);ctx.lineTo(0,-40);ctx.lineTo(8,-30);ctx.lineTo(13,15);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='#8d8a86';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(4,-4);ctx.lineTo(a.state==='raise'?10:20,a.state==='raise'?-36:8);ctx.stroke();
+ }else{
+  ctx.scale(a.facingX<0?-1:1,1);ctx.fillStyle='#b8bcc4';ctx.beginPath();ctx.ellipse(0,-4,24,11,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(22,-14,9,7,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#8f949c';ctx.fillRect(-16,4,5,11);ctx.fillRect(12,4,5,11);
+ }
+ ctx.restore();
 }
