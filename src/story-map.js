@@ -26,11 +26,11 @@ export function drawCabin(c,story){
 export function drawCabinInterior(c){
  // A Stardew-style room: the back wall shows its whole face, the side and front walls only their tops.
  const W=CABIN_WALL;c.fillStyle='#120e0b';c.fillRect(0,0,640,480);
- if(!drawTiles(c,'cabin-floor',{x:30,y:W,w:580,h:446-W,tw:64,th:64})){
+ if(!drawTiles(c,'cabin-floor',{x:30,y:W,w:580,h:446-W,tw:96,th:58.5})){
   c.fillStyle='#b18b59';c.fillRect(30,W,580,446-W);
   for(let y=W,row=0;y<446;y+=16,row++){c.fillStyle='#8f6c45';c.fillRect(30,y,580,2);c.fillStyle='#c39a65';c.fillRect(30,y+2,580,1);for(let x=30+(row%3)*32;x<610;x+=96){c.fillStyle='#7d5d3c';c.fillRect(x,y,2,16);}}
  }
- if(!drawTiles(c,'cabin-wall',{x:30,y:10,w:580,h:W-10,tw:W-10,th:W-10})){
+ if(!drawTiles(c,'cabin-wall',{x:30,y:10,w:580,h:W-10,tw:(W-10)*256/286,th:W-10})){
   c.fillStyle='#5a3d29';c.fillRect(30,10,580,W-10);
   for(let y=14;y<W-10;y+=11){c.fillStyle='#6f4c33';c.fillRect(30,y,580,8);c.fillStyle='#86603f';c.fillRect(30,y+1,580,2);c.fillStyle='#3e2a1d';c.fillRect(30,y+8,580,3);}
   c.fillStyle='#3a281b';c.fillRect(30,10,580,5);c.fillStyle='#4b3322';c.fillRect(30,W-9,580,9);c.fillStyle='#7a5638';c.fillRect(30,W-9,580,2);
@@ -38,8 +38,9 @@ export function drawCabinInterior(c){
  // Shadow where the floor meets the wall.
  const g=c.createLinearGradient(0,W,0,W+18);g.addColorStop(0,'rgba(20,12,6,.35)');g.addColorStop(1,'rgba(20,12,6,0)');c.fillStyle=g;c.fillRect(30,W,580,18);
  // Wall tops: dark timber edges framing the room, with the doorway gap at the bottom.
- const top=(x,y,w,h)=>{if(!drawTiles(c,'cabin-wall-top',{x,y,w,h,tw:32,th:32})){c.fillStyle='#3b2a1e';c.fillRect(x,y,w,h);c.fillStyle='#5b4130';c.fillRect(x+2,y+2,w-4,h-4);}};
+ const top=(x,y,w,h)=>{const side=h>w;if(!drawTiles(c,side?'cabin-wall-side':'cabin-wall-top',side?{x,y,w,h,tw:w,th:w*256/98}:{x,y,w,h,tw:h*256/98,th:h})){c.fillStyle='#3b2a1e';c.fillRect(x,y,w,h);c.fillStyle='#5b4130';c.fillRect(x+2,y+2,w-4,h-4);}};
  top(10,0,20,460);top(610,0,20,460);top(10,0,620,10);top(10,446,268,14);top(362,446,268,14);
+ c.fillStyle='rgba(18,12,8,.35)';for(const [x,y,w,h] of [[10,0,20,460],[610,0,20,460],[10,0,620,10],[10,446,268,14],[362,446,268,14]])c.fillRect(x,y,w,h);
  // Sprites when loaded; the drawn shapes below are the fallback. Chairs and lamp exist only as sprites.
  if(!drawProp(c,'window-evening',{x:427,y:76,w:70,h:60})){c.fillStyle='#4a3322';c.fillRect(394,22,66,50);c.fillStyle='#9ec3c0';c.fillRect(399,27,56,40);c.fillStyle='#4a3322';c.fillRect(425,27,4,40);c.fillRect(399,45,56,3);}
  if(!drawProp(c,'cook-stove',{x:122,y:94,w:118,h:88})){

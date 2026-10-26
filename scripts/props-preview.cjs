@@ -17,7 +17,7 @@ const assert=require('node:assert/strict');
  });
  await page.reload();await page.locator('#continue-journey:not([disabled])').waitFor();await page.locator('#continue-journey').click();
  await page.waitForFunction(()=>window.__storyQA?.world?.journeyId==='props-browser');
- const shots=[['cabin',320,395]];
+ const shots=[['chief-house',320,410],['cabin',320,395],['guest-lodge',280,330],['village',1000,800],['village',1500,900],['village',700,1150],['crossroads',600,820],['crossroads',1300,900],['landing',1630,1700],['marsh',1530,1200]];
  for(const [area,x,y] of shots){
   await page.evaluate(([area,x,y])=>{const w=window.__storyQA.world;w.areaId=area;Object.assign(w.player,{x,y});},[area,x,y]);
   await page.waitForTimeout(1500);await page.screenshot({path:`screenshots/props-${area}-${x}.png`});
