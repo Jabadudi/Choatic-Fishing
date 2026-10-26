@@ -14,6 +14,7 @@ import {mountBackpack} from './backpack.js';
 import {mountSkills} from './skills-ui.js';
 import {setItemIcon} from './item-icons.js';
 import {TouchInput,mountMobileControls,gameScale} from './mobile.js';
+import {mountScreenControls} from './fullscreen.js';
 import {nearbyNpc} from './npcs.js';
 import {World} from './world.js';
 import {render} from './renderer.js';
@@ -228,6 +229,7 @@ function refreshKeyHints(){
  for(let slot=1;slot<=7;slot++)$(slot===1?'slot-rod':slot===2?'slot-item':'slot-'+slot).querySelector('kbd').textContent=bindingLabel('slot'+slot);
 }
 refreshKeyHints();
+mountScreenControls({onChange:()=>release()});
 settingsUI=mountSettings({onOpen:()=>{release();backpackUI?.close();skillsUI?.close();toggleAtlas(false);},onClose:()=>{release();if(!storyUI?.open)canvas.focus();}});
 storyUI=mountStory({getWorld:()=>lobby.world,onAdvance:()=>{release();lastAtlasDraw=0;canvas.focus();},onSettings:()=>settingsUI.show(),isSettingsOpen:()=>settingsUI.open});
 document.addEventListener('click',e=>{if(e.target.closest('button')&&!e.target.closest('#story-scene,#settings-sfx-test'))playSfx('ui');});

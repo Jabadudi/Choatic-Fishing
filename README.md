@@ -142,6 +142,16 @@ The playlist now alternates Battle Music (Paulyudin, 2:42) and Armageddon (Alibi
 
 On phones, a joystick at the bottom right controls movement and facing. The bottom-left **Use** button uses the selected item; with the rod selected it casts, becomes **Cancel** while waiting, and becomes **Reel** during the catch. Hold Reel to raise the fishing bar and release it to lower the bar. Tap water to aim before casting. Tap **Examine** near a landmark, the hotbar to select an item, and the map to open or close it. The inventory sits above the controls in portrait mode. Both thumbs work independently, and input releases on interruption or when opening the map.
 
+### Full screen and landscape
+
+The game plays best with the phone held sideways. In landscape the region card and quest sit on the left, Skills, Backpack and Save run along the top, the map, Settings and the full screen button sit on the right, and the thumbs keep the bottom corners. While reeling, the hotbar steps aside so the line meter can run tall.
+
+- **Android (Chrome, Edge, Samsung Internet):** the ⛶ button, or **Play full screen** on the rotate prompt, hides the browser bars and locks the screen sideways. Installing the game (browser menu → Install app / Add to Home screen) opens it full screen in landscape every time.
+- **iPhone (Safari and every other iPhone browser):** Apple doesn't let web pages go full screen or lock rotation. Turn the phone sideways (with Portrait Orientation Lock off in Control Center). For a full screen feel, tap Share → **Add to Home Screen** and play from the icon; it opens without Safari's bars. The ⛶ button explains these steps.
+- **iPad and desktop:** the ⛶ button toggles full screen. Tablets keep whichever orientation you hold them in.
+
+Holding a phone upright shows a rotate prompt; **Keep playing upright** dismisses it for the session. Run `node scripts/landscape-preview.cjs` for phone-size screenshots and overlap checks.
+
 ## First NPC
 
 Mara stands on the shore beside the broken boat at Reedwater Landing. Walk close
