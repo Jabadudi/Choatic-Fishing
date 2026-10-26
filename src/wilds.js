@@ -7,7 +7,7 @@ import {MARSH,MARSH_ROADS,MARSH_PLACES,MARSH_OBJECTS,marshWaterDistance,onMarshD
 import {drawMarshGround,drawMarshObject} from './marsh-art.js';
 import {VILLAGE,VILLAGE_ROADS,VILLAGE_PLACES,villageWaterDistance,onVillageDeck,villageBlocked,villageClear} from './village.js';
 import {drawVillageGround,drawVillageObject,villageObjects,paintVillageBuildings} from './village-art.js';
-import {drawEntitySprite} from './sprites.js';
+import {drawEntitySprite,onPropLoad} from './sprites.js';
 import {CROSSROADS,CROSSROADS_ROADS,CROSSROADS_PLACES,crossroadsWaterDistance,crossroadsBlocked,onCrossroadsDeck,drawCrossroads,drawCrossroadsLabels} from './crossroads.js';
 import {leafyTree,meadowRock,meadowBush,grassDetail,wildflower} from './plains-art.js';
 import {drawGrassBase} from './grass-texture.js';
@@ -193,6 +193,7 @@ function staticArea(ctx,left,top,width,height,id){
 }
 const chunks=new Map(),CHUNK=512,MAX_CHUNKS=30;
 export const clearTerrainCache=()=>chunks.clear();
+onPropLoad(clearTerrainCache);
 export const cachedChunkCount=()=>chunks.size;
 function drawChunks(ctx,view,id){
  for(let cy=Math.floor(view.top/CHUNK);cy<=Math.floor(view.bottom/CHUNK);cy++)for(let cx=Math.floor(view.left/CHUNK);cx<=Math.floor(view.right/CHUNK);cx++){

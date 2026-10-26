@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {SPRITES} from '../src/sprite-definitions.js';
-import {drawSprite,drawEntitySprite,frameIndex,frameRect,clearSpriteCache} from '../src/sprites.js';
+import {SPRITES,PROPS} from '../src/sprite-definitions.js';
+import {existsSync} from 'node:fs';
+import {drawSprite,drawEntitySprite,drawProp,frameIndex,frameRect,clearSpriteCache} from '../src/sprites.js';
 import {createNpcs,drawNpc} from '../src/npcs.js';
 import {releaseFingerprint} from '../build-version.mjs';
 
@@ -61,4 +62,14 @@ test('deer and turtle sheets match their configured grids and every clip frame f
   assert.equal(png.toString('ascii',1,4),'PNG');assert.equal(png.readUInt32BE(16),w);assert.equal(png.readUInt32BE(20),h);
   for(const clip of Object.values(d.animations))for(const i of clip.frames){const [x,y,fw,fh]=frameRect(d,i,w,h);assert.ok(x+fw<=w&&y+fh<=h);}
  }
+});
+test('every furniture prop ships an image and fits its box from the bottom centre',()=>{
+ for(const asset of Object.values(PROPS))assert.ok(existsSync(new URL(`../assets/${asset}`,import.meta.url)),asset);
+ withImages(()=>{
+  const c=fakeCanvas();assert.ok(drawProp(c.ctx,'well',{x:100,y:200,w:64,h:32}));
+  assert.deepEqual(c.ops.find(o=>o[0]==='translate'),['translate',100,200]);
+  assert.deepEqual(c.ops.find(o=>o[0]==='image').slice(2),[-16,-32,32,32]);
+  assert.equal(drawProp(c.ctx,'not-a-prop',{x:0,y:0,w:10,h:10}),false);
+ });
+ assert.equal(drawProp(fakeCanvas().ctx,'well',{x:0,y:0,w:10,h:10}),false);
 });

@@ -1,4 +1,5 @@
 import {MARSH_BOARDS,marshWaterDistance,onMarshDeck} from './marsh.js';
+import {drawProp} from './sprites.js';
 const r=(c,color,x,y,w,h)=>{c.fillStyle=color;c.fillRect(Math.round(x),Math.round(y),w,h);};
 const hash=(x,y)=>{let n=Math.imul(x+7357,374761393)^Math.imul(y,668265263);n=Math.imul(n^(n>>>13),1274126177);return ((n^(n>>>16))>>>0)/4294967296;};
 function oval(c,x,y,rx,ry,color){c.fillStyle=color;for(let row=-ry;row<=ry;row+=3){const width=Math.round(rx*Math.sqrt(Math.max(0,1-row*row/(ry*ry)))/3)*3;c.fillRect(Math.round(x-width),Math.round(y+row),width*2,3);}}
@@ -26,7 +27,7 @@ export function drawMarshGround(c,left,top,width,height){
  // Low moorings, a forgotten fish trap, and the ruin's worn stone apron.
  for(const [x,y]of [[1620,1365],[1680,1365],[330,1440],[410,1465]])post(c,x,y,true);
  for(let row=0;row<5;row++)for(let col=0;col<5;col++){const x=1007+col*22+(row%2?6:0),y=1530+row*18;r(c,(row+col)%2?'#8a9479':'#a4ab8b',x,y,20,16);r(c,'#bdbea0',x,y,20,2);if((col+row)%3===0)r(c,'#5f8050',x+2,y+11,9,3);}
- r(c,'#5e563b',1515,1110,30,18);r(c,'#ac9a69',1515,1110,30,3);for(let i=0;i<5;i++)r(c,'#99916a',1518+i*5,1113,1,13);
+ if(!drawProp(c,'fish-trap',{x:1530,y:1130,w:44,h:32})){r(c,'#5e563b',1515,1110,30,18);r(c,'#ac9a69',1515,1110,30,3);for(let i=0;i<5;i++)r(c,'#99916a',1518+i*5,1113,1,13);}
 }
 export function drawMarshObject(c,o,time=0){
  const {x,y,kind}=o;oval(c,x+10,y+6,o.radius+7,12,'#173b3540');
