@@ -1,5 +1,6 @@
 import {SKILLS,SKILL_IDS,STATS,skillXpToNext,LEVEL_GROWTH} from './skills.js';
 import {SKILL_TREES,talentFor,talentState} from './skill-trees.js';
+import {FAMILIARS,describeBonus} from './familiars.js';
 const svg=(body,size=24)=>`<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
 const SKILL_ICONS={
  fishing:'<path d="M5 20L17 4M17 4v9M17 13a2 2 0 1 1-2 2"/>',
@@ -19,13 +20,15 @@ export function mountSkills({getWorld,onOpen,onClose}){
  const bar=(value,max,label)=>{const track=document.createElement('div');track.className='skills-track';track.setAttribute('role','progressbar');track.setAttribute('aria-label',label);track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax',max);track.setAttribute('aria-valuenow',value);const fill=document.createElement('i');fill.style.width=`${Math.min(100,value/max*100)}%`;track.append(fill);return track;};
  const el=(tag,className,text)=>{const node=document.createElement(tag);if(className)node.className=className;if(text!==undefined)node.textContent=text;return node;};
  function refresh(){
-  const world=getWorld(),p=world.progression,key=JSON.stringify([p.level,p.xp,p.skills,p.skillTrees,Math.ceil(world.player.health),activeSkill,selected]);if(key===lastKey)return;lastKey=key;
+  const world=getWorld(),p=world.progression,key=JSON.stringify([p.level,p.xp,p.skills,p.skillTrees,Math.ceil(world.player.health),p.familiar,activeSkill,selected]);if(key===lastKey)return;lastKey=key;
   const name=el('h3',null,world.player.name==='YOU'?'Explorer':world.player.name),level=el('p','skills-level',`Level ${p.level}`);
   const xp=el('small','skills-xp',`${p.xp} / ${p.xpToNextLevel} XP to level ${p.level+1}`);
   const stats=el('dl','skills-stats');
   const row=(label,value,hint)=>{const term=el('dt',null,label),detail=el('dd',null,String(value));detail.append(el('small',null,hint));stats.append(term,detail);};
   row('Max health',`${Math.ceil(world.player.health)} / ${p.maxHealth}`,`+${LEVEL_GROWTH.health} each level`);
   for(const stat of STATS)row(stat.name,p.stats[stat.id],stat.description);
+  // Familiar bonuses are already inside the numbers above; this row says where they come from.
+  const active=world.familiars?.active;if(active&&p.familiar)row('Familiar',FAMILIARS[active].name,describeBonus(p.familiar));
   character.replaceChildren(name,level,bar(p.xp,p.xpToNextLevel,'Experience toward next level'),xp,stats);
   list.replaceChildren(...SKILL_IDS.map(id=>{
    const skill=p.skills[id],points=p.skillPoints(id),card=el('button','skills-card'),icon=el('span','skills-icon');icon.innerHTML=svg(SKILL_ICONS[id],30);

@@ -9,6 +9,7 @@ import {drawRabbits,drawRabbit,visibleRabbits} from './rabbits.js';
 import {drawAtmosphere} from './atmosphere.js';
 import {visibleNpcs,drawNpc} from './npcs.js';
 import {nightAttackActors} from './story-action.js';
+import {drawFamiliar,drawShard} from './familiar-art.js';
 export function render(ctx,world,view){
  const {elapsed:t,player:p,bobber}=world;
  const actors=[];
@@ -17,10 +18,11 @@ export function render(ctx,world,view){
   drawWilds(ctx,world,view);
   actors.push({y:p.y+12,ref:p});for(const r of visibleRabbits(world,view))actors.push({y:r.y,ref:r});
   for(const a of visibleWildlife(world,view))actors.push({y:a.y+14,ref:a});
+  if(world.companion?.areaId===world.areaId)actors.push({y:world.companion.y+4,ref:world.companion});
   for(const drop of world.drops||[])if(drop.areaId===world.areaId)actors.push({y:drop.y+5,ref:drop});
   for(const n of visibleNpcs(world,view))actors.push({y:n.sortY??n.y+14,ref:n});
   for(const a of nightAttackActors(world))actors.push({y:a.y+14,ref:{...a,cutscene:true}});
-  drawDepthSorted(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500},actors,(c,ref)=>ref===p?drawPlayer(c,world):ref.cutscene?drawCutsceneActor(c,ref):ref.entityType==='pickup'?drawDrop(c,ref,t):ref.npc?drawNpc(c,ref,t):ref.species==='rabbit'?drawRabbit(c,ref):drawWildlife(c,ref));
+  drawDepthSorted(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500},actors,(c,ref)=>ref===p?drawPlayer(c,world):ref.cutscene?drawCutsceneActor(c,ref):ref===world.companion?drawFamiliar(c,ref,t):ref.entityType==='pickup'?(ref.item.familiar?drawShard(c,ref,t):drawDrop(c,ref,t)):ref.npc?drawNpc(c,ref,t):ref.species==='rabbit'?drawRabbit(c,ref):drawWildlife(c,ref));
  }else{drawTerrain(ctx,world);drawRabbits(ctx,world,view);}
   for(const bot of world.actors.filter(actor=>actor!==world.player)){
     if(bot.health<=0)continue;
