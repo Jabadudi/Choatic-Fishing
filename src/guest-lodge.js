@@ -1,4 +1,5 @@
 // Eli's room in Willowback's guest lodge. Geometry and collision only; story.js decides who stands here.
+import {drawRoomShell,roomWalls} from './room-shell.js';
 import {drawProp} from './sprites.js';
 export const LODGE_DOOR={x:410,y:330};
 export const GUEST_LODGE={id:'guest-lodge',name:'The Guest Lodge',width:560,height:400,seed:7357,spawn:{x:280,y:330},exits:[{edge:'south',from:230,to:330,target:'village',entry:{x:LODGE_DOOR.x,y:390},label:'Willowback Village'}]};
@@ -9,21 +10,21 @@ export const LODGE_BED={x:96,y:205},LODGE_STOOL={x:196,y:150},LODGE_WINDOW={x:30
 // Where Eli finds himself after the vision, on the floor beside the stool.
 export const LODGE_WAKE_SPOT={x:230,y:200};
 export const GUEST_LODGE_PLACES=[];
+const ROOM={width:560,height:400,wall:76,door:[236,324]},WALLS=roomWalls(ROOM);
 const BLOCKS=[[40,110,152,300],[180,136,212,166],[486,306,516,336],[448,40,532,92]];
-export const guestLodgeBlocked=(x,y)=>BLOCKS.some(([l,t,r,b])=>x>l-12&&x<r+12&&y>t-12&&y<b+12);
+export const guestLodgeBlocked=(x,y)=>WALLS.blocked(x,y)||BLOCKS.some(([l,t,r,b])=>x>l-12&&x<r+12&&y>t-12&&y<b+12);
 export function drawGuestLodge(c,{night=false,morning=false}={}){
- c.fillStyle='#21170f';c.fillRect(0,0,560,400);
- // Plain floorboards and timber walls.
- c.fillStyle='#8f6a45';c.fillRect(24,24,512,352);
- for(let y=25;y<376;y+=20){c.fillStyle='#755234';c.fillRect(24,y,512,2);for(let x=24+(y%40?0:52);x<536;x+=104)c.fillRect(x,y,2,20);}
- c.fillStyle='#5f4029';c.fillRect(10,10,540,22);c.fillRect(10,10,18,380);c.fillRect(532,10,18,380);
- c.fillStyle='#c9a46a';c.fillRect(10,30,540,3);
+ // Plain pine floor and a back wall of vertical timber boards.
+ drawRoomShell(c,ROOM,'lodge',{floorTile:[112],floor:['#a07a52','#7f5d3c','#b9915f'],wallFill:'#6e4d32',paintWall:(c,x,y,w,h)=>{
+  for(let i=x;i<x+w;i+=18){c.fillStyle='#5a3d27';c.fillRect(i,y,2,h);c.fillStyle='#836043';c.fillRect(i+2,y,2,h);}
+  c.fillStyle='#4a321f';c.fillRect(x,y,w,6);c.fillRect(x,y+h-8,w,8);c.fillStyle='#9a7650';c.fillRect(x,y+h-8,w,2);
+ }});
  // A window with real glass, slightly warped.
- const w=LODGE_WINDOW;c.fillStyle='#5f3a26';c.fillRect(w.x-46,36,92,58);
+ const w=LODGE_WINDOW;c.save();c.translate(0,-18);c.fillStyle='#5f3a26';c.fillRect(w.x-46,36,92,58);
  c.fillStyle=morning?'#f6d48c':night?'#1b2440':'#c58b6a';c.fillRect(w.x-40,42,80,46);
  if(night){c.fillStyle='#e8eefc';for(const [dx,dy] of [[-28,6],[-10,14],[14,4],[26,20],[-20,30]])c.fillRect(w.x+dx,42+dy,2,2);}
  c.fillStyle='#ffffff22';c.fillRect(w.x-36,46,10,38);c.fillRect(w.x+6,48,6,34);
- c.fillStyle='#5f3a26';c.fillRect(w.x-2,42,4,46);c.fillRect(w.x-40,63,80,3);
+ c.fillStyle='#5f3a26';c.fillRect(w.x-2,42,4,46);c.fillRect(w.x-40,63,80,3);c.restore();
  // Bed: a straw mattress under a heavy wool blanket.
  if(!drawProp(c,'bed-straw-violet',{x:96,y:302,w:116,h:196})){
   c.fillStyle='#4f3523';c.fillRect(40,110,112,190);c.fillStyle='#d9bf72';c.fillRect(46,116,100,178);
@@ -43,11 +44,10 @@ export function drawGuestLodge(c,{night=false,morning=false}={}){
  if(!drawProp(c,'chamber-pot',{x:LODGE_POT.x,y:LODGE_POT.y+12,w:32,h:28})){
   c.fillStyle='#7d6a5a';c.beginPath();c.ellipse(LODGE_POT.x,LODGE_POT.y,16,11,0,0,Math.PI*2);c.fill();c.fillStyle='#4a3f36';c.beginPath();c.ellipse(LODGE_POT.x,LODGE_POT.y-3,11,6,0,0,Math.PI*2);c.fill();
  }
- // Woven rug and the doorway.
+ // Woven rug.
  if(!drawProp(c,'rug-rust-red',{x:295,y:302,w:154,h:82})){
   c.fillStyle='#7a3b31';c.fillRect(220,220,150,80);c.fillStyle='#c9a46a';for(let x=228;x<364;x+=14)c.fillRect(x,226,7,3),c.fillRect(x,292,7,3);
  }
- c.fillStyle='#b8986c';c.fillRect(236,360,88,40);c.fillStyle='#e4d8bb';c.fillRect(228,358,8,42);c.fillRect(324,358,8,42);
  // Lamplight in the evening, moonlight at night, sunrise in the morning.
  if(night){c.fillStyle='rgba(10,16,40,.45)';c.fillRect(24,24,512,352);const g=c.createRadialGradient(w.x,96,10,w.x,160,240);g.addColorStop(0,'rgba(150,180,255,.22)');g.addColorStop(1,'rgba(150,180,255,0)');c.fillStyle=g;c.fillRect(24,24,512,352);}
  else{const g=c.createRadialGradient(w.x,96,10,w.x,180,320);g.addColorStop(0,morning?'rgba(255,214,140,.32)':'rgba(255,170,80,.22)');g.addColorStop(1,'rgba(255,170,80,0)');c.fillStyle=g;c.fillRect(24,24,512,352);}

@@ -1,10 +1,14 @@
 import {drawProp} from './sprites.js';
+import {drawRoomShell} from './room-shell.js';
 import {CABIN,CAMP,cabinDamaged} from './story.js';
 export const CABIN_AREA={id:'cabin',name:'Grandpa’s Cabin',width:640,height:480,seed:7329,spawn:{x:320,y:395},exits:[{edge:'south',from:270,to:370,target:'landing',entry:{x:CABIN.x,y:1570},label:'Reedwater Shore'}]};
 export const CABIN_PLACES=[{id:'cabin-box',name:'The Lure Box',x:520,y:145,kind:'interior',text:'A wooden box leaks a faint blue light.'},{id:'cabin-photo',name:'The Photograph',x:110,y:270,kind:'interior',text:'A young man, a laughing woman, and an enormous gray wolf.'},{id:'cabin-stove',name:'The Stove',x:100,y:120,kind:'interior',text:'A small stove and a well-stocked spice rack.'},{id:'cabin-rack',name:'Weapon Rack',x:320,y:66,kind:'interior',text:'Grandpa’s weapon rack: fishing rods and an old recurve bow.'},{id:'cabin-bed',name:'The Bed',x:510,y:330,kind:'interior',text:'A wool blanket lies neatly folded at the foot of the bed.'}];
 export const cabinBlocked=(x,y)=>x>CABIN.left-14&&x<CABIN.right+14&&y>CABIN.top-14&&y<CABIN.bottom+14;
 export const cabinClearing=(x,y)=>x>1400&&x<1930&&y>1230&&y<1760;
-export const cabinInteriorBlocked=(x,y)=>[[65,45,180,90],[262,28,378,64],[476,65,582,111],[48,212,120,241],[462,255,575,378],[237,203,391,288]].some(([l,t,r,b])=>x>l-12&&x<r+12&&y>t-12&&y<b+12);
+// The back wall's face runs down to CABIN_WALL; furniture stands on the floor in front of it.
+export const CABIN_WALL=84;
+const CABIN_ROOM={width:640,height:480,wall:CABIN_WALL,door:[278,362]};
+export const cabinInteriorBlocked=(x,y)=>y<CABIN_WALL||x<40||x>600||(y>436&&(x<290||x>350))||[[65,45,180,90],[262,28,378,64],[476,65,582,111],[48,212,120,241],[462,255,575,378],[237,203,391,288]].some(([l,t,r,b])=>x>l-12&&x<r+12&&y>t-12&&y<b+12);
 export function drawCabin(c,story){
  const damaged=cabinDamaged(story),x=CABIN.left,y=CABIN.top;
  c.save();c.translate(x,y);
@@ -22,11 +26,13 @@ export function drawCabin(c,story){
  drawProp(c,'firewood-stack',{x:-22,y:196,w:54,h:40});drawProp(c,'rain-barrel',{x:286,y:194,w:30,h:44});c.restore();
 }
 export function drawCabinInterior(c){
- c.fillStyle='#26352f';c.fillRect(0,0,640,480);c.fillStyle='#b18b59';c.fillRect(24,24,592,432);
- for(let y=25;y<456;y+=22){c.fillStyle='#795b3e';c.fillRect(24,y,592,2);for(let x=24+(y%44?0:65);x<616;x+=130)c.fillRect(x,y,2,22);}
- c.fillStyle='#60432e';c.fillRect(10,10,620,23);c.fillRect(10,10,20,450);c.fillRect(610,10,20,450);
- // Sprites when loaded; the drawn shapes below are the fallback. Rod rack, chairs and lamp exist only as sprites.
- drawProp(c,'fishing-rod-rack',{x:330,y:104,w:84,h:94});
+ const W=CABIN_WALL;
+ drawRoomShell(c,CABIN_ROOM,'cabin',{floor:['#b18b59','#8f6c45','#c39a65'],wallFill:'#5a3d29',paintWall:(c,x,y,w,h)=>{
+  for(let j=y+4;j<y+h-10;j+=11){c.fillStyle='#6f4c33';c.fillRect(x,j,w,8);c.fillStyle='#86603f';c.fillRect(x,j+1,w,2);c.fillStyle='#3e2a1d';c.fillRect(x,j+8,w,3);}
+  c.fillStyle='#3a281b';c.fillRect(x,y,w,5);c.fillStyle='#4b3322';c.fillRect(x,y+h-9,w,9);c.fillStyle='#7a5638';c.fillRect(x,y+h-9,w,2);
+ }});
+ // Sprites when loaded; the drawn shapes below are the fallback. Chairs and lamp exist only as sprites.
+ if(!drawProp(c,'window-evening',{x:427,y:76,w:70,h:60})){c.fillStyle='#4a3322';c.fillRect(394,22,66,50);c.fillStyle='#9ec3c0';c.fillRect(399,27,56,40);c.fillStyle='#4a3322';c.fillRect(425,27,4,40);c.fillRect(399,45,56,3);}
  if(!drawProp(c,'cook-stove',{x:122,y:94,w:118,h:88})){
   c.fillStyle='#654735';c.fillRect(65,45,115,45);c.fillStyle='#354344';c.fillRect(80,55,75,30);c.fillStyle='#ffc66c';c.fillRect(89,67,55,18);
  }
@@ -43,10 +49,10 @@ export function drawCabinInterior(c){
   c.fillStyle='#754f30';c.fillRect(237,203,154,85);c.fillStyle='#bd945d';c.fillRect(242,207,144,73);c.fillStyle='#d7be89';c.beginPath();c.arc(310,241,15,0,Math.PI*2);c.fill();
  }
  drawProp(c,'chair',{x:220,y:286,w:34,h:58,flipX:true});drawProp(c,'chair',{x:408,y:286,w:34,h:58});drawProp(c,'oil-lamp',{x:366,y:236,w:18,h:32});
- if(!drawProp(c,'door-mat',{x:320,y:474,w:84,h:40})){
-  c.fillStyle='#c4b181';c.fillRect(278,438,84,42);
+ if(!drawProp(c,'door-mat',{x:320,y:446,w:80,h:34})){
+  c.fillStyle='#c4b181';c.fillRect(282,414,76,30);
  }
- c.font='13px monospace';c.textAlign='center';c.fillStyle='#f6e4b6';c.fillText('↓ Shore',320,469);
+ c.font='13px monospace';c.textAlign='center';c.fillStyle='#f6e4b6';c.fillText('↓ Shore',320,470);
 }
 export function drawCamp(c,t){
  c.fillStyle='#717a70';c.fillRect(CAMP.x-63,CAMP.y+14,40,23);c.fillStyle='#a6afa0';c.fillRect(CAMP.x-60,CAMP.y+17,34,3);
