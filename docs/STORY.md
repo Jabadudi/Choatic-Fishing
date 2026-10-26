@@ -9,6 +9,7 @@ New Game starts Chapter 1, **The Old Fishing Hut**, after the captain leaves Eli
 3. Leave through the southern doorway. Fish at the dock using the existing fishing controls. While the dinner objective is active, successful catches supply a Sardine so the opening does not depend on loot luck.
 4. Return to the stove in the upper-left corner with a Sardine. Cooking consumes exactly one fish and advances the dinner scene. Approach the left side of the bed and Examine when ready for night.
 5. Advance the illustrated storm sequence: the voice, lightning, escape, Moonfang rescue, blackout and campfire awakening. Movement and combat pause during scenes.
+   On the shore the night attack plays out in the world before the rescue illustration: the shadow walker steps out in front of the cabin as Eli flees, closes in on him after he collapses (ten feet, eight, six) and lifts the axe. Moonfang charges in from the east, leaps over Eli into the walker, and the walker dissolves into smoke, leaving the axe in the mud. Moonfang howls, then the illustration and blackout follow. The choreography lives in `src/story-action.js` (`NIGHT_ATTACK` timings, `nightAttackActors` poses) and the renderer only draws it.
 6. The same shore now contains the damaged cabin and campfire. The area map reflects the damage. The rescuer appears beside the fire; her name is withheld to preserve the later introduction. Talk to her to begin Chapter 2. The north exit opens after the Chapter 2 departure walk.
 
 The mysterious lure is a protected quest item. The opening grants ordinary fishing XP, but catch powers and timed upgrades stay dormant pending the later Region Core storyline. Eli and the rescuer use centralized drawn sprite fallbacks; their gameplay dimensions are independent of their appearance.
@@ -55,11 +56,13 @@ Files in `assets/story/` were downloaded from the user’s Drive folder **The Wi
 | `rescue.png` | `cutscenes/vol1/ch01/ch01_03_moonfang-vs-shadow-walker.png` | Wolf rescue |
 | `campfire.png` | `cutscenes/vol1/ch02/ch02_01_mara-campfire.png` | Closing awakening shared with Chapter 2 |
 | `moonfang.png` | `sprites/creatures/moonfang/moonfang_sheet.png` | Animated rescue vignette |
+| `moonfang-charge.png` | `art/sprites/creatures/moonfang/moonfang_sheet.png` | Night attack: run, leap, land and howl |
+| `nightwalker-sheet.png` | `art/sprites/mobs/nightwalker/nightwalker_sheet.png` | Night attack: walk, raised axe and smoke death |
 | `rimejaw-sheet.png`, `rimejaw-pose.png` | `sprites/creatures/rimejaw/` | Blacksmith guardian animation and discovery artwork |
 | `flitlynx-sheet.png`, `flitlynx-pose.png` | `sprites/creatures/flitlynx/` | Roof creature animation and discovery artwork |
 | `mara.png` | `characters/mara/mara_reference-sheet.png` | Character reference and Chapter 2 dialogue portrait |
 
-All artwork mappings are in `src/sprite-definitions.js`. The Moonfang sheet is irregularly cropped and has a green matte; `src/sprites.js` removes that matte once in a cached canvas. Missing images retain readable scene text and a visible sprite fallback.
+All artwork mappings are in `src/sprite-definitions.js`. The Moonfang sheet is irregularly cropped and has a green matte; `src/sprites.js` removes that matte once in a cached canvas. Missing images retain readable scene text and a visible sprite fallback. The night attack sheets are prepared ahead of time by `python3 scripts/prepare-cutscene-sprites.py`, which removes the matte and puts every frame's feet on one baseline in a regular grid; rerun it after changing the source art.
 
 ## Verification
 

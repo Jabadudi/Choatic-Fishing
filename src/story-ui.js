@@ -4,6 +4,7 @@ import {spriteAssetUrl,drawEntitySprite} from './sprites.js';
 import {dialogueMarkup,setDialogueText,drawDialoguePortrait} from './dialogue-view.js';
 import {cutscenePresentation} from './cutscene-presentation.js';
 import {playSfx} from './sfx.js';
+import {storyActionElapsed,NIGHT_ATTACK} from './story-action.js';
 export function mountStory({getWorld,onAdvance=()=>{},onSettings=()=>{},isSettingsOpen=()=>false}){
  const dialog=document.createElement('dialog');dialog.id='story-scene';dialog.setAttribute('aria-labelledby','story-title');
  dialog.innerHTML=`<div class="cutscene-picture" hidden><img id="story-image" alt=""><canvas id="story-creature" width="1000" height="500" hidden></canvas></div><div class="cutscene-veil"></div>${dialogueMarkup('story')}<div class="scene-toolbar"><button id="story-skip" hidden>Show dialogue</button><button id="story-settings">⚙ Settings</button></div><span class="scene-loading" hidden>Loading artwork…</span>`;
@@ -44,7 +45,7 @@ export function mountStory({getWorld,onAdvance=()=>{},onSettings=()=>{},isSettin
  }
  function update(){
   const now=performance.now(),dt=Math.min(100,Math.max(0,now-lastTick));lastTick=now;
-  let m=model();if(m?.scene.action&&m.scene.action!=='rescue'){if(dialog.open)dialog.close();key='';visualKey='';historyPage=null;generation++;return;}if(!m){if(dialog.open)dialog.close();key='';visualKey='';historyPage=null;lastWorld=null;lastDialogue=null;generation++;return;}
+  let m=model();if(m?.scene.action&&!(m.scene.action==='rescue'&&storyActionElapsed(m.w)>=NIGHT_ATTACK.fight)){if(dialog.open)dialog.close();key='';visualKey='';historyPage=null;generation++;return;}if(!m){if(dialog.open)dialog.close();key='';visualKey='';historyPage=null;lastWorld=null;lastDialogue=null;generation++;return;}
   if(m.w!==lastWorld||(!m.story&&m.w.dialogue!==lastDialogue)){historyPage=null;m=model();}
   const nextKey=m.story?`${m.w.story.scene}:${m.page}`:`npc:${m.w.dialogue.npcId}:${m.w.dialogue.text}`;
   if(nextKey!==key||m.w!==lastWorld||m.w.dialogue!==lastDialogue){
