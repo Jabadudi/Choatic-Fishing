@@ -15,6 +15,11 @@ follow the chimes north and the village road west, meet Willowback’s residents
 examine the Rimejaw and Flitlynx at the blacksmith’s shop, and learn about the
 shadow walkers before reaching the chief’s house. Guide positions persist across
 connected areas. Continue from a Chapter 2 save; there is no need to restart.
+**Chapter 4 — Region Core** continues on the chief’s porch: walk into the
+chief’s house, meet Emilia, learn Mara’s name, hear about Grandpa and the Ember
+Volcano, and learn what the lure really is. Continue from a Chapter 3 save.
+Story dialogue now gives each speaker their own box, with a Narrator for
+descriptions and a Mysterious voice in the Chapter 1 storm.
 
 
 See [docs/STORY.md](docs/STORY.md) for the sequence, artwork sources and extension points.

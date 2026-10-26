@@ -1,5 +1,5 @@
 import {drawDrop} from './drops.js';
-import {cabinDamaged} from './story.js';
+import {cabinDamaged,pendingScene} from './story.js';
 import {visibleWildlife} from './wildlife.js';
 import {drawWildlife,drawAnimalStatus} from './wildlife-art.js';
 import {drawEntitySprite} from './sprites.js';
@@ -51,7 +51,7 @@ export function render(ctx,world,view){
     else{ctx.beginPath();ctx.arc(0,0,effect.name==='Anchor'?72:48,-1+age*2,1+age*2);ctx.stroke();}
     ctx.restore();
   }
-  if(world.adventure){drawWildsLabels(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500});if(view&&world.areaId!=='cabin'&&!cabinDamaged(world.story))drawAtmosphere(ctx,world,view);drawAnimalStatus(ctx,world);}
+  if(world.adventure){drawWildsLabels(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500});if(view&&!['cabin','chief-house'].includes(world.areaId)&&!cabinDamaged(world.story))drawAtmosphere(ctx,world,view);drawAnimalStatus(ctx,world);}
 }
 function drawBobber(ctx,world){
  const {elapsed:t,player:p,bobber}=world;if(!bobber)return;
@@ -60,7 +60,7 @@ function drawBobber(ctx,world){
 function drawPlayer(ctx,world){
  drawBobber(ctx,world);
  // Eli stays down in the mud from the collapse until the blackout.
- const fallen=world.story?.scene==='storm'&&[3,4].includes(world.story.page);
+ const fallen=world.story?.scene==='storm'&&['collapse','rescue'].includes(pendingScene(world)?.action);
  if(fallen){const p=world.player;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(Math.PI/2);drawExplorer(ctx,{...p,x:0,y:0},world.elapsed||0);ctx.restore();}
  else drawExplorer(ctx,world.player,world.elapsed||0);
 }

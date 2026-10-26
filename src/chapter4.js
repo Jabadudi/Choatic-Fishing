@@ -1,0 +1,56 @@
+import {script,say,think,narrate} from './scene-script.js';
+// Story dialogue only. Chapter 4 takes place inside the chief's red house; the guide stays on its porch.
+export const CHAPTER_FOUR_STAGES=['ch4-house','ch4-oscar','ch4-world','ch4-core','ch4-journey','ch4-complete'];
+export const chapterFour=s=>!!s&&CHAPTER_FOUR_STAGES.includes(s.stage);
+// The meeting plays as one conversation. Each scene is a saved checkpoint and leads into the next.
+// Emilia is introduced as the old woman, then the chief, before she gives her name.
+const OLD_WOMAN='The old woman',eli=text=>say('Eli',text),girl=text=>say('The girl',text),mara=text=>say('Mara',text),chief=text=>say('The chief',text);
+export const CHAPTER4_SEQUENCE=['ch4-house','ch4-oscar','ch4-world','ch4-core','ch4-journey'];
+export const CHAPTER4_OBJECTIVES={
+ 'ch4-house':'Chapter 4 · Meet the chief of Willowback.',
+ 'ch4-oscar':'Chapter 4 · Talk with the chief about Grandpa.',
+ 'ch4-world':'Chapter 4 · Ask the chief how to get home.',
+ 'ch4-core':'Chapter 4 · Show the chief the lure.',
+ 'ch4-journey':'Chapter 4 · Ask the chief about the road ahead.',
+ 'ch4-complete':'Chapter 4 complete · Rest at the guest lodge. Training with Drayfus begins at sunrise in Chapter 5.'
+};
+export const CHAPTER4_SCENES={
+ 'ch4-house':script([
+  {title:'The red house',art:'hearth',lines:[girl('We’re here.'),narrate('It isn’t a palace. Still timber and stone like the rest. But it is painted deep red with white trim, with carvings around the door and a little covered porch. It has the general vibe of a building that belongs to somebody in charge.')]},
+  {title:'Permanently unimpressed',art:'hearth',lines:[narrate('Two guards by the door confirm it. They are big. They have spears. One has a scar through his eyebrow that makes him look permanently unimpressed with Eli.'),think('Eli','Which, to be fair, is probably accurate.'),narrate('They look at Eli. They look at the girl. They step aside.')]},
+  {title:'Woodsmoke and herbs',art:'hearth',lines:[narrate('Inside, it is warm and smells of woodsmoke and something herbal. An old woman stands at the hearth, pouring steaming water into a clay pot. Beside her, a man talks in a low voice. Not a farmer. He has the build, the scars and the very big sword of someone who fights for a living.')]},
+  {title:'A short number',art:'hearth',lines:[narrate('The old woman turns. Her eyes go to Eli and stay there. She says a quiet word to the swordsman, who gives Eli a long, measuring look on his way out.'),think('Eli','He’s working out how long I’d last in a fight. The number seems short.'),narrate('The door closes behind him.')]},
+  {title:'Sit, sit',art:'hearth',lines:[say(OLD_WOMAN,'Sit, sit.'),narrate('She waves them toward a low round table by the fire: too small to be a dining table, too big to be a coffee table. Eli sits with the caution of someone who was nearly murdered recently. The girl sits beside him, then pauses, as if realizing something for the first time.')]}
+ ]),
+ 'ch4-oscar':script([
+  {title:'Introductions',art:'hearth',lines:[girl('This is my grandmother. She’s chief of the village. And—'),narrate('She stops. Winces.'),girl('Ah. We never actually introduced ourselves, did we?'),think('Eli','We did not. She rescued me, fed me half a burned fish and marched me through a monster village, and I don’t know her name.')]},
+  {title:'Names, at last',art:'hearth',lines:[mara('I’m Mara.'),eli('Eli.'),narrate('Mara turns to her grandmother, and the smile that breaks across her face is the first one Eli has seen from her that isn’t sarcastic.'),mara('Grandma, this is Oscar’s grandson.'),narrate('The old woman goes very still.'),chief('Is this true?')]},
+  {title:'Look how you’ve grown',art:'hearth',lines:[eli('Yeah. Oscar was my grandpa.'),narrate('She sets down the kettle, comes around the table and takes his face gently in both hands, as if checking it is real.'),chief('Oh, my. Look how you’ve grown. I can’t believe it’s really you.'),think('Eli','I’ve never seen this woman in my life. Have I?')]},
+  {title:'It isn’t a question',art:'hearth',lines:[narrate('Her face folds, just slightly, around the eyes.'),chief('If you are here, then Oscar is gone.'),eli('He passed away a few months ago. But how did you know that? How do you know my grandpa at all?'),narrate('She lets go of his face and sits across from him, slowly, the way people sit when their knees have opinions.')]},
+  {title:'His treasure',art:'hearth',lines:[chief('Oscar never stopped talking about you. Never. He loved you so much, Eli. He was so proud to have you as his grandson. You were his treasure. More than his own son, I think, and he’d have been embarrassed to hear me say it.')]},
+  {title:'That sentence',art:'hearth',lines:[think('Eli','Lightning. An axe murderer. A wolf the size of a pony. A dog with frost scales. I handled all of it. Badly, but I handled it. That sentence, I can’t handle.'),narrate('His eyes go hot all at once. He tries very hard not to cry in front of two women he just met. He loses. Quietly, but he loses.')]},
+  {title:'Time later',art:'hearth',lines:[think('Eli','Years of letting him do all the talking. Years of assuming there would be time later. And he was out here telling a woman I’d never met how proud he was of me, when I never did one thing worth being proud of. I wish I’d been better for him.')]},
+  {title:'I want to go home',art:'hearth',lines:[mara('What’s wrong?'),narrate('Her grandmother gives a small giggle, the kind you give a kid deciding whether to cry about a fall. Eli wipes his face with the heel of his hand.'),eli('I’m fine. Just miss my grandpa. That’s all.'),narrate('Neither of them says anything. They don’t need to. Eli takes another breath.'),eli('I want to go home.')]}
+ ]),
+ 'ch4-world':script([
+  {title:'Three cups',art:'hearth',lines:[narrate('She pours the tea before she answers. Three cups. She slides one across to Eli.'),chief('I’m not sure I know how to help you with that. But I know what Oscar told me. He used special stones, found on the slopes of the Ember Volcano, far to the northeast, beyond the Crystal Lakes. He used them to gather enough mana to jump through space.')]},
+  {title:'Another world',art:'hearth',lines:[chief('I never fully understood what he meant by that. Not even today. But I knew he came from another world. He was truly a powerful and extraordinary man.'),narrate('Eli doesn’t drink the tea. He doesn’t do anything.'),think('Eli','Mana. Jump through space. Another world.')]},
+  {title:'Like a piano',art:null,lines:[think('Eli','It doesn’t so much click as fall on me, like a piano dropped from a window. Not an island. Not a village with bad zoning laws and an animal-breeding problem. A completely different world.'),think('Eli','Grandpa’s stories. The stone road under the lake. The wolves on the shore at night. The girl who whistled and made the fish jump into the basket.')]},
+  {title:'Remembering',art:null,lines:[think('Eli','He told them a hundred times, and the details never changed. Not once. Because he wasn’t making them up. He was remembering them. The whole time, he was telling me exactly where he’d been.'),think('Eli','Holy shit. This is insane.')]},
+  {title:'All good',art:'hearth',lines:[mara('Is… everything okay?'),narrate('Excitement. Shock. Twenty years of not getting it. And underneath all of it, a cold, quiet terror getting less quiet by the second.'),eli('Yeah. Sorry. All good.'),think('Eli','I am not all good. But I know one thing. I have to get home. Somehow.')]},
+  {title:'Heat',art:'hearth',lines:[eli('I need those stones. I need to get back home—'),narrate('Eli stands, fast, like he is about to march out the door and up a volcano. Heat flares against his thigh and a jolt shoots down his leg.'),eli('Ow!'),narrate('Both women jump to their feet and reach for him at the same time.'),mara('Are you okay?'),chief('Are you okay?')]}
+ ]),
+ 'ch4-core':script([
+  {title:'So much for hiding it',art:'hearth',lines:[eli('Yeah. Yeah, I’m fine. It’s just this stupid lure. I grabbed it from Grandpa’s cabin.'),think('Eli','So much for keeping it hidden.'),narrate('Eli digs it out. Still hot enough to sting, dark and translucent like old blue amber, its markings glowing faintly. Pulsing. Bright. Dim. Bright.'),eli('It’s been glowing in time with my heartbeat ever since I found it.')]},
+  {title:'Awe',art:'hearth',lines:[narrate('Neither of them answers. Mara stares at the lure, then at Eli. So does her grandmother. It is not the look you give a guy zapped by his own fishing tackle. It is awe, and something that looks a lot like hope.'),chief('You are truly his grandson.'),narrate('She doesn’t touch it. She looks like she wants to, and decides she shouldn’t.')]},
+  {title:'Chosen by the land',art:'hearth',lines:[chief('It’s called a Region Core. The one you’re holding belongs to Reedwater. Only those the land itself chooses can resonate with a core, and take its power.'),think('Eli','Chosen by the land. This world is insane. Truly, completely surreal.')]},
+  {title:'Ingest it',art:'hearth',lines:[chief('To accept its power, you have to ingest it.'),eli('I have to what?'),chief('Ingest it.'),eli('Like… eat it?'),chief('Yes.'),think('Eli','It’s the size of my finger, and it glows. People don’t eat things that glow.'),eli('I’ll think about it.'),narrate('Eli puts it very carefully back in his pocket.')]}
+ ]),
+ 'ch4-journey':script([
+  {title:'The Listening Tree',art:'hearth',lines:[eli('How do I get to this Ember Volcano?'),narrate('She sits back down, slowly, and folds her hands on the table.'),chief('North of the village, at the edge of the Whispering Forest, there is a great hollow tree. We call it the Listening Tree. The elk spirit lives there. If it chooses to, it can take you close enough to the volcano.')]},
+  {title:'Much stronger',art:'hearth',lines:[eli('If it chooses to.'),chief('It’s rough country between here and there. Rougher the further north you go. Your journey will not be easy. You’ll need proper gear, and you’ll need to be much stronger than you are now.'),think('Eli','A generous way to describe a guy who was knocked out by his own fishing lure.')]},
+  {title:'Two full moons',art:'hearth',lines:[chief('Stay here two full moons. I’ll teach you what this world has to offer. I will prepare you for your journey.'),think('Eli','Two months. Training. Monsters. Possibly eating fishing tackle. But it’s a plan. The first one since I woke up in the mud.'),eli('Okay. Thank you. Seriously. Thank you so much, uh…')]},
+  {title:'Just Emilia',art:'hearth',lines:[narrate('She smiles. For a second, a much younger woman looks out of that face. Long dark hair. Laughing at something just off to one side.'),think('Eli','I’ve seen that laugh before. Somewhere.'),say('Emilia','Emilia. Just Emilia.')]},
+  {title:'At sunrise',art:'hearth',lines:[narrate('Then she turns to her granddaughter, and the chief comes back into her voice.'),say('Emilia','Mara. Find the boy a place to rest in the guest lodge. Both of you come back here tomorrow at sunrise, and I’ll have Drayfus begin your training.'),narrate('Mara lights up like someone just handed her a birthday present.'),mara('Thank you, Grandma!')]}
+ ])
+};

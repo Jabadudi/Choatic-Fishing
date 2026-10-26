@@ -31,7 +31,7 @@ test('Chapter 1 flows from arrival through discoveries, dinner, rescue and a per
 test('story scenes freeze simulation and block input actions; save/resume preserves the exact page',()=>{
  const w=fresh(),before=captureSave(w);w.update(10,{...neutralInput(),right:true});assert.deepEqual(captureSave(w).state,before.state);
  assert.equal(applyAction(w,'player','dash',neutralInput()),false);assert.equal(w.inspect(),false);
- w.advanceStory();assert.equal(w.story.page,1);const restored=restoreSave(captureSave(w));assert.equal(currentScene(restored).title,'No service');
+ w.advanceStory();w.advanceStory();assert.equal(w.story.page,2);const restored=restoreSave(captureSave(w));assert.equal(currentScene(restored).title,'No service');
  assert.notEqual(importantProgress(restored),importantProgress(fresh()));
 });
 test('tutorial fishing supplies dinner without granting magical powers or timed upgrades',()=>{
