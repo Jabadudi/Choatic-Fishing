@@ -45,7 +45,7 @@ const ANDROID='Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTM
   await page.locator('#story-close').click();await page.waitForTimeout(400);
   assert.equal(await page.locator('#rotate-prompt').isVisible(),false);
   const parts={};
-  for(const s of ['#exploration-hud','#quest-objective','#open-skills','#open-backpack','#open-saves','#open-atlas','#open-settings','#toggle-fullscreen','.hotbar','.touch-actions','.touch-movement','.status'])parts[s]=await box(page,s);
+  for(const s of ['#exploration-hud','#quest-objective','#open-skills','#open-backpack','#open-saves','#open-codex','#open-atlas','#open-settings','#toggle-fullscreen','.hotbar','.touch-actions','.touch-movement','.status'])parts[s]=await box(page,s);
   for(const s of ['#open-skills','#open-backpack','#open-atlas','#open-settings','#toggle-fullscreen','.hotbar','.touch-actions','.touch-movement'])assert.ok(parts[s],`${name}: ${s} visible`);
   const keys=Object.keys(parts).filter(s=>parts[s]&&s!=='#quest-objective'&&s!=='.status');
   for(let i=0;i<keys.length;i++)for(let j=i+1;j<keys.length;j++)if(!(keys[i]==='#exploration-hud'&&keys[j]==='#quest-objective'))assert.ok(!overlap(parts[keys[i]],parts[keys[j]]),`${name}: ${keys[i]} overlaps ${keys[j]}`);

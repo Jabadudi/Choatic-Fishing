@@ -25,7 +25,7 @@ export function damage(world,target,amount,source,angle,knockback=0){
  if(target.entityType==='animal')return damageAnimal(world,target,amount,source,angle,knockback);
  if(target.health<=0||world.matchState!=='playing')return false;
  if(target.dashRemaining>0)return false;
- const taken=amount*(source.progression?.damageMultiplier??1)*(1-target.progression.damageReduction);
+ const taken=amount*(source.progression?.damageMultiplier??1)*(1-target.progression.damageReduction)*(source.entityType==='animal'?1-target.progression.passive('hunting.hide'):1);
  target.health=Math.max(0,target.health-taken);
  target.vx+=Math.cos(angle)*knockback;target.vy+=Math.sin(angle)*knockback;
  if(target.health===0){
@@ -38,7 +38,7 @@ export function damage(world,target,amount,source,angle,knockback=0){
 export function attack(world,actor,item){
  const spec=WEAPONS[item.name];actor.cooldown=(spec?.cooldown||.4)/(actor.progression?.attackSpeed??1);
  world.effects.push({name:item.name,x:actor.x,y:actor.y,angle:actor.angle,life:.55});
- if(item.name==='Sardine'){actor.health=Math.min(actor.progression.maxHealth,actor.health+35);return;}
+ if(item.name==='Sardine'){actor.health=Math.min(actor.progression.maxHealth,actor.health+35*(1+(actor.progression?.passive('food.heal')??0)));return;}
  if(item.name==='Grappling Squid'){world.moveActor(actor,Math.cos(actor.angle)*140,Math.sin(actor.angle)*140,false);return;}
  if(!spec)return;
  if(spec.kind==='melee'){

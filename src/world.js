@@ -13,6 +13,7 @@ import {LAND,CHESTS,LAKES,lakeDistance,isWater,nearWater,walkable} from './terra
 import * as Wilds from './wilds.js';
 import {createRabbits,updateRabbits} from './rabbits.js';
 import {createNpcs,nearbyNpc,updateDialogue} from './npcs.js';
+import {createFamiliars,absorbShard,updateFamiliar,familiarAction} from './familiars.js';
 export {LAND} from './terrain.js';
 export const SHORE_DEPTH=110;
 export const INLAND={left:LAND.left+SHORE_DEPTH,right:LAND.right-SHORE_DEPTH,top:LAND.top+SHORE_DEPTH,bottom:LAND.bottom-SHORE_DEPTH};
@@ -34,13 +35,14 @@ export class World {
   }
   this.story=adventure&&story?createStory():null;this.adventure=adventure;this.drops=[];this.nextDropId=1;
   if(adventure)this.player.inventory=new Inventory({separateStorage:true});
-  this.rabbits=adventure?createRabbits():[];this.wildlife=adventure?createWildlife():[];this.hunting={total:0,bySpecies:{}};
+  this.rabbits=adventure?createRabbits():[];this.wildlife=adventure?createWildlife():[];this.hunting={total:0,bySpecies:{}};this.familiars=createFamiliars();this.companion=null;
   this.npcs=adventure?createNpcs():[];this.dialogue=null;this.quests=createQuests();
   if(adventure){this.areaId='landing';Object.assign(this.player,Wilds.SPAWN);this.bots=[];this.actors=[this.player];this.humans=[this.player];this.chests=[];this.countdownRemaining=0;this.matchState='playing';this.discovered=new Set();this.message='Welcome to Reedwater Landing. Follow the north trail to walk into Windchime Path. M opens the area map.';}
   if(adventure)this.player.progression.characterStats=true;
   if(this.story){this.player.name='Eli';this.player.spriteId='eli';this.npcs=[];this.message=storyObjective(this);}
  }
  advanceStory(){return advanceStory(this);}
+ familiarAction(id,action){return familiarAction(this,id,action);}
  get animals(){return [...this.rabbits,...this.wildlife];}
  get fishing(){return this.player.fishing;}get progression(){return this.player.progression;}get inventory(){return this.player.inventory;}
  get message(){return this.player.message;}set message(value){this.player.message=value;}
@@ -92,7 +94,7 @@ export class World {
  inspect(){
   if(!this.adventure||this.matchState!=='playing'||this.player.health<=0||currentScene(this))return false;
   if(inspectStory(this))return true;
-  const drop=nearbyDrop(this);if(drop){this.inventory.receive(drop.item);this.drops=this.drops.filter(item=>item.id!==drop.id);this.message=`Picked up ${drop.item.name}.`;return true;}
+  const drop=nearbyDrop(this);if(drop){const shard=absorbShard(this,drop.item.familiar);if(!shard)this.inventory.receive(drop.item);this.drops=this.drops.filter(item=>item.id!==drop.id);this.message=shard||`Picked up ${drop.item.name}.`;return true;}
   const npc=nearbyNpc(this);
   if(npc){const text=npc.id==='mara'&&!this.story?maraQuestDialogue(this):npc.greeting;this.dialogue={npcId:npc.id,text,remaining:12};this.message=`${npc.name}: ${text}`;return true;}
   const place=Wilds.nearestLandmark(this.player.x,this.player.y,this.areaId);
@@ -141,18 +143,20 @@ export class World {
   if(actor.inventory.full){if(actor===this.player)this.message='Backpack full. Equip 2–7 and use an item to make room.';return false;}
   if(!this.nearestWater(actor)){if(actor===this.player)this.message='Move closer to the shoreline to cast.';return false;}
   if(!(this.adventure?Wilds.isWater(aim.x,aim.y,this.areaId):isWater(aim.x,aim.y))){if(actor===this.player)this.message='Aim out over the water, then cast.';return false;}
-  if(!actor.fishing.cast())return false;actor.bobber={...aim};return true;
+  if(!actor.fishing.cast())return false;actor.fishing.wait*=1-actor.progression.passive('fishing.biteTime');actor.bobber={...aim};return true;
  }
  cast(aim){const result=this.castActor(this.player,aim);if(result)this.message='Line cast. Waiting for a bite…';return result;}
  cancel(){if(this.fishing.cancel()){this.bobber=null;this.message='Line abandoned. You’re free to move.';}}
  advanceFishing(actor,dt,held){
-  actor.fishing.update(dt,held);
+  actor.fishing.update(dt,held,{reel:actor.progression.passive('fishing.reel'),slack:actor.progression.passive('fishing.slack')});
   if(actor.fishing.state==='caught'){
    const item=this.story?.stage==='fish'?{name:'Sardine',description:'A fresh catch for dinner.'}:actor.fishing.result.name==='Treasure Key'&&this.chests.every(c=>c.opened)?ITEMS[6]:actor.fishing.result;actor.inventory.receive(item);
+   // Lucky Haul: a second fish of the same kind, only when there is room and the chance is learned.
+   const double=actor.progression.passive('fishing.doubleCatch'),bonus=double>0&&this.random()<double&&actor.inventory.receive(item);
    // Fishing XP comes only from a landed fish; escapes and abandoned lines award nothing.
    const trained=practise(this,actor,'fishing',XP.catch,actor.bobber||undefined);
    const buff=this.story?null:actor.progression.grantCatchBuff(this.random);if(buff?.id==='vitality')actor.health+=10;
-   if(actor===this.player){this.catches.push(item);const gained=`+${trained.amount} Fishing XP${trained.text?` · ${trained.text}`:''}`;this.message=buff?`${item.name} caught! ${buff.name}: ${buff.description} · ${gained}`:this.story?.stage==='fish'?`${item.name} caught! ${gained} · ${storyObjective(this).replace(/^Chapter 1 · /,'')}`:`${item.name} caught! · ${gained}`;}
+   if(actor===this.player){this.catches.push(item);const gained=`+${trained.amount} Fishing XP${trained.text?` · ${trained.text}`:''}`;if(bonus)this.catches.push(item);const landed=bonus?`Two ${item.name}s`:item.name;this.message=buff?`${landed} caught! ${buff.name}: ${buff.description} · ${gained}`:this.story?.stage==='fish'?`${landed} caught! ${gained} · ${storyObjective(this).replace(/^Chapter 1 · /,'')}`:`${landed} caught! · ${gained}`;}
    actor.fishing.state='idle';actor.bobber=null;
   }else if(actor.fishing.state==='escaped'){if(actor===this.player)this.message='It got away. Try again.';actor.fishing.state='idle';actor.bobber=null;}
  }
@@ -165,7 +169,7 @@ export class World {
   }
   if(this.matchState!=='playing')return;
   this.elapsed+=dt;this.effects=this.effects.filter(effect=>(effect.life-=dt)>0);
-  for(const actor of this.actors){actor.cooldown=Math.max(0,actor.cooldown-dt);if(actor.health<=0)continue;if(!this.story)actor.progression.tickUpgrades(dt);actor.health=Math.min(actor.progression.maxHealth,actor.health+dt);this.moveActor(actor,actor.vx*dt,actor.vy*dt,actor.fishing.state!=='idle');actor.vx*=Math.exp(-9*dt);actor.vy*=Math.exp(-9*dt);}
+  for(const actor of this.actors){actor.cooldown=Math.max(0,actor.cooldown-dt);if(actor.health<=0)continue;if(!this.story)actor.progression.tickUpgrades(dt);actor.health=Math.min(actor.progression.maxHealth,actor.health+dt*(1+actor.progression.passive('health.regen')));this.moveActor(actor,actor.vx*dt,actor.vy*dt,actor.fishing.state!=='idle');actor.vx*=Math.exp(-9*dt);actor.vy*=Math.exp(-9*dt);}
   for(const human of this.humans){
    const actorInput=human===this.player?input:remoteInputs[human.id]||{left:false,right:false,up:false,down:false,held:false,aim:{x:human.x+1,y:human.y}};
    if(human.health>0)this.asActor(human,()=>this.updateHuman(dt,actorInput));
@@ -175,6 +179,7 @@ export class World {
   updateAnimalCombat(this,dt);
   updateRabbits(this,dt);
   updateWildlife(this,dt);
+  updateFamiliar(this,dt);
   updateDialogue(this,dt);
   updateStory(this,dt,Wilds.walkable);
   if(this.adventure){const place=Wilds.nearestLandmark(this.player.x,this.player.y,this.areaId);if(place)this.discovered.add(place.id);}

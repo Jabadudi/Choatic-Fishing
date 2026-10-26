@@ -31,11 +31,12 @@ body.touch-mode.exploring.has-fs-button #open-settings{right:52px}
  body.touch-mode.exploring #timed-upgrades{left:max(10px,env(safe-area-inset-left));top:86px;width:184px}
  body.touch-mode.exploring #quest-objective{font-size:10px;line-height:1.4;margin-top:4px;padding:5px 7px}
 
- body.touch-mode.exploring #open-skills,body.touch-mode.exploring #open-backpack,body.touch-mode.exploring #open-saves{top:8px;bottom:auto;min-height:34px;padding:4px 10px;font-size:10px;gap:4px}
- body.touch-mode.exploring #open-skills{left:calc(50% - 98px)}
- body.touch-mode.exploring #open-backpack{left:50%}
- body.touch-mode.exploring #open-saves{left:calc(50% + 82px)}
- body.touch-mode.exploring #open-skills svg,body.touch-mode.exploring #open-backpack svg{width:16px;height:16px}
+ body.touch-mode.exploring #open-skills,body.touch-mode.exploring #open-backpack,body.touch-mode.exploring #open-saves,body.touch-mode.exploring #open-codex{top:8px;bottom:auto;min-height:34px;padding:4px 10px;font-size:10px;gap:4px}
+ body.touch-mode.exploring #open-skills{left:calc(50% - 93px)}
+ body.touch-mode.exploring #open-backpack{left:calc(50% - 3px)}
+ body.touch-mode.exploring #open-saves{left:calc(50% + 71px)}
+ body.touch-mode.exploring #open-codex{left:calc(50% + 136px)}
+ body.touch-mode.exploring #open-skills svg,body.touch-mode.exploring #open-backpack svg,body.touch-mode.exploring #open-codex svg{width:16px;height:16px}
  body.touch-mode.exploring #save-status{top:48px;bottom:auto}
 
  body.touch-mode.exploring .status,body.touch-mode.exploring.has-quest .status{top:auto;bottom:calc(84px + env(safe-area-inset-bottom));left:50%;right:auto;transform:translateX(-50%);width:max-content;max-width:min(420px,46vw);text-align:center}

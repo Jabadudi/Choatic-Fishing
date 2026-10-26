@@ -35,17 +35,18 @@ export function createWildlife(){
 function random(a){let s=a.seed;s^=s<<13;s^=s>>>17;s^=s<<5;a.seed=s>>>0;return a.seed/4294967296;}
 // Loot falls around the body as pickups; the animal's own seeded generator keeps rolls reproducible.
 function dropLoot(world,animal,source){
- const items=rollLoot(animal.loot,()=>random(animal),source.progression?.lootMultiplier??1),names=[];
+ const items=rollLoot(animal.loot,()=>random(animal),(source.progression?.lootMultiplier??1)*(1+(source.progression?.passive('hunting.loot')??0))),names=[];
  items.forEach((item,i)=>{
   let spot={x:animal.x,y:animal.y};
-  for(const r of [26,16,0]){const a=i*2.2+.4,x=animal.x+Math.cos(a)*r,y=animal.y+Math.sin(a)*r;if(walkable(x,y,animal.areaId)){spot={x,y};break;}}
+  // Water animals sink out of reach, so their drops wash up on the nearest walkable bank.
+  search:for(const r of [26,16,0,...Array.from({length:12},(_,n)=>48+n*36)])for(let k=0;k<(r>26?16:1);k++){const a=i*2.2+.4+k*Math.PI/8,x=animal.x+Math.cos(a)*r,y=animal.y+Math.sin(a)*r;if(walkable(x,y,animal.areaId)){spot={x,y};break search;}}
   const id=`drop-${world.nextDropId++}`;world.drops.push({id,entityType:'pickup',spriteId:'pickup',areaId:animal.areaId,...spot,item:{...item,id:`loot-${id}`,uses:1}});names.push(item.name);
  });
  return names;
 }
 export function damageAnimal(world,animal,amount,source,angle,knockback=0){
  if(world.matchState!=='playing'||source.health<=0||!huntableInArea(world,animal)||!Number.isFinite(amount)||amount<=0)return false;
- const taken=amount*(source.progression?.damageMultiplier??1);
+ const taken=amount*(source.progression?.damageMultiplier??1)*(1+(source.progression?.passive('hunting.damage')??0));
  animal.health=Math.max(0,animal.health-taken);animal.hurtRemaining=.25;animal.alert=3;
  if(animal.behavior==='defensive'){animal.attackerId=source.id;animal.anger=6;}animal.threat={x:source.x,y:source.y};animal.vx+=Math.cos(angle)*knockback*.45;animal.vy+=Math.sin(angle)*knockback*.45;
  if(animal.species==='rabbit'){animal.state='idle';animal.time=0;}
@@ -55,6 +56,7 @@ export function damageAnimal(world,animal,amount,source,angle,knockback=0){
   world.hunting.total++;world.hunting.bySpecies[animal.species]=(world.hunting.bySpecies[animal.species]||0)+1;
   // Hunting XP lands only on the killing blow, once per life of the animal.
   const trained=source.progression?practise(world,source,'hunting',animal.huntXp,{x:animal.x,y:animal.y-35}):null;
+  const heal=source.progression?.passive('hunting.heal')??0;if(heal>0)source.health=Math.min(source.progression.maxHealth,source.health+heal);
   const loot=animal.loot?dropLoot(world,animal,source):[];
   world.message=`${animal.name} hunted · +${trained?.amount??animal.huntXp} Hunting XP${loot.length?` · Dropped ${loot.join(', ')}`:''}${trained?.text?` · ${trained.text}`:''}`;
  }
@@ -78,7 +80,7 @@ function respawn(a,dt){
 }
 export function updateWildlife(world,dt){
  if(!world.adventure||world.matchState!=='playing')return;
- for(const a of world.wildlife)if(a.health<=0&&(a.areaId!==world.areaId||a.deathRemaining===0))respawn(a,dt);
+ for(const a of world.animals)if(a.health<=0&&(a.areaId!==world.areaId||a.deathRemaining===0))respawn(a,dt);
  for(const a of world.wildlife){
   if(a.areaId!==world.areaId||a.health<=0)continue;
   a.time+=dt;a.alert=Math.max(0,a.alert-dt);

@@ -182,6 +182,12 @@ Equip a weapon caught while fishing, aim at an animal, and click or use the mobi
 
 Talk to Mara by the broken boat to accept **Mara's supper**: catch and bring her one Sardine. Talk again with a Sardine anywhere in your backpack to hand over exactly one and earn **15 XP**, in addition to the normal fishing catch XP. The objective beneath the upgrade timer shows whether you have a Sardine ready. Eating it removes readiness. Mara thanks you on later visits and never repeats the reward. Quest progress persists across area travel within a journey; confirmed New Game replaces it; Continue restores it after reload.
 
+## Creature index
+
+The Index button (or **I**) opens the creature index: wildlife, monsters, bosses, guardians and spirits, and villagers and merchants. Each entry has a short description, a minimap of the Reedwater Delta with red dots where it is found, and its loot table (or a merchant's wares).
+
+Hunted creatures sometimes drop a glowing **familiar shard**. Five shards of one kind combine (in that creature's index entry) into a familiar that follows you and grants a passive bonus. At 25 shards the passive grows stronger, and at 100 a third, more powerful passive unlocks. One familiar follows you at a time. See `docs/ENTITY-BEHAVIORS.md` for every familiar's passives.
+
 ## Skills
 
 The Skills button (or **K**) opens Eli's character sheet. Fishing, Hunting and Cooking level up only from success: a landed fish, a hunted animal, a cooked meal. Every skill point also counts toward Eli's main level, and each level adds max health, Strength, Dexterity, Luck and Wisdom.
