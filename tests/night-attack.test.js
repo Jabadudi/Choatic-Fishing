@@ -6,17 +6,16 @@ import {updateStoryAction,nightAttackActors,storyActionElapsed,NIGHT_ATTACK} fro
 const stormWorld=()=>{const w=new World(()=>.2,{adventure:true,story:true});w.journeyId='night-attack';w.areaId='cabin';Object.assign(w.player,{x:435,y:330});Object.assign(w.story,{stage:'storm',scene:'storm',page:2,lureSeen:true,photoSeen:true});return w;};
 const run=(w,until)=>{let n=0;while(!until()&&n++<6000)updateStoryAction(w,1/60);assert.ok(n<6000);};
 const byId=(w,id)=>nightAttackActors(w).find(a=>a.spriteId===id);
-test('the shadow walker waits in front of the cabin, closes on Eli and is defeated by Moonfang in story order',()=>{
+test('the walker appears 20 feet left of Eli, closes to 10 feet, and Moonfang strikes from behind it',()=>{
  const w=stormWorld();assert.deepEqual(nightAttackActors(w),[]);
  run(w,()=>w.areaId==='landing');updateStoryAction(w,1/60);
- const porch=byId(w,'nightwalker');assert.ok(porch&&!byId(w,'moonfang-charge'));assert.ok(porch.x<w.player.x&&porch.y>1515);
- run(w,()=>w.story.page===3);const start=byId(w,'nightwalker');
- run(w,()=>storyActionElapsed(w)>=NIGHT_ATTACK.approach-.1);const close=byId(w,'nightwalker');
- assert.ok(w.player.x-close.x<w.player.x-start.x);assert.equal(close.state,'raise');assert.ok(!byId(w,'moonfang-charge'));
+ const spawn=byId(w,'nightwalker'),feet=NIGHT_ATTACK.foot;assert.ok(spawn&&!byId(w,'moonfang-charge'));
+ assert.ok(spawn.x<w.player.x);assert.ok(Math.abs(Math.hypot(w.player.x-spawn.x,w.player.y-spawn.y)/feet-20)<1);
+ const eliStart=w.player.x;run(w,()=>w.story.page===3);assert.ok(w.player.x>eliStart+100,'Eli flees along the shore');
  run(w,()=>w.story.page===4);updateStoryAction(w,1/60);
- const wolf=byId(w,'moonfang-charge');assert.equal(wolf.state,'run');assert.ok(wolf.x>w.player.x);assert.equal(byId(w,'nightwalker').state,'raise');
- run(w,()=>storyActionElapsed(w)>=NIGHT_ATTACK.charge+NIGHT_ATTACK.leap+.1);
- assert.equal(byId(w,'nightwalker').state,'death');assert.ok(byId(w,'moonfang-charge').x<w.player.x);
+ const walker=byId(w,'nightwalker'),gap=Math.hypot(w.player.x-walker.x,w.player.y-walker.y)/feet;assert.ok(gap>9&&gap<11,`gap ${gap}`);
+ const wolf=byId(w,'moonfang-charge');assert.equal(wolf.state,'run');assert.ok(wolf.x<walker.x,'Moonfang comes from behind the walker');assert.equal(wolf.facingX,1);
+ run(w,()=>storyActionElapsed(w)>=NIGHT_ATTACK.charge+NIGHT_ATTACK.leap+.05);assert.equal(byId(w,'nightwalker').state,'death');
  run(w,()=>w.story.page===5);assert.deepEqual(nightAttackActors(w),[]);
 });
 test('reading the night attack never advances the scene',()=>{
