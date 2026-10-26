@@ -10,6 +10,7 @@ import {drawStoryWeather} from './story-weather.js';
 import {mountSaveUI} from './save-ui.js';
 import {nearbyDrop} from './drops.js';
 import {mountBackpack} from './backpack.js';
+import {setItemIcon} from './item-icons.js';
 import {TouchInput,mountMobileControls,gameScale} from './mobile.js';
 import {nearbyNpc} from './npcs.js';
 import {World} from './world.js';
@@ -91,7 +92,6 @@ function updateProgression(){
  $('fire-tidal').textContent=`${bindingLabel('tidal')} · Tidal Cannon ×${p.specials.tidal}`;$('fire-whirlpool').textContent=`${bindingLabel('whirlpool')} · Whirlpool ×${p.specials.whirlpool}`;
  $('reward-choice').hidden=!!world.story||p.pendingChoices===0||world.matchState!=='playing';$('reward-heading').textContent=`Level up · Choose a special (${p.pendingChoices})`;
 }
-const ICONS={'Reed Spear':'♆','Crab Maul':'⚒','Shell Sling':'◌','Treasure Key':'⚿','Frying Pan':'◉','Swordfish':'⚔','Harpoon Gun':'➶','Anchor':'⚓','Pufferfish Bomb':'✹','Grappling Squid':'↗','Sardine':'♢','Old Boot':'♟'};
 let lastAtlasDraw=0;
 function updateUI(){
  storyUI?.update();
@@ -120,9 +120,9 @@ function updateUI(){
  for(const kind of ['tidal','whirlpool'])$('fire-'+kind).disabled=busy||world.player.cooldown>0||world.progression.specials[kind]===0||world.matchState!=='playing';
  $('world-state').textContent=world.matchState==='countdown'?'GET READY':active?'REELING':busy?'WAITING FOR A BITE':'EXPLORING';
  $('catch-bar').style.bottom=`${(f.bar||0)*100}%`;$('target').style.bottom=`${(f.target||0)*100}%`;$('progress-fill').style.height=active?`${f.progress*100}%`:'0%';$('percent').textContent=active?`${Math.floor(f.progress*100)}%`:'0%';
- for(let slot=3;slot<=7;slot++){const button=$(`slot-${slot}`),item=inventory.slots[slot-2];button.querySelector('.slot-icon').textContent=item?ICONS[item.name]||'◆':'—';button.querySelector('strong').textContent=item?.name||'Empty';button.querySelector('small').textContent=item?`${item.uses} uses · ${bindingLabel('use')}`:'Assign from backpack';button.setAttribute('aria-label',`Slot ${slot}: ${item?.name||'empty'}${item?', '+item.uses+' uses':''}`);button.classList.toggle('selected',inventory.selected===slot);button.setAttribute('aria-pressed',inventory.selected===slot);button.title=item?.description||'Open backpack to assign an item';}
+ for(let slot=3;slot<=7;slot++){const button=$(`slot-${slot}`),item=inventory.slots[slot-2];setItemIcon(button.querySelector('.slot-icon'),item?.name);button.querySelector('strong').textContent=item?.name||'Empty';button.querySelector('small').textContent=item?`${item.uses} uses · ${bindingLabel('use')}`:'Assign from backpack';button.setAttribute('aria-label',`Slot ${slot}: ${item?.name||'empty'}${item?', '+item.uses+' uses':''}`);button.classList.toggle('selected',inventory.selected===slot);button.setAttribute('aria-pressed',inventory.selected===slot);button.title=item?.description||'Open backpack to assign an item';}
  for(const slot of [1,2]){const button=$(slot===1?'slot-rod':'slot-item');button.classList.toggle('selected',inventory.selected===slot);button.setAttribute('aria-pressed',inventory.selected===slot);}
- $('item-name').textContent=inventory.slots[0]?.name||'Empty slot';$('item-icon').textContent=inventory.slots[0]?ICONS[inventory.slots[0].name]||'◆':'—';$('item-uses').textContent=inventory.slots[0]?`${inventory.slots[0].uses} uses · Click or ${bindingLabel('use')}`:'Assign from backpack';
+ $('item-name').textContent=inventory.slots[0]?.name||'Empty slot';setItemIcon($('item-icon'),inventory.slots[0]?.name);$('item-uses').textContent=inventory.slots[0]?`${inventory.slots[0].uses} uses · Click or ${bindingLabel('use')}`:'Assign from backpack';
  $('status').textContent=active?`Move along shore · Hold ${bindingLabel('reel')} / mouse to reel · ${bindingLabel('fish')} to abandon.`:busy?`Waiting for a bite… ${bindingLabel('fish')} / Esc to abandon.`:world.message||`Walk to shore, aim into water, press ${bindingLabel('fish')}.`;
  if(touchMode){$('status').textContent=$('status').textContent.replace('M opens the area map.','Tap the map to explore.');if(active)$('status').textContent='Hold Reel to raise the bar · Release to lower it';else if(busy)$('status').textContent='Waiting for a bite… Tap Cancel to abandon.';else if(!world.message)$('status').textContent='Drag the right stick to move · Tap water to aim · Use to cast';}
  if(world.adventure){
@@ -175,7 +175,7 @@ function drawMap(target){
 function toggleAtlas(open=!atlasOpen){if(open)backpackUI?.close();atlasOpen=open;release();if(open&&touchUI)touchUI.update(world,true);$('world-atlas').hidden=!open;if(open)drawMap($('atlas-canvas'));else canvas.focus();}
 $('open-atlas').onclick=()=>toggleAtlas(true);$('close-atlas').onclick=()=>toggleAtlas(false);$('inspect-place').onclick=()=>{world.inspect();canvas.focus();};
 const lobby=new Lobby(updateLobby);
-backpackUI=mountBackpack({getWorld:()=>world,icons:ICONS,onOpen:()=>{toggleAtlas(false);release();},onClose:()=>{release();canvas.focus();},onAction:(id,action,slot)=>world.backpackAction(id,action,slot)});
+backpackUI=mountBackpack({getWorld:()=>world,onOpen:()=>{toggleAtlas(false);release();},onClose:()=>{release();canvas.focus();},onAction:(id,action,slot)=>world.backpackAction(id,action,slot)});
 saveUI=mountSaveUI({getWorld:()=>lobby.world,
  onLoad:restored=>{lobby.stop();lobby.mode='solo';lobby.world=restored;lobby.notify();progressionKey='';exploreStart=performance.now();release();canvas.focus();},
  onNew:()=>{lobby.explore();progressionKey='';exploreStart=performance.now();release();canvas.focus();return lobby.world;},
