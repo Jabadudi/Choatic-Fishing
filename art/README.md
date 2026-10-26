@@ -5,7 +5,7 @@ Generated concept art, references, cutscenes and sprite sheets for Volume 1. The
 | Folder | Contents |
 | --- | --- |
 | `cutscenes/vol1/` | Story panels by chapter, numbered in the order they play (`ch01_01_…`). `_alts/` keeps earlier takes. |
-| `characters/` | Reference sheets (front, side, face) for Mara, Emilia, Eli and Drayfus. |
+| `characters/` | Reference sheets (front, side, face) for Mara, Emilia, Eli, Drayfus and Croshelda. |
 | `sprites/creatures/` | Rimejaw, Flitlynx and Moonfang: a single pose and an animation sheet each. |
 | `sprites/mobs/` | Nightwalker (shadow walker) enemy: reference sheet, pose and animation sheet. |
 | `sprites/characters/` | Playable and NPC character sprites: Drayfus so far. |
