@@ -8,14 +8,14 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
  await page.evaluate(async()=>{const {World}=await import('/src/world.js'),{captureSave}=await import('/src/save-format.js'),{IndexedSaveStore}=await import('/src/save-store.js');const w=new World(()=>.2,{adventure:true,story:true});w.journeyId='night-attack';w.areaId='cabin';Object.assign(w.player,{x:435,y:330});Object.assign(w.story,{stage:'storm',scene:'storm',page:2,lureSeen:true,photoSeen:true});await new IndexedSaveStore().update(()=>({journeyId:w.journeyId,current:captureSave(w),writerId:null,manual:null,backups:[]}));});
  await page.reload();await page.locator('#continue-journey:not([disabled])').click();
  const shot=async name=>page.screenshot({path:`screenshots/night-attack-${name}.png`});
- await page.waitForFunction(()=>window.__storyQA.world.areaId==='landing');await page.waitForTimeout(250);await shot('1-walker-at-cabin');
- await page.waitForFunction(()=>window.__storyQA.world.story.page===3);await page.waitForTimeout(1500);await shot('2-approach');
- await page.waitForTimeout(1700);await shot('3-axe-raised');
- await page.waitForFunction(()=>window.__storyQA.world.story.page===4);await page.evaluate(async()=>{window.__action=await import('/src/story-action.js');});
- const at=async t=>{await page.waitForFunction(t=>window.__action.storyActionElapsed(window.__storyQA.world)>=t,t);await page.keyboard.press('F10');};
- const resume=()=>page.keyboard.press('F10');
- // Settings pauses the simulation, so each pose is captured at a fixed point on the fight's clock.
- for(const [t,name] of [[.6,'4-moonfang-charge'],[1.2,'5-leap'],[2.2,'6-defeat'],[3.2,'7-howl']]){await at(t);await page.locator('#settings-menu').waitFor();await page.evaluate(()=>document.querySelector('#settings-menu').style.visibility='hidden');await shot(name);await page.evaluate(()=>document.querySelector('#settings-menu').style.visibility='');await resume();}
+ await page.evaluate(async()=>{window.__action=await import('/src/story-action.js');});
+ const pause=async name=>{await page.keyboard.press('F10');await page.locator('#settings-menu').waitFor();await page.evaluate(()=>document.querySelector('#settings-menu').style.visibility='hidden');await shot(name);await page.evaluate(()=>document.querySelector('#settings-menu').style.visibility='');await page.keyboard.press('F10');};
+ // Settings pauses the simulation, so each pose is captured at a fixed point.
+ await page.waitForFunction(()=>window.__storyQA.world.areaId==='landing'&&window.__action.nightAttackActors(window.__storyQA.world).length);await pause('1-walker-appears');
+ await page.waitForFunction(()=>window.__action.storyActionElapsed(window.__storyQA.world)>2.4);await pause('2-eli-flees');
+ await page.waitForFunction(()=>window.__storyQA.world.story.page===3);await page.waitForFunction(()=>window.__action.storyActionElapsed(window.__storyQA.world)>1);await pause('3-closing-in');
+ await page.waitForFunction(()=>window.__storyQA.world.story.page===4);await pause('4-ten-feet');
+ for(const [t,name] of [[.6,'5-moonfang-from-behind'],[1.2,'6-strike'],[2.2,'7-defeated']]){await page.waitForFunction(t=>window.__action.storyActionElapsed(window.__storyQA.world)>=t,t);await pause(name);}
  assert.equal(await page.locator('#story-scene').isVisible(),false);
  await page.waitForSelector('#story-scene[open]');await page.waitForTimeout(1600);await shot('8-rescue-art');
  await page.waitForFunction(()=>window.__storyQA.world.story.scene==='awakening');

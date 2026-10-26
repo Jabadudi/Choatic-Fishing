@@ -6,7 +6,8 @@ export function drawStoryWeather(c,w,v,time){
  c.save();
  if(weather==='blackout'){c.fillStyle='#080d14';c.fillRect(v.left,v.top,v.right-v.left,v.bottom-v.top);}
  else if(weather==='storm'){
-  c.fillStyle='#102036c9';c.fillRect(v.left,v.top,v.right-v.left,v.bottom-v.top);
+  // Lighter on the shore so the night attack stays readable through the rain.
+  c.fillStyle=w.areaId==='landing'?'#1020368c':'#102036c9';c.fillRect(v.left,v.top,v.right-v.left,v.bottom-v.top);
   c.strokeStyle='#bacdda66';c.lineWidth=1.5;
   for(let i=0;i<120;i++){const x=v.left+((i*83+time*160)%(v.right-v.left+60))-30,y=v.top+((i*137+time*430)%(v.bottom-v.top+80))-40;c.beginPath();c.moveTo(x,y);c.lineTo(x-12,y+30);c.stroke();}
  }else if(cabinDamaged(w.story)){
