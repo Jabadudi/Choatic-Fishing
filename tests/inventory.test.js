@@ -36,7 +36,7 @@ test('cooldown prevents multiple uses per click burst and grappling stays on lan
 for(const [name,uses,damage,ranged] of [['Reed Spear',5,22,false],['Crab Maul',3,52,false],['Shell Sling',6,18,true]]){
  test(`${name} is awarded by the fishing loot roll`,()=>{
   const i=ITEMS.findIndex(item=>item.name===name);assert.ok(i>=0);
-  const fishing=new Fishing(()=>.06+.94*(i+.5)/ITEMS.length);
+  const fishing=new Fishing(()=>.06+.94*(i+.5)/ITEMS.length,{sardinesOnly:false});
   fishing.cast();fishing.update(4,false);fishing.progress=1;fishing.update(0,false);
   assert.equal(fishing.result.name,name);
  });

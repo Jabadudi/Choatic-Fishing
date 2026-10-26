@@ -12,8 +12,11 @@ export const ITEMS = Object.freeze([
   {name:'Shell Sling',description:'Six fast shell shots. 18 damage each.'}
 ]);
 export const KEY={name:'Treasure Key',description:'Rare key. Equip near a chest and press F to restore full health.'};
+// Temporary: every successful catch lands a Sardine. Flip to false to restore the full loot table (and the Treasure Key).
+export const SARDINES_ONLY = true;
+export const SARDINE = ITEMS.find(item=>item.name==='Sardine');
 export class Fishing {
-  constructor(random = Math.random) { this.random=random; this.state='idle'; this.result=null; }
+  constructor(random = Math.random, {sardinesOnly=SARDINES_ONLY}={}) { this.random=random; this.sardinesOnly=sardinesOnly; this.state='idle'; this.result=null; }
   cast() {
     if(this.state!=='idle') return false;
     this.state='waiting'; this.wait=1.5+this.random()*1.5; this.result=null; return true;
@@ -37,7 +40,7 @@ export class Fishing {
     const contact=this.target>=this.bar && this.target<=this.bar+.27;
     this.grace=Math.max(0,this.grace-dt);
     this.progress=Math.max(0,Math.min(1,this.progress+(contact?.16:(this.grace>0?0:-.105))*dt));
-    if(this.progress>=1){const roll=this.random();this.result=roll<.06?KEY:ITEMS[Math.min(ITEMS.length-1,Math.floor((roll-.06)/.94*ITEMS.length))];this.state='caught';}
+    if(this.progress>=1){const roll=this.random();this.result=this.sardinesOnly?SARDINE:roll<.06?KEY:ITEMS[Math.min(ITEMS.length-1,Math.floor((roll-.06)/.94*ITEMS.length))];this.state='caught';}
     else if(this.progress<=0)this.state='escaped';
   }
 }
