@@ -134,13 +134,31 @@ body.touch-mode.exploring #open-saves{bottom:calc(274px + env(safe-area-inset-bo
 .skills-track{height:10px;border:1px solid #b7995a99;border-radius:6px;background:#0a1c15;overflow:hidden}.skills-track i{display:block;height:100%;background:linear-gradient(90deg,#b9db8c,#e6c77f)}
 .skills-stats{display:grid;grid-template-columns:auto 1fr;gap:10px 14px;margin:18px 0 0;padding-top:14px;border-top:1px solid #c9a85f55;font:15px Arial,sans-serif}
 .skills-stats dt{color:#dfe3cf}.skills-stats dd{margin:0;text-align:right;font-weight:700;color:#fff6dc}.skills-stats dd small{display:block;font-weight:400;font-size:11px;color:var(--bp-muted)}
-.skills-list{display:grid;gap:12px;align-content:start;padding:18px 20px}
-.skills-card{display:grid;grid-template-columns:52px 1fr;gap:6px 14px;align-items:center;padding:12px 14px;border:1.5px solid #4f6a55;border-radius:9px;background:radial-gradient(circle at 20% 0,#1d4637,#12322a)}
-.skills-icon{grid-row:span 3;display:grid;place-items:center;width:52px;height:52px;border:1.5px solid var(--bp-gold);border-radius:8px;color:var(--bp-gold)}
-.skills-card-head{display:flex;justify-content:space-between;align-items:baseline}.skills-card h4{margin:0;font:600 20px Georgia,serif;color:#f6ebcd}.skills-card strong{font:700 16px Arial,sans-serif;color:var(--bp-gold)}
+.skills-main{display:grid;align-content:start;min-width:0}
+.skills-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-content:start;padding:16px 18px 12px}
+.skills-card{position:relative;display:grid;grid-template-columns:40px 1fr;gap:6px 10px;align-items:center;padding:10px 12px;border:1.5px solid #4f6a55;border-radius:9px;background:radial-gradient(circle at 20% 0,#1d4637,#12322a);color:inherit;text-align:left;cursor:pointer;min-height:44px}.skills-card:hover{border-color:#7f9a77}.skills-card[aria-pressed=true]{border-color:var(--bp-gold);box-shadow:0 0 0 1px var(--bp-gold) inset,0 0 14px #e6c77f33}
+.skills-icon{grid-row:span 3;display:grid;place-items:center;width:40px;height:40px;border:1.5px solid var(--bp-gold);border-radius:8px;color:var(--bp-gold)}
+.skills-card-head{display:flex;justify-content:space-between;align-items:baseline}.skills-card h4{margin:0;font:600 17px Georgia,serif;color:#f6ebcd}.skills-card strong{font:700 14px Arial,sans-serif;color:var(--bp-gold)}
 .skills-card small{font:12px/1.4 Arial,sans-serif;color:var(--bp-muted)}
+.skills-points{position:absolute;top:-9px;right:10px;padding:2px 8px;border-radius:10px;background:var(--bp-gold);color:#14261d;font:700 11px Arial,sans-serif;box-shadow:0 2px 6px #0007}
+.skills-tree{margin:0 18px 18px;padding:14px 16px 16px;border:1px solid #c9a85f55;border-radius:10px;background:radial-gradient(ellipse at 50% 0,#163a2d,#0e271e 70%)}
+.skills-tree-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 12px;margin-bottom:14px}.skills-tree-head h3{margin:0;font:600 22px Georgia,serif;color:#f6ebcd}.skills-tree-points{margin:0;font:700 13px Arial,sans-serif;color:var(--bp-gold)}
+.skills-tree-grid{--tree-gap:16px;display:grid;grid-template-columns:repeat(var(--tree-columns,2),minmax(0,1fr));gap:30px var(--tree-gap)}
+.skills-talent{position:relative;display:grid;gap:5px;justify-items:center;padding:10px 12px;border:1.5px solid #4f6a55;border-radius:10px;background:#112d23;color:inherit;text-align:center;cursor:pointer;min-height:44px}
+.skills-talent strong{font:600 16px Georgia,serif;color:#f6ebcd}.skills-talent small{font:12px/1.35 Arial,sans-serif;color:var(--bp-muted)}
+.skills-talent.joins{padding-inline:18%}
+.skills-talent.is-locked{opacity:.55;border-style:dashed}.skills-talent.learned{border-color:var(--bp-gold-dim);background:radial-gradient(circle at 50% 0,#285341,#143428)}.skills-talent.is-maxed{border-color:var(--bp-gold);background:radial-gradient(circle at 50% 0,#4a5a2c,#1e3a26)}
+.skills-talent.can-learn{border-color:#b9db8c;box-shadow:0 0 12px #b9db8c40}.skills-talent:hover{filter:brightness(1.12)}.skills-talent[aria-pressed=true]{outline:2px solid #fff0cb;outline-offset:2px}
+.skills-pips{display:flex;gap:4px}.skills-pips i{width:10px;height:10px;border:1.5px solid var(--bp-gold-dim);border-radius:50%;background:#0a1c15}.skills-pips i.on{background:var(--bp-gold);border-color:var(--bp-gold)}
+.skills-talent.feeds::after,.skills-talent.needs::before,.skills-talent.joins::after{content:'';position:absolute;left:50%;width:2px;height:15px;background:#4f6a55;transform:translateX(-1px)}
+.skills-talent.feeds::after{top:100%;margin-top:1.5px}.skills-talent.needs::before,.skills-talent.joins::after{bottom:100%;margin-bottom:1.5px}
+.skills-talent.joins::before{left:calc(25% - var(--tree-gap)/4);right:calc(25% - var(--tree-gap)/4);width:auto;height:2px;transform:none;margin-bottom:13px}
+.skills-talent.learned.feeds::after,.skills-talent.needs.linked::before,.skills-talent.joins.linked::after{background:var(--bp-gold)}
+.skills-detail{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin-top:16px;padding-top:12px;border-top:1px solid #c9a85f44;font:13px/1.4 Arial,sans-serif;color:var(--bp-muted)}.skills-detail p{margin:0}.skills-detail h4{margin:0 0 2px;font:600 17px Georgia,serif;color:#f6ebcd}.skills-detail>div{flex:1;min-width:200px}
+.skills-learn{min-height:44px;padding:8px 16px;border:1.5px solid var(--bp-gold);border-radius:8px;background:#2b4a2f;color:#fff6dc;font:700 14px Arial,sans-serif;cursor:pointer}.skills-learn:hover:not(:disabled){background:#3a6040}.skills-learn:disabled{border-color:#4f6a55;background:#132b22;color:var(--bp-muted);cursor:default}
+.skills-card:focus-visible,.skills-talent:focus-visible,.skills-learn:focus-visible{outline:2px solid #fff0cb;outline-offset:2px}
 .backpack-close:focus-visible,#open-skills:focus-visible{outline:2px solid #fff0cb;outline-offset:2px}
-@media(max-width:700px){.skills-body{grid-template-columns:1fr}.skills-character{border-right:0;border-bottom:1px solid var(--bp-line)}}
+@media(max-width:700px){.skills-body{grid-template-columns:1fr}.skills-character{border-right:0;border-bottom:1px solid var(--bp-line)}.skills-list{grid-template-columns:1fr;padding:14px}.skills-tree{margin:0 10px 12px;padding:12px 10px}.skills-tree-grid{--tree-gap:8px}.skills-talent{padding:8px 6px}.skills-talent small{font-size:11px}}
 body.touch-mode.exploring #open-skills{bottom:calc(274px + env(safe-area-inset-bottom))}
 @media(orientation:landscape) and (max-height:560px){body.touch-mode.exploring #open-skills{bottom:82px}}
 /* Creature index: same frame as the backpack and skills sheet. */

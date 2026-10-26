@@ -143,18 +143,20 @@ export class World {
   if(actor.inventory.full){if(actor===this.player)this.message='Backpack full. Equip 2–7 and use an item to make room.';return false;}
   if(!this.nearestWater(actor)){if(actor===this.player)this.message='Move closer to the shoreline to cast.';return false;}
   if(!(this.adventure?Wilds.isWater(aim.x,aim.y,this.areaId):isWater(aim.x,aim.y))){if(actor===this.player)this.message='Aim out over the water, then cast.';return false;}
-  if(!actor.fishing.cast())return false;actor.bobber={...aim};return true;
+  if(!actor.fishing.cast())return false;actor.fishing.wait*=1-actor.progression.passive('fishing.biteTime');actor.bobber={...aim};return true;
  }
  cast(aim){const result=this.castActor(this.player,aim);if(result)this.message='Line cast. Waiting for a bite…';return result;}
  cancel(){if(this.fishing.cancel()){this.bobber=null;this.message='Line abandoned. You’re free to move.';}}
  advanceFishing(actor,dt,held){
-  actor.fishing.update(dt,held);
+  actor.fishing.update(dt,held,{reel:actor.progression.passive('fishing.reel'),slack:actor.progression.passive('fishing.slack')});
   if(actor.fishing.state==='caught'){
    const item=this.story?.stage==='fish'?{name:'Sardine',description:'A fresh catch for dinner.'}:actor.fishing.result.name==='Treasure Key'&&this.chests.every(c=>c.opened)?ITEMS[6]:actor.fishing.result;actor.inventory.receive(item);
+   // Lucky Haul: a second fish of the same kind, only when there is room and the chance is learned.
+   const double=actor.progression.passive('fishing.doubleCatch'),bonus=double>0&&this.random()<double&&actor.inventory.receive(item);
    // Fishing XP comes only from a landed fish; escapes and abandoned lines award nothing.
    const trained=practise(this,actor,'fishing',XP.catch,actor.bobber||undefined);
    const buff=this.story?null:actor.progression.grantCatchBuff(this.random);if(buff?.id==='vitality')actor.health+=10;
-   if(actor===this.player){this.catches.push(item);const gained=`+${trained.amount} Fishing XP${trained.text?` · ${trained.text}`:''}`;this.message=buff?`${item.name} caught! ${buff.name}: ${buff.description} · ${gained}`:this.story?.stage==='fish'?`${item.name} caught! ${gained} · ${storyObjective(this).replace(/^Chapter 1 · /,'')}`:`${item.name} caught! · ${gained}`;}
+   if(actor===this.player){this.catches.push(item);const gained=`+${trained.amount} Fishing XP${trained.text?` · ${trained.text}`:''}`;if(bonus)this.catches.push(item);const landed=bonus?`Two ${item.name}s`:item.name;this.message=buff?`${landed} caught! ${buff.name}: ${buff.description} · ${gained}`:this.story?.stage==='fish'?`${landed} caught! ${gained} · ${storyObjective(this).replace(/^Chapter 1 · /,'')}`:`${landed} caught! · ${gained}`;}
    actor.fishing.state='idle';actor.bobber=null;
   }else if(actor.fishing.state==='escaped'){if(actor===this.player)this.message='It got away. Try again.';actor.fishing.state='idle';actor.bobber=null;}
  }
@@ -167,7 +169,7 @@ export class World {
   }
   if(this.matchState!=='playing')return;
   this.elapsed+=dt;this.effects=this.effects.filter(effect=>(effect.life-=dt)>0);
-  for(const actor of this.actors){actor.cooldown=Math.max(0,actor.cooldown-dt);if(actor.health<=0)continue;if(!this.story)actor.progression.tickUpgrades(dt);actor.health=Math.min(actor.progression.maxHealth,actor.health+dt);this.moveActor(actor,actor.vx*dt,actor.vy*dt,actor.fishing.state!=='idle');actor.vx*=Math.exp(-9*dt);actor.vy*=Math.exp(-9*dt);}
+  for(const actor of this.actors){actor.cooldown=Math.max(0,actor.cooldown-dt);if(actor.health<=0)continue;if(!this.story)actor.progression.tickUpgrades(dt);actor.health=Math.min(actor.progression.maxHealth,actor.health+dt*(1+actor.progression.passive('health.regen')));this.moveActor(actor,actor.vx*dt,actor.vy*dt,actor.fishing.state!=='idle');actor.vx*=Math.exp(-9*dt);actor.vy*=Math.exp(-9*dt);}
   for(const human of this.humans){
    const actorInput=human===this.player?input:remoteInputs[human.id]||{left:false,right:false,up:false,down:false,held:false,aim:{x:human.x+1,y:human.y}};
    if(human.health>0)this.asActor(human,()=>this.updateHuman(dt,actorInput));
