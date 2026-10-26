@@ -8,8 +8,8 @@ import {neutralInput} from '../src/protocol.js';
 import {visibleRabbits} from '../src/rabbits.js';
 const fresh=()=>new World(()=>.1,{adventure:true});
 
-test('nine animals have their assigned behavior; Mara is a talk-only, untargetable NPC',()=>{
- const w=fresh();assert.equal(w.animals.length,9);assert.equal(new Set(w.animals.map(a=>a.id)).size,9);
+test('twelve animals have their assigned behavior; Mara is a talk-only, untargetable NPC',()=>{
+ const w=fresh();assert.equal(w.animals.length,12);assert.equal(new Set(w.animals.map(a=>a.id)).size,12);
  for(const a of w.animals){assert.equal(a.entityType,ENTITY_TYPES.ANIMAL);assert.equal(a.behavior,a.species==='deer'?BEHAVIORS.DEFENSIVE:BEHAVIORS.PASSIVE);assert.equal(a.health,a.maxHealth);assert.ok(animalGround(a,a.x,a.y),a.id);}
  const mara=w.npcs[0];assert.equal(mara.entityType,ENTITY_TYPES.NPC);assert.equal(mara.huntable,false);assert.deepEqual(mara.interactions,['talk']);
  assert.equal(combatTargets(w).includes(mara),false);assert.equal(damage(w,mara,100,w.player,0,300),false);

@@ -3,8 +3,10 @@ export const ITEM_CATEGORIES=Object.freeze([
  {id:'armor',label:'Armor'}, {id:'quest-items',label:'Quest items'},
  {id:'trophies',label:'Trophies'}, {id:'upgrade-materials',label:'Upgrade materials'}
 ]);
-const ITEM_CATEGORY={'Sardine':'consumables','Grappling Squid':'consumables','Treasure Key':'quest-items','Old Boot':'trophies'};
-const WEAPON_NAMES=new Set(['Frying Pan','Swordfish','Harpoon Gun','Anchor','Reed Spear','Crab Maul','Shell Sling','Pufferfish Bomb']);
+const ITEM_CATEGORY={'Sardine':'consumables','Deer Meat':'consumables','Deer Hide':'upgrade-materials','Deer Antlers':'trophies','Grappling Squid':'consumables','Treasure Key':'quest-items','Old Boot':'trophies'};
+const WEAPON_NAMES=new Set(['Frying Pan','Swordfish','Harpoon Gun','Anchor','Reed Spear','Crab Maul','Shell Sling','Pufferfish Bomb','Hunting Bow']);
+// Permanent tools are never used up, however often they are fired.
+export const PERMANENT_ITEMS=new Set(['Hunting Bow']);
 export const canUseItem=item=>!!item&&(WEAPON_NAMES.has(item.name)||['Sardine','Grappling Squid','Treasure Key','Old Boot'].includes(item.name));
 export function itemCategory(item){
  if(ITEM_CATEGORIES.some(category=>category.id===item.category))return item.category;
@@ -39,7 +41,7 @@ export class Inventory {
  }
  useId(id){
   const item=this.allItems.find(item=>item.id===id);if(!item)return null;
-  const used={...item};if(--item.uses===0)this.removeId(id);return used;
+  const used={...item};if(PERMANENT_ITEMS.has(item.name))return used;if(--item.uses===0)this.removeId(id);return used;
  }
  use(){
   if(this.selected===1||!this.item)return null;

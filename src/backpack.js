@@ -1,4 +1,4 @@
-import {ITEM_CATEGORIES,backpackItems,canUseItem} from './inventory.js';
+import {ITEM_CATEGORIES,backpackItems,canUseItem,PERMANENT_ITEMS} from './inventory.js';
 import {setItemIcon} from './item-icons.js';
 const svg=(body,size=24)=>`<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
 const CATEGORY_ICONS={
@@ -38,7 +38,7 @@ export function mountBackpack({getWorld,onOpen,onClose,onAction}){
   dialog.querySelector('.backpack-details').classList.toggle('empty',!selected);setItemIcon(artIcon,selected?.name);
   if(selected){
    const heading=document.createElement('h3');heading.textContent=selected.name;
-   const uses=document.createElement('small');uses.className='backpack-uses';uses.textContent=`${selected.uses} ${selected.uses===1?'use':'uses'}`;
+   const uses=document.createElement('small');uses.className='backpack-uses';uses.textContent=PERMANENT_ITEMS.has(selected.name)?'Unlimited uses':`${selected.uses} ${selected.uses===1?'use':'uses'}`;
    const divider=document.createElement('span');divider.className='backpack-divider';divider.setAttribute('aria-hidden','true');
    const description=document.createElement('p');description.textContent=selected.description||'Choose what to do with this item.';
    const place=document.createElement('strong');place.className='backpack-equip';const hotbarSlot=inventory.slots.findIndex(entry=>entry?.id===selected.id);place.textContent=hotbarSlot>=0?`Hotbar ${hotbarSlot+2}`:'In backpack';
@@ -68,7 +68,7 @@ export function mountBackpack({getWorld,onOpen,onClose,onAction}){
    if(!item){const slot=document.createElement('span');slot.className='backpack-cell';slot.setAttribute('aria-hidden','true');items.append(slot);continue;}
    const card=document.createElement('button');card.className='backpack-cell backpack-item';card.setAttribute('aria-label',`Select ${item.name}, ${item.uses} ${item.uses===1?'use':'uses'}`);card.setAttribute('aria-pressed',selectedId===item.id);card.title=item.name;
    const icon=document.createElement('span');icon.className='backpack-item-icon';setItemIcon(icon,item.name);
-   const count=document.createElement('small');count.className='backpack-count';count.textContent=item.uses;
+   const count=document.createElement('small');count.className='backpack-count';count.textContent=PERMANENT_ITEMS.has(item.name)?'∞':item.uses;
    const hotbarSlot=inventory.slots.findIndex(entry=>entry?.id===item.id);
    card.append(icon,count);if(hotbarSlot>=0){const badge=document.createElement('small');badge.className='backpack-hotbar-badge';badge.textContent=hotbarSlot+2;badge.title=`Hotbar ${hotbarSlot+2}`;card.append(badge);}
    card.onclick=()=>{selectedId=item.id;choosingSlot=false;lastKey='';refresh();if(matchMedia('(max-width: 860px)').matches)actions.scrollIntoView({block:'nearest',behavior:'smooth'});};items.append(card);

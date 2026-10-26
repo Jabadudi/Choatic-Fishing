@@ -18,14 +18,15 @@ function prepareDinner(w){
 }
 test('Chapter 1 flows from arrival through discoveries, dinner, rescue and a persistent changed shore',()=>{
  const w=fresh();assert.equal(w.player.name,'Eli');assert.equal(w.npcs.length,0);prepareDinner(w);
- go(w,'cabin',100,120);w.inspect();assert.equal(w.story.scene,null);assert.match(w.message,/Catch a Sardine/);
- w.inventory.receive({name:'Sardine'});w.inventory.receive({name:'Sardine'});w.inspect();assert.equal(w.inventory.allItems.length,1);finish(w);assert.equal(w.story.stage,'rest');
+ go(w,'cabin',100,120);w.inspect();assert.equal(w.story.scene,null);assert.match(w.message,/Still needed: 2 Sardines, 3 Deer Meat/);
+ for(let i=0;i<3;i++)w.inventory.receive({name:'Sardine'});for(let i=0;i<3;i++)w.inventory.receive({name:'Deer Meat'});
+ w.inspect();assert.deepEqual(w.inventory.allItems.map(i=>i.name),['Sardine']);assert.equal(w.progression.skills.cooking.level,2);assert.equal(w.progression.totalXp,40);finish(w);assert.equal(w.story.stage,'rest');
  go(w,'cabin',435,330);assert.equal(storyPrompt(w),'Rest until night');w.inspect();assert.equal(w.story.scene,'storm');
  const saved=restoreSave(captureSave(w));assert.equal(saved.story.scene,'storm');assert.equal(saved.areaId,'cabin');
  finish(saved);assert.equal(saved.story.scene,'awakening');assert.ok(cabinDamaged(saved.story));assert.equal(saved.areaId,'landing');assert.equal(saved.npcs[0].id,'mara');
  finish(saved);assert.equal(saved.story.stage,'complete');assert.equal(saved.inventory.allItems.filter(i=>i.name==='Mysterious Lure').length,1);
  const restored=restoreSave(captureSave(saved));assert.ok(cabinDamaged(restored.story));assert.equal(restored.npcs[0].name,'The girl');assert.equal(restored.story.scene,null);
- go(restored,'landing',1730,1640);restored.inspect();finish(restored);assert.equal(restored.inventory.allItems.filter(i=>i.name==='Mysterious Lure').length,1);assert.equal(restored.progression.totalXp,0);
+ go(restored,'landing',1730,1640);restored.inspect();finish(restored);assert.equal(restored.inventory.allItems.filter(i=>i.name==='Mysterious Lure').length,1);assert.equal(restored.progression.totalXp,40);
  const lure=restored.inventory.allItems.find(i=>i.name==='Mysterious Lure');assert.equal(restored.backpackAction(lure.id,'discard'),false);
 });
 test('story scenes freeze simulation and block input actions; save/resume preserves the exact page',()=>{

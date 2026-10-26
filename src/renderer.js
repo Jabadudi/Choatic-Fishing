@@ -31,7 +31,7 @@ export function render(ctx,world,view){
     ctx.font='bold 10px Arial';ctx.fillStyle='#fff3db';ctx.fillText(bot.name,bot.x,bot.y-36);
     ctx.font='8px Arial';ctx.fillStyle='#263e35';ctx.fillText(bot.fishing.state!=='idle'?'FISHING':bot.inventory.item?.name||'TO SHORE',bot.x,bot.y+29);
   }
-  for(const shot of world.projectiles){ctx.save();ctx.translate(shot.x,shot.y);ctx.rotate(shot.angle);if(drawEntitySprite(ctx,shot.spriteId||`projectile.${shot.kind}`,{x:0,y:0,state:'idle',time:t})){ctx.restore();continue;}ctx.fillStyle=shot.kind==='wave'?'#a0eee2':shot.kind==='bomb'?'#e2c27c':'#fff0c8';if(shot.kind==='wave'){ctx.globalAlpha=.8;ctx.beginPath();ctx.ellipse(0,0,12,shot.radius,0,0,Math.PI*2);ctx.fill();}else if(shot.kind==='bomb'){ctx.beginPath();ctx.arc(0,0,8,0,Math.PI*2);ctx.fill();}else ctx.fillRect(-10,-3,20,6);ctx.restore();}
+  for(const shot of world.projectiles){ctx.save();ctx.translate(shot.x,shot.y);ctx.rotate(shot.angle);if(drawEntitySprite(ctx,shot.spriteId||`projectile.${shot.kind}`,{x:0,y:0,state:'idle',time:t})){ctx.restore();continue;}ctx.fillStyle=shot.kind==='wave'?'#a0eee2':shot.kind==='bomb'?'#e2c27c':'#fff0c8';if(shot.kind==='wave'){ctx.globalAlpha=.8;ctx.beginPath();ctx.ellipse(0,0,12,shot.radius,0,0,Math.PI*2);ctx.fill();}else if(shot.kind==='bomb'){ctx.beginPath();ctx.arc(0,0,8,0,Math.PI*2);ctx.fill();}else if(shot.name==='Hunting Bow'){ctx.fillStyle='#8a6438';ctx.fillRect(-16,-1,24,2);ctx.fillStyle='#e8e2d0';ctx.beginPath();ctx.moveTo(13,0);ctx.lineTo(6,-4);ctx.lineTo(6,4);ctx.fill();ctx.fillStyle='#d9c27e';ctx.fillRect(-18,-3,5,2);ctx.fillRect(-18,1,5,2);}else ctx.fillRect(-10,-3,20,6);ctx.restore();}
   if(!world.adventure){
   drawBobber(ctx,world);
   ctx.fillStyle='#243e3a55';ctx.beginPath();ctx.ellipse(p.x,p.y+14,18,8,0,0,Math.PI*2);ctx.fill();
@@ -43,6 +43,8 @@ export function render(ctx,world,view){
     const age=Math.max(0,duration-effect.life);ctx.save();ctx.globalAlpha=Math.min(1,effect.life/duration);ctx.translate(effect.x,effect.y);ctx.rotate(effect.angle);
     ctx.strokeStyle='#f3d59d';ctx.fillStyle='#f3d59d';ctx.lineWidth=5;
     if(effect.name==='animal-hit'||effect.name==='hunt'){ctx.font=effect.name==='hunt'?'bold 12px monospace':'bold 14px monospace';ctx.textAlign='center';ctx.fillStyle=effect.name==='hunt'?'#f8e6a7':'#fff4e4';ctx.fillText(effect.label,0,-age*30);}
+    else if(['skill','skill-up','level-up'].includes(effect.name)){const big=effect.name!=='skill';ctx.font=`bold ${big?14:12}px monospace`;ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#10261d';ctx.fillStyle=effect.name==='level-up'?'#ffd36e':effect.name==='skill-up'?'#bfe8a0':'#e8f0d0';const y=-age*(big?18:26);ctx.strokeText(effect.label,0,y);ctx.fillText(effect.label,0,y);}
+    else if(effect.name==='Hunting Bow'){ctx.strokeStyle='#8a6438';ctx.lineWidth=3;ctx.beginPath();ctx.arc(10,0,14,-1.2,1.2);ctx.stroke();}
     else if(['Harpoon Gun','Old Boot','Pufferfish Bomb'].includes(effect.name)){ctx.fillRect(18,-3,8,6);}
     else if(effect.name==='Whirlpool Burst'){ctx.strokeStyle='#a0eee2';ctx.beginPath();ctx.arc(0,0,155*(1-effect.life/.8),0,Math.PI*2);ctx.stroke();}
     else if(effect.name==='explosion'||effect.name==='defeat'){ctx.beginPath();ctx.arc(0,0,10+age*150,0,Math.PI*2);ctx.stroke();}

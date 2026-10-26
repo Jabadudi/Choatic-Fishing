@@ -1,9 +1,9 @@
 import {CABIN,CAMP,cabinDamaged} from './story.js';
 export const CABIN_AREA={id:'cabin',name:'Grandpa’s Cabin',width:640,height:480,seed:7329,spawn:{x:320,y:395},exits:[{edge:'south',from:270,to:370,target:'landing',entry:{x:CABIN.x,y:1570},label:'Reedwater Shore'}]};
-export const CABIN_PLACES=[{id:'cabin-box',name:'The Lure Box',x:520,y:145,kind:'interior',text:'A wooden box leaks a faint blue light.'},{id:'cabin-photo',name:'The Photograph',x:110,y:270,kind:'interior',text:'A young man, a laughing woman, and an enormous gray wolf.'},{id:'cabin-stove',name:'The Stove',x:100,y:120,kind:'interior',text:'A small stove and a well-stocked spice rack.'},{id:'cabin-bed',name:'The Bed',x:510,y:330,kind:'interior',text:'A wool blanket lies neatly folded at the foot of the bed.'}];
+export const CABIN_PLACES=[{id:'cabin-box',name:'The Lure Box',x:520,y:145,kind:'interior',text:'A wooden box leaks a faint blue light.'},{id:'cabin-photo',name:'The Photograph',x:110,y:270,kind:'interior',text:'A young man, a laughing woman, and an enormous gray wolf.'},{id:'cabin-stove',name:'The Stove',x:100,y:120,kind:'interior',text:'A small stove and a well-stocked spice rack.'},{id:'cabin-rack',name:'Weapon Rack',x:320,y:66,kind:'interior',text:'Grandpa’s weapon rack: fishing rods and an old recurve bow.'},{id:'cabin-bed',name:'The Bed',x:510,y:330,kind:'interior',text:'A wool blanket lies neatly folded at the foot of the bed.'}];
 export const cabinBlocked=(x,y)=>x>CABIN.left-14&&x<CABIN.right+14&&y>CABIN.top-14&&y<CABIN.bottom+14;
 export const cabinClearing=(x,y)=>x>1400&&x<1930&&y>1230&&y<1760;
-export const cabinInteriorBlocked=(x,y)=>[[65,45,180,90],[476,65,582,111],[48,212,120,241],[462,255,575,378],[237,203,391,288]].some(([l,t,r,b])=>x>l-12&&x<r+12&&y>t-12&&y<b+12);
+export const cabinInteriorBlocked=(x,y)=>[[65,45,180,90],[262,28,378,64],[476,65,582,111],[48,212,120,241],[462,255,575,378],[237,203,391,288]].some(([l,t,r,b])=>x>l-12&&x<r+12&&y>t-12&&y<b+12);
 export function drawCabin(c,story){
  const damaged=cabinDamaged(story),x=CABIN.left,y=CABIN.top;
  c.save();c.translate(x,y);
@@ -45,3 +45,16 @@ export function paintStoryMap(c,sx,sy,story){
  if(cabinDamaged(story)&&story.stage!=='storm'){c.fillStyle='#e5a452';c.fillRect(CAMP.x*sx-3,CAMP.y*sy-3,6,6);}
 }
 
+// Drawn every frame: the pegs empty as Eli takes the rod and then the bow.
+export function drawWeaponRack(c,story){
+ const rod=!story||story.rod!==false,bow=!story||story.bow!==false;
+ c.save();c.fillStyle='#24352d66';c.fillRect(266,36,116,32);
+ c.fillStyle='#4a3020';c.fillRect(262,30,116,32);c.fillStyle='#7a5434';c.fillRect(265,33,110,26);
+ for(const y of [37,53]){c.fillStyle='#5a3b24';c.fillRect(265,y,110,3);}
+ c.fillStyle='#d9c27e';for(const x of [272,296,322,348,368])for(const y of [36,52])c.fillRect(x,y,3,3);
+ const rodAt=x=>{c.strokeStyle='#c9a66b';c.lineWidth=2;c.beginPath();c.moveTo(x,60);c.lineTo(x+20,30);c.stroke();c.strokeStyle='#e9e2c8';c.lineWidth=1;c.beginPath();c.moveTo(x+20,30);c.lineTo(x+22,46);c.stroke();c.fillStyle='#3b3a36';c.fillRect(x+2,52,6,5);};
+ rodAt(270);if(!rod)rodAt(294);
+ if(!bow){c.strokeStyle='#6b4423';c.lineWidth=3;c.beginPath();c.arc(334,46,15,-1.25,1.25);c.stroke();c.strokeStyle='#efe6c9';c.lineWidth=1;c.beginPath();c.moveTo(334+Math.cos(-1.25)*15,46+Math.sin(-1.25)*15);c.lineTo(334+Math.cos(1.25)*15,46+Math.sin(1.25)*15);c.stroke();
+  c.fillStyle='#5b3b28';c.fillRect(358,38,10,21);c.fillStyle='#e8e2d0';for(const x of [359,362,365])c.fillRect(x,33,2,6);}
+ c.restore();
+}

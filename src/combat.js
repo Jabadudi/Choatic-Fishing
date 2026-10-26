@@ -17,7 +17,8 @@ export const WEAPONS={
  'Anchor':{kind:'melee',damage:60,range:76,knockback:300,cooldown:1.2},
  'Harpoon Gun':{kind:'projectile',damage:36,speed:440,range:540,knockback:120,cooldown:.65},
  'Pufferfish Bomb':{kind:'bomb',damage:48,speed:230,range:165,knockback:230,cooldown:.8},
- 'Old Boot':{kind:'projectile',damage:5,speed:300,range:260,knockback:75,cooldown:.45}
+ 'Old Boot':{kind:'projectile',damage:5,speed:300,range:260,knockback:75,cooldown:.45},
+ 'Hunting Bow':{kind:'projectile',damage:22,speed:620,range:560,knockback:60,cooldown:.7}
 };
 export function damage(world,target,amount,source,angle,knockback=0){
  if(target.entityType==='npc')return false;
@@ -35,7 +36,7 @@ export function damage(world,target,amount,source,angle,knockback=0){
  return true;
 }
 export function attack(world,actor,item){
- const spec=WEAPONS[item.name];actor.cooldown=spec?.cooldown||.4;
+ const spec=WEAPONS[item.name];actor.cooldown=(spec?.cooldown||.4)/(actor.progression?.attackSpeed??1);
  world.effects.push({name:item.name,x:actor.x,y:actor.y,angle:actor.angle,life:.55});
  if(item.name==='Sardine'){actor.health=Math.min(actor.progression.maxHealth,actor.health+35);return;}
  if(item.name==='Grappling Squid'){world.moveActor(actor,Math.cos(actor.angle)*140,Math.sin(actor.angle)*140,false);return;}
