@@ -1,4 +1,5 @@
-import {CODEX_CATEGORIES,CODEX_ENTRIES,CODEX_MAPS,codexEntries,codexLocations,codexRegions,codexLoot,chanceLabel} from './codex.js';
+import {CODEX_CATEGORIES,CODEX_ENTRIES,CODEX_MAPS,codexEntries,codexLocations,codexRegions,codexLoot,codexFamiliar,chanceLabel} from './codex.js';
+import {FAMILIAR_TIERS,familiarPassives,familiarStatus} from './familiars.js';
 import {ANIMAL_TYPES,BEHAVIOR_LABELS} from './entities.js';
 import {ITEM_CATEGORIES} from './inventory.js';
 import {setItemIcon} from './item-icons.js';
@@ -12,6 +13,7 @@ const CATEGORY_ICONS={
  guardians:'<path d="M12 3l7 3v5c0 5-3 8.5-7 10-4-1.5-7-5-7-10V6zM9 12l2 2 4-4"/>',
  villagers:'<path d="M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM3 20c0-3.5 2.7-6 6-6s6 2.5 6 6M16 5.5a3 3 0 0 1 0 5.5M18 14c2 .8 3 3 3 6"/>'
 };
+const SHARD='<path d="M12 2l6 8-6 12-6-12zM6 10h12M12 2v20"/>';
 const categoryLabel=id=>ITEM_CATEGORIES.find(c=>c.id===id)?.label||'';
 const el=(tag,className,text)=>{const node=document.createElement(tag);if(className)node.className=className;if(text!==undefined)node.textContent=text;return node;};
 function portrait(entry,className){
@@ -20,8 +22,9 @@ function portrait(entry,className){
  else frame.append(el('span','codex-glyph',entry.glyph||'?'));
  return frame;
 }
-// The index only reads game data. Hunt counts come from the journey; everything else is static knowledge.
-export function mountCodex({getWorld,onOpen,onClose}){
+// The index only reads game data. Hunt counts and familiar bonds come from the journey; everything else is static knowledge.
+// Familiar buttons go through onFamiliar, which changes the world.
+export function mountCodex({getWorld,onOpen,onClose,onFamiliar=()=>false}){
  const button=document.createElement('button');button.id='open-codex';button.hidden=true;
  button.setAttribute('aria-label','Open creature index');button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-expanded','false');
  button.innerHTML=`${svg(BOOK,22)}<span>Index</span>`;
@@ -36,6 +39,7 @@ export function mountCodex({getWorld,onOpen,onClose}){
   for(const entry of codexEntries(category.id)){
    const item=el('button','codex-entry');item.dataset.id=entry.id;item.append(portrait(entry,'codex-thumb'));
    const label=el('span','codex-entry-text');label.append(el('strong',null,entry.name),el('small',null,entry.title));item.append(label);
+   if(codexFamiliar(entry))item.append(el('span','codex-bond'));
    item.onclick=()=>{selectedId=entry.id;lastKey='';refresh();};group.append(item);
   }
   nav.append(group);
@@ -66,7 +70,7 @@ export function mountCodex({getWorld,onOpen,onClose}){
   const thead=el('thead');thead.append(head);const body=el('tbody');
   for(const row of loot.rows){
    const tr=el('tr'),cell=el('td','codex-item'),icon=el('span','codex-item-icon');setItemIcon(icon,row.item);
-   const text=el('span');text.append(el('strong',null,row.note?`${row.item} ${row.note}`:row.item),el('small',null,categoryLabel(row.category)));cell.append(icon,text);
+   const text=el('span');text.append(el('strong',null,row.note?`${row.item} ${row.note}`:row.item),el('small',null,row.familiar?'Familiar shard':categoryLabel(row.category)));if(row.familiar)tr.classList.add('codex-shard-row');cell.append(icon,text);
    const value=el('td','codex-chance',loot.kind==='wares'?row.price:chanceLabel(row.chance));if(row.chance>=1)value.classList.add('always');
    if(loot.kind==='drops'){const bar=el('i','codex-chance-bar');bar.style.width=`${row.chance*100}%`;value.append(bar);}
    tr.append(cell,value);body.append(tr);
@@ -75,15 +79,43 @@ export function mountCodex({getWorld,onOpen,onClose}){
   panel.append(el('p','codex-note',loot.kind==='wares'?'Barter opens in a later chapter. These are the trades on offer.':entry.lootNote||'Each item rolls on its own. Luck raises the chance of the rarer ones.'));
   return panel;
  }
+ // Shard progress toward the three passives, and the combine, summon or dismiss button.
+ function familiarPanel(entry,world){
+  const familiar=codexFamiliar(entry),status=familiarStatus(world,familiar.id),panel=el('section','codex-familiar'),title=el('h4','codex-panel-title');
+  title.innerHTML=svg(SHARD,18);title.append(el('span',null,`${familiar.name} familiar`));
+  const badge=el('small','codex-familiar-state',status.active?'Following you':status.bonded?'Bonded':status.canCombine?'Ready to combine':'Not yet bonded');badge.dataset.state=status.active?'active':status.bonded?'bonded':status.canCombine?'ready':'none';title.append(badge);panel.append(title);
+  const top=FAMILIAR_TIERS.at(-1),progress=el('div','codex-shards'),count=el('p','codex-shard-count');
+  count.append(el('strong',null,String(status.shards)),el('span',null,status.canCombine?' shards · ready to fuse into a familiar':!status.bonded&&status.shards<FAMILIAR_TIERS[0]?` / ${FAMILIAR_TIERS[0]} shards to summon`:status.next?` / ${status.next} shards to the next passive`:' shards · every passive unlocked'));
+  const track=el('div','codex-shard-track');track.setAttribute('role','progressbar');track.setAttribute('aria-label',`${familiar.name} familiar shards`);track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax',String(top));track.setAttribute('aria-valuenow',String(Math.min(top,status.shards)));
+  // Thresholds sit on a square-root scale so the 5 and 25 marks are not crushed against the start.
+  const at=n=>Math.sqrt(Math.min(n,top)/top)*100,fill=el('i','codex-shard-fill');fill.style.width=`${at(status.shards)}%`;track.append(fill);
+  for(const n of FAMILIAR_TIERS){const mark=el('span','codex-shard-mark',String(n));mark.style.left=`${at(n)}%`;if(status.shards>=n)mark.classList.add('reached');track.append(mark);}
+  progress.append(count,track);panel.append(progress);
+  const list=el('ol','codex-passives');
+  for(const passive of familiarPassives(familiar.id)){
+   const unlocked=status.tier>=passive.tier,row=el('li','codex-passive');row.dataset.state=!unlocked?'locked':status.active&&!(passive.tier===1&&status.tier>=2)?'active':passive.tier===1&&status.tier>=2?'upgraded':'unlocked';
+   const rank=el('span','codex-passive-rank',['I','II','III'][passive.tier-1]),text=el('span','codex-passive-text');
+   text.append(el('strong',null,passive.name),el('small',null,passive.description+(passive.upgrades?` (replaces ${familiarPassives(familiar.id)[0].name})`:'')));
+   row.append(rank,text,el('span','codex-passive-need',unlocked?(row.dataset.state==='upgraded'?'Upgraded':row.dataset.state==='active'?'Active':'Unlocked'):`${passive.shards} shards`));list.append(row);
+  }
+  panel.append(list);
+  const actionsRow=el('div','codex-familiar-actions'),act=(label,action,disabled=false)=>{const b=el('button','codex-familiar-button',label);b.disabled=disabled;b.onclick=()=>{if(onFamiliar(familiar.id,action)){lastKey='';refresh();}};actionsRow.append(b);return b;};
+  if(status.active)act('Dismiss','dismiss').classList.add('secondary');
+  else if(status.bonded)act('Summon','summon');
+  else act(status.canCombine?`Combine ${FAMILIAR_TIERS[0]} shards`:`Collect ${FAMILIAR_TIERS[0]-status.shards} more ${FAMILIAR_TIERS[0]-status.shards===1?'shard':'shards'}`,'combine',!status.canCombine);
+  actionsRow.append(el('p','codex-note',`Each ${familiar.name.toLowerCase()} you hunt has a ${chanceLabel(familiar.chance)} chance to drop a shard. One familiar follows you at a time.`));
+  panel.append(actionsRow);
+  return panel;
+ }
  function refresh(){
-  const world=getWorld(),entry=CODEX_ENTRIES.find(e=>e.id===selectedId),key=JSON.stringify([selectedId,world.hunting]);if(key===lastKey)return;lastKey=key;
+  const world=getWorld(),entry=CODEX_ENTRIES.find(e=>e.id===selectedId),key=JSON.stringify([selectedId,world.hunting,world.familiars]);if(key===lastKey)return;lastKey=key;
   const hunted=Object.values(world.hunting?.bySpecies||{}).reduce((a,b)=>a+b,0);
   dialog.querySelector('.backpack-capacity').textContent=`${CODEX_ENTRIES.length} entries in ${CODEX_CATEGORIES.length} categories | ${hunted} ${hunted===1?'animal':'animals'} hunted`;
-  for(const item of nav.querySelectorAll('.codex-entry'))item.setAttribute('aria-pressed',item.dataset.id===selectedId);
+  for(const item of nav.querySelectorAll('.codex-entry')){item.setAttribute('aria-pressed',item.dataset.id===selectedId);const bond=item.querySelector('.codex-bond');if(bond){const status=familiarStatus(world,codexFamiliar(CODEX_ENTRIES.find(e=>e.id===item.dataset.id)).id);bond.dataset.state=status.active?'active':status.bonded?'bonded':status.canCombine?'ready':'none';bond.title=status.active?'Familiar following you':status.bonded?'Familiar bonded':status.canCombine?'Shards ready to combine':'';}}
   const category=CODEX_CATEGORIES.find(c=>c.id===entry.category),hero=el('div','codex-hero'),about=el('div','codex-about');
   about.append(el('small','codex-kicker',category.label),el('h3',null,entry.name),el('p','codex-subtitle',entry.title),el('p','codex-description',entry.description));
   hero.append(portrait(entry,'codex-portrait'),about,facts(entry,world));
-  const panels=el('div','codex-panels');panels.append(minimap(entry),lootPanel(entry));
+  const panels=el('div','codex-panels');panels.append(minimap(entry),lootPanel(entry));if(codexFamiliar(entry))panels.append(familiarPanel(entry,world));
   detail.replaceChildren(hero,panels);
  }
  function open(){const world=getWorld();if(!world.adventure||world.player.health<=0||dialog.open)return;onOpen();lastKey='';refresh();dialog.showModal();button.setAttribute('aria-expanded','true');nav.querySelector('[aria-pressed="true"]')?.focus();}

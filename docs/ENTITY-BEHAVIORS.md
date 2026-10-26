@@ -5,10 +5,10 @@
 | Entity | Type | Behavior | Interaction |
 | --- | --- | --- | --- |
 | Mara | NPC | Friendly, talk-only | Talk; cannot take damage |
-| Rabbit (5) | Animal | Passive | Flees; huntable; drops loot |
+| Rabbit (5) | Animal | Passive | Flees; huntable; drops loot; returns 45 s after a hunt |
 | Deer (5) | Animal | Defensive | Wanders; retaliates after injury; huntable; drops loot; returns 75 s after a hunt |
-| Turtle (1) | Animal | Passive | Swims and flees; huntable; drops loot |
-| Eel (1) | Animal | Passive | Swims and flees; huntable; drops loot |
+| Turtle (1) | Animal | Passive | Swims and flees; huntable; drops loot; returns 90 s after a hunt |
+| Eel (1) | Animal | Passive | Swims and flees; huntable; drops loot; returns 60 s after a hunt |
 
 `src/entities.js` owns type names, behavior names and species stats. `reactionFor` maps passive disturbance to flight, defensive provocation to retaliation, and aggression to pursuit. Deer ignore player proximity. After taking damage, they pursue the attacker at 115 units/second for up to 6 seconds, with a 320-unit leash from home and attacker. Their melee attack deals 12 damage within 52 units after a 0.45-second windup, with a 1.4-second recovery. Moving out of reach or dashing avoids damage. Rabbits scare within 55 units instead of 125. Aggressive AI is reserved for future work.
 
@@ -18,16 +18,16 @@
 - Melee checks facing and reach. Projectiles use swept collision to hit small moving targets between simulation steps; they can travel over water.
 - Rabbits use their existing hop controller; other animals use `src/wildlife.js`. Land animals respect navigable ground; turtles and eels stay in water.
 - Injured animals show health and a behavior label. Passive animals flee; defensive deer retaliate only after injury. Death fades the body and grants species XP to the Hunting skill (and the main level) exactly once per life, separately from PvP eliminations. Injuring an animal grants nothing.
-- Health, position and hunt counts persist within this journey across area travel. Species with `respawnSeconds` (deer) return to their home spot that long after a hunt, so the hunting skill keeps growing with use; other animals do not respawn until a new game.
+- Health, position and hunt counts persist within this journey across area travel. Every species has `respawnSeconds` and returns to its home spot that long after a hunt, so the hunting skill and familiar shards keep growing with use.
 - Loot tables live in `src/loot.js` and are referenced by species (`loot:'deer'`). Every huntable animal has one guaranteed drop plus rarer extras, each rolled on its own:
 
   | Animal | Always | Extra rolls |
   | --- | --- | --- |
-  | Rabbit | Rabbit Meat | Rabbit Pelt 50%, Rabbit’s Foot 5% |
-  | Deer | Deer Meat | Deer Hide 45%, Deer Antlers 20% |
-  | Turtle | Turtle Meat | Turtle Shell 40%, River Pearl 5% |
-  | Eel | Eel Fillet | Eel Skin 35%, Eel Oil 20% |
-  | Shadow walker (planned) | Shadow Ichor | Rusted Axe Head 30%, Black Light Shard 5% |
+  | Rabbit | Rabbit Meat | Rabbit Pelt 50%, Rabbit’s Foot 5%, Rabbit Familiar Shard 8% |
+  | Deer | Deer Meat | Deer Hide 45%, Deer Antlers 20%, Deer Familiar Shard 10% |
+  | Turtle | Turtle Meat | Turtle Shell 40%, River Pearl 5%, Turtle Familiar Shard 10% |
+  | Eel | Eel Fillet | Eel Skin 35%, Eel Oil 20%, Eel Familiar Shard 8% |
+  | Shadow walker (planned) | Shadow Ichor | Rusted Axe Head 30%, Black Light Shard 5%, Shadow Walker Familiar Shard 6% |
 
   Luck scales only the uncertain rolls. Rolls use the animal's seeded generator; drops land as pickups beside the body. Water animals' drops land on the nearest walkable bank so they can be picked up.
 - Four deer live on Reedwater Landing (three in the meadow for Chapter 1's supper, one by the Hollow Tree) and one on Windchime Path.
@@ -45,6 +45,20 @@ Mara’s Chapter 3 guide route uses collision-checked movement in simulation, wa
 ## Skills and character level
 
 `src/skills.js` declares use-based skills: Fishing (landed fish), Hunting (killing blow) and Cooking (finished meal). XP is only granted on success; failed or abandoned attempts teach nothing. Every skill point also feeds the main level through `Progression.train`. In exploration, each main level adds +10 max health and +1 Strength (damage), Dexterity (attack speed), Luck (rare loot) and Wisdom (skill XP). Arena matches keep a flat balance (`characterStats` is off). Press K for the Skills sheet.
+
+## Familiars
+
+`src/familiars.js` turns shards into companions. Every creature with a loot table drops its own familiar shard (chances in `SHARD_CHANCES`, scaled by Luck like other rare drops). Picking one up adds it to that creature's count in `world.familiars` instead of the backpack. At 5 shards the Creature Index offers **Combine**, which bonds the familiar and summons it; later shards keep counting. Each familiar has three passives:
+
+| Familiar | 5 shards | 25 shards (replaces the first) | 100 shards (added) |
+| --- | --- | --- | --- |
+| Rabbit | Lucky Paw: +2 Luck | Lucky Paw II: +5 Luck | Warren Dash: +12% movement speed |
+| Deer | Antler Might: +2 Strength | Antler Might II: +5 Strength | Herd Sense: +25% Hunting XP |
+| Turtle | Shell Ward: +15 max HP | Shell Ward II: +40 max HP | Ancient Shell: 15% less damage taken |
+| Eel | Slippery Grip: +2 Dexterity | Slippery Grip II: +5 Dexterity | Current Sense: +25% Fishing XP |
+| Shadow walker (planned) | Whispers in the Dark: +2 Wisdom | Whispers in the Dark II: +5 Wisdom | Borrowed Power: +2 to every attribute |
+
+One familiar follows at a time; summoning another sends the current one back, and its bonus goes with it. The bonus lives on `Progression.familiar` and feeds the existing stat getters (attributes, max HP, damage reduction, speed, skill XP), so the Skills sheet shows it. The follower (`world.companion`) floats after the player, ignores terrain, and reappears beside him after area travel; `src/familiar-art.js` draws it from the species' own sprite over a spirit glow. Shards, bonds and the active familiar are saved; saves without them start with none.
 
 ## Creature index
 
