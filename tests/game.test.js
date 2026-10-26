@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {Fishing,ITEMS} from '../src/fishing.js';
 import {World,LAND,INLAND} from '../src/world.js';
 test('loot is sampled only upon completion; tracking can land a catch',()=>{
- let calls=0;const f=new Fishing(()=>{calls++;return .99;});f.cast();assert.equal(calls,1);assert.equal(f.result,null);
+ let calls=0;const f=new Fishing(()=>{calls++;return .99;},{sardinesOnly:false});f.cast();assert.equal(calls,1);assert.equal(f.result,null);
  for(let i=0;i<400;i++)f.update(1/120,false);
  assert.equal(f.state,'reeling');assert.equal(calls,1);
  for(let i=0;i<4000&&f.state==='reeling';i++){const predicted=f.bar+f.velocity*.2;f.update(1/120,predicted+.135<f.target);}

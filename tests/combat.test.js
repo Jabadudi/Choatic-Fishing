@@ -54,7 +54,7 @@ test('damage while fishing never changes catch physics; death ends the match',()
 });
 
 test('bots obtain equipment through fishing, gain buffs and attack without requiring player fishing',()=>{
- const w=new World(()=>.1,{botCount:1,countdownSeconds:0});let sawGear=false,sawBuff=false;
+ const w=new World(()=>.1,{botCount:1,countdownSeconds:0});w.bots[0].fishing.sardinesOnly=false;let sawGear=false,sawBuff=false;
  for(let i=0;i<120*70&&w.matchState==='playing';i++){
   w.update(1/120,input);sawGear ||=!!w.bots[0].inventory.item;sawBuff ||=w.bots[0].progression.ranks.speed>0;
  }
