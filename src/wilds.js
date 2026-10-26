@@ -1,3 +1,6 @@
+import {SPRITES} from './sprite-definitions.js';
+import {CABIN_AREA,CABIN_PLACES,cabinInteriorBlocked,cabinBlocked,cabinClearing,drawCabin,drawCabinInterior,drawCamp} from './story-map.js';
+import {cabinDamaged} from './story.js';
 import {MARSH,MARSH_ROADS,MARSH_PLACES,MARSH_OBJECTS,marshWaterDistance,onMarshDeck,marshBlocked} from './marsh.js';
 import {drawMarshGround,drawMarshObject} from './marsh-art.js';
 import {VILLAGE,VILLAGE_ROADS,VILLAGE_PLACES,villageWaterDistance,onVillageDeck,villageBlocked,villageClear} from './village.js';
@@ -9,6 +12,7 @@ import {drawGrassBase} from './grass-texture.js';
 import {pathPattern} from './path-texture.js';
 // Original, repeatable pixel-art areas. Exit coordinates connect actual map edges.
 export const AREAS={
+ cabin:CABIN_AREA,
  landing:{id:'landing',name:'Reedwater Landing',width:2800,height:2200,seed:7319,spawn:{x:1250,y:1650},exits:[{edge:'north',from:1280,to:1520,target:'windchime',entry:{x:600,y:1510},label:'Windchime Path'}]},
  crossroads:CROSSROADS,
  village:VILLAGE,
@@ -19,7 +23,7 @@ export const WORLD=AREAS.landing;
 export const SPAWN=WORLD.spawn;
 export const LAND={left:0,right:WORLD.width,top:0,bottom:WORLD.height};
 const LANDING_PLACES=[
- {id:'landing',name:'Reedwater Landing',x:1250,y:1650,kind:'landing',text:'Your boat lies wrecked on the sand, its hull stove in. Above the tideline, a trail leads north toward three wooden chimes.'},
+ {id:'landing',name:'Reedwater Landing',x:1250,y:1650,kind:'landing',text:'The captain’s boat has disappeared beyond the water. A path leads from the dock to Grandpa’s fishing cabin.'},
  {id:'drowned',name:'The Drowned Road',x:620,y:1640,kind:'drowned',text:'Through the shallows, squared stones lead to a doorway below the water. This shore was once a street.'},
  {id:'chimes',name:'The Three Chimes',x:1380,y:1180,kind:'chimes',text:'Three hollow wooden notes drift inland. Follow the worn trail north to enter Windchime Path.'},
  {id:'spring',name:'Reedwater Spring',x:1820,y:980,kind:'spring',text:'Warm water bubbles beneath the reeds. Tiny silver fish gather at the edge of the spring.'},
@@ -27,11 +31,11 @@ const LANDING_PLACES=[
 ];
 const PATH_PLACES=[{id:'path-chimes',name:'Windchime Path',x:600,y:1330,kind:'chimes',text:'Behind you lies Reedwater Landing. The chimes carry the sound of the shore into the trees.'},{id:'trail-end',name:'The Old Trail',x:600,y:320,kind:'sign',text:'The trail continues north to Willowbank Crossroads. There, the road divides: west toward the village, east toward Shellback Marsh.'}];
 export const LANDMARKS=LANDING_PLACES;
-export const placesFor=id=>id==='marsh'?MARSH_PLACES:id==='village'?VILLAGE_PLACES:id==='crossroads'?CROSSROADS_PLACES:id==='windchime'?PATH_PLACES:LANDING_PLACES;
+export const placesFor=id=>id==='cabin'?CABIN_PLACES:id==='marsh'?MARSH_PLACES:id==='village'?VILLAGE_PLACES:id==='crossroads'?CROSSROADS_PLACES:id==='windchime'?PATH_PLACES:LANDING_PLACES;
 export const areaFor=id=>AREAS[id]||WORLD;
 export const LAKES=[{x:2020,y:1050,rx:130,ry:150},{x:650,y:1910,rx:390,ry:190}];
 export const RIVERS=[[[2370,-100],[2290,500],[2320,1000],[2440,1500],[2310,2300]]];
-export const ROADS=[[[1250,1650],[1400,1500],[1380,1180],[1350,800],[1400,0]],[[1380,1180],[1620,1000],[1820,980]],[[1350,800],[1100,700],[1010,600]],[[1250,1650],[960,1610],[620,1640]]];
+export const ROADS=[[[1400,1600],[1510,1570],[1630,1550]],[[1250,1650],[1400,1500],[1380,1180],[1350,800],[1400,0]],[[1380,1180],[1620,1000],[1820,980]],[[1350,800],[1100,700],[1010,600]],[[1250,1650],[960,1610],[620,1640]]];
 const PATH_ROADS=[[[600,1800],[600,1330],[520,1000],[650,650],[600,320],[600,0]]];
 const pathsFor=id=>id==='marsh'?MARSH_ROADS:id==='village'?VILLAGE_ROADS:id==='crossroads'?CROSSROADS_ROADS:id==='windchime'?PATH_ROADS:ROADS;
 export function hash(x,y,s=0){let h=Math.imul(x+WORLD.seed,374761393)^Math.imul(y+s,668265263);h=Math.imul(h^(h>>>13),1274126177);return ((h^(h>>>16))>>>0)/4294967296;}
@@ -40,10 +44,11 @@ function lineDistance(x,y,lines){let d=Infinity;for(const line of lines)for(let 
 export const roadDistance=(x,y,id='landing')=>lineDistance(x,y,pathsFor(id));
 export const riverDistance=(x,y)=>lineDistance(x,y,RIVERS);
 export const coastDistance=(x,y)=>y-(1910+Math.sin(x*.004)*35+Math.sin(x*.009)*12);
-export function waterDistance(x,y,id='landing'){return id==='marsh'?marshWaterDistance(x,y):id==='village'?villageWaterDistance(x,y):id==='crossroads'?crossroadsWaterDistance(x,y):id==='windchime'?Infinity:Math.min(-coastDistance(x,y),...LAKES.map(l=>ellipseDistance(x,y,l)),riverDistance(x,y)-36);}
+export function waterDistance(x,y,id='landing'){return id==='cabin'?Infinity: id==='marsh'?marshWaterDistance(x,y):id==='village'?villageWaterDistance(x,y):id==='crossroads'?crossroadsWaterDistance(x,y):id==='windchime'?Infinity:Math.min(-coastDistance(x,y),...LAKES.map(l=>ellipseDistance(x,y,l)),riverDistance(x,y)-36);}
 export const isWater=(x,y,id='landing')=>waterDistance(x,y,id)<0;
 export const nearWater=(x,y,id='landing')=>waterDistance(x,y,id)<=110;
 export function regionAt(x,y,id='landing'){
+ if(id==='cabin')return 'Grandpa’s Cabin';
  if(id==='marsh')return 'Shellback Marsh';
  if(id==='village')return y>1020?'Willow Docks':'Willowback Village';
  if(id==='crossroads')return 'Willowbank Crossroads';
@@ -54,7 +59,7 @@ export function regionAt(x,y,id='landing'){
  if(x<960&&y>1450)return 'The Drowned Road';
  return 'Reedwater Landing';
 }
-const COLORS={'Shellback Marsh':['#6f854e','#748b53','#7a9057'],'Willowback Village':['#88b447','#8bb748','#90ba4b'],'Willow Docks':['#88b447','#8bb748','#90ba4b'],'Willowbank Crossroads':['#87ad4c','#8cb452','#93b958'],'Reedwater Shore':['#247b9a','#2989a4','#3193ac'],'Reedwater Landing':['#88b447','#8bb748','#90ba4b'],'Forest Approach':['#7aa344','#7ea846','#82ad47'],'Windchime Path':['#7aa344','#7ea846','#82ad47'],'Springbank':['#88b447','#8bb748','#90ba4b'],'The Drowned Road':['#88b447','#8bb748','#90ba4b']};
+const COLORS={'Grandpa’s Cabin':['#a17b50','#ae8756','#b18b59'],'Shellback Marsh':['#6f854e','#748b53','#7a9057'],'Willowback Village':['#88b447','#8bb748','#90ba4b'],'Willow Docks':['#88b447','#8bb748','#90ba4b'],'Willowbank Crossroads':['#87ad4c','#8cb452','#93b958'],'Reedwater Shore':['#247b9a','#2989a4','#3193ac'],'Reedwater Landing':['#88b447','#8bb748','#90ba4b'],'Forest Approach':['#7aa344','#7ea846','#82ad47'],'Windchime Path':['#7aa344','#7ea846','#82ad47'],'Springbank':['#88b447','#8bb748','#90ba4b'],'The Drowned Road':['#88b447','#8bb748','#90ba4b']};
 export function surfaceAt(x,y,id='landing'){
  if(id==='marsh'&&onMarshDeck(x,y))return 'path';
  if(id==='village'&&onVillageDeck(x,y))return 'path';
@@ -65,6 +70,7 @@ export function surfaceAt(x,y,id='landing'){
  return waterDistance(x,y,id)<80?'sand':'ground';
 }
 export function sceneryAt(gx,gy,id='landing'){
+ if(id==='cabin'||id==='landing'&&cabinClearing(gx*72+36,gy*72+36))return null;
  if(id==='marsh')return null;
  const x=gx*72+12+hash(gx,gy)*48,y=gy*72+12+hash(gx,gy,3)*48,r=hash(gx,gy,9),region=regionAt(x,y,id);
  if(id==='village'&&villageClear(x,y))return null;
@@ -78,6 +84,8 @@ export function walkable(x,y,id='landing'){
  const area=areaFor(id),edge=area.exits.find(e=>inExit(e.edge==='east'||e.edge==='west'?y:x,e)&&((e.edge==='north'&&y<96&&y>-24)||(e.edge==='south'&&y>area.height-96&&y<area.height+24)||(e.edge==='west'&&x<96&&x>-24)||(e.edge==='east'&&x>area.width-96&&x<area.width+24)));
  if(edge)return true;
  if(x<24||x>area.width-24||y<24||y>area.height-24)return false;
+ if(id==='cabin')return !cabinInteriorBlocked(x,y);
+ if(id==='landing'&&cabinBlocked(x,y))return false;
  if(id==='landing'&&x>=1225&&x<=1275&&y>=1730&&y<=1935)return true;
  if(id==='marsh'){if(marshBlocked(x,y))return false;if(onMarshDeck(x,y))return true;}
  if(id==='village'){if(villageBlocked(x,y))return false;if(onVillageDeck(x,y))return true;}
@@ -130,30 +138,9 @@ function milestoneGlyph(ctx,t){
  ctx.globalAlpha=.35+.65*b;ctx.fillStyle='#7ff0e0';ctx.fillRect(-4,-10,10,2);ctx.fillRect(0,-14,2,9);ctx.fillRect(3,-6,4,2);ctx.fillRect(-4,-4,3,2);
  ctx.restore();
 }
-// The arrival dinghy, run aground at an angle with its hull stove in. Local coords: bow toward +x, flat transom at -x.
-const HULL=[[-32,-12],[8,-14],[28,-9],[40,0],[28,9],[8,14],[-32,12]];
-function hullShape(ctx,pts,color,k=1){ctx.fillStyle=color;ctx.beginPath();pts.forEach(([x,y],i)=>i?ctx.lineTo(x*k,y*k):ctx.moveTo(x*k,y*k));ctx.closePath();ctx.fill();}
-function beachedDinghy(ctx,x,y){
- const a=-.32,R=(c,px,py,w,h)=>{ctx.fillStyle=c;ctx.fillRect(Math.round(px),Math.round(py),w,h);};
- // wet sand, the drag furrow from the waterline, and footprints leading up toward the dock
- ctx.fillStyle='rgba(120,100,60,.28)';ctx.beginPath();ctx.ellipse(x-4,y+4,52,20,a,0,Math.PI*2);ctx.fill();
- ctx.save();ctx.translate(x,y);ctx.rotate(a);R('rgba(110,90,55,.35)',-90,-5,58,3);R('rgba(110,90,55,.35)',-90,4,58,3);ctx.restore();
- for(let i=0;i<7;i++){const fx=x-48-i*13,fy=y-22-i*10+(i%2?4:-4);R('rgba(95,78,48,.55)',fx,fy,4,3);R('rgba(95,78,48,.55)',fx+1,fy-3,2,2);}
- ctx.save();ctx.translate(x,y);ctx.rotate(a);
- ctx.fillStyle='rgba(20,30,30,.35)';ctx.beginPath();ctx.ellipse(4,6,40,13,0,0,Math.PI*2);ctx.fill();
- hullShape(ctx,HULL,'#4a3320');hullShape(ctx,HULL,'#7a5434',.92);hullShape(ctx,HULL,'#a77b4c',.78);
- for(let i=-26;i<=26;i+=6)R('#93693f',i,-9,1,18);
- R('#5e4026',-14,-11,5,22);R('#5e4026',10,-10,5,20);R('#c49a62',-14,-11,5,2);R('#c49a62',10,-10,5,2);R('#c9a36c',-33,-12,2,24);
- hullShape(ctx,[[2,9],[8,6],[13,10],[10,14],[4,14]],'#2a1c10');R('#c49a62',6,6,2,2);R('#c49a62',12,9,2,2);
- R('#e8dcc0',-30,-6,8,3);ctx.restore();
- // snapped oar up the beach, its loose end at the waterline, a rope trailing into the water and a small crate
- ctx.save();ctx.translate(x+34,y-30);ctx.rotate(.5);R('#8a6239',-20,-1,24,3);R('#a77b4c',4,-3,9,7);ctx.restore();
- ctx.save();ctx.translate(x-40,y+20);ctx.rotate(-.2);R('#8a6239',-6,-1,16,3);ctx.restore();
- ctx.strokeStyle='#d8c08a';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x-30,y+6);ctx.quadraticCurveTo(x-48,y+24,x-34,y+34);ctx.stroke();
- R('#6b4a2a',x+20,y+12,12,10);R('#8a6239',x+20,y+12,12,3);R('#4a3420',x+25,y+12,2,10);
-}
 function reeds(ctx,x,y,seed){for(let i=0;i<4;i++){const h=12+Math.floor(hash(seed,i,8)*10);ctx.fillStyle=i%2?'#6d9a3a':'#8bb04a';ctx.fillRect(x+i*3-4,y-h,2,h);if(i===1){ctx.fillStyle='#6b4a2a';ctx.fillRect(x+i*3-5,y-h-5,4,7);}}}
 function staticArea(ctx,left,top,width,height,id){
+ if(id==='cabin'){drawCabinInterior(ctx);return;}
  const texturedGrass=id!=='marsh'&&drawGrassBase(ctx,left,top,width,height,clearTerrainCache);
  const dirt=pathPattern(ctx,clearTerrainCache);
  for(let y=Math.floor(top/8)*8;y<top+height;y+=8)for(let x=Math.floor(left/8)*8;x<left+width;x+=8){
@@ -186,7 +173,8 @@ function staticArea(ctx,left,top,width,height,id){
   // Wooden pier, and the dinghy you arrived in, wrecked on the shore beside it.
   ctx.fillStyle='#604b38';ctx.fillRect(1210,1730,80,220);
   for(let y=1735,i=0;y<1950;y+=12,i++){ctx.fillStyle=i%2?'#9a8058':'#a58b62';ctx.fillRect(1213,y,74,7);ctx.fillStyle='#c2a678';ctx.fillRect(1213,y,74,1);if(i%3===0){ctx.fillStyle='#4a3a28';ctx.fillRect(1206,y-2,7,12);ctx.fillRect(1287,y-2,7,12);}}
-  beachedDinghy(ctx,1400,1884);
+  // The captain took the arrival boat back out to sea.
+
  }
 }
 const chunks=new Map(),CHUNK=512,MAX_CHUNKS=30;
@@ -238,9 +226,11 @@ export function drawDepthSorted(ctx,world,view,actors,drawActor){
  }
  if(id==='marsh')for(const object of MARSH_OBJECTS)if(object.x>view.left-180&&object.x<view.right+180&&object.y>view.top-30&&object.y<view.bottom+200){const it=slot(n++);it.kind='marsh';it.y=object.y+12;it.ref=object;}
  if(id==='village')for(const object of villageObjects)if(object.x>view.left-200&&object.x<view.right+200&&object.y>view.top-30&&object.y<view.bottom+220){const it=slot(n++);it.kind='village';it.y=object.y+18;it.ref=object;}
+ if(id==='landing'){const it=slot(n++);it.kind='story-cabin';it.y=1515;}
  order.length=0;for(let i=0;i<n;i++)order.push(slots[i]);order.sort((a,b)=>a.y-b.y);
  for(const it of order){
-  if(it.kind==='marsh')drawMarshObject(ctx,it.ref,t);
+  if(it.kind==='story-cabin')drawCabin(ctx,world.story);
+  else if(it.kind==='marsh')drawMarshObject(ctx,it.ref,t);
   else if(it.kind==='village')drawVillageObject(ctx,it.ref,t);
   else if(it.kind==='actor')drawActor(ctx,it.ref);
   else if(it.kind==='rock')meadowRock(ctx,it.x,it.oy,false,false);
@@ -255,8 +245,7 @@ export function drawDepthSorted(ctx,world,view,actors,drawActor){
 // Shore foam and sparkle positions are found once per chunk on a coarse grid, so the live water layer never samples distance per frame.
 const shores=new Map(),MAX_SHORES=60;
 // The pier, and the beached dinghy's hull (tested in its own rotated frame), stay free of foam and sparkles.
-const onDinghy=(x,y)=>{const dx=x-1400,dy=y-1884,lx=dx*Math.cos(.32)-dy*Math.sin(.32),ly=dx*Math.sin(.32)+dy*Math.cos(.32);return lx>-36&&lx<44&&Math.abs(ly)<17;};
-const onDock=(x,y,id)=>id==='marsh'?onMarshDeck(x,y):id==='village'?onVillageDeck(x,y):id==='crossroads'?onCrossroadsDeck(x,y):id==='landing'&&((x>=1200&&x<=1300&&y>=1725&&y<=1955)||onDinghy(x,y));
+const onDock=(x,y,id)=>id==='marsh'?onMarshDeck(x,y):id==='village'?onVillageDeck(x,y):id==='crossroads'?onCrossroadsDeck(x,y):id==='landing'&&((x>=1200&&x<=1300&&y>=1725&&y<=1955));
 export function shorePoints(id,cx,cy){
  const key=`${id}:${cx},${cy}`;let points=shores.get(key);if(points)return points;
  points={foam:[],sparkle:[]};
@@ -265,7 +254,7 @@ export function shorePoints(id,cx,cy){
  shores.set(key,points);if(shores.size>MAX_SHORES)shores.delete(shores.keys().next().value);return points;
 }
 function drawWater(ctx,world,view,id){
- if(id==='windchime')return;const t=world.elapsed||0;ctx.save();
+ if(id==='windchime'||id==='cabin')return;const t=world.elapsed||0;ctx.save();
  for(let cy=Math.floor(view.top/CHUNK);cy<=Math.floor(view.bottom/CHUNK);cy++)for(let cx=Math.floor(view.left/CHUNK);cx<=Math.floor(view.right/CHUNK);cx++){
   const {foam,sparkle}=shorePoints(id,cx,cy);
   ctx.fillStyle='#fffff5';
@@ -306,6 +295,7 @@ export function drawWilds(ctx,world,view={left:world.player.x-700,right:world.pl
  const id=world.areaId||'landing',area=areaFor(id);ctx.imageSmoothingEnabled=false;
  if(typeof document!=='undefined')drawChunks(ctx,view,id);else staticArea(ctx,view.left,view.top,view.right-view.left,view.bottom-view.top,id);
  drawWater(ctx,world,view,id);
+ if(id==='landing'&&cabinDamaged(world.story)&&world.story.stage!=='storm')drawCamp(ctx,world.elapsed||0);
  for(const p of placesFor(id))if(p.x>view.left-120&&p.x<view.right+120&&p.y>view.top-100&&p.y<view.bottom+100)drawLandmark(ctx,p,world.elapsed||0);
  if(id==='landing'&&view.right>1220&&view.left<1370&&view.bottom>1660&&view.top<1810)lantern(ctx);
  if(id==='landing'&&view.right>520&&view.left<590&&view.bottom>1660&&view.top<1730)milestoneGlyph(ctx,world.elapsed||0);
@@ -317,13 +307,15 @@ export function drawWildsLabels(ctx,world,view){
  const id=world.areaId||'landing',area=areaFor(id);
  for(const p of placesFor(id))if(p.x>view.left-120&&p.x<view.right+120&&p.y>view.top-100&&p.y<view.bottom+100)parchmentTag(ctx,p.x,p.y+34,p.name,labelAlpha(Math.hypot(world.player.x-p.x,world.player.y-p.y)));
  if(id==='crossroads')drawCrossroadsLabels(ctx);
- for(const exit of area.exits){const horizontal=exit.edge==='east'||exit.edge==='west',x=horizontal?(exit.edge==='east'?area.width-160:160):(exit.from+exit.to)/2,y=horizontal?(exit.from+exit.to)/2:exit.edge==='north'?110:area.height-200;parchmentTag(ctx,x,y-12,`${{north:'↑',south:'↓',west:'←',east:'→'}[exit.edge]} ${exit.label}`,1);}
+ if(id==='landing'){parchmentTag(ctx,1630,1565,cabinDamaged(world.story)?'The Damaged Cabin':'Grandpa’s Cabin',labelAlpha(Math.hypot(world.player.x-1630,world.player.y-1545)));}
+ for(const exit of area.exits){const horizontal=exit.edge==='east'||exit.edge==='west',x=horizontal?(exit.edge==='east'?area.width-160:160):(exit.from+exit.to)/2,y=horizontal?(exit.from+exit.to)/2:exit.edge==='north'?110:(id==='cabin'?area.height-45:area.height-200);parchmentTag(ctx,x,y-12,`${{north:'↑',south:'↓',west:'←',east:'→'}[exit.edge]} ${exit.label}`,1);}
 }
 export function drawExplorer(ctx,p,time=0){
  if(drawEntitySprite(ctx,p.spriteId||'player',{x:p.x,y:p.y,state:p.animationState||'idle',time}))return;
+ const art=SPRITES[p.spriteId]?.fallback||{};
  const x=Math.round(p.x),y=Math.round(p.y),step=Math.sin(p.walkTime||0)*2;
  ctx.fillStyle='rgba(30,40,50,.3)';ctx.beginPath();ctx.ellipse(x+5,y+14,15,5,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#423d3c';ctx.fillRect(x-8,y+6+step,6,9);ctx.fillRect(x+3,y+6-step,6,9);
- ctx.fillStyle='#71885f';ctx.fillRect(x-11,y-8,22,17);ctx.fillStyle='#a2b580';ctx.fillRect(x-8,y-8,7,10);ctx.fillStyle='#c6a276';ctx.fillRect(x-7,y-20,14,12);ctx.fillStyle='#554739';ctx.fillRect(x-9,y-23,18,6);ctx.fillStyle='#d0b77e';ctx.fillRect(x-13,y-22,26,4);ctx.fillStyle='#775b44';ctx.fillRect(x-6,y-5,13,14);ctx.fillStyle='#c78066';ctx.fillRect(x-8,y-8,17,3);ctx.fillRect(x-11,y-5,5,8);
+ ctx.fillStyle=art.shirt||'#71885f';ctx.fillRect(x-11,y-8,22,17);ctx.fillStyle='#a2b580';ctx.fillRect(x-8,y-8,7,10);ctx.fillStyle='#c6a276';ctx.fillRect(x-7,y-20,14,12);ctx.fillStyle=art.hair||'#554739';ctx.fillRect(x-9,y-23,18,6);ctx.fillStyle='#d0b77e';if(art.hat!==false)ctx.fillRect(x-13,y-22,26,4);ctx.fillStyle='#775b44';ctx.fillRect(x-6,y-5,13,14);ctx.fillStyle='#c78066';ctx.fillRect(x-8,y-8,17,3);ctx.fillRect(x-11,y-5,5,8);
  ctx.strokeStyle='#c6ae78';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+10,y);ctx.lineTo(x+Math.cos(p.angle)*30,y+Math.sin(p.angle)*30);ctx.stroke();
 }
 export function paintAtlas(ctx,width,height,player,discovered=new Set(),id='landing'){
@@ -334,3 +326,4 @@ export function paintAtlas(ctx,width,height,player,discovered=new Set(),id='land
  for(const e of area.exits){const horizontal=e.edge==='east'||e.edge==='west',x=horizontal?(e.edge==='east'?width-8:8):(e.from+e.to)/2*sx,y=horizontal?(e.from+e.to)/2*sy:e.edge==='north'?18:height-10;ctx.fillStyle='#f0d68b';ctx.textAlign=horizontal?(e.edge==='east'?'right':'left'):'center';ctx.font=`bold ${width>400?12:8}px monospace`;ctx.fillText(`${{north:'↑',south:'↓',west:'←',east:'→'}[e.edge]} ${e.label}`,x,y);}
  if(player){ctx.fillStyle='#fff4be';ctx.beginPath();ctx.arc(player.x*sx,player.y*sy,5,0,Math.PI*2);ctx.fill();}
 }
+

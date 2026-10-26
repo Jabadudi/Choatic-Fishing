@@ -9,6 +9,8 @@ export const VILLAGE_ROADS=[
  [[750,1010],[1060,1030],[1370,1010]]
 ];
 export const VILLAGE_BUILDINGS=[
+ {id:'blacksmith',x:1220,y:390,w:180,h:90,roof:'#565d68',trim:'#a6a69c',name:'THE BLACKSMITH',kind:'workshop'},
+ {id:'chief-house',x:780,y:340,w:240,h:125,roof:'#7b3531',trim:'#e4d8bb',name:'THE CHIEF’S HOUSE',kind:'chief'},
  {id:'hearth-inn',x:1000,y:500,w:220,h:95,roof:'#a45543',trim:'#d49668',name:'THE WILLOW HEARTH',kind:'inn'},
  {id:'west-home',x:590,y:510,w:142,h:80,roof:'#96513e',trim:'#c28d61',kind:'home'},
  {id:'north-home',x:1440,y:390,w:154,h:82,roof:'#966145',trim:'#c59364',kind:'home'},

@@ -1,6 +1,6 @@
 # GitHub Pages and online lobbies
 
-The game is ready for a public GitHub repository. It has not yet been deployed.
+The public repository is https://github.com/Jabadudi/Choatic-Fishing and the game is published at https://jabadudi.github.io/Choatic-Fishing/. Pushes to main run the tests, build the game, and deploy through GitHub Actions.
 
 ## Publish
 
@@ -26,3 +26,4 @@ Localhost invite links only work on the same computer. Friends need the publishe
 Two local browser tabs connected through PeerJS, joined the same lobby, readied up, received the shared countdown, and replicated guest fishing to the host. Separate-network connectivity and the published Pages URL still need verification.
 
 References: [GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site), [PeerJS connections](https://peerjs.com/client/faq).
+

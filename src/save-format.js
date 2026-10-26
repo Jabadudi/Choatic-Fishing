@@ -1,7 +1,8 @@
+import {restoreStory,createStoryNpcs} from './story.js';
 import {World} from './world.js';
 import {AREAS,walkable} from './wilds.js';
 import {animalGround} from './wildlife.js';
-export const SAVE_VERSION=1;
+export const SAVE_VERSION=4;
 export const SAVE_FORMAT='the-wilds-save';
 const clone=value=>JSON.parse(JSON.stringify(value));
 const fail=message=>{throw Error(message);};
@@ -19,7 +20,7 @@ export function captureSave(world,reason='autosave',now=Date.now()){
  if(!world?.adventure)fail('Only exploration progress can be saved.');
  const p=world.player;
  return {format:SAVE_FORMAT,version:SAVE_VERSION,savedAt:now,reason,journeyId:world.journeyId,state:{
-  areaId:world.areaId,elapsed:world.elapsed,
+  areaId:world.areaId,elapsed:world.elapsed,story:world.story?clone(world.story):null,
   player:{x:p.x,y:p.y,angle:p.angle,health:p.health,cooldown:p.cooldown,dashCharges:p.dashCharges,dashCooldown:p.dashCooldown},
   inventory:{items:clone(p.inventory.allItems),hotbar:p.inventory.slots.map(item=>item?.id||null),selected:p.inventory.selected,nextId:p.inventory.nextId},
   progression:{...clone(p.progression),eliminations:[...p.progression.eliminations]},catches:clone(p.catches),
@@ -45,10 +46,19 @@ export function restoreSave(input){
  const save=clone(input);inspect(save);
  if(save?.format!==SAVE_FORMAT)fail('This is not a The Wilds save file.');
  if(save.version>SAVE_VERSION)fail('This save is from a newer game version. Update the game before importing it.');
+ // Version 1 predates the story. Preserve those exploration journeys without replaying Chapter 1.
+ if(save.version===1){save.version=2;if(save.state)save.state.story=null;}
+ // Version 3 adds a validated, resumable guide route. Keep every existing story page and milestone.
+ if(save.version===2){save.version=3;if(save.state?.story)save.state.story.guide=null;}
+ // Version 4 makes guide geography explicit for the journey through connected areas.
+ if(save.version===3){save.version=4;if(save.state?.story?.guide)save.state.story.guide.areaId='landing';}
  if(save.version!==SAVE_VERSION)fail('This save version is not supported. Your existing save was not changed.');
  if(!number(save.savedAt,0,1e16)||typeof save.journeyId!=='string'||save.journeyId.length>120)fail('Invalid save header.');
  const s=save.state;if(!s||!Object.hasOwn(AREAS,s.areaId))fail('Unknown saved area.');
  const w=new World(Math.random,{adventure:true});w.journeyId=save.journeyId;w.areaId=s.areaId;w.elapsed=number(s.elapsed)?s.elapsed:0;
+ w.story=restoreStory(s.story);
+ if(w.story?.guide&&!walkable(w.story.guide.x,w.story.guide.y,w.story.guide.areaId))fail('Invalid story guide position.');
+ if(w.story){w.player.name='Eli';w.player.spriteId='eli';w.npcs=createStoryNpcs(w.story,w.elapsed);}
  progressionFrom(s.progression,w.progression);
  const inv=s.inventory;if(!inv||!list(inv.items)||!list(inv.hotbar,6)||inv.hotbar.length!==6||!Number.isInteger(inv.selected)||inv.selected<1||inv.selected>7||!Number.isSafeInteger(inv.nextId)||inv.nextId<1)fail('Invalid backpack data.');
  if(!inv.items.every(itemValid)||new Set(inv.items.map(item=>item.id)).size!==inv.items.length)fail('Invalid backpack items.');
@@ -90,5 +100,5 @@ export function restoreSave(input){
 export function parseSave(text){if(typeof text!=='string'||text.length>5*1024*1024)fail('Save file is too large.');let save;try{save=JSON.parse(text);}catch{fail('Could not read this file. Choose a valid The Wilds JSON save.');}restoreSave(save);return save;}
 export function importantProgress(world){
  const p=world.progression;
- return JSON.stringify([world.areaId,world.inventory.allItems,world.inventory.slots.map(i=>i?.id),p.totalXp,p.pendingChoices,p.pendingUpgrades,p.upgrades,p.ranks,p.specials,world.quests,[...world.discovered],world.hunting,world.drops,world.animals.map(a=>a.health)]);
+ return JSON.stringify([world.areaId,world.inventory.allItems,world.inventory.slots.map(i=>i?.id),p.totalXp,p.pendingChoices,p.pendingUpgrades,p.upgrades,p.ranks,p.specials,world.quests,world.story,[...world.discovered],world.hunting,world.drops,world.animals.map(a=>a.health)]);
 }

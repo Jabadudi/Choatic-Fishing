@@ -1,5 +1,25 @@
 # The Wilds — an exploration world
 
+New Game now begins **Chapter 1 — The Old Fishing Hut**: Eli arrives after the
+captain leaves, explores Grandpa’s cabin, discovers the illustrated photograph
+and lure, fishes and cooks dinner, then survives the storm and wolf rescue.
+The campfire awakening leaves the cabin damaged in the world and area map.
+Press **G** / **Examine** to interact, and Continue in story scenes to advance.
+Story progress and scene pages are saved; older exploration saves remain usable.
+**Chapter 2 — Shadow Walker** now continues from the campfire: talk with the girl
+about last night, the cabin and getting home, then choose to leave and follow her
+to the inland trail. She waits if you fall behind. Continue from a Chapter 1 save;
+there is no need to restart. Conversations and the guide’s walking progress save.
+**Chapter 3 — The Village** continues from the inland trail: talk to the girl,
+follow the chimes north and the village road west, meet Willowback’s residents,
+examine the Rimejaw and Flitlynx at the blacksmith’s shop, and learn about the
+shadow walkers before reaching the chief’s house. Guide positions persist across
+connected areas. Continue from a Chapter 2 save; there is no need to restart.
+
+
+See [docs/STORY.md](docs/STORY.md) for the sequence, artwork sources and extension points.
+
+
 The first playable area is Reedwater Landing: explore its beach, dock, drowned
 road, spring and forest approach. Walk north into Windchime Path, then continue north to Willowbank Crossroads.
 The fork leads west into Willowback Village and east through a boardwalk into

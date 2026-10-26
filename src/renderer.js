@@ -1,4 +1,5 @@
 import {drawDrop} from './drops.js';
+import {cabinDamaged} from './story.js';
 import {visibleWildlife} from './wildlife.js';
 import {drawWildlife,drawAnimalStatus} from './wildlife-art.js';
 import {drawEntitySprite} from './sprites.js';
@@ -6,7 +7,7 @@ import {drawTerrain} from './terrain.js';
 import {drawWilds,drawWildsLabels,drawDepthSorted,drawExplorer} from './wilds.js';
 import {drawRabbits,drawRabbit,visibleRabbits} from './rabbits.js';
 import {drawAtmosphere} from './atmosphere.js';
-import {visibleNpcs,drawNpc,drawDialogue} from './npcs.js';
+import {visibleNpcs,drawNpc} from './npcs.js';
 export function render(ctx,world,view){
  const {elapsed:t,player:p,bobber}=world;
  const actors=[];
@@ -16,7 +17,7 @@ export function render(ctx,world,view){
   actors.push({y:p.y+12,ref:p});for(const r of visibleRabbits(world,view))actors.push({y:r.y,ref:r});
   for(const a of visibleWildlife(world,view))actors.push({y:a.y+14,ref:a});
   for(const drop of world.drops||[])if(drop.areaId===world.areaId)actors.push({y:drop.y+5,ref:drop});
-  for(const n of visibleNpcs(world,view))actors.push({y:n.y+14,ref:n});
+  for(const n of visibleNpcs(world,view))actors.push({y:n.sortY??n.y+14,ref:n});
   drawDepthSorted(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500},actors,(c,ref)=>ref===p?drawPlayer(c,world):ref.entityType==='pickup'?drawDrop(c,ref,t):ref.npc?drawNpc(c,ref,t):ref.species==='rabbit'?drawRabbit(c,ref):drawWildlife(c,ref));
  }else{drawTerrain(ctx,world);drawRabbits(ctx,world,view);}
   for(const bot of world.actors.filter(actor=>actor!==world.player)){
@@ -48,10 +49,15 @@ export function render(ctx,world,view){
     else{ctx.beginPath();ctx.arc(0,0,effect.name==='Anchor'?72:48,-1+age*2,1+age*2);ctx.stroke();}
     ctx.restore();
   }
-  if(world.adventure){drawWildsLabels(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500});if(view)drawAtmosphere(ctx,world,view);drawAnimalStatus(ctx,world);drawDialogue(ctx,world);}
+  if(world.adventure){drawWildsLabels(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500});if(view&&world.areaId!=='cabin'&&!cabinDamaged(world.story))drawAtmosphere(ctx,world,view);drawAnimalStatus(ctx,world);}
 }
 function drawBobber(ctx,world){
  const {elapsed:t,player:p,bobber}=world;if(!bobber)return;
  ctx.strokeStyle='#f1e6c7';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(p.x+Math.cos(p.angle)*23,p.y+Math.sin(p.angle)*23);ctx.lineTo(bobber.x,bobber.y);ctx.stroke();ctx.strokeStyle='#99c8b788';ctx.beginPath();ctx.ellipse(bobber.x,bobber.y+4,12+Math.sin(t*3)*3,5,0,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#ef947a';ctx.beginPath();ctx.arc(bobber.x,bobber.y,5,0,Math.PI*2);ctx.fill();
 }
-function drawPlayer(ctx,world){drawBobber(ctx,world);drawExplorer(ctx,world.player,world.elapsed||0);}
+function drawPlayer(ctx,world){
+ drawBobber(ctx,world);
+ const fallen=world.story?.scene==='storm'&&world.story.page===3;
+ if(fallen){const p=world.player;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(Math.PI/2);drawExplorer(ctx,{...p,x:0,y:0},world.elapsed||0);ctx.restore();}
+ else drawExplorer(ctx,world.player,world.elapsed||0);
+}

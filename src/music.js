@@ -1,3 +1,4 @@
+import {preferences} from './preferences.js';
 // One audio instance and a repeating playlist; match restarts never reset playback.
 const tracks=[
  {file:'battle-music.mp3',title:'Battle Music — Paulyudin'},
@@ -7,7 +8,7 @@ let trackIndex=0;
 const audio=new Audio(new URL('../assets/'+tracks[trackIndex].file,import.meta.url));
 audio.loop=false;
 audio.preload='metadata';
-audio.volume=.3;
+audio.volume=preferences.value.musicVolume;audio.muted=preferences.value.musicMuted;
 const mute=document.getElementById('music-toggle');
 const volume=document.getElementById('music-volume');
 const status=document.getElementById('music-status');
@@ -24,8 +25,10 @@ async function start(){
  catch{status.textContent='Click to start music';}
  finally{starting=false;}
 }
-mute.addEventListener('click',()=>{audio.muted=!audio.muted;refresh();if(!audio.muted)start();});
-volume.addEventListener('input',()=>{audio.volume=Number(volume.value)/100;if(audio.volume>0)audio.muted=false;refresh();start();});
+mute.addEventListener('click',()=>preferences.set({musicMuted:!preferences.value.musicMuted}));
+volume.addEventListener('input',()=>preferences.set({musicVolume:Number(volume.value)/100}));
+preferences.subscribe(p=>{audio.volume=p.musicVolume;audio.muted=p.musicMuted;volume.value=Math.round(p.musicVolume*100);refresh();start();});
+export const musicState=()=>({volume:audio.volume,muted:audio.muted,paused:audio.paused});
 audio.addEventListener('error',()=>{status.textContent='Music could not load';});
 audio.addEventListener('ended',()=>{
  trackIndex=(trackIndex+1)%tracks.length;

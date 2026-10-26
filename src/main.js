@@ -1,3 +1,12 @@
+import {storyAction,updateStoryAction} from './story-action.js';
+import {matchesBinding,bindingLabel} from './keybinds.js';
+import {preferences} from './preferences.js';
+import {mountSettings} from './settings-ui.js';
+import {observeGameSounds,playSfx} from './sfx.js';
+import {mountStory} from './story-ui.js';
+import {currentScene,storyPrompt,cabinDamaged} from './story.js';
+import {paintStoryMap} from './story-map.js';
+import {drawStoryWeather} from './story-weather.js';
 import {mountSaveUI} from './save-ui.js';
 import {nearbyDrop} from './drops.js';
 import {mountBackpack} from './backpack.js';
@@ -12,7 +21,7 @@ import {explorationHud} from './hud.js';
 let world=new World(Math.random,{botCount:0});
 const canvas=document.querySelector('#arena'),ctx=canvas.getContext('2d',{alpha:false});
 const touchState=new TouchInput(),touchMedia=matchMedia('(any-pointer: coarse), (max-width: 700px)');
-let backpackUI=null,saveUI=null;
+let backpackUI=null,saveUI=null,storyUI=null,settingsUI=null;
 let touchMode=touchMedia.matches,touchUI=null;document.body.classList.toggle('touch-mode',touchMode);
 // Keep the explorer readable on a narrow portrait viewport.
 let view={scale:1,x:0,y:0,width:960,height:720,dpr:1};
@@ -26,39 +35,39 @@ function resize(){
 new ResizeObserver(resize).observe(canvas);resize();
 const elements=new Map();
 const $=id=>{if(!elements.has(id))elements.set(id,document.getElementById(id));return elements.get(id);};const keys=new Set();let mouseHeld=false,spaceHeld=false,aim={x:480,y:0};
-const currentInput=()=>{camera();if(touchMode&&touchState.enabled){pointer=null;aim=touchState.aim(world.player);}const stick=touchMode&&touchState.movePointer!==null;return ({left:keys.has('KeyA')||(stick&&touchState.x<-.1),right:keys.has('KeyD')||(stick&&touchState.x>.1),up:keys.has('KeyW')||(stick&&touchState.y<-.1),down:keys.has('KeyS')||(stick&&touchState.y>.1),...(stick?{moveX:touchState.x,moveY:touchState.y}:{}),aim,held:mouseHeld||spaceHeld||touchState.held});};
-const act=action=>{if(!backpackUI?.open&&!saveUI?.open)lobby.action(action,currentInput());};
+const currentInput=()=>{camera();if(touchMode&&touchState.enabled){pointer=null;aim=touchState.aim(world.player);}const stick=touchMode&&touchState.movePointer!==null;return ({left:keys.has(preferences.value.keybinds.left)||(stick&&touchState.x<-.1),right:keys.has(preferences.value.keybinds.right)||(stick&&touchState.x>.1),up:keys.has(preferences.value.keybinds.up)||(stick&&touchState.y<-.1),down:keys.has(preferences.value.keybinds.down)||(stick&&touchState.y>.1),...(stick?{moveX:touchState.x,moveY:touchState.y}:{}),aim,held:mouseHeld||spaceHeld||touchState.held});};
+const act=action=>{if(!currentScene(world)&&!settingsUI?.open&&!storyUI?.open&&!backpackUI?.open&&!saveUI?.open)lobby.action(action,currentInput());};
 const equip=slot=>act(`slot-${slot}`);
 addEventListener('keydown',e=>{
-  if(saveUI?.open)return;
+  if(settingsUI?.open||storyUI?.open||saveUI?.open||currentScene(world))return;
   if((e.ctrlKey||e.metaKey)&&e.code==='KeyS'&&lobby.world?.adventure){e.preventDefault();saveUI.manager.request('manual',true).catch(()=>{});return;}
-  if(backpackUI?.open){if(e.code==='KeyB'&&!e.repeat){e.preventDefault();backpackUI.toggle();}return;}
-  if(e.code==='KeyB'&&lobby.world?.adventure&&!e.repeat){e.preventDefault();backpackUI.toggle();return;}
-  if(e.code==='KeyM'&&lobby.world?.adventure&&!e.repeat){e.preventDefault();toggleAtlas();return;}
+  if(backpackUI?.open){if(matchesBinding('backpack',e.code)&&!e.repeat){e.preventDefault();backpackUI.toggle();}return;}
+  if(matchesBinding('backpack',e.code)&&lobby.world?.adventure&&!e.repeat){e.preventDefault();backpackUI.toggle();return;}
+  if(matchesBinding('map',e.code)&&lobby.world?.adventure&&!e.repeat){e.preventDefault();toggleAtlas();return;}
   if(atlasOpen){if(e.code==='Escape'){e.preventDefault();toggleAtlas(false);}return;}
   if(e.target.closest('.music-hud, #lobby-screen')||!lobby.world)return;
-  if(['Space','ArrowUp','ArrowDown'].includes(e.code))e.preventDefault();
-  keys.add(e.code);if(e.code==='Space')spaceHeld=true;
+  if(Object.values(preferences.value.keybinds).includes(e.code))e.preventDefault();
+  keys.add(e.code);if(matchesBinding('reel',e.code))spaceHeld=true;
   if(!e.repeat){
-    if(e.code==='KeyG'&&world.adventure)world.inspect();
-    if(e.code==='ShiftLeft')act('dash');
-    if(e.code==='KeyE'){
+    if(matchesBinding('inspect',e.code)&&world.adventure)world.inspect();
+    if(matchesBinding('dash',e.code))act('dash');
+    if(matchesBinding('fish',e.code)){
       act('toggle');
     }
-    if(/^Digit[1-7]$/.test(e.code))equip(Number(e.code.slice(5)));
-    if(e.code==='KeyF')act('use');
-    if(e.code==='KeyR')act('tidal');
-    if(e.code==='KeyT')act('whirlpool');
+    for(let slot=1;slot<=7;slot++)if(matchesBinding('slot'+slot,e.code))equip(slot);
+    if(matchesBinding('use',e.code))act('use');
+    if(matchesBinding('tidal',e.code))act('tidal');
+    if(matchesBinding('whirlpool',e.code))act('whirlpool');
     if(e.code==='Enter'&&['won','lost','finished'].includes(world.matchState))restart();
-    if(['Escape','KeyQ'].includes(e.code))act('cancel');
+    if((e.code==='Escape'||matchesBinding('cancel',e.code)))act('cancel');
   }
 });
-addEventListener('keyup',e=>{keys.delete(e.code);if(e.code==='Space')spaceHeld=false;});
+addEventListener('keyup',e=>{keys.delete(e.code);if(matchesBinding('reel',e.code))spaceHeld=false;});
 let pointer=null;
-function camera(player=world.player){view.x=view.width/2-player.x*view.scale;view.y=view.height/2-player.y*view.scale;if(world.adventure){const a=areaFor(world.areaId);view.x=Math.max(Math.min(0,view.width-a.width*view.scale),Math.min(0,view.x));view.y=Math.max(Math.min(0,view.height-a.height*view.scale),Math.min(0,view.y));}if(pointer)aim={x:(pointer.x-view.x)/view.scale,y:(pointer.y-view.y)/view.scale};}
+function camera(player=world.player){view.x=view.width/2-player.x*view.scale;view.y=view.height/2-player.y*view.scale;if(world.adventure){const a=areaFor(world.areaId);view.x=a.width*view.scale<view.width?(view.width-a.width*view.scale)/2:Math.max(view.width-a.width*view.scale,Math.min(0,view.x));view.y=a.height*view.scale<view.height?(view.height-a.height*view.scale)/2:Math.max(view.height-a.height*view.scale,Math.min(0,view.y));}if(pointer)aim={x:(pointer.x-view.x)/view.scale,y:(pointer.y-view.y)/view.scale};}
 function point(e){const r=canvas.getBoundingClientRect();if(e.pointerType==='touch'){pointer=null;camera();touchState.manualAim={x:(e.clientX-r.left-view.x)/view.scale,y:(e.clientY-r.top-view.y)/view.scale};aim=touchState.manualAim;return;}pointer={x:e.clientX-r.left,y:e.clientY-r.top};camera();world.player.angle=Math.atan2(aim.y-world.player.y,aim.x-world.player.x);}
 canvas.addEventListener('pointermove',e=>{if(e.pointerType!=='touch'||e.buttons)point(e);});
-canvas.addEventListener('pointerdown',e=>{if(e.button!==0||!lobby.world||atlasOpen)return;point(e);if(e.pointerType==='touch'){e.preventDefault();return;}mouseHeld=true;canvas.focus();act('click');});
+canvas.addEventListener('pointerdown',e=>{if(e.button!==0||!lobby.world||atlasOpen||settingsUI?.open||storyUI?.open||currentScene(world))return;point(e);if(e.pointerType==='touch'){e.preventDefault();return;}mouseHeld=true;canvas.focus();act('click');});
 addEventListener('pointerup',()=>mouseHeld=false);
 function release(){keys.clear();mouseHeld=false;spaceHeld=false;touchUI?.reset();}
 touchMedia.addEventListener('change',e=>{touchMode=e.matches;document.body.classList.toggle('touch-mode',touchMode);release();resize();});
@@ -79,26 +88,28 @@ function updateProgression(){
  $('xp-track').setAttribute('aria-valuenow',p.xp);$('xp-track').setAttribute('aria-valuemax',p.xpToNextLevel);
  $('build-summary').textContent=`Speed +${Math.round((p.speedMultiplier-1)*100)}% · Damage +${p.ranks.power*8}% · Max HP ${p.maxHealth} · Armor ${Math.round(p.damageReduction*100)}%`;
  $('buff-text').textContent=p.lastBuff?`Catch buff: ${p.lastBuff.name} — ${p.lastBuff.description}`:'Every catch grants a random passive buff';
- $('fire-tidal').textContent=`R · Tidal Cannon ×${p.specials.tidal}`;$('fire-whirlpool').textContent=`T · Whirlpool ×${p.specials.whirlpool}`;
- $('reward-choice').hidden=p.pendingChoices===0||world.matchState!=='playing';$('reward-heading').textContent=`Level up · Choose a special (${p.pendingChoices})`;
+ $('fire-tidal').textContent=`${bindingLabel('tidal')} · Tidal Cannon ×${p.specials.tidal}`;$('fire-whirlpool').textContent=`${bindingLabel('whirlpool')} · Whirlpool ×${p.specials.whirlpool}`;
+ $('reward-choice').hidden=!!world.story||p.pendingChoices===0||world.matchState!=='playing';$('reward-heading').textContent=`Level up · Choose a special (${p.pendingChoices})`;
 }
 const ICONS={'Reed Spear':'♆','Crab Maul':'⚒','Shell Sling':'◌','Treasure Key':'⚿','Frying Pan':'◉','Swordfish':'⚔','Harpoon Gun':'➶','Anchor':'⚓','Pufferfish Bomb':'✹','Grappling Squid':'↗','Sardine':'♢','Old Boot':'♟'};
 let lastAtlasDraw=0;
 function updateUI(){
+ storyUI?.update();
  saveUI?.update();
  backpackUI?.update(!!lobby.world?.adventure&&!atlasOpen&&world.player.health>0);
- $('close-atlas').textContent=touchMode?'Close':'Close · M / Esc';
- $('cancel').textContent=touchMode?'Abandon':'Abandon · E / Esc';
- touchUI?.update(world,!touchMode||!lobby.world||atlasOpen||saveUI?.open||world.player.health<=0);
- if(touchMode){const npc=nearbyNpc(world);$('touch-examine').disabled=!world.adventure||(!npc&&!nearbyDrop(world)&&!nearestLandmark(world.player.x,world.player.y,world.areaId));$('touch-examine').querySelector('strong').textContent=nearbyDrop(world)?'Pick up':npc?'Talk':'Examine';$('touch-examine').setAttribute('aria-label',nearbyDrop(world)?`Pick up ${nearbyDrop(world).item.name}`:npc?`Talk to ${npc.name}`:'Examine nearby landmark');}
+ $('close-atlas').textContent=touchMode?'Close':`Close · ${bindingLabel('map')} / Esc`;
+ $('cancel').textContent=touchMode?'Abandon':`Abandon · ${bindingLabel('fish')} / Esc`;
+ touchUI?.update(world,!touchMode||!lobby.world||atlasOpen||saveUI?.open||settingsUI?.open||storyUI?.open||world.player.health<=0);
+ if(touchMode){const npc=nearbyNpc(world);$('touch-examine').disabled=!world.adventure||(!storyPrompt(world)&&!npc&&!nearbyDrop(world)&&!nearestLandmark(world.player.x,world.player.y,world.areaId));$('touch-examine').querySelector('strong').textContent=nearbyDrop(world)?'Pick up':npc?'Talk':'Examine';$('touch-examine').setAttribute('aria-label',nearbyDrop(world)?`Pick up ${nearbyDrop(world).item.name}`:npc?`Talk to ${npc.name}`:'Examine nearby landmark');}
  const f=world.fishing,active=f.state==='reeling',busy=f.state!=='idle',inventory=world.inventory;
  $('line-panel').hidden=!active;
  $('health-text').textContent=`${Math.ceil(world.player.health)} / ${world.progression.maxHealth} HP`;
- $('upgrade-timer').textContent=`Next upgrade · ${Math.ceil(world.progression.upgradeRemaining)}s`;
- $('upgrade-options').hidden=world.progression.pendingUpgrades===0||world.matchState!=='playing'||world.player.health<=0;
+ $('upgrade-timer').textContent=world.story?'ELI’S JOURNEY':`Next upgrade · ${Math.ceil(world.progression.upgradeRemaining)}s`;
+ $('upgrade-bar').hidden=!!world.story;
+ $('upgrade-options').hidden=!!world.story||world.progression.pendingUpgrades===0||world.matchState!=='playing'||world.player.health<=0;
  $('upgrade-heading').textContent=`Choose an upgrade (${world.progression.pendingUpgrades} available)`;
  const stacks=world.progression.upgrades;$('upgrade-stacks').textContent=`Boots ×${stacks.hermes} · Dash ×${stacks.dash} · Health ×${stacks.health}`;
- $('dash-status').textContent=`L-SHIFT · ${world.player.dashCharges}/${world.progression.maxDashes} DASHES`+(world.dashCooldown>0?` · +1 in ${world.dashCooldown.toFixed(1)}s`:'');
+ $('dash-status').textContent=`${bindingLabel('dash')} · ${world.player.dashCharges}/${world.progression.maxDashes} DASHES`+(world.dashCooldown>0?` · +1 in ${world.dashCooldown.toFixed(1)}s`:'');
  $('dash-fill').style.width=`${world.dashRemaining>0?0:(1-world.dashCooldown/2)*100}%`;
  $('health-fill').style.width=`${world.player.health/world.progression.maxHealth*100}%`;
  $('alive-text').textContent=`${world.actors.filter(actor=>actor.health>0).length} / ${world.actors.length} ALIVE`;
@@ -109,10 +120,10 @@ function updateUI(){
  for(const kind of ['tidal','whirlpool'])$('fire-'+kind).disabled=busy||world.player.cooldown>0||world.progression.specials[kind]===0||world.matchState!=='playing';
  $('world-state').textContent=world.matchState==='countdown'?'GET READY':active?'REELING':busy?'WAITING FOR A BITE':'EXPLORING';
  $('catch-bar').style.bottom=`${(f.bar||0)*100}%`;$('target').style.bottom=`${(f.target||0)*100}%`;$('progress-fill').style.height=active?`${f.progress*100}%`:'0%';$('percent').textContent=active?`${Math.floor(f.progress*100)}%`:'0%';
- for(let slot=3;slot<=7;slot++){const button=$(`slot-${slot}`),item=inventory.slots[slot-2];button.querySelector('.slot-icon').textContent=item?ICONS[item.name]||'◆':'—';button.querySelector('strong').textContent=item?.name||'Empty';button.querySelector('small').textContent=item?`${item.uses} uses · F`:'Assign from backpack';button.setAttribute('aria-label',`Slot ${slot}: ${item?.name||'empty'}${item?', '+item.uses+' uses':''}`);button.classList.toggle('selected',inventory.selected===slot);button.setAttribute('aria-pressed',inventory.selected===slot);button.title=item?.description||'Open backpack to assign an item';}
+ for(let slot=3;slot<=7;slot++){const button=$(`slot-${slot}`),item=inventory.slots[slot-2];button.querySelector('.slot-icon').textContent=item?ICONS[item.name]||'◆':'—';button.querySelector('strong').textContent=item?.name||'Empty';button.querySelector('small').textContent=item?`${item.uses} uses · ${bindingLabel('use')}`:'Assign from backpack';button.setAttribute('aria-label',`Slot ${slot}: ${item?.name||'empty'}${item?', '+item.uses+' uses':''}`);button.classList.toggle('selected',inventory.selected===slot);button.setAttribute('aria-pressed',inventory.selected===slot);button.title=item?.description||'Open backpack to assign an item';}
  for(const slot of [1,2]){const button=$(slot===1?'slot-rod':'slot-item');button.classList.toggle('selected',inventory.selected===slot);button.setAttribute('aria-pressed',inventory.selected===slot);}
- $('item-name').textContent=inventory.slots[0]?.name||'Empty slot';$('item-icon').textContent=inventory.slots[0]?ICONS[inventory.slots[0].name]||'◆':'—';$('item-uses').textContent=inventory.slots[0]?`${inventory.slots[0].uses} uses · Click or F`:'Assign from backpack';
- $('status').textContent=active?'WASD move along shore · Hold Space / mouse to reel · E to abandon.':busy?'Waiting for a bite… E / Esc to abandon.':world.message||'Walk to shore, aim into water, press E.';
+ $('item-name').textContent=inventory.slots[0]?.name||'Empty slot';$('item-icon').textContent=inventory.slots[0]?ICONS[inventory.slots[0].name]||'◆':'—';$('item-uses').textContent=inventory.slots[0]?`${inventory.slots[0].uses} uses · Click or ${bindingLabel('use')}`:'Assign from backpack';
+ $('status').textContent=active?`Move along shore · Hold ${bindingLabel('reel')} / mouse to reel · ${bindingLabel('fish')} to abandon.`:busy?`Waiting for a bite… ${bindingLabel('fish')} / Esc to abandon.`:world.message||`Walk to shore, aim into water, press ${bindingLabel('fish')}.`;
  if(touchMode){$('status').textContent=$('status').textContent.replace('M opens the area map.','Tap the map to explore.');if(active)$('status').textContent='Hold Reel to raise the bar · Release to lower it';else if(busy)$('status').textContent='Waiting for a bite… Tap Cancel to abandon.';else if(!world.message)$('status').textContent='Drag the right stick to move · Tap water to aim · Use to cast';}
  if(world.adventure){
   const places=placesFor(world.areaId),place=nearestLandmark(world.player.x,world.player.y,world.areaId);
@@ -121,7 +132,7 @@ function updateUI(){
   document.querySelector('.atlas-heading h2').textContent=areaFor(world.areaId).name;
   const hud=explorationHud(world,(performance.now()-exploreStart)/1000);
   $('area-kicker').textContent=areaFor(world.areaId).name.toUpperCase();document.title=`The Wilds · ${areaFor(world.areaId).name}`;
-  $('inspect-place').hidden=!hud.prompt;$('inspect-place').textContent=hud.prompt?(touchMode?hud.prompt:`G · ${hud.prompt}`):'';
+  $('inspect-place').hidden=!hud.prompt;$('inspect-place').textContent=hud.prompt?(touchMode?hud.prompt:`${bindingLabel('inspect')} · ${hud.prompt}`):'';
   $('explore-hint').hidden=!hud.hintVisible;
   $('quest-objective').hidden=!hud.quest;if($('quest-objective').textContent!==(hud.quest||''))$('quest-objective').textContent=hud.quest||'';document.body.classList.toggle('has-quest',!!hud.quest);
   const key=hud.dots.join();if(key!==dotsKey){dotsKey=key;$('discovery-dots').replaceChildren(...hud.dots.map(found=>{const dot=document.createElement('i');if(found)dot.className='found';return dot;}));}
@@ -136,13 +147,13 @@ function updateUI(){
 // The adventure is the main player flow; legacy arena code remains an internal fixture.
 document.title='The Wilds · Reedwater Landing';
 document.querySelector('.lobby-eyebrow').textContent='THE WILDS';
-document.querySelector('.lobby-card h1').textContent='Begin at Reedwater.';
+document.querySelector('.lobby-card h1').textContent='Grandpa left you a map.';
 document.querySelector('.lobby-note').textContent='WASD explore · Mouse aim · E fish · G examine · M atlas';
 document.querySelector('header h1').textContent='THE WILDS';
 document.querySelector('.controls').textContent='WASD MOVE · E FISH · G EXAMINE · M ATLAS · L-SHIFT DASH';
 document.querySelector('.lobby-actions').insertAdjacentHTML('afterbegin','<button id="explore-world">Enter the Wilds</button>');
 document.querySelector('.playfield').insertAdjacentHTML('beforeend',`<section id="exploration-hud" hidden><span class="exploration-kicker" id="area-kicker">YOUR JOURNEY</span><h2 id="region-name">Reedwater Delta</h2><p id="discovery-count">0 / 10 places found</p><div class="discovery-dots" id="discovery-dots"></div></section><button id="inspect-place" hidden>G · Examine</button><div id="explore-hint" hidden><kbd>WASD</kbd> walk · <kbd>E</kbd> fish · <kbd>G</kbd> examine · <kbd>M</kbd> map · <kbd>Shift</kbd> dash</div><button id="music-icon" aria-label="Music settings" aria-expanded="false">♪</button><button id="open-atlas" hidden aria-label="Open world atlas"><canvas id="mini-atlas" width="192" height="144"></canvas><span>M · WORLD ATLAS</span></button><section id="world-atlas" hidden role="dialog" aria-modal="true" aria-label="World atlas"><div class="atlas-card"><div class="atlas-heading"><div><small>THE WILDS</small><h2>World Atlas</h2></div><button id="close-atlas">Close · M / Esc</button></div><canvas id="atlas-canvas" width="800" height="600"></canvas><p>Follow the old trails and bridges. Gold marks the places you have found. Your position is the bright marker.</p></div></section>`);
-touchUI=mountMobileControls({state:touchState,active:()=>touchMode&&!!lobby.world&&!atlasOpen&&!saveUI?.open&&!backpackUI?.open,action:()=>{pointer=null;const f=world.fishing;if(f.state==='waiting')act('cancel');else if(f.state==='idle')act('click');},examine:()=>{world.inspect();canvas.focus();}});
+touchUI=mountMobileControls({state:touchState,active:()=>touchMode&&!!lobby.world&&!atlasOpen&&!saveUI?.open&&!backpackUI?.open&&!settingsUI?.open&&!storyUI?.open&&!currentScene(world),action:()=>{pointer=null;const f=world.fishing;if(f.state==='waiting')act('cancel');else if(f.state==='idle')act('click');},examine:()=>{world.inspect();canvas.focus();}});
 let atlasOpen=false,exploreStart=performance.now(),lastMessage='',messageSince=0,dotsKey='';
 $('upgrade-timer').insertAdjacentHTML('afterend','<div id="upgrade-bar"><i id="upgrade-fill"></i></div><p id="quest-objective" hidden aria-live="polite"></p>');
 document.querySelector('.hotbar').insertAdjacentHTML('beforeend','<div class="dash-mini"><div id="dash-pips"></div><span>DASH</span></div>');
@@ -156,6 +167,8 @@ function drawMap(target){
  if(!base){base=document.createElement('canvas');base.width=target.width;base.height=target.height;paintAtlas(base.getContext('2d'),base.width,base.height,null,new Set(),area.id);atlasImages.set(key,base);}
  const c=target.getContext('2d');c.imageSmoothingEnabled=false;c.drawImage(base,0,0);
  const sx=target.width/area.width,sy=target.height/area.height;
+ if(area.id==='landing'){paintStoryMap(c,sx,sy,world.story);if(target.width>400&&world.story){c.font='bold 12px monospace';c.textAlign='center';c.fillStyle='#fff0c9';c.fillText(cabinDamaged(world.story)?'Damaged Cabin':'Grandpa’s Cabin',1630*sx,1300*sy);}}
+ const guide=world.story?.guide;if(guide&&(guide.areaId||'landing')===area.id){c.fillStyle='#99e4df';c.beginPath();c.arc(guide.x*sx,guide.y*sy,4,0,Math.PI*2);c.fill();if(target.width>400){c.font='bold 12px monospace';c.textAlign='center';c.fillText('Your guide',guide.x*sx,guide.y*sy-10);}}
  for(const p of placesFor(area.id))if(world.discovered.has(p.id)){c.fillStyle='#e8be65';c.fillRect(p.x*sx-3,p.y*sy-3,6,6);}
  c.fillStyle='#fff4c1';c.strokeStyle='#20383d';c.lineWidth=2;c.beginPath();c.arc(world.player.x*sx,world.player.y*sy,4,0,Math.PI*2);c.fill();c.stroke();
 }
@@ -179,7 +192,7 @@ function updateLobby(){
  document.querySelector('.lobby-note').textContent=touchMode?'Drag the right stick to move · Tap water to aim · Use · Examine':'WASD explore · Mouse aim · E fish · G examine · M atlas';
  $('lobby-screen').hidden=!!lobby.world;if(touchUI)touchUI.update(world,!touchMode||!lobby.world);
  $('leave-lobby').hidden=lobby.mode==='menu';
- $('lobby-status').textContent=lobby.mode==='menu'?'Explore the shore, the drowned road, and the forest approach. Walk through the north edge to enter Windchime Path.':lobby.status;
+ $('lobby-status').textContent=lobby.mode==='menu'?'Chapter 1 · The Old Fishing Hut. Follow Eli from the dock to a night that changes everything.':lobby.status;
  const inRoom=['host','guest'].includes(lobby.mode),connecting=['creating','joining'].includes(lobby.mode);
  $('lobby-menu').hidden=inRoom;$('room-panel').hidden=!inRoom;
  $('create-room').disabled=connecting;$('join-room').disabled=connecting;
@@ -199,14 +212,27 @@ $('ready-up').onclick=()=>lobby.toggleReady();$('start-match').onclick=()=>{if(l
 $('leave-lobby').onclick=()=>lobby.leave();
 $('copy-invite').onclick=async()=>{const url=new URL(location.href);url.search='';url.searchParams.set('room',lobby.code);try{await navigator.clipboard.writeText(url.href);lobby.status='Invite link copied. Send it to your friends.';}catch{lobby.status='Copy this room code and share the game URL.';$('room-code').select();}updateLobby();};
 const invitation=new URL(location.href).searchParams.get('room');if(invitation)$('join-code').value=invitation;
+preferences.subscribe(()=>{release();progressionKey='';refreshKeyHints();});
+function refreshKeyHints(){
+ const move=['up','left','down','right'].map(bindingLabel).join('/');
+ document.querySelector('.controls').textContent=move+' MOVE · '+bindingLabel('fish')+' FISH · '+bindingLabel('inspect')+' EXAMINE · '+bindingLabel('map')+' ATLAS · '+bindingLabel('dash')+' DASH';
+ document.querySelector('.lobby-note').textContent=document.querySelector('.controls').textContent;
+ $('explore-hint').textContent=document.querySelector('.controls').textContent;
+ $('open-atlas').querySelector('span').textContent=bindingLabel('map')+' · WORLD ATLAS';
+ for(let slot=1;slot<=7;slot++)$(slot===1?'slot-rod':slot===2?'slot-item':'slot-'+slot).querySelector('kbd').textContent=bindingLabel('slot'+slot);
+}
+refreshKeyHints();
+settingsUI=mountSettings({onOpen:()=>{release();backpackUI?.close();toggleAtlas(false);},onClose:()=>{release();if(!storyUI?.open)canvas.focus();}});
+storyUI=mountStory({getWorld:()=>lobby.world,onAdvance:()=>{release();lastAtlasDraw=0;canvas.focus();},onSettings:()=>settingsUI.show(),isSettingsOpen:()=>settingsUI.open});
+document.addEventListener('click',e=>{if(e.target.closest('button')&&!e.target.closest('#story-scene,#settings-sfx-test'))playSfx('ui');});
 updateLobby();
 let accumulator=0,last=performance.now(),lastUI=0,lastRender=0;
-function frame(now){accumulator+=Math.min((now-last)/1000,.1);last=now;while(accumulator>=1/120){if(!backpackUI?.open&&!saveUI?.open)lobby.tick(1/120,currentInput());accumulator-=1/120;}
+function frame(now){accumulator+=Math.min((now-last)/1000,.1);last=now;while(accumulator>=1/120){if(!backpackUI?.open&&!saveUI?.open&&!settingsUI?.open&&!document.hidden){if(storyAction(lobby.world))updateStoryAction(lobby.world,1/120);else if(!storyUI?.open){lobby.tick(1/120,currentInput());observeGameSounds(lobby.world);}}accumulator-=1/120;}
  if(lobby.world)world=lobby.world;
  if(now-lastRender<1000/60){requestAnimationFrame(frame);return;}lastRender=now-((now-lastRender)%(1000/60));
  const display=lobby.presentation();camera(display?.player||world.player);const dpr=view.dpr;
- ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#1c4754';ctx.fillRect(0,0,canvas.width,canvas.height);
+ ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle=world.areaId==='cabin'?'#101d20':'#1c4754';ctx.fillRect(0,0,canvas.width,canvas.height);
  ctx.setTransform(dpr*view.scale,0,0,dpr*view.scale,dpr*view.x,dpr*view.y);
- render(ctx,display||world,{left:-view.x/view.scale,top:-view.y/view.scale,right:(view.width-view.x)/view.scale,bottom:(view.height-view.y)/view.scale});if(touchMode&&touchState.manualAim&&lobby.world&&!atlasOpen){const a=touchState.manualAim;ctx.strokeStyle='#fff1bc';ctx.lineWidth=1.5/view.scale;ctx.beginPath();ctx.arc(a.x,a.y,9/view.scale,0,Math.PI*2);ctx.moveTo(a.x-14/view.scale,a.y);ctx.lineTo(a.x+14/view.scale,a.y);ctx.moveTo(a.x,a.y-14/view.scale);ctx.lineTo(a.x,a.y+14/view.scale);ctx.stroke();}if(lobby.world&&now-lastUI>=1000/30){lastUI=now;updateProgression();updateUI();}requestAnimationFrame(frame);
+ render(ctx,display||world,{left:-view.x/view.scale,top:-view.y/view.scale,right:(view.width-view.x)/view.scale,bottom:(view.height-view.y)/view.scale});drawStoryWeather(ctx,world,{left:-view.x/view.scale,top:-view.y/view.scale,right:(view.width-view.x)/view.scale,bottom:(view.height-view.y)/view.scale},now/1000);if(touchMode&&touchState.manualAim&&lobby.world&&!atlasOpen){const a=touchState.manualAim;ctx.strokeStyle='#fff1bc';ctx.lineWidth=1.5/view.scale;ctx.beginPath();ctx.arc(a.x,a.y,9/view.scale,0,Math.PI*2);ctx.moveTo(a.x-14/view.scale,a.y);ctx.lineTo(a.x+14/view.scale,a.y);ctx.moveTo(a.x,a.y-14/view.scale);ctx.lineTo(a.x,a.y+14/view.scale);ctx.stroke();}if(lobby.world&&now-lastUI>=1000/30){lastUI=now;updateProgression();updateUI();}requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);

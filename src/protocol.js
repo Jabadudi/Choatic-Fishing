@@ -1,3 +1,4 @@
+import {currentScene} from './story.js';
 import {World,createActor} from './world.js';
 export const VERSION=6;
 export const neutralInput=()=>({left:false,right:false,up:false,down:false,held:false,aim:{x:480,y:365}});
@@ -7,6 +8,7 @@ export function cleanInput(raw){
  return {...analog,left:raw.left===true,right:raw.right===true,up:raw.up===true,down:raw.down===true,held:raw.held===true,aim:{x:Math.max(-960,Math.min(2600,raw.aim.x)),y:Math.max(-720,Math.min(2100,raw.aim.y))}};
 }
 export function applyAction(world,id,action,input){
+ if(currentScene(world))return false;
  const actor=world.humans.find(actor=>actor.id===id);if(!actor||actor.health<=0||world.matchState!=='playing')return false;
  return world.asActor(actor,()=>{
   actor.angle=Math.atan2(input.aim.y-actor.y,input.aim.x-actor.x);

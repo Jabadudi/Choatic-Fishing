@@ -1,3 +1,4 @@
+import {createStory,currentScene,inspectStory,advanceStory,storyObjective,updateStory,inlandUnlocked,storyTransitionAllowed,onStoryAreaChange} from './story.js';
 import {nearbyDrop,dropItem} from './drops.js';
 import {createQuests,maraQuestDialogue} from './quests.js';
 import {createWildlife,updateWildlife,updateAnimalCombat} from './wildlife.js';
@@ -15,7 +16,7 @@ export const SHORE_DEPTH=110;
 export const INLAND={left:LAND.left+SHORE_DEPTH,right:LAND.right-SHORE_DEPTH,top:LAND.top+SHORE_DEPTH,bottom:LAND.bottom-SHORE_DEPTH};
 export function createActor(id,name,x,y,random){return {id,name,entityType:'player',x,y,angle:0,health:100,vx:0,vy:0,cooldown:0,dashCharges:1,dashRemaining:0,dashCooldown:0,dashDirection:{x:0,y:0},message:'',catches:[],inventory:new Inventory(),progression:new Progression(),fishing:new Fishing(random),bobber:null,retreat:0,intent:'TO SHORE'};}
 export class World {
- constructor(random=Math.random,{botCount=1,countdownSeconds=5,humans=null,adventure=false}={}){
+ constructor(random=Math.random,{botCount=1,countdownSeconds=5,humans=null,adventure=false,story=false}={}){
   this.random=random;this.player=createActor('player','YOU',480,365,random);
   this.online=!!humans;this.chests=CHESTS.map(c=>({...c,opened:false}));
   const spawns=[{name:'BRINE',x:220,y:180,aim:{x:80,y:180}},{name:'HOOK',x:740,y:180,aim:{x:880,y:180}},{name:'GILL',x:740,y:550,aim:{x:880,y:550}}];
@@ -29,12 +30,14 @@ export class World {
    this.humans=humans.map((human,i)=>Object.assign(createActor(human.id,human.name,...positions[i],random),{color:['#b8db94','#ef947a','#d4a7dc','#f0c67c'][i]}));
    this.player=this.humans[0];this.bots=[];this.actors=[...this.humans];
   }
-  this.adventure=adventure;this.drops=[];this.nextDropId=1;
+  this.story=adventure&&story?createStory():null;this.adventure=adventure;this.drops=[];this.nextDropId=1;
   if(adventure)this.player.inventory=new Inventory({separateStorage:true});
   this.rabbits=adventure?createRabbits():[];this.wildlife=adventure?createWildlife():[];this.hunting={total:0,bySpecies:{}};
   this.npcs=adventure?createNpcs():[];this.dialogue=null;this.quests=createQuests();
   if(adventure){this.areaId='landing';Object.assign(this.player,Wilds.SPAWN);this.bots=[];this.actors=[this.player];this.humans=[this.player];this.chests=[];this.countdownRemaining=0;this.matchState='playing';this.discovered=new Set();this.message='Welcome to Reedwater Landing. Follow the north trail to walk into Windchime Path. M opens the area map.';}
+  if(this.story){this.player.name='Eli';this.player.spriteId='eli';this.npcs=[];this.message=storyObjective(this);}
  }
+ advanceStory(){return advanceStory(this);}
  get animals(){return [...this.rabbits,...this.wildlife];}
  get fishing(){return this.player.fishing;}get progression(){return this.player.progression;}get inventory(){return this.player.inventory;}
  get message(){return this.player.message;}set message(value){this.player.message=value;}
@@ -47,7 +50,7 @@ export class World {
  get useCooldown(){return this.player.cooldown;}set useCooldown(value){this.player.cooldown=value;}
  equip(slot){if(this.matchState!=='playing')return false;if(this.fishing.state!=='idle')this.cancel();return this.inventory.equip(slot);}
  useActorItem(actor,itemId=null){
-  if(this.matchState!=='playing'||actor.health<=0||actor.fishing.state!=='idle'||actor.cooldown>0)return false;
+  if(currentScene(this)||this.matchState!=='playing'||actor.health<=0||actor.fishing.state!=='idle'||actor.cooldown>0)return false;
   const chosen=itemId?actor.inventory.allItems.find(item=>item.id===itemId):actor.inventory.selected>1?actor.inventory.item:null;
   if(chosen&&!canUseItem(chosen)){actor.message='This item cannot be used yet.';return false;}
   const consume=()=>itemId?actor.inventory.useId(itemId):actor.inventory.use();
@@ -69,6 +72,7 @@ export class World {
  backpackAction(id,action,slot){
   if(!this.adventure||this.matchState!=='playing'||this.player.health<=0||this.fishing.state!=='idle')return false;
   const item=this.inventory.allItems.find(item=>item.id===id);if(!item)return false;
+  if(item.name==='Mysterious Lure'){this.message='Eli keeps the strange lure close.';return false;}
   if(action==='hotbar')return this.inventory.assignHotbar(id,slot);
   if(action==='discard'){this.inventory.removeId(id);this.message=`${item.name} discarded.`;return true;}
   if(action==='drop')return dropItem(this,item);
@@ -82,10 +86,11 @@ export class World {
  recordElimination(victimId){return this.progression.recordElimination(victimId);}
  nearestWater(actor=this.player){return this.adventure?Wilds.nearWater(actor.x,actor.y,this.areaId):nearWater(actor.x,actor.y);}
  inspect(){
-  if(!this.adventure||this.matchState!=='playing'||this.player.health<=0)return false;
+  if(!this.adventure||this.matchState!=='playing'||this.player.health<=0||currentScene(this))return false;
+  if(inspectStory(this))return true;
   const drop=nearbyDrop(this);if(drop){this.inventory.receive(drop.item);this.drops=this.drops.filter(item=>item.id!==drop.id);this.message=`Picked up ${drop.item.name}.`;return true;}
   const npc=nearbyNpc(this);
-  if(npc){const text=npc.id==='mara'?maraQuestDialogue(this):npc.greeting;this.dialogue={npcId:npc.id,text,remaining:12};this.message=`${npc.name}: ${text}`;return true;}
+  if(npc){const text=npc.id==='mara'&&!this.story?maraQuestDialogue(this):npc.greeting;this.dialogue={npcId:npc.id,text,remaining:12};this.message=`${npc.name}: ${text}`;return true;}
   const place=Wilds.nearestLandmark(this.player.x,this.player.y,this.areaId);
   if(!place)return false;
   this.discovered.add(place.id);this.message=place.text;return true;
@@ -98,7 +103,7 @@ export class World {
   actor.message=kind==='hermes'?'Hermes Boots stacked: +15% movement speed.':kind==='dash'?'Extra Dash stacked: +1 dash charge.':'Max Health stacked: +20 maximum and current HP.';return true;
  }
  dash(input={}){
-  if(this.matchState!=='playing'||this.player.health<=0||this.fishing.state==='waiting'||this.dashRemaining>0||this.player.dashCharges<=0)return false;
+  if(currentScene(this)||this.matchState!=='playing'||this.player.health<=0||this.fishing.state==='waiting'||this.dashRemaining>0||this.player.dashCharges<=0)return false;
   let x=Number(!!input.right)-Number(!!input.left),y=Number(!!input.down)-Number(!!input.up);
   const length=Math.hypot(x,y);
   if(length){x/=length;y/=length;}else{x=Math.cos(this.player.angle);y=Math.sin(this.player.angle);}
@@ -107,10 +112,13 @@ export class World {
  moveActor(p,dx,dy,shoreOnly){
   if(dx===0&&dy===0)return;
   if(this.adventure){
+   if(currentScene(this))return;
    const steps=Math.max(1,Math.ceil(Math.hypot(dx,dy)/5)),sx=dx/steps,sy=dy/steps;
    for(let i=0;i<steps;i++){if(Wilds.walkable(p.x+sx,p.y,this.areaId)&&(!shoreOnly||Wilds.nearWater(p.x+sx,p.y,this.areaId)))p.x+=sx;if(Wilds.walkable(p.x,p.y+sy,this.areaId)&&(!shoreOnly||Wilds.nearWater(p.x,p.y+sy,this.areaId)))p.y+=sy;}
-   const next=Wilds.transitionAt(p.x,p.y,this.areaId);
-   if(next){this.projectiles=[];this.effects=[];this.dialogue=null;this.areaId=next.areaId;p.x=next.x;p.y=next.y;p.vx=0;p.vy=0;this.cancel();this.message=this.areaId==='crossroads'?'Willowbank Crossroads · West: Willowback Village · East: Shellback Marsh · South: Windchime Path.':`${Wilds.areaFor(this.areaId).name} · Follow the trail; walk back through the edge to return.`;}
+   let next=Wilds.transitionAt(p.x,p.y,this.areaId);
+   if(next&&this.story&&!inlandUnlocked(this.story)&&this.areaId==='landing'){next=null;p.y=Math.max(25,p.y);this.message=storyObjective(this);}
+   if(next&&!storyTransitionAllowed(this,next)){next=null;const a=Wilds.areaFor(this.areaId);p.x=Math.max(25,Math.min(a.width-25,p.x));p.y=Math.max(25,Math.min(a.height-25,p.y));this.message='Your guide is still on the trail. Stay with her before moving on.';}
+   if(next){const previous=this.areaId;this.projectiles=[];this.effects=[];this.dialogue=null;this.areaId=next.areaId;p.x=next.x;p.y=next.y;p.vx=0;p.vy=0;this.cancel();this.message=this.areaId==='crossroads'?'Willowbank Crossroads · West: Willowback Village · East: Shellback Marsh · South: Windchime Path.':`${Wilds.areaFor(this.areaId).name} · Follow the trail; walk back through the edge to return.`;onStoryAreaChange(this,previous);}
    p.walkTime=(p.walkTime||0)+Math.hypot(dx,dy)*.14;return;
   }
   let x=Math.max(LAND.left+15,Math.min(LAND.right-15,p.x+dx));
@@ -123,7 +131,7 @@ export class World {
   if(Math.abs(p.x-x)<1e-8)p.x=x;if(Math.abs(p.y-y)<1e-8)p.y=y;
  }
  castActor(actor,aim){
-  if(this.matchState!=='playing'||actor.health<=0||actor.fishing.state!=='idle')return false;
+  if(this.matchState!=='playing'||actor.health<=0||actor.fishing.state!=='idle'||currentScene(this))return false;
   if(actor.inventory.selected!==1){if(actor===this.player)this.message='Equip the fishing rod with 1 first.';return false;}
   if(actor.inventory.full){if(actor===this.player)this.message='Backpack full. Equip 2–7 and use an item to make room.';return false;}
   if(!this.nearestWater(actor)){if(actor===this.player)this.message='Move closer to the shoreline to cast.';return false;}
@@ -135,13 +143,14 @@ export class World {
  advanceFishing(actor,dt,held){
   actor.fishing.update(dt,held);
   if(actor.fishing.state==='caught'){
-   const item=actor.fishing.result.name==='Treasure Key'&&this.chests.every(c=>c.opened)?ITEMS[6]:actor.fishing.result;actor.inventory.receive(item);actor.progression.award(XP.catch);
-   const buff=actor.progression.grantCatchBuff(this.random);if(buff.id==='vitality')actor.health+=10;
-   if(actor===this.player){this.catches.push(item);this.message=`${item.name} caught! ${buff.name}: ${buff.description} · +30 XP`;}
+   const item=this.story?.stage==='fish'?{name:'Sardine',description:'A fresh catch for dinner.'}:actor.fishing.result.name==='Treasure Key'&&this.chests.every(c=>c.opened)?ITEMS[6]:actor.fishing.result;actor.inventory.receive(item);actor.progression.award(XP.catch);
+   const buff=this.story?null:actor.progression.grantCatchBuff(this.random);if(buff?.id==='vitality')actor.health+=10;
+   if(actor===this.player){this.catches.push(item);this.message=buff?`${item.name} caught! ${buff.name}: ${buff.description} · +30 XP`:`${item.name} caught! ${this.story?.stage==='fish'?'Bring a Sardine to the cabin stove. ':''}· +30 XP`;}
    actor.fishing.state='idle';actor.bobber=null;
   }else if(actor.fishing.state==='escaped'){if(actor===this.player)this.message='It got away. Try again.';actor.fishing.state='idle';actor.bobber=null;}
  }
  update(dt,input,remoteInputs={}){
+  if(currentScene(this))return;
   if(this.matchState==='countdown'){
    this.countdownRemaining=Math.max(0,this.countdownRemaining-dt);
    if(this.countdownRemaining<1e-9){this.countdownRemaining=0;this.matchState='playing';this.message='Go! Fish for gear and defeat your opponent.';}
@@ -149,7 +158,7 @@ export class World {
   }
   if(this.matchState!=='playing')return;
   this.elapsed+=dt;this.effects=this.effects.filter(effect=>(effect.life-=dt)>0);
-  for(const actor of this.actors){actor.cooldown=Math.max(0,actor.cooldown-dt);if(actor.health<=0)continue;actor.progression.tickUpgrades(dt);actor.health=Math.min(actor.progression.maxHealth,actor.health+dt);this.moveActor(actor,actor.vx*dt,actor.vy*dt,actor.fishing.state!=='idle');actor.vx*=Math.exp(-9*dt);actor.vy*=Math.exp(-9*dt);}
+  for(const actor of this.actors){actor.cooldown=Math.max(0,actor.cooldown-dt);if(actor.health<=0)continue;if(!this.story)actor.progression.tickUpgrades(dt);actor.health=Math.min(actor.progression.maxHealth,actor.health+dt);this.moveActor(actor,actor.vx*dt,actor.vy*dt,actor.fishing.state!=='idle');actor.vx*=Math.exp(-9*dt);actor.vy*=Math.exp(-9*dt);}
   for(const human of this.humans){
    const actorInput=human===this.player?input:remoteInputs[human.id]||{left:false,right:false,up:false,down:false,held:false,aim:{x:human.x+1,y:human.y}};
    if(human.health>0)this.asActor(human,()=>this.updateHuman(dt,actorInput));
@@ -160,6 +169,7 @@ export class World {
   updateRabbits(this,dt);
   updateWildlife(this,dt);
   updateDialogue(this,dt);
+  updateStory(this,dt,Wilds.walkable);
   if(this.adventure){const place=Wilds.nearestLandmark(this.player.x,this.player.y,this.areaId);if(place)this.discovered.add(place.id);}
   else if(this.online){if(this.actors.filter(actor=>actor.health>0).length<=1){this.matchState='finished';for(const actor of this.actors){actor.fishing.cancel();actor.bobber=null;}}}
   else if(this.player.health<=0){this.matchState='lost';this.cancel();this.message='You were eliminated.';}

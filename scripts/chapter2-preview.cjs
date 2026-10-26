@@ -1,0 +1,45 @@
+// Isolated browser profile: exercises Continue with an older Chapter 1 checkpoint.
+const {chromium}=require('playwright');
+const assert=require('node:assert/strict');
+(async()=>{
+ process.env.PORT='5183';await import('../server.mjs');
+ const browser=await chromium.launch({headless:true,...(process.env.CHROME_PATH?{executablePath:process.env.CHROME_PATH}:{})});
+ const page=await browser.newPage({viewport:{width:1365,height:900}}),errors=[];
+ page.on('pageerror',e=>errors.push(e.message));
+ await page.route('**/src/main.js',async route=>{const response=await route.fetch();await route.fulfill({response,body:await response.text()+'\nwindow.__storyQA={get world(){return world;}};'});});
+ await page.goto('http://127.0.0.1:5183');
+ await page.evaluate(async()=>{
+  const {World}=await import('/src/world.js'),{captureSave}=await import('/src/save-format.js'),{createStoryNpcs}=await import('/src/story.js'),{IndexedSaveStore}=await import('/src/save-store.js');
+  const w=new World(()=>.2,{adventure:true,story:true});w.journeyId='chapter2-browser';w.story={stage:'complete',lureSeen:true,photoSeen:true,scene:null,page:0,guide:null};w.npcs=createStoryNpcs(w.story);Object.assign(w.player,{x:1770,y:1660});w.inventory.receive({name:'Mysterious Lure',category:'quest-items'});
+  const save=captureSave(w);save.version=2;delete save.state.story.guide;
+  await new IndexedSaveStore().update(()=>({journeyId:w.journeyId,writerId:null,current:save,manual:null,backups:[]}));
+ });
+ const resume=async()=>{await page.reload();await page.locator('#continue-journey:not([disabled])').waitFor();await page.locator('#continue-journey').click();await page.waitForFunction(()=>window.__storyQA.world.journeyId==='chapter2-browser');};
+ const next=async(n=1)=>{for(let i=0;i<n;i++)await page.locator('#story-next').click();};
+ const inspect=async()=>{await page.keyboard.press('KeyG');await page.waitForTimeout(250);};
+ const go=async(x,y)=>page.evaluate(({x,y})=>Object.assign(window.__storyQA.world.player,{x,y}),{x,y});
+ await resume();await inspect();assert.match(await page.locator('#story-chapter').innerText(),/CHAPTER 2/);
+ await next(3);await page.locator('#story-image').evaluate(img=>img.decode());await page.waitForTimeout(300);
+ await page.screenshot({path:'screenshots/chapter2-moonfang.png'});
+ await page.waitForTimeout(400);await resume();await page.locator('#story-title').filter({hasText:'The Moonfang'}).waitFor();await next(3);
+ assert.equal(await page.evaluate(()=>window.__storyQA.world.story.stage),'ch2-cabin');
+ await go(1630,1560);await inspect();assert.match(await page.locator('#status').innerText(),/blackened beams/);
+ await page.screenshot({path:'screenshots/chapter2-ruins.png'});await go(1250,1810);await inspect();assert.match(await page.locator('#status').innerText(),/No pickup/);
+ await go(1770,1660);await inspect();await next(3);await inspect();await next();
+ await page.locator('#story-title').filter({hasText:'This is no island'}).waitFor();await page.screenshot({path:'screenshots/chapter2-no-island.png'});
+ await page.setViewportSize({width:390,height:844});await page.screenshot({path:'screenshots/chapter2-mobile.png'});
+ const button=await page.locator('#story-next').boundingBox();assert.ok(button.x>=0&&button.x+button.width<=390&&button.y+button.height<=844,'mobile Continue is fully visible');
+ await page.setViewportSize({width:1365,height:900});await next(3);await inspect();await page.locator('#story-next').filter({hasText:'Follow her'}).click();
+ assert.equal(await page.evaluate(()=>window.__storyQA.world.story.stage),'ch2-follow');
+ await go(1250,1810);await page.waitForTimeout(100);const stopped=await page.evaluate(()=>({...window.__storyQA.world.story.guide}));await page.waitForTimeout(350);assert.deepEqual(await page.evaluate(()=>window.__storyQA.world.story.guide),stopped);
+ await page.evaluate(async()=>{const w=window.__storyQA.world,{neutralInput}=await import('/src/protocol.js');for(let i=0;i<180;i++){Object.assign(w.player,{x:w.npcs[0].x,y:w.npcs[0].y});w.update(1/120,neutralInput());}});
+ await page.waitForTimeout(400);const walking=await page.evaluate(()=>({...window.__storyQA.world.story.guide}));await resume();
+ assert.equal(await page.evaluate(()=>window.__storyQA.world.story.stage),'ch2-follow');assert.equal(await page.evaluate(()=>window.__storyQA.world.story.guide.waypoint),walking.waypoint);
+ await page.screenshot({path:'screenshots/chapter2-guide.png'});
+ await page.evaluate(async()=>{const w=window.__storyQA.world,{neutralInput}=await import('/src/protocol.js');for(let i=0;i<2000&&!w.story.scene;i++){Object.assign(w.player,{x:w.npcs[0].x,y:w.npcs[0].y});w.update(1/120,neutralInput());}});
+ await page.locator('#story-title').filter({hasText:'Toward the trees'}).waitFor();await next();await page.waitForTimeout(300);
+ assert.equal(await page.evaluate(()=>window.__storyQA.world.story.stage),'ch2-complete');assert.equal(await page.evaluate(()=>window.__storyQA.world.inventory.allItems.filter(i=>i.name==='Mysterious Lure').length),1);
+ await page.screenshot({path:'screenshots/chapter2-trail.png'});await page.keyboard.press('KeyM');await page.waitForTimeout(300);await page.screenshot({path:'screenshots/chapter2-map.png'});
+ assert.deepEqual(errors,[]);console.log('Chapter 2 browser preview passed: old-save Continue, conversations, portraits, ruins, dock, mobile, guide waiting, mid-walk resume and completion.');
+ await browser.close();process.exit(0);
+})().catch(e=>{console.error(e);process.exit(1);});

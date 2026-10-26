@@ -47,7 +47,7 @@ export function drawVillageObject(c,b,time=0){
   for(let i=0;i<7;i++){if(b.kind==='stall'){ellipse(c,x-43+i*14,y-20,6,5,i%2?'#b7bc58':'#c7754d');}else{ellipse(c,x-39+i*13,y-23,8,3,'#a1c5b1');r(c,'#d8e2c1',x-42+i*13,y-25,5,2);}}return;
  }
  const left=x-b.w/2,top=y-b.h;
- ellipse(c,x+14,y+6,b.w*.55,24,'#18382d36');r(c,'#716e53',left-5,y-7,b.w+10,23);r(c,'#d4c292',left,top,b.w,b.h);r(c,'#b8a57c',x+b.w*.2,top,b.w*.3,b.h);r(c,'#594a33',left,top,7,b.h);r(c,'#594a33',left+b.w-7,top,7,b.h);
+ ellipse(c,x+14,y+6,b.w*.55,24,'#18382d36');r(c,'#716e53',left-5,y-7,b.w+10,23);r(c,b.kind==='chief'?'#93443b':'#d4c292',left,top,b.w,b.h);r(c,b.kind==='chief'?'#793c35':'#b8a57c',x+b.w*.2,top,b.w*.3,b.h);r(c,b.kind==='chief'?'#e4d8bb':'#594a33',left,top,7,b.h);r(c,b.kind==='chief'?'#e4d8bb':'#594a33',left+b.w-7,top,7,b.h);
  for(let xx=left+36;xx<left+b.w-15;xx+=46)r(c,'#82704b',xx,top+5,4,b.h-9);
  window(c,x-b.w*.29,y-35);window(c,x+b.w*.29,y-35);
  r(c,'#59432d',x-18,y-55,36,55);r(c,'#916f43',x-14,y-50,28,49);r(c,'#b99560',x-13,y-49,4,48);r(c,'#eed18e',x+7,y-24,3,3);r(c,'#b1aa86',x-29,y+1,58,11);r(c,'#d9cf9b',x-29,y+1,58,3);

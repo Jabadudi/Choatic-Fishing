@@ -1,3 +1,6 @@
 dist/
 node_modules/
 *.log
+# Local visual QA output and test logs
+screenshots/
+test-results.txt

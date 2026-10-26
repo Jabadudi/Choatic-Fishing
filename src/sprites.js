@@ -1,5 +1,18 @@
 import {SPRITES} from './sprite-definitions.js';
 const images=new Map();
+const keyedImages=new Map();
+export function greenMattePixel(r,g,b){return g>100&&g>r*1.45&&g>b*1.35;}
+function imageSource(img,definition,url){
+ if(definition.chromaKey!=='green')return img;
+ if(typeof document==='undefined')return null;
+ if(keyedImages.has(url))return keyedImages.get(url);
+ const surface=document.createElement('canvas');surface.width=img.naturalWidth;surface.height=img.naturalHeight;
+ const c=surface.getContext('2d',{willReadFrequently:true});
+ try{c.drawImage(img,0,0);const pixels=c.getImageData(0,0,surface.width,surface.height),d=pixels.data;
+  for(let i=0;i<d.length;i+=4)if(greenMattePixel(d[i],d[i+1],d[i+2]))d[i+3]=0;
+  c.putImageData(pixels,0,0);keyedImages.set(url,surface);return surface;
+ }catch{keyedImages.set(url,null);return null;}
+}
 export function spriteAssetUrl(asset){
  const url=new URL(`../assets/${asset}`,import.meta.url);
  // Versioned deployment folders also version image requests, even if the filename stays the same.
@@ -25,6 +38,7 @@ export function drawSprite(ctx,definition,{x=0,y=0,state='idle',time=0,direction
  const url=spriteAssetUrl(definition.asset);let img=images.get(url);
  if(!img){img=new Image();images.set(url,img);img.src=url;}
  if(!img.complete||!img.naturalWidth||!img.naturalHeight)return false;
+ const source=imageSource(img,definition,url);if(!source)return false;
  const rect=frameRect(definition,frameIndex(definition,state,time,{direction,duration}),img.naturalWidth,img.naturalHeight);
  if(!rect)return false;
  const [sx,sy,sw,sh]=rect;
@@ -32,11 +46,11 @@ export function drawSprite(ctx,definition,{x=0,y=0,state='idle',time=0,direction
  const scale=definition.scale??1;if(!Number.isFinite(scale)||scale<=0)return false;
  const w=sw*scale,h=sh*scale,[ax,ay]=definition.anchor||[.5,1],[ox,oy]=definition.offset||[0,0];
  ctx.save();ctx.imageSmoothingEnabled=false;ctx.translate(Math.round(x+ox),Math.round(y+oy));if(angle)ctx.rotate(angle);if(flipX)ctx.scale(-1,1);
- ctx.drawImage(img,sx,sy,sw,sh,-w*ax,-h*ay,w,h);ctx.restore();return true;
+ ctx.drawImage(source,sx,sy,sw,sh,-w*ax,-h*ay,w,h);ctx.restore();return true;
 }
 export function drawEntitySprite(ctx,id,pose={}){
  const def=SPRITES[id];
  const flipX=pose.flipX??(def?.mirror==='left'?pose.facingX>0:def?.mirror==='right'?pose.facingX<0:false);
  return drawSprite(ctx,def,{...pose,flipX});
 }
-export const clearSpriteCache=()=>images.clear();
+export const clearSpriteCache=()=>{images.clear();keyedImages.clear();};

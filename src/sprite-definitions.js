@@ -9,6 +9,22 @@ export const RABBIT_FRAMES=[
  [23,373,25,65],[78,373,25,65],[133,373,25,65]
 ];
 export const SPRITES={
+ rimejaw:{asset:'story/rimejaw-sheet.png',chromaKey:'green',frames:[[45,35,410,270],[475,35,410,270],[900,35,410,270],[1320,35,440,270]],scale:.27,anchor:[.5,1],offset:[0,12],animations:{idle:{frames:[0,1,2,3],fps:2}}},
+ flitlynx:{asset:'story/flitlynx-sheet.png',chromaKey:'green',frames:[[70,25,330,300],[420,25,330,300],[765,25,330,300],[1110,25,330,300]],scale:.22,anchor:[.5,1],offset:[0,3],animations:{idle:{frames:[0,1,2,3],fps:3}}},
+ 'rimejaw-illustration':{asset:'story/rimejaw-pose.png',chromaKey:'green',frames:[[0,180,1254,900]],scale:.45,anchor:[.5,1]},
+ 'flitlynx-illustration':{asset:'story/flitlynx-pose.png',chromaKey:'green',scale:.42,anchor:[.5,1]},
+ 'villager-net':{asset:null,fallback:{coat:'#527a84',hair:'#33251f',skin:'#ae7855'}},
+ 'villager-basket':{asset:null,fallback:{coat:'#b38653',hair:'#503629',skin:'#e6bd94'}},
+ 'villager-smith':{asset:null,fallback:{coat:'#734a39',hair:'#252420',skin:'#ad7959'}},
+ 'villager-fisher':{asset:null,fallback:{coat:'#747d51',hair:'#b3afa0',skin:'#ddaa80'}},
+ 'villager-child-one':{asset:null,fallback:{coat:'#b26b58',hair:'#392b24',skin:'#d4a27a',visualScale:.7}},
+ 'villager-child-two':{asset:null,fallback:{coat:'#69849e',hair:'#503f2b',skin:'#e4c4a1',visualScale:.7}},
+ // A portrait crop, not a gameplay actor or hitbox.
+ 'mara-portrait':{asset:'story/mara.png',frames:[[850,130,500,620]],scale:.12,anchor:[.5,0],offset:[0,0]},
+ eli:{asset:null,scale:1,anchor:[.5,1],offset:[0,15],fallback:{hat:false,hair:'#49382d',shirt:'#b6ad8f'}},
+ 'mara-story':{asset:null,scale:1,anchor:[.5,1],offset:[0,14],fallback:{hair:'#3d2b24',coat:'#6b4b35'}},
+ // Original Drive sheet has a green matte. The shared loader removes it once.
+ moonfang:{asset:'story/moonfang.png',chromaKey:'green',frames:[[145,10,320,250],[450,10,310,250],[750,10,310,250],[1060,10,330,250],[5,290,255,190],[260,290,255,190],[515,290,255,190],[770,290,255,190],[1020,290,255,190],[1270,290,265,190]],scale:.36,anchor:[.5,1],offset:[0,0],mirror:'right',animations:{idle:{frames:[0,1,2,3],fps:3},run:{frames:[4,5,6,7,8,9],fps:9}}},
  pickup:{asset:null,scale:1,anchor:[.5,1],offset:[0,5]},
  rabbit:{asset:'bunny-sheet.png',frames:RABBIT_FRAMES,scale:.5,anchor:[.5,1],offset:[0,0],mirror:'left',animations:{
   idle:{frames:[0,0,0,1,2,3,1,0],fps:4},graze:{frames:[4,5,6,7],fps:5},
@@ -30,4 +46,12 @@ export const SPRITES={
  'projectile.projectile':{asset:null,scale:1,anchor:[.5,.5],offset:[0,0]},
  'projectile.bomb':{asset:null,scale:1,anchor:[.5,.5],offset:[0,0]},
  'projectile.wave':{asset:null,scale:1,anchor:[.5,.5],offset:[0,0]}
+};
+// Cutscene and portrait artwork uses the same local, versioned asset resolution.
+export const STORY_ART={
+ photo:{asset:'story/photo.png',alt:'An old photograph of Oscar, a dark-haired woman, and a huge gray wolf on the dock.'},
+ lure:{asset:'story/lure.png',alt:'A luminous blue lure inside a small wooden box in the cabin.'},
+ rescue:{asset:'story/rescue.png',alt:'A gray Moonfang wolf tackles the shadowy attacker beside the cabin during the storm.'},
+ campfire:{asset:'story/campfire.png',alt:'Eli’s rescuer cooks fish beside a campfire with the ruined cabin behind her.'},
+ mara:{asset:'story/mara.png',alt:'Mara, with dark hair, a leather vest, and a scratch across her cheek.'}
 };

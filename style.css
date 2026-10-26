@@ -51,7 +51,7 @@ body.exploring #explore-hint[hidden]{display:none}
 body.exploring #open-atlas{top:16px;right:16px;padding:6px;background:#e9d9ad;border:3px solid #6b5530;border-radius:4px;box-shadow:0 4px 14px #0007,inset 0 0 0 1px #fff6}
 body.exploring #mini-atlas{border:1px solid #6b553088;filter:sepia(.25) saturate(.9)}
 body.exploring #open-atlas span{color:#4b3b22;letter-spacing:2px}
-body.exploring #inspect-place{position:absolute;z-index:3;left:50%;bottom:132px;transform:translateX(-50%);width:auto;margin:0;padding:5px 10px;background:#f1e3bdee;color:#2b2a1e;border:2px solid #6b5530;border-radius:3px;font:11px monospace;box-shadow:2px 2px 0 #0005}
+body.exploring #inspect-place{position:absolute;z-index:3;left:50%;bottom:160px;transform:translateX(-50%);width:auto;margin:0;padding:5px 10px;background:#f1e3bdee;color:#2b2a1e;border:2px solid #6b5530;border-radius:3px;font:11px monospace;box-shadow:2px 2px 0 #0005}
 body.exploring #music-icon{display:grid;place-items:center;position:absolute;z-index:3;right:16px;top:214px;width:30px;height:30px;padding:0;border-radius:50%;background:#1a2f2ccc;border:1px solid #c9b98a66;font-size:14px;color:#e9d9ad;pointer-events:auto}
 body.exploring .music-hud{display:none;top:252px;bottom:auto;left:auto;right:16px;border-radius:6px}
 body.exploring .music-hud.open{display:grid}
@@ -96,3 +96,5 @@ body.touch-mode.exploring #open-backpack{bottom:calc(274px + env(safe-area-inset
 body.exploring #open-backpack{left:calc(50% - 34px)}#open-saves{position:absolute;z-index:6;left:calc(50% + 64px);bottom:100px;transform:translateX(-50%);min-height:44px;padding:8px 12px;border:1px solid #c9b98a99;border-radius:10px;background:#18352eed;color:#f3e6bf;box-shadow:0 3px 10px #0006;font:11px monospace}#open-saves[hidden]{display:none}#save-status{position:absolute;z-index:6;left:50%;bottom:80px;transform:translateX(-50%);font:10px/1.4 Arial,sans-serif;color:#e9e6c9;text-shadow:0 1px 3px #000;max-width:90vw;text-align:center;pointer-events:none;background:#16372b99;padding:2px 6px;border-radius:4px}#save-status.save-error{color:#ffe0a0;pointer-events:auto;background:#503c24ed;max-width:280px}
 body.touch-mode.exploring #open-saves{bottom:calc(274px + env(safe-area-inset-bottom))}body.touch-mode.exploring #save-status{bottom:calc(252px + env(safe-area-inset-bottom))}
 @media(orientation:landscape) and (max-height:560px){body.touch-mode.exploring #open-saves{bottom:82px}body.touch-mode.exploring #save-status{bottom:64px}body.touch-mode.exploring #open-backpack{left:calc(50% - 34px)}}
+
+
