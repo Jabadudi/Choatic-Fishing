@@ -22,7 +22,8 @@ export class Fishing {
     this.state='waiting'; this.wait=1.5+this.random()*1.5; this.result=null; return true;
   }
   cancel() { if(this.state==='idle') return false; this.state='idle'; this.result=null; return true; }
-  update(dt,held) {
+  // perks: passive fractions from Progression ('reel' speeds the meter on the fish, 'slack' slows its drain off it).
+  update(dt,held,{reel=0,slack=0}={}) {
     if(this.state==='waiting') {
       this.wait-=dt;
       if(this.wait<=0){this.state='reeling';this.time=0;this.bar=.23;this.velocity=0;this.target=.34;this.progress=.3;this.grace=.9;}
@@ -39,7 +40,7 @@ export class Fishing {
     if(this.bar>.73){this.bar=.73;this.velocity=Math.min(0,this.velocity)*.2;}
     const contact=this.target>=this.bar && this.target<=this.bar+.27;
     this.grace=Math.max(0,this.grace-dt);
-    this.progress=Math.max(0,Math.min(1,this.progress+(contact?.16:(this.grace>0?0:-.105))*dt));
+    this.progress=Math.max(0,Math.min(1,this.progress+(contact?.16*(1+reel):(this.grace>0?0:-.105*(1-slack)))*dt));
     if(this.progress>=1){const roll=this.random();this.result=this.sardinesOnly?SARDINE:roll<.06?KEY:ITEMS[Math.min(ITEMS.length-1,Math.floor((roll-.06)/.94*ITEMS.length))];this.state='caught';}
     else if(this.progress<=0)this.state='escaped';
   }

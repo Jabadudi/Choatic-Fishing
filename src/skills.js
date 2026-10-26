@@ -30,6 +30,6 @@ export function practise(world,actor,id,base,{x=actor.x,y=actor.y-40}={}){
   if(result.skillLevels)world.effects.push({name:'skill-up',label:`${SKILLS[id].name} ${actor.progression.skills[id].level}`,x,y:y-18,angle:0,life:2,duration:2});
   if(result.levels)world.effects.push({name:'level-up',label:`Level ${actor.progression.level}`,x:actor.x,y:actor.y-62,angle:0,life:2.4,duration:2.4});
  }
- result.text=[result.skillLevels?`${SKILLS[id].name} reached ${actor.progression.skills[id].level}`:'',levelUpText(result.levels,actor.progression.level)].filter(Boolean).join(' · ');
+ result.text=[result.skillLevels?`${SKILLS[id].name} reached ${actor.progression.skills[id].level} (+${result.skillLevels} ${SKILLS[id].name} point${result.skillLevels>1?'s':''})`:'',levelUpText(result.levels,actor.progression.level)].filter(Boolean).join(' · ');
  return result;
 }

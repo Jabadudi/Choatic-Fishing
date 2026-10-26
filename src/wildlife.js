@@ -35,7 +35,7 @@ export function createWildlife(){
 function random(a){let s=a.seed;s^=s<<13;s^=s>>>17;s^=s<<5;a.seed=s>>>0;return a.seed/4294967296;}
 // Loot falls around the body as pickups; the animal's own seeded generator keeps rolls reproducible.
 function dropLoot(world,animal,source){
- const items=rollLoot(animal.loot,()=>random(animal),source.progression?.lootMultiplier??1),names=[];
+ const items=rollLoot(animal.loot,()=>random(animal),(source.progression?.lootMultiplier??1)*(1+(source.progression?.passive('hunting.loot')??0))),names=[];
  items.forEach((item,i)=>{
   let spot={x:animal.x,y:animal.y};
   for(const r of [26,16,0]){const a=i*2.2+.4,x=animal.x+Math.cos(a)*r,y=animal.y+Math.sin(a)*r;if(walkable(x,y,animal.areaId)){spot={x,y};break;}}
@@ -45,7 +45,7 @@ function dropLoot(world,animal,source){
 }
 export function damageAnimal(world,animal,amount,source,angle,knockback=0){
  if(world.matchState!=='playing'||source.health<=0||!huntableInArea(world,animal)||!Number.isFinite(amount)||amount<=0)return false;
- const taken=amount*(source.progression?.damageMultiplier??1);
+ const taken=amount*(source.progression?.damageMultiplier??1)*(1+(source.progression?.passive('hunting.damage')??0));
  animal.health=Math.max(0,animal.health-taken);animal.hurtRemaining=.25;animal.alert=3;
  if(animal.behavior==='defensive'){animal.attackerId=source.id;animal.anger=6;}animal.threat={x:source.x,y:source.y};animal.vx+=Math.cos(angle)*knockback*.45;animal.vy+=Math.sin(angle)*knockback*.45;
  if(animal.species==='rabbit'){animal.state='idle';animal.time=0;}
@@ -55,6 +55,7 @@ export function damageAnimal(world,animal,amount,source,angle,knockback=0){
   world.hunting.total++;world.hunting.bySpecies[animal.species]=(world.hunting.bySpecies[animal.species]||0)+1;
   // Hunting XP lands only on the killing blow, once per life of the animal.
   const trained=source.progression?practise(world,source,'hunting',animal.huntXp,{x:animal.x,y:animal.y-35}):null;
+  const heal=source.progression?.passive('hunting.heal')??0;if(heal>0)source.health=Math.min(source.progression.maxHealth,source.health+heal);
   const loot=animal.loot?dropLoot(world,animal,source):[];
   world.message=`${animal.name} hunted · +${trained?.amount??animal.huntXp} Hunting XP${loot.length?` · Dropped ${loot.join(', ')}`:''}${trained?.text?` · ${trained.text}`:''}`;
  }

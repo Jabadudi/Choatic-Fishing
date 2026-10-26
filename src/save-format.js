@@ -3,6 +3,7 @@ import {World} from './world.js';
 import {AREAS,walkable} from './wilds.js';
 import {animalGround} from './wildlife.js';
 import {SKILL_IDS,skillXpToNext} from './skills.js';
+import {validTree} from './skill-trees.js';
 export const SAVE_VERSION=5;
 export const SAVE_FORMAT='the-wilds-save';
 const clone=value=>JSON.parse(JSON.stringify(value));
@@ -46,6 +47,11 @@ function progressionFrom(data,target){
  for(const id of SKILL_IDS){const skill=data.skills?.[id];if(skill===undefined)continue;
   if(!skill||!Number.isInteger(skill.level)||!number(skill.level,1,100000)||!Number.isInteger(skill.xp)||!number(skill.xp,0,skillXpToNext(skill.level)-1))fail('Invalid skill data.');
   target.skills[id]={level:skill.level,xp:skill.xp};}
+ // Skill trees arrived later still; saves without them keep every earned point unspent.
+ if(data.skillTrees!==undefined&&(!data.skillTrees||typeof data.skillTrees!=='object'))fail('Invalid skill tree data.');
+ for(const id of SKILL_IDS){const ranks=data.skillTrees?.[id];if(ranks===undefined)continue;
+  if(!validTree(id,ranks,target.skills[id].level))fail('Invalid skill tree data.');
+  target.skillTrees[id]=Object.fromEntries(Object.entries(ranks).filter(([,rank])=>rank>0));}
  if(target.xp>=target.xpToNextLevel)fail('Experience exceeds the level threshold.');
 }
 export function restoreSave(input){
@@ -108,5 +114,5 @@ export function restoreSave(input){
 export function parseSave(text){if(typeof text!=='string'||text.length>5*1024*1024)fail('Save file is too large.');let save;try{save=JSON.parse(text);}catch{fail('Could not read this file. Choose a valid The Wilds JSON save.');}restoreSave(save);return save;}
 export function importantProgress(world){
  const p=world.progression;
- return JSON.stringify([world.areaId,world.inventory.allItems,world.inventory.slots.map(i=>i?.id),p.totalXp,p.skills,p.pendingChoices,p.pendingUpgrades,p.upgrades,p.ranks,p.specials,world.quests,world.story,[...world.discovered],world.hunting,world.drops,world.animals.map(a=>a.health)]);
+ return JSON.stringify([world.areaId,world.inventory.allItems,world.inventory.slots.map(i=>i?.id),p.totalXp,p.skills,p.skillTrees,p.pendingChoices,p.pendingUpgrades,p.upgrades,p.ranks,p.specials,world.quests,world.story,[...world.discovered],world.hunting,world.drops,world.animals.map(a=>a.health)]);
 }
