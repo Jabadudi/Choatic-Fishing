@@ -12,7 +12,7 @@ export const CHAPTER4_OBJECTIVES={
  'ch4-world':'Chapter 4 · Ask the chief how to get home.',
  'ch4-core':'Chapter 4 · Show the chief the lure.',
  'ch4-journey':'Chapter 4 · Ask the chief about the road ahead.',
- 'ch4-complete':'Chapter 4 complete · Rest at the guest lodge. Training with Drayfus begins at sunrise in Chapter 5.'
+ 'ch4-complete':'Chapter 4 complete · Talk to Mara when you are ready to go to the guest lodge. Training with Drayfus begins at sunrise.'
 };
 export const CHAPTER4_SCENES={
  'ch4-house':script([

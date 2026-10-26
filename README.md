@@ -18,6 +18,10 @@ connected areas. Continue from a Chapter 2 save; there is no need to restart.
 **Chapter 4 — Region Core** continues on the chief’s porch: walk into the
 chief’s house, meet Emilia, learn Mara’s name, hear about Grandpa and the Ember
 Volcano, and learn what the lure really is. Continue from a Chapter 3 save.
+**Chapter 5 — Sunrise** continues in the chief’s house: talk to Mara, take her
+tour of the guest lodge, and sleep when you are ready. Eli’s vision plays as a
+full-screen video, then Mara wakes him at sunrise and waits outside the lodge.
+Continue from a Chapter 4 save.
 Story dialogue now gives each speaker their own box, with a Narrator for
 descriptions and a Mysterious voice in the Chapter 1 storm.
 

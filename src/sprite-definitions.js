@@ -58,6 +58,10 @@ export const SPRITES={
  'projectile.bomb':{asset:null,scale:1,anchor:[.5,.5],offset:[0,0]},
  'projectile.wave':{asset:null,scale:1,anchor:[.5,.5],offset:[0,0]}
 };
+// Video cutscenes play full screen as one story page, with the same versioned asset resolution as artwork.
+export const STORY_VIDEO={
+ 'eli-vision':{asset:'story/eli-vision.mp4',label:'Eli’s vision: a white-haired girl crying in the dark, black light bursting from her, and Eli torn up into the sky.'}
+};
 // Cutscene and portrait artwork uses the same local, versioned asset resolution.
 export const STORY_ART={
  photo:{asset:'story/photo.png',alt:'An old photograph of Oscar, a dark-haired woman, and a huge gray wolf on the dock.'},

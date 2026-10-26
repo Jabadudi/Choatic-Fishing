@@ -11,6 +11,8 @@ Generated concept art, references, cutscenes and sprite sheets for Volume 1. The
 | `sprites/characters/` | Playable and NPC character sprites: Drayfus so far. |
 | `references/` | World and area maps used for the region layouts. |
 
+Video cutscenes are not kept here: the Chapter 5 vision ships directly as `assets/story/eli-vision.mp4`, so the repository holds one copy.
+
 ## Using a sprite sheet in the game
 
 The generated sheets are not on a regular grid yet, and most use a flat green (`#00FF00`) background. Drayfus's sheet already has transparency.

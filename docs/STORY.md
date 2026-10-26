@@ -47,6 +47,21 @@ Continue from a completed Chapter 3 checkpoint. The girl waits on the chief’s 
 4. When Emilia names it, the **Mysterious Lure** in the backpack becomes the **Region Core**, with a new description. It stays a protected quest item and cannot be discarded or dropped.
 5. Chapter 4 ends inside the house, with Mara and Emilia by the table and hearth. Leave through the south door to return to the village porch, and press G at the door to walk back in. The objective points to the guest lodge and Drayfus’s training at sunrise in Chapter 5. No XP or catch powers change.
 
+## Chapter 5 — Sunrise
+
+Continue from a completed Chapter 4 checkpoint. Mara waits by the table in the chief’s house; talk to her and choose **Go to the guest lodge**. Eli and Mara step into **The Guest Lodge**, Eli’s small room in the long, low building beside the chief’s house (west of it in Willowback).
+
+1. Mara gives the four-second tour: bed, window, chamber pot, and a leather waterskin on the stool. Then she goes home to the chief’s house for the night.
+2. The room is now dark. Examine the waterskin, the window and the chamber pot if you like. Leave through the south door to walk the village at night, and press G at the lodge door to come back in.
+3. Examine the bed and choose **Go to sleep**. Eli lies awake thinking about Shylee and Grandpa, counts sheep and falls asleep.
+4. **Eli’s vision** plays as a full-screen video (`assets/story/eli-vision.mp4`): the whisper, the glowing lure, the girl with white hair and purple eyes, and the scream of Croshelda’s name. Music pauses while it plays and resumes after. **Skip video** moves on at once, Settings pauses it, and the page turns by itself when the video ends. If the video cannot play, the page falls back to a written version of the vision.
+5. Sunlight. Eli wakes on the floor, and Mara pounds on the door: “Hey!! Eli! Wake up!!”
+6. Chapter 5 ends with Eli in his room the next morning. Walk outside and Mara is waiting by the lodge door; talking to her is where Chapter 6 picks up. The Region Core stays in the backpack. No XP or catch powers change.
+
+The tour and the night are saved checkpoints (`ch5-tour`, `ch5-night`, `ch5-sleep`, `ch5-morning`). Mara stands at a fixed place in each: in Eli’s room for the tour, in the chief’s house overnight, and outside the lodge door at sunrise. A save made during the video reopens on the video page.
+
+`src/chapter5.js` supplies the dialogue and objectives. `src/guest-lodge.js` owns the room’s geometry, collision and drawing; its light changes with the story (evening, moonlight, sunrise). Video pages are declared with `video:` on a beat and resolved through `STORY_VIDEO` in `src/sprite-definitions.js`.
+
 `src/chapter4.js` supplies the dialogue and objectives. `src/chief-house.js` owns the interior’s geometry, collision and drawing. Mara’s saved guide position is fixed inside the house for the whole chapter.
 
 `src/chapter3.js` supplies dialogue and routes. `src/village-life.js` owns friendly village residents and their simulation updates; their appearance is configured in the sprite registry. Creature art has no effect on collisions, health or rewards. The tamed Rimejaw and Flitlynx are inspectable NPCs, separate from huntable wildlife and combat AI.
@@ -75,6 +90,7 @@ Files in `assets/story/` were downloaded from the user’s Drive folder **The Wi
 | `mara.png` | `characters/mara/mara_reference-sheet.png` | Character reference and Chapter 2 dialogue portrait |
 | `emilia-hearth.png` | `art/cutscenes/vol1/ch04/ch04_01_emilia-hearth.png` | Chapter 4 meeting in the red house |
 | `emilia.png` | `art/characters/emilia/emilia_reference-sheet.png` | Emilia’s dialogue portrait |
+| `eli-vision.mp4` | Netanel’s Chapter 5 vision video, made from `story/video-prompts/ch05-eli-vision.md` and `ch05-eli-voiceover.md`, converted from QuickTime (HEVC) to H.264/AAC MP4 with fast start | Chapter 5 vision cutscene |
 
 All artwork mappings are in `src/sprite-definitions.js`. The Moonfang sheet is irregularly cropped and has a green matte; `src/sprites.js` removes that matte once in a cached canvas. Missing images retain readable scene text and a visible sprite fallback. The night attack sheets are prepared ahead of time by `python3 scripts/prepare-cutscene-sprites.py`, which removes the matte and puts every frame's feet on one baseline in a regular grid; rerun it after changing the source art.
 
@@ -87,6 +103,8 @@ Run `node --test` for behavior, saves, migration, duplicate prevention, collisio
 `tests/chapter3.test.js` verifies the connected guide route, version 3 migration, village patrol collision, friendly creature classification, sprite crops, scene-page resume and invalid guide imports. `scripts/chapter3-preview.cjs` checks a real older Continue checkpoint, the three map crossings, forest reload, creature illustrations, roof layering, mobile layout and the chief’s porch. Screenshots use `screenshots/chapter3-*`.
 
 `tests/chapter4.test.js` covers the porch entry, the interior, leaving and re-entering, the Region Core rename, the checkpointed meeting, Mara’s name reveal, mid-meeting save/resume, invalid imports and the Emilia artwork crops. `scripts/chapter4-preview.cjs` checks a real Continue from the porch, the hearth illustration, both portraits, a mid-meeting reload, mobile layout and completion. Screenshots use `screenshots/chapter4-*`.
+
+`tests/chapter5.test.js` covers the lodge tour, the room prompts, sleeping into the vision and the morning, leaving the lodge, Mara’s Chapter 6 hook, mid-chapter save/resume and invalid imports. `scripts/chapter5-preview.cjs` checks a real Continue from the chief’s house, the tour, the night room, video playback (dialogue hidden, Settings pause, automatic page turn at the end, mobile Skip button), Mara knocking, a morning reload and Mara outside. Screenshots use `screenshots/chapter5-*`. The local server answers byte-range requests so browsers can seek the video; Safari needs them to play video at all.
 
 ## Speakers and narration
 
