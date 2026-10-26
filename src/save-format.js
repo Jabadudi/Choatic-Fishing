@@ -1,8 +1,8 @@
-import {restoreStory,createStoryNpcs} from './story.js';
+import {restoreStory,createStoryNpcs,pageForBeat} from './story.js';
 import {World} from './world.js';
 import {AREAS,walkable} from './wilds.js';
 import {animalGround} from './wildlife.js';
-export const SAVE_VERSION=4;
+export const SAVE_VERSION=5;
 export const SAVE_FORMAT='the-wilds-save';
 const clone=value=>JSON.parse(JSON.stringify(value));
 const fail=message=>{throw Error(message);};
@@ -52,6 +52,8 @@ export function restoreSave(input){
  if(save.version===2){save.version=3;if(save.state?.story)save.state.story.guide=null;}
  // Version 4 makes guide geography explicit for the journey through connected areas.
  if(save.version===3){save.version=4;if(save.state?.story?.guide)save.state.story.guide.areaId='landing';}
+ // Version 5 splits each story page into one page per speaker. Resume at the start of the saved beat.
+ if(save.version===4){save.version=5;const story=save.state?.story;if(story?.scene&&Number.isInteger(story.page)&&pageForBeat(story.scene,story.page)>=0)story.page=pageForBeat(story.scene,story.page);}
  if(save.version!==SAVE_VERSION)fail('This save version is not supported. Your existing save was not changed.');
  if(!number(save.savedAt,0,1e16)||typeof save.journeyId!=='string'||save.journeyId.length>120)fail('Invalid save header.');
  const s=save.state;if(!s||!Object.hasOwn(AREAS,s.areaId))fail('Unknown saved area.');

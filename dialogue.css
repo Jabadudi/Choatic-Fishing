@@ -73,3 +73,8 @@ body.exploring #open-settings{top:214px;}#music-icon,.music-hud{display:none!imp
 #story-scene .dialogue-box{overflow:visible;box-sizing:border-box;}
 @media(max-width:700px),(max-height:600px){#story-scene .dialogue-box{overflow:auto;}#settings-menu .dialogue-box button{font-size:10px;padding:6px;}}
 .keybind-list{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;margin:18px 0}.keybind-list label{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:6px 0;border-bottom:1px solid #82916b55}.keybind-list button{min-width:96px}.settings-tabs{flex-wrap:wrap}@media(max-width:600px){.keybind-list{grid-template-columns:1fr}}
+/* Narration and Eli's thoughts read differently from spoken lines. */
+.dialogue-box[data-voice="narration"] .dialogue-text,.dialogue-box[data-voice="thought"] .dialogue-text{font-style:italic;}
+.dialogue-box[data-voice="thought"] .dialogue-text:before{content:'(';}.dialogue-box[data-voice="thought"] .dialogue-text:after{content:')';}
+.dialogue-box[data-voice="voice"] .dialogue-text{font-style:italic;letter-spacing:.04em;color:var(--voice,#2a6f9a);}
+[data-dialogue-theme="lantern-night"] .dialogue-box,[data-dialogue-theme="quiet-hud"] .dialogue-box{--voice:#8fd3f0;}

@@ -46,7 +46,7 @@ test('guide waits for Eli, pauses while fishing, walks on land and finishes at t
 });
 test('all Chapter 2 dialogue pages resume exactly; guide progress roundtrips through current class instances',()=>{
  let w=atCamp();w.inspect();
- for(let i=0;i<3;i++)w.advanceStory();const mid=captureSave(w);w=restoreSave(mid);assert.equal(currentScene(w).title,'The Moonfang');assert.equal(w.story.page,3);
+ for(let i=0;i<6;i++)w.advanceStory();const mid=captureSave(w);w=restoreSave(mid);assert.equal(currentScene(w).title,'The Moonfang');assert.equal(w.story.page,6);
  finish(w);w.inspect();finish(w);w.inspect();finish(w);w.inspect();finish(w);
  for(let i=0;i<100;i++){Object.assign(w.player,{x:w.npcs[0].x,y:w.npcs[0].y});w.update(1/120,neutralInput());}
  const saved=captureSave(w),restored=restoreSave(saved);assert.equal(saved.version,SAVE_VERSION);assert.deepEqual(restored.story,w.story);assert.equal(restored.npcs[0].x,w.npcs[0].x);

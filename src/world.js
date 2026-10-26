@@ -73,6 +73,7 @@ export class World {
   if(!this.adventure||this.matchState!=='playing'||this.player.health<=0||this.fishing.state!=='idle')return false;
   const item=this.inventory.allItems.find(item=>item.id===id);if(!item)return false;
   if(item.name==='Mysterious Lure'){this.message='Eli keeps the strange lure close.';return false;}
+  if(item.name==='Region Core'){this.message='Eli keeps the Region Core close. He isn’t ready to eat it. Not yet.';return false;}
   if(action==='hotbar')return this.inventory.assignHotbar(id,slot);
   if(action==='discard'){this.inventory.removeId(id);this.message=`${item.name} discarded.`;return true;}
   if(action==='drop')return dropItem(this,item);
