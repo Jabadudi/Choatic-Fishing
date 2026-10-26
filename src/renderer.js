@@ -4,7 +4,7 @@ import {visibleWildlife} from './wildlife.js';
 import {drawWildlife,drawAnimalStatus} from './wildlife-art.js';
 import {drawEntitySprite} from './sprites.js';
 import {drawTerrain} from './terrain.js';
-import {drawWilds,drawWildsLabels,drawDepthSorted,drawExplorer} from './wilds.js';
+import {drawWilds,drawWildsLabels,drawDepthSorted,drawExplorer,INTERIOR_AREAS} from './wilds.js';
 import {drawRabbits,drawRabbit,visibleRabbits} from './rabbits.js';
 import {drawAtmosphere} from './atmosphere.js';
 import {visibleNpcs,drawNpc} from './npcs.js';
@@ -51,7 +51,7 @@ export function render(ctx,world,view){
     else{ctx.beginPath();ctx.arc(0,0,effect.name==='Anchor'?72:48,-1+age*2,1+age*2);ctx.stroke();}
     ctx.restore();
   }
-  if(world.adventure){drawWildsLabels(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500});if(view&&!['cabin','chief-house'].includes(world.areaId)&&!cabinDamaged(world.story))drawAtmosphere(ctx,world,view);drawAnimalStatus(ctx,world);}
+  if(world.adventure){drawWildsLabels(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500});if(view&&!INTERIOR_AREAS.includes(world.areaId)&&!cabinDamaged(world.story))drawAtmosphere(ctx,world,view);drawAnimalStatus(ctx,world);}
 }
 function drawBobber(ctx,world){
  const {elapsed:t,player:p,bobber}=world;if(!bobber)return;
