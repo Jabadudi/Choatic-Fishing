@@ -38,7 +38,8 @@ function dropLoot(world,animal,source){
  const items=rollLoot(animal.loot,()=>random(animal),source.progression?.lootMultiplier??1),names=[];
  items.forEach((item,i)=>{
   let spot={x:animal.x,y:animal.y};
-  for(const r of [26,16,0]){const a=i*2.2+.4,x=animal.x+Math.cos(a)*r,y=animal.y+Math.sin(a)*r;if(walkable(x,y,animal.areaId)){spot={x,y};break;}}
+  // Water animals sink out of reach, so their drops wash up on the nearest walkable bank.
+  search:for(const r of [26,16,0,...Array.from({length:12},(_,n)=>48+n*36)])for(let k=0;k<(r>26?16:1);k++){const a=i*2.2+.4+k*Math.PI/8,x=animal.x+Math.cos(a)*r,y=animal.y+Math.sin(a)*r;if(walkable(x,y,animal.areaId)){spot={x,y};break search;}}
   const id=`drop-${world.nextDropId++}`;world.drops.push({id,entityType:'pickup',spriteId:'pickup',areaId:animal.areaId,...spot,item:{...item,id:`loot-${id}`,uses:1}});names.push(item.name);
  });
  return names;
