@@ -55,7 +55,7 @@ test('loot tables roll each extra drop on its own, and luck only improves the un
  assert.deepEqual(rollLoot('deer',()=>0).map(i=>i.name),['Deer Meat','Deer Hide','Deer Antlers']);
  assert.deepEqual(rollLoot('deer',()=>.21).map(i=>i.name),['Deer Meat','Deer Hide']);
  assert.deepEqual(rollLoot('deer',()=>.21,1.1).map(i=>i.name),['Deer Meat','Deer Hide','Deer Antlers']);
- assert.deepEqual(rollLoot('rabbit',()=>0),[]);
+ assert.deepEqual(rollLoot('moose',()=>0),[]);
 });
 
 test('skill XP comes only from success, and every skill point also feeds the main level',()=>{
