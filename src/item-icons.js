@@ -1,4 +1,4 @@
-export const ICONS={'Reed Spear':'♆','Crab Maul':'⚒','Shell Sling':'◌','Treasure Key':'⚿','Frying Pan':'◉','Swordfish':'⚔','Harpoon Gun':'➶','Anchor':'⚓','Pufferfish Bomb':'✹','Grappling Squid':'↗','Sardine':'♢','Old Boot':'♟'};
+export const ICONS={'Reed Spear':'♆','Crab Maul':'⚒','Shell Sling':'◌','Treasure Key':'⚿','Frying Pan':'◉','Swordfish':'⚔','Harpoon Gun':'➶','Anchor':'⚓','Pufferfish Bomb':'✹','Grappling Squid':'↗','Sardine':'♢','Old Boot':'♟','Hunting Bow':'➹','Deer Meat':'♨','Deer Hide':'▤','Deer Antlers':'Ψ'};
 // Painted icons replace the glyph. The lure becomes the Region Core in Chapter 4; it is the same object, so both names share the art.
 export const ITEM_ART={'Region Core':'assets/items/region-core.svg','Mysterious Lure':'assets/items/region-core.svg'};
 export function setItemIcon(element,name){

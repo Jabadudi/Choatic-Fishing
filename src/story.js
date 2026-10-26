@@ -7,6 +7,8 @@ import {GUEST_LODGE,LODGE_DOOR,LODGE_MARA_SPOT,LODGE_MORNING_SPOT,LODGE_BED,LODG
 import {createVillageResidents,updateVillageResidents} from './village-life.js';
 import {createNpcs} from './npcs.js';
 import {NPC_TYPES} from './entities.js';
+import {practise} from './skills.js';
+export const COOKING_XP=40;
 // Saved narrative milestones. Simulation owns changes; artwork only reads them.
 export const CABIN={x:1630,y:1510,left:1490,right:1760,top:1320,bottom:1515};
 export const CAMP={x:1810,y:1640};
@@ -23,7 +25,22 @@ export const SCENES={...CHAPTER1_SCENES,...CHAPTER2_SCENES,...CHAPTER3_SCENES,..
 // Save version 4 stored one page per story beat. Each beat now opens on its first spoken line.
 export const LURE='Mysterious Lure',REGION_CORE='Region Core';
 export const pageForBeat=(scene,beat)=>SCENES[scene]?.findIndex(p=>p.beat===beat)??-1;
-export const createStory=()=>({stage:'arrival',lureSeen:false,photoSeen:false,scene:'arrival',page:0,guide:null});
+export const createStory=()=>({stage:'arrival',lureSeen:false,photoSeen:false,scene:'arrival',page:0,guide:null,rod:false,bow:false});
+// Chapter 1 supper: two Sardines from the dock, then three Deer Meat from the meadow, all cooked at the stove.
+export const SUPPER=Object.freeze({Sardine:2,'Deer Meat':3});
+export const RACK={x:320,y:96};
+const PRE_STORM=['arrival','explore','fish'];
+export const rodReady=story=>!story||story.rod!==false;
+const carried=(w,name)=>w.inventory.allItems.filter(i=>i.name===name).length;
+export const bowAvailable=w=>w.story?.stage==='fish'&&w.story.rod&&carried(w,'Sardine')>=SUPPER.Sardine;
+export function supperObjective(w){
+ const s=w.story,fish=Math.min(SUPPER.Sardine,carried(w,'Sardine')),meat=Math.min(SUPPER['Deer Meat'],carried(w,'Deer Meat'));
+ if(!s.rod)return 'Chapter 1 · Take Grandpa’s fishing rod from the weapon rack in the cabin.';
+ if(!s.bow&&fish<SUPPER.Sardine)return `Chapter 1 · Fish 2 Sardines from the dock (${fish}/2).`;
+ if(!s.bow)return 'Chapter 1 · Take the hunting bow from the weapon rack in the cabin.';
+ if(fish<SUPPER.Sardine||meat<SUPPER['Deer Meat'])return `Chapter 1 · Hunt deer in the meadow and collect 3 Deer Meat (${meat}/3)${fish<SUPPER.Sardine?` · Sardines ${fish}/2`:''}.`;
+ return 'Chapter 1 · Bring 2 Sardines and 3 Deer Meat to the cabin stove and cook dinner.';
+}
 export const cabinDamaged=story=>!!story&&((story.stage==='storm'&&story.scene==='storm'&&story.page>=SCENES.storm.findIndex(p=>p.action==='escape'))||['awakening','complete'].includes(story.stage)||chapterTwo(story)||villageStory(story));
 export const chapterHeading=scene=>scene?.startsWith('ch5-')?'CHAPTER 5 · SUNRISE':scene?.startsWith('ch4-')?'CHAPTER 4 · REGION CORE':scene?.startsWith('ch3-')?'CHAPTER 3 · THE VILLAGE':scene?.startsWith('ch2-')?'CHAPTER 2 · SHADOW WALKER':'CHAPTER 1 · THE OLD FISHING HUT';
 export const pendingScene=world=>world?.story?.scene?SCENES[world.story.scene]?.[world.story.page]:null;
@@ -31,7 +48,8 @@ export const currentScene=world=>world?.storySuspended?null:pendingScene(world);
 export function storyObjective(world){
  const s=world.story;if(!s)return null;
  if(villageStory(s)&&s.stage!=='ch4-complete'&&!chapterFive(s)&&s.guide?.areaId!==world.areaId){const names={landing:'Reedwater Landing',windchime:'Windchime Path',crossroads:'Willowbank Crossroads',village:'Willowback Village','chief-house':'the chief’s house'};return `Chapter ${chapterFour(s)?4:3} · ${chapterFour(s)?'Mara':'Your guide'} is waiting in ${names[s.guide.areaId]}. Return to her to continue.`;}
- return ({...CHAPTER3_OBJECTIVES,...CHAPTER4_OBJECTIVES,...CHAPTER5_OBJECTIVES,arrival:'Chapter 1 · Follow the path to Grandpa’s cabin.',explore:'Chapter 1 · Examine the lure box and the photograph inside the cabin.',fish:'Chapter 1 · Fish from the dock, then bring a Sardine to the cabin stove.',rest:'Chapter 1 · When you are ready, rest in the cabin bed.',storm:'Chapter 1 · Survive the storm.',awakening:'Chapter 1 · A new morning.',complete:'Chapter 2 · Talk to the girl beside the campfire at Reedwater Landing.',
+ if(s.stage==='fish')return supperObjective(world);
+ return ({...CHAPTER3_OBJECTIVES,...CHAPTER4_OBJECTIVES,...CHAPTER5_OBJECTIVES,arrival:'Chapter 1 · Follow the path to Grandpa’s cabin.',explore:'Chapter 1 · Examine the lure box and the photograph inside the cabin.',rest:'Chapter 1 · When you are ready, rest in the cabin bed.',storm:'Chapter 1 · Survive the storm.',awakening:'Chapter 1 · A new morning.',complete:'Chapter 2 · Talk to the girl beside the campfire at Reedwater Landing.',
  'ch2-camp':'Chapter 2 · Talk with your rescuer about last night.',
  'ch2-cabin':'Chapter 2 · Ask the girl about the cabin. You can examine the ruins and dock first.',
  'ch2-home':'Chapter 2 · Ask the girl how to get home.',
@@ -63,6 +81,7 @@ export function storyPrompt(w){
   if(cabinDamaged(w.story)&&near(1250,1810,115))return 'Look for a way off the shore';
   if(cabinDamaged(w.story)&&near(CAMP.x,CAMP.y,100)&&!near(1850,1640,95))return 'Remember the morning';
  }else if(w.areaId==='cabin'){
+  if(PRE_STORM.includes(w.story.stage)&&near(RACK.x,RACK.y,62))return !w.story.rod?'Take Grandpa’s fishing rod':!w.story.bow&&bowAvailable(w)?'Take the hunting bow':'Examine the weapon rack';
   if(near(520,145))return 'Examine the lure box';
   if(near(110,270))return 'Examine the photograph';
   if(near(100,120))return w.story.stage==='rest'?'Dinner is finished':'Cook dinner';
@@ -103,13 +122,27 @@ export function inspectStory(w){
  else if(prompt==='Examine the damaged cabin')w.message=chapterTwo(s)?'Grandpa’s cabin. A whole corner of the roof is gone; the wall leans over blackened beams. The girl looks at it as if it means something to her, too.':'A corner of the roof is gone. Blackened beams and a leaning wall are all that remain of Eli’s first night here.';
  else if(prompt==='Look for a way off the shore')w.message=(['ch2-ready','ch2-follow','ch2-complete'].includes(s.stage)||chapterThree(s))?'Empty water stretches into the mist. “This is no island.” The captain’s number is still on Eli’s hand, but his phone has no service.':'The captain’s boat is gone. No pickup arranged. No phone service. Eli promised Shylee a text—and he still hasn’t sent it.';
  else if(prompt==='Remember the morning')show(w,'awakening');
+ else if(prompt==='Take Grandpa’s fishing rod'){s.rod=true;w.inventory.equip(1);show(w,'rack-rod');}
+ else if(prompt==='Take the hunting bow'){
+  s.bow=true;
+  if(!w.inventory.allItems.some(i=>i.name==='Hunting Bow')){
+   w.inventory.receive({name:'Hunting Bow',category:'weapons',description:'Grandpa’s recurve bow. Its quiver never seems to run dry. 22 damage per arrow.'});
+   const bow=w.inventory.allItems.at(-1),slot=w.inventory.slots.indexOf(null);
+   if(slot>=0){w.inventory.assignHotbar(bow.id,slot+2);w.inventory.equip(slot+2);}
+  }
+  show(w,'rack-bow');
+ }
+ else if(prompt==='Examine the weapon rack')w.message=s.bow?'Empty pegs where the rod and bow hung. A spare rod still waits for someone else.':s.stage==='fish'?'An old recurve bow hangs on the rack. Supper starts with two Sardines from the dock.':'Two fishing rods and an old recurve bow. Grandpa kept everything oiled and ready.';
  else if(prompt==='Examine the lure box')show(w,'lure');
  else if(prompt==='Examine the photograph')show(w,'photo');
  else if(prompt==='Cook dinner'){
-  const fish=w.inventory.allItems.find(i=>i.name==='Sardine');
+  const missing=Object.entries(SUPPER).filter(([name,count])=>carried(w,name)<count);
   if(s.stage!=='fish')w.message='Look around the cabin before settling in for the evening.';
-  else if(!fish)w.message='Catch a Sardine from the dock and bring it back to the stove.';
-  else{w.inventory.removeId(fish.id);show(w,'dinner');}
+  else if(missing.length)w.message=`Not enough for supper yet. Still needed: ${missing.map(([name,count])=>`${count-carried(w,name)} ${name}${name==='Sardine'&&count-carried(w,name)>1?'s':''}`).join(', ')}.`;
+  else{
+   for(const [name,count] of Object.entries(SUPPER))for(const item of w.inventory.allItems.filter(i=>i.name===name).slice(0,count))w.inventory.removeId(item.id);
+   practise(w,w.player,'cooking',COOKING_XP);show(w,'dinner');
+  }
  }else if(prompt==='Rest until night'){
   if(s.stage==='rest'){s.stage='storm';show(w,'storm');}
   else w.message='There is still time to explore, fish, and make dinner before bed.';
@@ -246,7 +279,10 @@ export function restoreStory(data){
   if((['ch2-complete','ch3-complete'].includes(data.stage)||['ch2-end','ch3-end','ch3-arrival','ch3-beasts'].includes(data.scene))&&(g.waypoint!==route.length||Math.hypot(g.x-route.at(-1).x,g.y-route.at(-1).y)>2))throw Error('Invalid story guide destination.');
   guide={x:g.x,y:g.y,waypoint:g.waypoint,areaId:g.areaId};
  }else if(data.guide!==null)throw Error('Invalid story guide.');
- return {stage:data.stage,lureSeen:data.lureSeen,photoSeen:data.photoSeen,scene:data.scene,page:data.page,guide};
+ // Saves from before the weapon rack: later chapters already carry the rod; a supper in progress fetches its tools.
+ for(const key of ['rod','bow'])if(data[key]!==undefined&&typeof data[key]!=='boolean')throw Error('Invalid story tools.');
+ const tools=!PRE_STORM.includes(data.stage),rod=tools||data.rod===true,bow=tools||(rod&&data.bow===true);
+ return {stage:data.stage,lureSeen:data.lureSeen,photoSeen:data.photoSeen,scene:data.scene,page:data.page,guide,rod,bow};
 }
 
 

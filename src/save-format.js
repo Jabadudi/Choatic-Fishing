@@ -2,6 +2,7 @@ import {restoreStory,createStoryNpcs,pageForBeat} from './story.js';
 import {World} from './world.js';
 import {AREAS,walkable} from './wilds.js';
 import {animalGround} from './wildlife.js';
+import {SKILL_IDS,skillXpToNext} from './skills.js';
 export const SAVE_VERSION=5;
 export const SAVE_FORMAT='the-wilds-save';
 const clone=value=>JSON.parse(JSON.stringify(value));
@@ -15,7 +16,7 @@ function inspect(value,depth=0){
  }
 }
 function itemValid(item){return item&&typeof item.id==='string'&&item.id.length<100&&typeof item.name==='string'&&item.name.length>0&&item.name.length<120&&number(item.uses,1,100000)&&Number.isInteger(item.uses)&&(!item.description||typeof item.description==='string'&&item.description.length<2000);}
-const ANIMAL_FIELDS=['x','y','health','state','time','wait','alert','direction','seed','hopDuration','hopDistance','anger','attackerId','attackRemaining','attackCooldownRemaining','threat','deathRemaining'];
+const ANIMAL_FIELDS=['x','y','health','state','time','wait','alert','direction','seed','hopDuration','hopDistance','anger','attackerId','attackRemaining','attackCooldownRemaining','threat','deathRemaining','respawnRemaining'];
 export function captureSave(world,reason='autosave',now=Date.now()){
  if(!world?.adventure)fail('Only exploration progress can be saved.');
  const p=world.player;
@@ -40,6 +41,11 @@ function progressionFrom(data,target){
  }
  if(!list(data.eliminations||[],10000))fail('Invalid elimination data.');target.eliminations=new Set(data.eliminations||[]);
  if(data.lastBuff&&typeof data.lastBuff.name==='string')target.lastBuff=clone(data.lastBuff);
+ // Skills arrived after save version 5 was set; saves without them start every skill fresh.
+ if(data.skills!==undefined&&(!data.skills||typeof data.skills!=='object'))fail('Invalid skill data.');
+ for(const id of SKILL_IDS){const skill=data.skills?.[id];if(skill===undefined)continue;
+  if(!skill||!Number.isInteger(skill.level)||!number(skill.level,1,100000)||!Number.isInteger(skill.xp)||!number(skill.xp,0,skillXpToNext(skill.level)-1))fail('Invalid skill data.');
+  target.skills[id]={level:skill.level,xp:skill.xp};}
  if(target.xp>=target.xpToNextLevel)fail('Experience exceeds the level threshold.');
 }
 export function restoreSave(input){
@@ -102,5 +108,5 @@ export function restoreSave(input){
 export function parseSave(text){if(typeof text!=='string'||text.length>5*1024*1024)fail('Save file is too large.');let save;try{save=JSON.parse(text);}catch{fail('Could not read this file. Choose a valid The Wilds JSON save.');}restoreSave(save);return save;}
 export function importantProgress(world){
  const p=world.progression;
- return JSON.stringify([world.areaId,world.inventory.allItems,world.inventory.slots.map(i=>i?.id),p.totalXp,p.pendingChoices,p.pendingUpgrades,p.upgrades,p.ranks,p.specials,world.quests,world.story,[...world.discovered],world.hunting,world.drops,world.animals.map(a=>a.health)]);
+ return JSON.stringify([world.areaId,world.inventory.allItems,world.inventory.slots.map(i=>i?.id),p.totalXp,p.skills,p.pendingChoices,p.pendingUpgrades,p.upgrades,p.ranks,p.specials,world.quests,world.story,[...world.discovered],world.hunting,world.drops,world.animals.map(a=>a.health)]);
 }

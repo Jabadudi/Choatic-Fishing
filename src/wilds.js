@@ -1,5 +1,5 @@
 import {SPRITES} from './sprite-definitions.js';
-import {CABIN_AREA,CABIN_PLACES,cabinInteriorBlocked,cabinBlocked,cabinClearing,drawCabin,drawCabinInterior,drawCamp} from './story-map.js';
+import {CABIN_AREA,CABIN_PLACES,cabinInteriorBlocked,cabinBlocked,cabinClearing,drawCabin,drawCabinInterior,drawCamp,drawWeaponRack} from './story-map.js';
 import {cabinDamaged} from './story.js';
 import {CHIEF_HOUSE,CHIEF_HOUSE_PLACES,chiefHouseBlocked,drawChiefHouse} from './chief-house.js';
 import {GUEST_LODGE,GUEST_LODGE_PLACES,guestLodgeBlocked,drawGuestLodge} from './guest-lodge.js';
@@ -309,6 +309,7 @@ export function drawWilds(ctx,world,view={left:world.player.x-700,right:world.pl
  const id=world.areaId||'landing',area=areaFor(id);ctx.imageSmoothingEnabled=false;
  if(typeof document!=='undefined')drawChunks(ctx,view,id);else staticArea(ctx,view.left,view.top,view.right-view.left,view.bottom-view.top,id);
  if(id==='guest-lodge'){const stage=world.story?.stage;drawGuestLodge(ctx,{night:['ch5-night','ch5-sleep'].includes(stage),morning:stage==='ch5-morning'});}
+ if(id==='cabin')drawWeaponRack(ctx,world.story);
  drawWater(ctx,world,view,id);
  if(id==='landing'&&cabinDamaged(world.story)&&world.story.stage!=='storm')drawCamp(ctx,world.elapsed||0);
  for(const p of placesFor(id))if(p.x>view.left-120&&p.x<view.right+120&&p.y>view.top-100&&p.y<view.bottom+100)drawLandmark(ctx,p,world.elapsed||0);

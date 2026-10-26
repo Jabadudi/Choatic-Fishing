@@ -1,4 +1,6 @@
-import {createStory,currentScene,inspectStory,advanceStory,storyObjective,updateStory,inlandUnlocked,storyTransitionAllowed,onStoryAreaChange} from './story.js';
+import {practise} from './skills.js';
+import {PERMANENT_ITEMS} from './inventory.js';
+import {rodReady,createStory,currentScene,inspectStory,advanceStory,storyObjective,updateStory,inlandUnlocked,storyTransitionAllowed,onStoryAreaChange} from './story.js';
 import {nearbyDrop,dropItem} from './drops.js';
 import {createQuests,maraQuestDialogue} from './quests.js';
 import {createWildlife,updateWildlife,updateAnimalCombat} from './wildlife.js';
@@ -35,6 +37,7 @@ export class World {
   this.rabbits=adventure?createRabbits():[];this.wildlife=adventure?createWildlife():[];this.hunting={total:0,bySpecies:{}};
   this.npcs=adventure?createNpcs():[];this.dialogue=null;this.quests=createQuests();
   if(adventure){this.areaId='landing';Object.assign(this.player,Wilds.SPAWN);this.bots=[];this.actors=[this.player];this.humans=[this.player];this.chests=[];this.countdownRemaining=0;this.matchState='playing';this.discovered=new Set();this.message='Welcome to Reedwater Landing. Follow the north trail to walk into Windchime Path. M opens the area map.';}
+  if(adventure)this.player.progression.characterStats=true;
   if(this.story){this.player.name='Eli';this.player.spriteId='eli';this.npcs=[];this.message=storyObjective(this);}
  }
  advanceStory(){return advanceStory(this);}
@@ -67,7 +70,7 @@ export class World {
   const name=this.inventory.item?.name,huntsBefore=this.hunting.total;
   if(!this.useActorItem(this.player)){if(!this.inventory.item)this.message='Selected slot is empty. Choose a filled slot with 2–7.';return false;}
   if(name==='Treasure Key'||this.hunting.total>huntsBefore)return true;
-  this.message=this.inventory.item?`${name} · ${this.inventory.item.uses} uses left.`:`${name} used up. Slot clear — fish again.`;return true;
+  this.message=PERMANENT_ITEMS.has(name)?`${name} · Arrow loosed.`:this.inventory.item?`${name} · ${this.inventory.item.uses} uses left.`:`${name} used up. Slot clear — fish again.`;return true;
  }
  backpackAction(id,action,slot){
   if(!this.adventure||this.matchState!=='playing'||this.player.health<=0||this.fishing.state!=='idle')return false;
@@ -133,6 +136,7 @@ export class World {
  }
  castActor(actor,aim){
   if(this.matchState!=='playing'||actor.health<=0||actor.fishing.state!=='idle'||currentScene(this))return false;
+  if(this.story&&!rodReady(this.story)){if(actor===this.player)this.message='Grandpa’s fishing rod is on the weapon rack inside the cabin.';return false;}
   if(actor.inventory.selected!==1){if(actor===this.player)this.message='Equip the fishing rod with 1 first.';return false;}
   if(actor.inventory.full){if(actor===this.player)this.message='Backpack full. Equip 2–7 and use an item to make room.';return false;}
   if(!this.nearestWater(actor)){if(actor===this.player)this.message='Move closer to the shoreline to cast.';return false;}
@@ -144,9 +148,11 @@ export class World {
  advanceFishing(actor,dt,held){
   actor.fishing.update(dt,held);
   if(actor.fishing.state==='caught'){
-   const item=this.story?.stage==='fish'?{name:'Sardine',description:'A fresh catch for dinner.'}:actor.fishing.result.name==='Treasure Key'&&this.chests.every(c=>c.opened)?ITEMS[6]:actor.fishing.result;actor.inventory.receive(item);actor.progression.award(XP.catch);
+   const item=this.story?.stage==='fish'?{name:'Sardine',description:'A fresh catch for dinner.'}:actor.fishing.result.name==='Treasure Key'&&this.chests.every(c=>c.opened)?ITEMS[6]:actor.fishing.result;actor.inventory.receive(item);
+   // Fishing XP comes only from a landed fish; escapes and abandoned lines award nothing.
+   const trained=practise(this,actor,'fishing',XP.catch,actor.bobber||undefined);
    const buff=this.story?null:actor.progression.grantCatchBuff(this.random);if(buff?.id==='vitality')actor.health+=10;
-   if(actor===this.player){this.catches.push(item);this.message=buff?`${item.name} caught! ${buff.name}: ${buff.description} · +30 XP`:`${item.name} caught! ${this.story?.stage==='fish'?'Bring a Sardine to the cabin stove. ':''}· +30 XP`;}
+   if(actor===this.player){this.catches.push(item);const gained=`+${trained.amount} Fishing XP${trained.text?` · ${trained.text}`:''}`;this.message=buff?`${item.name} caught! ${buff.name}: ${buff.description} · ${gained}`:this.story?.stage==='fish'?`${item.name} caught! ${gained} · ${storyObjective(this).replace(/^Chapter 1 · /,'')}`:`${item.name} caught! · ${gained}`;}
    actor.fishing.state='idle';actor.bobber=null;
   }else if(actor.fishing.state==='escaped'){if(actor===this.player)this.message='It got away. Try again.';actor.fishing.state='idle';actor.bobber=null;}
  }

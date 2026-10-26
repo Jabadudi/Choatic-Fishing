@@ -14,8 +14,15 @@ export const CHAPTER1_SCENES={
   {title:'A familiar grin',art:'photo',lines:[narrate('Grandpa, younger than Eli is now. A laughing woman with long dark hair. An enormous gray wolf at their feet. On the back: the same strange markings as the lure.')]},
   {title:'Questions left behind',art:'photo',lines:[narrate('Grandpa used to sit on this dock and watch the trees as though he was waiting for someone.'),think('Eli','I never asked enough questions. Maybe this place still has some answers.')]}
  ]),
+ // The weapon rack hands Eli his tools for the evening: the rod first, the bow once supper is started.
+ 'rack-rod':script([
+  {title:'Grandpa’s rack',art:null,lines:[narrate('A weapon rack is bolted to the wall beside the window. Two fishing rods. An old recurve bow. A quiver of arrows with fresh fletching.'),think('Eli','Fresh line. Fresh feathers. Who keeps an empty cabin this ready?'),narrate('Eli lifts down the shorter rod. It settles into his hand like it has been waiting for him.'),think('Eli','Two sardines from the dock. Then we’ll see about the rest of dinner.')]}
+ ]),
+ 'rack-bow':script([
+  {title:'Bigger game',art:null,lines:[narrate('Two sardines are not a dinner. Eli takes the bow down from its pegs. The string is waxed. The arrows are straight. Grandpa’s handwriting on the quiver strap reads: three, if you mean to eat well.'),think('Eli','I saw deer in the meadow on the walk up from the dock. I’ve never hunted anything in my life.'),narrate('He tests the draw. It comes back to him faster than it should, like a memory of Grandpa’s hands over his.'),eli('Okay. Three deer. How hard can it be?')]}
+ ]),
  dinner:script([
-  {title:'A place at the table',art:null,lines:[narrate('Eli cooks his catch with spices from the suspiciously well-stocked kitchen. He sets the photograph opposite him.'),eli('Who is she? Why did you stop bringing me here?'),narrate('For a little while, he feels less alone.')]}
+  {title:'A place at the table',art:null,lines:[narrate('Eli grills the sardines and slow-cooks the venison with spices from the suspiciously well-stocked kitchen. It is far too much food for one person. He sets the photograph opposite him anyway.'),eli('Who is she? Why did you stop bringing me here?'),narrate('For a little while, he feels less alone.')]}
  ]),
  // Action beats stay one page each: the night attack keys its playback to these pages.
  storm:script([

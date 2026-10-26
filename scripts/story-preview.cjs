@@ -25,7 +25,7 @@ const assert=require('node:assert/strict');
  await go('cabin',110,270);await inspect();await finish();
  // Exercise actual casting and catch completion, without waiting for a manual reel.
  await go('landing',1250,1850);
- await page.evaluate(()=>{const w=window.__storyQA.world;w.cast({x:1250,y:2000});w.fishing.state='caught';w.fishing.result={name:'Old Boot'};w.advanceFishing(w.player,0,false);});
+ await page.evaluate(()=>{const w=window.__storyQA.world;w.story.rod=true;w.story.bow=true;w.cast({x:1250,y:2000});w.fishing.state='caught';w.fishing.result={name:'Old Boot'};w.advanceFishing(w.player,0,false);w.inventory.receive({name:'Sardine'});for(let i=0;i<3;i++)w.inventory.receive({name:'Deer Meat'});});
  await go('cabin',100,120);await inspect();await finish();await go('cabin',435,330);await inspect();
  await next();await page.locator('#story-title').filter({hasText:'Take it'}).waitFor();await next();await page.waitForTimeout(300);assert.equal(await page.locator('#story-name').innerText(),'Mysterious voice');await page.screenshot({path:'screenshots/chapter1-voice.png'});
  await untilAction();await page.waitForFunction(()=>document.querySelector('#story-title')?.textContent==='Out of the darkness'&&document.querySelector('#story-scene').open,null,{timeout:60000});
