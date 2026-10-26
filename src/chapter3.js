@@ -11,14 +11,14 @@ export const CHAPTER3_ROUTES={
 export const CHAPTER3_ENTRIES={landing:{x:1390,y:1420},windchime:{x:600,y:1510},crossroads:{x:800,y:1130},village:{x:1800,y:530}};
 export const CREATURE_ROUTE=[{x:1290,y:580},{x:1220,y:520}];
 export const CHIEF_ROUTE=[{x:1140,y:580},{x:850,y:580},{x:850,y:420},{x:780,y:390}];
-export function chapter3Route(s){return s.stage==='ch3-creatures'?CREATURE_ROUTE:['ch3-chief','ch3-complete'].includes(s.stage)?CHIEF_ROUTE:s.stage==='ch3-lore'?CREATURE_ROUTE:CHAPTER3_ROUTES[s.guide?.areaId]||[];}
+export function chapter3Route(s){return s.stage==='ch3-creatures'?CREATURE_ROUTE:(['ch3-chief','ch3-complete'].includes(s.stage)||s.stage.startsWith('ch4-'))?CHIEF_ROUTE:s.stage==='ch3-lore'?CREATURE_ROUTE:CHAPTER3_ROUTES[s.guide?.areaId]||[];}
 export const CHAPTER3_OBJECTIVES={
  'ch3-chimes':'Chapter 3 · Follow the girl to the three wooden chimes.',
  'ch3-travel':'Chapter 3 · Follow your guide north through Windchime Path, then west at the crossroads to Willowback Village.',
  'ch3-creatures':'Chapter 3 · Follow the girl to the blacksmith’s shop. Examine the frost-scaled guardian from the lane.',
  'ch3-lore':'Chapter 3 · Ask the girl what shadow walkers really are.',
  'ch3-chief':'Chapter 3 · Follow the girl to the chief’s red house.',
- 'ch3-complete':'Chapter 3 complete · The chief’s house is ahead. The meeting continues in Chapter 4.'
+ 'ch3-complete':'Chapter 4 · Talk to the girl on the chief’s porch when you are ready to go inside.'
 };
 export const CHAPTER3_SCENES={
  'ch3-start':[{title:'The Village',speaker:'Eli',text:'It was a short walk. Short for her, anyway. She moves through the trees as if she knows every root. Eli follows like a man who was electrocuted, knocked unconscious, and left to sleep in a wet field. Which he was.',art:null}],

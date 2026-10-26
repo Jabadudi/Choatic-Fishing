@@ -1,0 +1,35 @@
+const {chromium}=require('playwright');
+const assert=require('node:assert/strict');
+(async()=>{
+ process.env.PORT='5185';await import('../server.mjs');
+ const browser=await chromium.launch({headless:true,...(process.env.CHROME_PATH?{executablePath:process.env.CHROME_PATH}:{})});
+ const page=await browser.newPage({viewport:{width:1365,height:900}}),errors=[];
+ page.on('pageerror',e=>errors.push(e.message));
+ await page.route('**/src/main.js',async route=>{const response=await route.fetch();await route.fulfill({response,body:await response.text()+'\nwindow.__storyQA={get world(){return world;}};'});});
+ await page.goto('http://127.0.0.1:5185');
+ await page.evaluate(async()=>{
+  const {World}=await import('/src/world.js'),{captureSave}=await import('/src/save-format.js'),{createStoryNpcs}=await import('/src/story.js'),{CHIEF_ROUTE}=await import('/src/chapter3.js'),{IndexedSaveStore}=await import('/src/save-store.js');
+  const w=new World(()=>.2,{adventure:true,story:true});w.journeyId='chapter4-browser';w.areaId='village';
+  w.story={stage:'ch3-complete',lureSeen:true,photoSeen:true,scene:null,page:0,guide:{...CHIEF_ROUTE.at(-1),waypoint:CHIEF_ROUTE.length,areaId:'village'}};
+  w.npcs=createStoryNpcs(w.story,w.elapsed);Object.assign(w.player,{x:780,y:420});w.inventory.receive({name:'Mysterious Lure',category:'quest-items'});
+  await new IndexedSaveStore().update(()=>({journeyId:w.journeyId,current:captureSave(w),writerId:null,manual:null,backups:[]}));
+ });
+ const resume=async()=>{await page.reload();await page.locator('#continue-journey:not([disabled])').waitFor();await page.locator('#continue-journey').click();await page.waitForFunction(()=>window.__storyQA.world.journeyId==='chapter4-browser');};
+ const next=async(n=1)=>{for(let i=0;i<n;i++)await page.locator('#story-next').click();};
+ const title=async text=>{await page.locator('#story-title').filter({hasText:text}).waitFor();await page.waitForTimeout(500);};
+ await resume();await page.waitForTimeout(400);await page.screenshot({path:'screenshots/chapter4-porch.png'});
+ await page.keyboard.press('KeyG');await page.waitForTimeout(1800);await page.screenshot({path:'screenshots/chapter4-hearth-art.png'});
+ await title('The red house');assert.match(await page.locator('#story-chapter').innerText(),/CHAPTER 4/);await page.screenshot({path:'screenshots/chapter4-red-house.png'});
+ await next(4);await title('Sit, sit');assert.equal(await page.locator('#story-name').innerText(),'The old woman');await page.screenshot({path:'screenshots/chapter4-emilia-portrait.png'});
+ await next(2);await title('Mara');await page.screenshot({path:'screenshots/chapter4-mara.png'});
+ await next();await page.waitForTimeout(400);await resume();await title('Look how you’ve grown');
+ await page.setViewportSize({width:390,height:844});await page.screenshot({path:'screenshots/chapter4-mobile.png'});const button=await page.locator('#story-next').boundingBox();assert.ok(button.x>=0&&button.x+button.width<=390&&button.y+button.height<=844);
+ await page.setViewportSize({width:1365,height:900});await next(6);await title('Three cups');await next(2);await title('Like a piano');await page.screenshot({path:'screenshots/chapter4-realization.png'});
+ await next(4);await title('So much for hiding it');await next(2);await title('Chosen by the land');await page.screenshot({path:'screenshots/chapter4-region-core.png'});
+ await next(2);await title('The Listening Tree');await next(3);await title('Just Emilia');assert.equal(await page.locator('#story-name').innerText(),'Emilia');await page.screenshot({path:'screenshots/chapter4-emilia.png'});
+ await next(2);await page.waitForTimeout(400);
+ assert.equal(await page.evaluate(()=>window.__storyQA.world.story.stage),'ch4-complete');assert.equal(await page.evaluate(()=>window.__storyQA.world.npcs.find(n=>n.id==='mara').name),'Mara');
+ await page.screenshot({path:'screenshots/chapter4-complete.png'});
+ assert.deepEqual(errors,[]);console.log('Chapter 4 browser preview passed: porch Continue, hearth illustration, Emilia and Mara portraits, mid-meeting reload, mobile layout and completion.');
+ await browser.close();process.exit(0);
+})().catch(e=>{console.error(e);process.exit(1);});

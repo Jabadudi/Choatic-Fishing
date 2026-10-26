@@ -37,6 +37,17 @@ Continue from a completed Chapter 2 checkpoint and talk to the girl on Reedwater
 5. Ask the girl about shadow walkers. The conversation introduces Croshelda, Goldanir’s disappearance four hundred years ago, infection amplifying a host’s power, and the village’s loss of one Rimejaw.
 6. Follow her around the inn to the larger red house with white trim. Chapter 3 ends at the chief’s porch. The Chapter 4 meeting and introduction of Mara’s name remain ahead.
 
+## Chapter 4 — Region Core
+
+Continue from a completed Chapter 3 checkpoint. The girl waits on the chief’s porch; approach her and choose **Go inside with the girl**.
+
+1. The meeting plays as one illustrated conversation over the hearth artwork: the guards, the old woman at the hearth and the swordsman who leaves, the introductions (the girl becomes **Mara**), Oscar’s grandson, the Ember Volcano stones and the realization that this is another world, the lure burning in Eli’s pocket, the **Region Core** of Reedwater, and the road north to the Listening Tree.
+2. It is split into five scenes (`ch4-house`, `ch4-oscar`, `ch4-world`, `ch4-core`, `ch4-journey`). Each one is a saved checkpoint and leads straight into the next. Closing the conversation keeps its page; press G to resume. If a save lands between scenes, talking to Mara offers **Continue the meeting**.
+3. The chief speaks as **The old woman**, then **The chief**, and finally **Emilia** once she gives her name; all three use a portrait crop from the Emilia reference sheet. Mara’s portrait and name tag switch from **The girl** after her introduction.
+4. Chapter 4 ends with Mara back on the porch. The objective points to the guest lodge and Drayfus’s training at sunrise in Chapter 5. No items, XP or catch powers change; the lure stays a protected quest item.
+
+`src/chapter4.js` supplies the dialogue and objectives. The guide reuses the Chapter 3 chief route and stays still for the whole chapter.
+
 `src/chapter3.js` supplies dialogue and routes. `src/village-life.js` owns friendly village residents and their simulation updates; their appearance is configured in the sprite registry. Creature art has no effect on collisions, health or rewards. The tamed Rimejaw and Flitlynx are inspectable NPCs, separate from huntable wildlife and combat AI.
 
 ## State and rendering
@@ -61,6 +72,8 @@ Files in `assets/story/` were downloaded from the user’s Drive folder **The Wi
 | `rimejaw-sheet.png`, `rimejaw-pose.png` | `sprites/creatures/rimejaw/` | Blacksmith guardian animation and discovery artwork |
 | `flitlynx-sheet.png`, `flitlynx-pose.png` | `sprites/creatures/flitlynx/` | Roof creature animation and discovery artwork |
 | `mara.png` | `characters/mara/mara_reference-sheet.png` | Character reference and Chapter 2 dialogue portrait |
+| `emilia-hearth.png` | `art/cutscenes/vol1/ch04/ch04_01_emilia-hearth.png` | Chapter 4 meeting in the red house |
+| `emilia.png` | `art/characters/emilia/emilia_reference-sheet.png` | Emilia’s dialogue portrait |
 
 All artwork mappings are in `src/sprite-definitions.js`. The Moonfang sheet is irregularly cropped and has a green matte; `src/sprites.js` removes that matte once in a cached canvas. Missing images retain readable scene text and a visible sprite fallback. The night attack sheets are prepared ahead of time by `python3 scripts/prepare-cutscene-sprites.py`, which removes the matte and puts every frame's feet on one baseline in a regular grid; rerun it after changing the source art.
 
@@ -71,6 +84,8 @@ Run `node --test` for behavior, saves, migration, duplicate prevention, collisio
 `tests/chapter2.test.js` covers the conversations, old story saves, optional reflections, guide waiting/fishing pauses, land collision, mid-walk saves, completion and invalid imports. `scripts/chapter2-preview.cjs` exercises a real version 2 Continue checkpoint, dialogue/portrait presentation, mobile layout and mid-walk reload in an isolated browser profile. The screenshots use `screenshots/chapter2-*`.
 
 `tests/chapter3.test.js` verifies the connected guide route, version 3 migration, village patrol collision, friendly creature classification, sprite crops, scene-page resume and invalid guide imports. `scripts/chapter3-preview.cjs` checks a real older Continue checkpoint, the three map crossings, forest reload, creature illustrations, roof layering, mobile layout and the chief’s porch. Screenshots use `screenshots/chapter3-*`.
+
+`tests/chapter4.test.js` covers the porch entry, the checkpointed meeting, Mara’s name reveal, mid-meeting save/resume, invalid imports and the Emilia artwork crops. `scripts/chapter4-preview.cjs` checks a real Continue from the porch, the hearth illustration, both portraits, a mid-meeting reload, mobile layout and completion. Screenshots use `screenshots/chapter4-*`.
 
 ## Dialogue, cutscenes and device preferences
 

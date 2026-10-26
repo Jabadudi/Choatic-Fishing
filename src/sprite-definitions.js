@@ -21,6 +21,7 @@ export const SPRITES={
  'villager-child-two':{asset:null,fallback:{coat:'#69849e',hair:'#503f2b',skin:'#e4c4a1',visualScale:.7}},
  // A portrait crop, not a gameplay actor or hitbox.
  'mara-portrait':{asset:'story/mara.png',frames:[[850,130,500,620]],scale:.12,anchor:[.5,0],offset:[0,0]},
+ 'emilia-portrait':{asset:'story/emilia.png',frames:[[930,60,500,620]],scale:.12,anchor:[.5,0],offset:[0,0]},
  eli:{asset:null,scale:1,anchor:[.5,1],offset:[0,15],fallback:{hat:false,hair:'#49382d',shirt:'#b6ad8f'}},
  'mara-story':{asset:null,scale:1,anchor:[.5,1],offset:[0,14],fallback:{hair:'#3d2b24',coat:'#6b4b35'}},
  // Original Drive sheet has a green matte. The shared loader removes it once.
@@ -62,5 +63,6 @@ export const STORY_ART={
  lure:{asset:'story/lure.png',alt:'A luminous blue lure inside a small wooden box in the cabin.'},
  rescue:{asset:'story/rescue.png',alt:'A gray Moonfang wolf tackles the shadowy attacker beside the cabin during the storm.'},
  campfire:{asset:'story/campfire.png',alt:'Eli’s rescuer cooks fish beside a campfire with the ruined cabin behind her.'},
- mara:{asset:'story/mara.png',alt:'Mara, with dark hair, a leather vest, and a scratch across her cheek.'}
+ mara:{asset:'story/mara.png',alt:'Mara, with dark hair, a leather vest, and a scratch across her cheek.'},
+ hearth:{asset:'story/emilia-hearth.png',alt:'Emilia pours tea at the hearth of the red house while a scarred swordsman sits by the round table.'}
 };

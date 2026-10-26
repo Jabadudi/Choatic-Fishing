@@ -5,6 +5,8 @@ import {dialogueMarkup,setDialogueText,drawDialoguePortrait} from './dialogue-vi
 import {cutscenePresentation} from './cutscene-presentation.js';
 import {playSfx} from './sfx.js';
 import {storyActionElapsed,NIGHT_ATTACK} from './story-action.js';
+// Eli learns the chief's name at the end of Chapter 4; every title shares her portrait.
+const EMILIA_NAMES=['The old woman','The chief','Emilia'];
 export function mountStory({getWorld,onAdvance=()=>{},onSettings=()=>{},isSettingsOpen=()=>false}){
  const dialog=document.createElement('dialog');dialog.id='story-scene';dialog.setAttribute('aria-labelledby','story-title');
  dialog.innerHTML=`<div class="cutscene-picture" hidden><img id="story-image" alt=""><canvas id="story-creature" width="1000" height="500" hidden></canvas></div><div class="cutscene-veil"></div>${dialogueMarkup('story')}<div class="scene-toolbar"><button id="story-skip" hidden>Show dialogue</button><button id="story-settings">⚙ Settings</button></div><span class="scene-loading" hidden>Loading artwork…</span>`;
@@ -14,7 +16,7 @@ export function mountStory({getWorld,onAdvance=()=>{},onSettings=()=>{},isSettin
   const w=getWorld();if(!w)return null;
   if(currentScene(w)){
    const page=historyPage??w.story.page,scene=SCENES[w.story.scene][page],name=scene.speaker||'Eli';
-   const speaker=name==='The girl'?w.npcs.find(n=>n.id==='mara')||{id:'mara',name:'The girl'}:w.player;
+   const speaker=['The girl','Mara'].includes(name)?w.npcs.find(n=>n.id==='mara')||{id:'mara',name}:EMILIA_NAMES.includes(name)?{id:'emilia',name}:w.player;
    return {w,scene,speaker:{...speaker,name},page,count:SCENES[w.story.scene].length,story:true};
   }
   if(w.dialogue){const speaker=w.npcs.find(n=>n.id===w.dialogue.npcId);if(speaker)return {w,scene:{title:`A conversation with ${speaker.name}`,text:w.dialogue.text},speaker:{...speaker,npc:true},page:0,count:1,story:false};}

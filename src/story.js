@@ -1,4 +1,5 @@
 import {CHAPTER_THREE_STAGES,chapterThree,CHAPTER3_SCENES,CHAPTER3_OBJECTIVES,CHAPTER3_ROUTES,CHAPTER3_ENTRIES,TRAVEL_AREAS,CREATURE_ROUTE,CHIEF_ROUTE,chapter3Route} from './chapter3.js';
+import {CHAPTER_FOUR_STAGES,chapterFour,CHAPTER4_SCENES,CHAPTER4_OBJECTIVES,CHAPTER4_SEQUENCE} from './chapter4.js';
 import {createVillageResidents,updateVillageResidents} from './village-life.js';
 import {createNpcs} from './npcs.js';
 import {NPC_TYPES} from './entities.js';
@@ -8,9 +9,12 @@ export const CAMP={x:1810,y:1640};
 export const GUIDE_ROUTE=[{x:1770,y:1580},{x:1630,y:1555},{x:1510,y:1570},{x:1400,y:1600},{x:1400,y:1500},{x:1390,y:1420}];
 export const CHAPTER_TWO_STAGES=['ch2-camp','ch2-cabin','ch2-home','ch2-ready','ch2-follow','ch2-complete'];
 export const chapterTwo=story=>!!story&&CHAPTER_TWO_STAGES.includes(story.stage);
-export const inlandUnlocked=story=>!story||(story.stage==='ch2-complete'||chapterThree(story));
+// Chapters 3 and 4 share the village guide: she walks in Chapter 3 and waits on the chief's porch in Chapter 4.
+const villageStory=s=>chapterThree(s)||chapterFour(s);
+export const inlandUnlocked=story=>!story||(story.stage==='ch2-complete'||villageStory(story));
 export const SCENES={
  ...CHAPTER3_SCENES,
+ ...CHAPTER4_SCENES,
  arrival:[{title:'The Old Fishing Hut',text:'The captain’s boat shrinks into the distance. Only now does Eli realize he never asked when he was coming back. “That’s a problem for future me.”',art:null},{title:'No service',text:'The number on the back of his hand is no use. Neither is the text he promised Shylee. Eli pockets his phone and looks up the path toward Grandpa’s cabin.',art:null}],
  lure:[{title:'Something on the shelf',text:'The floor is swept. The windows are clean. Fresh line hangs from the rods. Someone has been looking after this place. Then Eli notices blue light leaking from a little wooden box.',art:'lure'},{title:'Almost a heartbeat',text:'The lure is dark and translucent, its markings suspended inside it. For a moment it feels alive. Eli puts it back. Grandpa can keep his haunted fishing equipment.',art:'lure'}],
  photo:[{title:'A familiar grin',text:'Grandpa, younger than Eli is now. A laughing woman with long dark hair. An enormous gray wolf at their feet. On the back: the same strange markings as the lure.',art:'photo'},{title:'Questions left behind',text:'Grandpa used to sit on this dock and watch the trees as though he was waiting for someone. Eli never asked enough questions. Perhaps this place still has some answers.',art:'photo'}],
@@ -40,14 +44,14 @@ export const SCENES={
  'ch2-end':[{title:'Toward the trees',speaker:'Eli',text:'The dock and the broken cabin fall behind them. Ahead, the path climbs inland. Eli still has no idea where he is—or who this girl is. But, for the first time since the captain left, he isn’t facing it alone.',art:null}]
 };
 export const createStory=()=>({stage:'arrival',lureSeen:false,photoSeen:false,scene:'arrival',page:0,guide:null});
-export const cabinDamaged=story=>!!story&&((story.stage==='storm'&&story.scene==='storm'&&story.page>=2)||['awakening','complete'].includes(story.stage)||chapterTwo(story)||chapterThree(story));
-export const chapterHeading=scene=>scene?.startsWith('ch3-')?'CHAPTER 3 · THE VILLAGE':scene?.startsWith('ch2-')?'CHAPTER 2 · SHADOW WALKER':'CHAPTER 1 · THE OLD FISHING HUT';
+export const cabinDamaged=story=>!!story&&((story.stage==='storm'&&story.scene==='storm'&&story.page>=2)||['awakening','complete'].includes(story.stage)||chapterTwo(story)||villageStory(story));
+export const chapterHeading=scene=>scene?.startsWith('ch4-')?'CHAPTER 4 · REGION CORE':scene?.startsWith('ch3-')?'CHAPTER 3 · THE VILLAGE':scene?.startsWith('ch2-')?'CHAPTER 2 · SHADOW WALKER':'CHAPTER 1 · THE OLD FISHING HUT';
 export const pendingScene=world=>world?.story?.scene?SCENES[world.story.scene]?.[world.story.page]:null;
 export const currentScene=world=>world?.storySuspended?null:pendingScene(world);
 export function storyObjective(world){
  const s=world.story;if(!s)return null;
- if(chapterThree(s)&&s.guide?.areaId!==world.areaId){const names={landing:'Reedwater Landing',windchime:'Windchime Path',crossroads:'Willowbank Crossroads',village:'Willowback Village'};return `Chapter 3 · Your guide is waiting in ${names[s.guide.areaId]}. Return to her to continue.`;}
- return ({...CHAPTER3_OBJECTIVES,arrival:'Chapter 1 · Follow the path to Grandpa’s cabin.',explore:'Chapter 1 · Examine the lure box and the photograph inside the cabin.',fish:'Chapter 1 · Fish from the dock, then bring a Sardine to the cabin stove.',rest:'Chapter 1 · When you are ready, rest in the cabin bed.',storm:'Chapter 1 · Survive the storm.',awakening:'Chapter 1 · A new morning.',complete:'Chapter 2 · Talk to the girl beside the campfire at Reedwater Landing.',
+ if(villageStory(s)&&s.guide?.areaId!==world.areaId){const names={landing:'Reedwater Landing',windchime:'Windchime Path',crossroads:'Willowbank Crossroads',village:'Willowback Village'};return `Chapter 3 · Your guide is waiting in ${names[s.guide.areaId]}. Return to her to continue.`;}
+ return ({...CHAPTER3_OBJECTIVES,...CHAPTER4_OBJECTIVES,arrival:'Chapter 1 · Follow the path to Grandpa’s cabin.',explore:'Chapter 1 · Examine the lure box and the photograph inside the cabin.',fish:'Chapter 1 · Fish from the dock, then bring a Sardine to the cabin stove.',rest:'Chapter 1 · When you are ready, rest in the cabin bed.',storm:'Chapter 1 · Survive the storm.',awakening:'Chapter 1 · A new morning.',complete:'Chapter 2 · Talk to the girl beside the campfire at Reedwater Landing.',
  'ch2-camp':'Chapter 2 · Talk with your rescuer about last night.',
  'ch2-cabin':'Chapter 2 · Ask the girl about the cabin. You can examine the ruins and dock first.',
  'ch2-home':'Chapter 2 · Ask the girl how to get home.',
@@ -62,7 +66,7 @@ export function storyPrompt(w){
  const p=w.player,near=(x,y,r=90)=>Math.hypot(p.x-x,p.y-y)<r;
  const girl=w.npcs.find(n=>n.id==='mara'&&n.areaId===w.areaId);
  if(girl&&near(girl.x,girl.y,NPC_TYPES.mara.talkRange)){
-  const prompt={complete:'Talk about last night','ch2-camp':'Talk about last night','ch2-cabin':'Ask about the cabin','ch2-home':'Ask how to get home','ch2-ready':'Leave with the girl','ch2-complete':'Continue toward the village','ch3-lore':'Ask about shadow walkers'}[w.story.stage];
+  const prompt={complete:'Talk about last night','ch2-camp':'Talk about last night','ch2-cabin':'Ask about the cabin','ch2-home':'Ask how to get home','ch2-ready':'Leave with the girl','ch2-complete':'Continue toward the village','ch3-lore':'Ask about shadow walkers','ch3-complete':'Go inside with the girl',...Object.fromEntries(CHAPTER4_SEQUENCE.map(stage=>[stage,'Continue the meeting']))}[w.story.stage];
   if(prompt)return prompt;
  }
  if(w.areaId==='village'&&w.story.stage==='ch3-creatures'&&w.story.guide?.waypoint>=CREATURE_ROUTE.length&&near(1220,490,125))return 'Examine the frost-scaled guardian';
@@ -84,6 +88,8 @@ export function inspectStory(w){
  const s=w.story;
  if(prompt==='Resume conversation'){w.storySuspended=false;return true;}
  if(prompt==='Continue toward the village'){show(w,'ch3-start');return true;}
+ if(prompt==='Go inside with the girl'){s.stage='ch4-house';show(w,'ch4-house');return true;}
+ if(prompt==='Continue the meeting'){show(w,s.stage);return true;}
  if(prompt==='Examine the frost-scaled guardian'){show(w,'ch3-beasts');return true;}
  if(prompt==='Ask about shadow walkers'){show(w,'ch3-history');return true;}
  if(prompt==='Talk about last night'){s.stage='ch2-camp';show(w,'ch2-shadow');return true;}
@@ -137,14 +143,20 @@ export function advanceStory(w){
  if(scene==='ch3-beasts')s.stage='ch3-lore';
  if(scene==='ch3-history'){s.stage='ch3-chief';s.guide={x:s.guide.x,y:s.guide.y,areaId:'village',waypoint:0};}
  if(scene==='ch3-end'){s.stage='ch3-complete';w.npcs=createStoryNpcs(s,w.elapsed);}
+ // The meeting carries straight on; each finished scene is a checkpoint.
+ const meeting=CHAPTER4_SEQUENCE.indexOf(scene);
+ if(meeting>=0&&s.stage===scene){
+  s.stage=CHAPTER4_SEQUENCE[meeting+1]||'ch4-complete';w.npcs=createStoryNpcs(s,w.elapsed);
+  if(s.stage!=='ch4-complete')show(w,s.stage);
+ }
  w.message=storyObjective(w);return true;
 }
 export function createStoryNpcs(story,elapsed=0){
  if(!cabinDamaged(story)||story.stage==='storm')return [];
  const position=story.guide||{x:1850,y:1640};
- const list=createNpcs().map(n=>({...n,x:position.x,y:position.y,areaId:position.areaId||'landing',name:'The girl',spriteId:'mara-story',
-  greeting:chapterThree(story)?(story.stage==='ch3-complete'?'The chief is inside. We’ll speak to her next.':'Stay on the trail. I’ll wait if you need a moment.'):story.stage==='ch2-complete'?'The village is further inland. Stay on the trail.':story.stage==='ch2-follow'?'Stay close. I’ll wait for you.':'You’re finally awake. You were lucky I found you.'}));
- if(chapterThree(story)&&position.areaId==='village')list.push(...createVillageResidents(elapsed));
+ const list=createNpcs().map(n=>({...n,x:position.x,y:position.y,areaId:position.areaId||'landing',name:chapterFour(story)&&story.stage!=='ch4-house'?'Mara':'The girl',spriteId:'mara-story',
+  greeting:story.stage==='ch4-complete'?'The guest lodge is this way. Grandma wants us back at sunrise.':chapterFour(story)?'Grandma is waiting inside.':chapterThree(story)?(story.stage==='ch3-complete'?'The chief is inside. We’ll speak to her next.':'Stay on the trail. I’ll wait if you need a moment.'):story.stage==='ch2-complete'?'The village is further inland. Stay on the trail.':story.stage==='ch2-follow'?'Stay close. I’ll wait for you.':'You’re finally awake. You were lucky I found you.'}));
+ if(villageStory(story)&&position.areaId==='village')list.push(...createVillageResidents(elapsed));
  return list;
 }
 function updateChapterTwo(w,dt,walkable){
@@ -168,12 +180,12 @@ function updateChapterTwo(w,dt,walkable){
  if(Math.hypot(n.x-goal.x,n.y-goal.y)<1)g.waypoint++;
 }
 export function storyTransitionAllowed(w,next){
- const s=w.story;if(!chapterThree(s)||!s.guide||s.guide.areaId!==w.areaId)return true;
+ const s=w.story;if(!villageStory(s)||!s.guide||s.guide.areaId!==w.areaId)return true;
  const forward=TRAVEL_AREAS[TRAVEL_AREAS.indexOf(w.areaId)+1];
  return next.areaId!==forward||s.guide.waypoint>=chapter3Route(s).length;
 }
 export function onStoryAreaChange(w,previous){
- const s=w.story;if(!chapterThree(s)||!s.guide||s.guide.areaId!==previous)return;
+ const s=w.story;if(!villageStory(s)||!s.guide||s.guide.areaId!==previous)return;
  const next=TRAVEL_AREAS[TRAVEL_AREAS.indexOf(previous)+1];
  if(w.areaId!==next||s.guide.waypoint<chapter3Route(s).length)return;
  s.guide={...CHAPTER3_ENTRIES[next],areaId:next,waypoint:0};w.npcs=createStoryNpcs(s,w.elapsed);
@@ -181,8 +193,8 @@ export function onStoryAreaChange(w,previous){
 }
 export function updateStory(w,dt,walkable){
  updateVillageResidents(w.npcs,w.elapsed);
- const s=w.story;if(!chapterThree(s)){updateChapterTwo(w,dt,walkable);return;}
- if(pendingScene(w)||['ch3-lore','ch3-complete'].includes(s.stage)||w.player.health<=0)return;
+ const s=w.story;if(!villageStory(s)){updateChapterTwo(w,dt,walkable);return;}
+ if(pendingScene(w)||['ch3-lore','ch3-complete'].includes(s.stage)||chapterFour(s)||w.player.health<=0)return;
  const n=w.npcs.find(n=>n.id==='mara'),g=s.guide;if(!n||!g)return;
  n.animationState='idle';if(w.areaId!==g.areaId)return;
  const distance=Math.hypot(w.player.x-n.x,w.player.y-n.y),route=chapter3Route(s),config=NPC_TYPES.mara.guide;
@@ -203,23 +215,23 @@ export function updateStory(w,dt,walkable){
 }
 export function restoreStory(data){
  if(data===null)return null;
- const stages=['arrival','explore','fish','rest','storm','awakening','complete',...CHAPTER_TWO_STAGES,...CHAPTER_THREE_STAGES];
+ const stages=['arrival','explore','fish','rest','storm','awakening','complete',...CHAPTER_TWO_STAGES,...CHAPTER_THREE_STAGES,...CHAPTER_FOUR_STAGES];
  if(!data||!stages.includes(data.stage)||typeof data.lureSeen!=='boolean'||typeof data.photoSeen!=='boolean'||(data.scene!==null&&!Object.hasOwn(SCENES,data.scene))||!Number.isInteger(data.page)||data.page<0||(data.scene?data.page>=SCENES[data.scene].length:data.page!==0))throw Error('Invalid story progress.');
  if((data.stage==='storm'&&data.scene!=='storm')||(data.stage==='awakening'&&data.scene!=='awakening')||(data.scene==='storm'&&data.stage!=='storm'))throw Error('Invalid story scene.');
- if(['fish','rest','storm','awakening','complete',...CHAPTER_TWO_STAGES,...CHAPTER_THREE_STAGES].includes(data.stage)&&(!data.lureSeen||!data.photoSeen))throw Error('Invalid story discoveries.');
- const sceneStages={'ch2-shadow':'ch2-camp','ch2-cabin':'ch2-cabin','ch2-island':'ch2-home','ch2-departure':'ch2-ready','ch2-end':'ch2-follow','ch3-start':'ch2-complete','ch3-chimes':'ch3-chimes','ch3-arrival':'ch3-travel','ch3-beasts':'ch3-creatures','ch3-history':'ch3-lore','ch3-end':'ch3-chief'};
+ if(['fish','rest','storm','awakening','complete',...CHAPTER_TWO_STAGES,...CHAPTER_THREE_STAGES,...CHAPTER_FOUR_STAGES].includes(data.stage)&&(!data.lureSeen||!data.photoSeen))throw Error('Invalid story discoveries.');
+ const sceneStages={'ch2-shadow':'ch2-camp','ch2-cabin':'ch2-cabin','ch2-island':'ch2-home','ch2-departure':'ch2-ready','ch2-end':'ch2-follow','ch3-start':'ch2-complete','ch3-chimes':'ch3-chimes','ch3-arrival':'ch3-travel','ch3-beasts':'ch3-creatures','ch3-history':'ch3-lore','ch3-end':'ch3-chief',...Object.fromEntries(CHAPTER4_SEQUENCE.map(scene=>[scene,scene]))};
  if(sceneStages[data.scene]&&sceneStages[data.scene]!==data.stage)throw Error('Invalid story scene.');
  if(data.stage==='ch2-camp'&&data.scene!=='ch2-shadow')throw Error('Invalid story scene.');
  let guide=null;
- if(['ch2-follow','ch2-complete'].includes(data.stage)||chapterThree(data)){
+ if(['ch2-follow','ch2-complete'].includes(data.stage)||villageStory(data)){
   const g=data.guide;
   const limits={landing:[2800,2200],windchime:[1200,1800],crossroads:[1600,1280],village:[1920,2000]},bounds=g&&Object.hasOwn(limits,g.areaId)?limits[g.areaId]:null;
   if(!g||!bounds||!Number.isFinite(g.x)||!Number.isFinite(g.y)||g.x<24||g.x>bounds[0]-24||g.y<24||g.y>bounds[1]-24||!Number.isInteger(g.waypoint)||g.waypoint<0)throw Error('Invalid story guide.');
-  const route=chapterThree(data)?chapter3Route(data):GUIDE_ROUTE;
+  const route=villageStory(data)?chapter3Route(data):GUIDE_ROUTE;
   if(g.waypoint>route.length)throw Error('Invalid story guide.');
-  if(!chapterThree(data)&&(g.areaId!=='landing'||g.x<1350||g.x>1900||g.y<1390||g.y>1690))throw Error('Invalid story guide.');
-  if(['ch3-creatures','ch3-lore','ch3-chief','ch3-complete'].includes(data.stage)&&g.areaId!=='village'||data.stage==='ch3-chimes'&&g.areaId!=='landing')throw Error('Invalid story guide area.');
-  if((['ch2-complete','ch3-complete'].includes(data.stage)||['ch2-end','ch3-end','ch3-arrival','ch3-beasts'].includes(data.scene))&&(g.waypoint!==route.length||Math.hypot(g.x-route.at(-1).x,g.y-route.at(-1).y)>2))throw Error('Invalid story guide destination.');
+  if(!villageStory(data)&&(g.areaId!=='landing'||g.x<1350||g.x>1900||g.y<1390||g.y>1690))throw Error('Invalid story guide.');
+  if((['ch3-creatures','ch3-lore','ch3-chief','ch3-complete'].includes(data.stage)||chapterFour(data))&&g.areaId!=='village'||data.stage==='ch3-chimes'&&g.areaId!=='landing')throw Error('Invalid story guide area.');
+  if((['ch2-complete','ch3-complete'].includes(data.stage)||chapterFour(data)||['ch2-end','ch3-end','ch3-arrival','ch3-beasts'].includes(data.scene))&&(g.waypoint!==route.length||Math.hypot(g.x-route.at(-1).x,g.y-route.at(-1).y)>2))throw Error('Invalid story guide destination.');
   guide={x:g.x,y:g.y,waypoint:g.waypoint,areaId:g.areaId};
  }else if(data.guide!==null)throw Error('Invalid story guide.');
  return {stage:data.stage,lureSeen:data.lureSeen,photoSeen:data.photoSeen,scene:data.scene,page:data.page,guide};
