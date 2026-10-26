@@ -16,7 +16,7 @@ test('every huntable animal has its own loot table, with one guaranteed drop and
   for(const entry of table){assert.ok(LOOT_ITEMS[entry.item],entry.item);assert.ok(entry.chance>0&&entry.chance<=1);assert.ok(ITEM_CATEGORIES.some(c=>c.id===LOOT_ITEMS[entry.item].category));}
  }
  assert.deepEqual(rollLoot('rabbit',()=>.99).map(i=>i.name),['Rabbit Meat']);
- assert.deepEqual(rollLoot('turtle',()=>0).map(i=>i.name),['Turtle Meat','Turtle Shell','River Pearl']);
+ assert.deepEqual(rollLoot('turtle',()=>0).map(i=>i.name),['Turtle Meat','Turtle Shell','River Pearl','Turtle Familiar Shard']);
  assert.deepEqual(rollLoot('eel',()=>.3).map(i=>i.name),['Eel Fillet','Eel Skin']);
 });
 
@@ -62,7 +62,7 @@ test('minimap dots come from real spawn points and NPC positions',()=>{
 
 test('merchants list wares instead of drops, and drop chances read plainly',()=>{
  const wares=codexLoot(codexEntry('blacksmith'));assert.equal(wares.kind,'wares');assert.ok(wares.rows.every(r=>r.item&&r.price));
- const drops=codexLoot(codexEntry('deer'));assert.equal(drops.kind,'drops');assert.deepEqual(drops.rows.map(r=>chanceLabel(r.chance)),['Always','45%','20%']);
+ const drops=codexLoot(codexEntry('deer'));assert.equal(drops.kind,'drops');assert.deepEqual(drops.rows.map(r=>chanceLabel(r.chance)),['Always','45%','20%','10%']);
  assert.equal(codexLoot(codexEntry('rimejaw')).kind,'none');
  assert.equal(DEFAULT_BINDINGS.codex,'KeyI');
 });

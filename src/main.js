@@ -185,7 +185,7 @@ function toggleAtlas(open=!atlasOpen){if(open){backpackUI?.close();skillsUI?.clo
 $('open-atlas').onclick=()=>toggleAtlas(true);$('close-atlas').onclick=()=>toggleAtlas(false);$('inspect-place').onclick=()=>{world.inspect();canvas.focus();};
 const lobby=new Lobby(updateLobby);
 skillsUI=mountSkills({getWorld:()=>world,onOpen:()=>{toggleAtlas(false);release();},onClose:()=>{release();canvas.focus();}});
-codexUI=mountCodex({getWorld:()=>world,onOpen:()=>{backpackUI?.close();skillsUI?.close();toggleAtlas(false);release();},onClose:()=>{release();canvas.focus();}});
+codexUI=mountCodex({getWorld:()=>world,onOpen:()=>{backpackUI?.close();skillsUI?.close();toggleAtlas(false);release();},onClose:()=>{release();canvas.focus();},onFamiliar:(id,action)=>world.familiarAction(id,action)});
 backpackUI=mountBackpack({getWorld:()=>world,onOpen:()=>{toggleAtlas(false);release();},onClose:()=>{release();canvas.focus();},onAction:(id,action,slot)=>world.backpackAction(id,action,slot)});
 saveUI=mountSaveUI({getWorld:()=>lobby.world,
  onLoad:restored=>{lobby.stop();lobby.mode='solo';lobby.world=restored;lobby.notify();progressionKey='';exploreStart=performance.now();release();canvas.focus();},

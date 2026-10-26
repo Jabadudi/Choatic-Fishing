@@ -52,7 +52,7 @@ test('three deer roam Reedwater Landing in Chapter 1, and each kill drops guaran
 
 test('loot tables roll each extra drop on its own, and luck only improves the uncertain ones',()=>{
  assert.deepEqual(rollLoot('deer',()=>.99).map(i=>i.name),['Deer Meat']);
- assert.deepEqual(rollLoot('deer',()=>0).map(i=>i.name),['Deer Meat','Deer Hide','Deer Antlers']);
+ assert.deepEqual(rollLoot('deer',()=>0).map(i=>i.name),['Deer Meat','Deer Hide','Deer Antlers','Deer Familiar Shard']);
  assert.deepEqual(rollLoot('deer',()=>.21).map(i=>i.name),['Deer Meat','Deer Hide']);
  assert.deepEqual(rollLoot('deer',()=>.21,1.1).map(i=>i.name),['Deer Meat','Deer Hide','Deer Antlers']);
  assert.deepEqual(rollLoot('moose',()=>0),[]);

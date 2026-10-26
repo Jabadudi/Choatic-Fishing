@@ -79,7 +79,7 @@ function respawn(a,dt){
 }
 export function updateWildlife(world,dt){
  if(!world.adventure||world.matchState!=='playing')return;
- for(const a of world.wildlife)if(a.health<=0&&(a.areaId!==world.areaId||a.deathRemaining===0))respawn(a,dt);
+ for(const a of world.animals)if(a.health<=0&&(a.areaId!==world.areaId||a.deathRemaining===0))respawn(a,dt);
  for(const a of world.wildlife){
   if(a.areaId!==world.areaId||a.health<=0)continue;
   a.time+=dt;a.alert=Math.max(0,a.alert-dt);

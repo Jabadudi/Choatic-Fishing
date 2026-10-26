@@ -1,7 +1,8 @@
 // Creature index: what Eli knows about the creatures and people of the Wilds.
 // Gameplay numbers and spawn points are read from the entity systems, never duplicated here.
 import {ANIMAL_TYPES,BEHAVIOR_LABELS,BEHAVIORS} from './entities.js';
-import {LOOT_TABLES,LOOT_ITEMS} from './loot.js';
+import {LOOT_TABLES,LOOT_ITEMS,SHARD_CHANCES} from './loot.js';
+import {FAMILIARS} from './familiars.js';
 import {createWildlife} from './wildlife.js';
 import {createRabbits} from './rabbits.js';
 import {createVillageResidents} from './village-life.js';
@@ -99,6 +100,8 @@ export function codexLoot(entry){
  if(entry.wares)return {kind:'wares',rows:WARES[entry.wares].map(w=>({...w}))};
  const table=LOOT_TABLES[entry.loot];
  if(!table)return {kind:'none',rows:[]};
- return {kind:'drops',rows:table.map(({item,chance})=>({item,category:LOOT_ITEMS[item].category,chance,description:LOOT_ITEMS[item].description}))};
+ return {kind:'drops',rows:table.map(({item,chance})=>({item,category:LOOT_ITEMS[item].category,familiar:LOOT_ITEMS[item].familiar,chance,description:LOOT_ITEMS[item].description}))};
 }
 export const chanceLabel=chance=>chance>=1?'Always':`${Math.round(chance*100)}%`;
+// Creatures with a familiar share its id with their loot table.
+export const codexFamiliar=entry=>entry.loot&&FAMILIARS[entry.loot]?{id:entry.loot,chance:SHARD_CHANCES[entry.loot],...FAMILIARS[entry.loot]}:null;
