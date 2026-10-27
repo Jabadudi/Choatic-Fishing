@@ -75,3 +75,9 @@ body.touch-mode.exploring.has-fs-button #open-settings{right:52px}
  body.touch-mode.exploring #open-quests svg{width:16px;height:16px}
  body.touch-mode.exploring #side-objective{font-size:10px;line-height:1.4;margin-top:4px;padding:4px 7px}
 }
+@media(orientation:landscape) and (max-height:560px){
+ body.touch-mode.exploring .radio-chip:not([hidden]){top:146px;right:max(10px,env(safe-area-inset-right));width:210px;padding:3px 5px}
+ body.touch-mode.exploring .radio-chip.empty:not([hidden]){width:150px}
+ body.touch-mode.exploring .radio-chip canvas{width:28px;height:21px}
+ body.touch-mode .radio-video{top:190px;right:max(10px,env(safe-area-inset-right));width:150px;height:84px}
+}
