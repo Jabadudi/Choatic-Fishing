@@ -29,7 +29,7 @@ body.touch-mode.exploring.has-fs-button #open-settings{right:52px}
  body.touch-mode.exploring #region-name{font-size:13px;margin:2px 0 0}
  body.touch-mode.exploring #discovery-count{font-size:9px;margin:2px 0}
  body.touch-mode.exploring #purse-hud{font-size:9px;margin:2px 0 0}
- body.touch-mode.exploring #timed-upgrades{left:max(10px,env(safe-area-inset-left));top:86px;width:184px}
+ body.touch-mode.exploring #timed-upgrades{left:max(10px,env(safe-area-inset-left));top:119px;width:184px}
  body.touch-mode.exploring #quest-objective{font-size:10px;line-height:1.4;margin-top:4px;padding:5px 7px}
 
  body.touch-mode.exploring #open-skills,body.touch-mode.exploring #open-backpack,body.touch-mode.exploring #open-saves,body.touch-mode.exploring #open-codex{top:8px;bottom:auto;min-height:34px;padding:4px 10px;font-size:10px;gap:4px}
