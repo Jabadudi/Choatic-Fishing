@@ -6,7 +6,7 @@ import {createQuests,maraQuestDialogue} from './quests.js';
 import {createWildlife,updateWildlife,updateAnimalCombat} from './wildlife.js';
 import {Fishing,ITEMS} from './fishing.js';
 import {Progression,XP} from './progression.js';
-import {Inventory,canUseItem} from './inventory.js';
+import {Inventory,canUseItem,itemCount,stackable} from './inventory.js';
 import {attack,special,updateProjectiles} from './combat.js';
 import {updateBot} from './bots.js';
 import {LAND,CHESTS,LAKES,lakeDistance,isWater,nearWater,walkable} from './terrain.js';
@@ -74,7 +74,7 @@ export class World {
   const name=this.inventory.item?.name,huntsBefore=this.hunting.total;
   if(!this.useActorItem(this.player)){if(!this.inventory.item)this.message='Selected slot is empty. Choose a filled slot with 2–7.';return false;}
   if(name==='Treasure Key'||this.hunting.total>huntsBefore)return true;
-  this.message=PERMANENT_ITEMS.has(name)?`${name} · Arrow loosed.`:this.inventory.item?`${name} · ${this.inventory.item.uses} uses left.`:`${name} used up. Slot clear — fish again.`;return true;
+  this.message=PERMANENT_ITEMS.has(name)?`${name} · Arrow loosed.`:this.inventory.item?`${name} · ${stackable(this.inventory.item)?`${itemCount(this.inventory.item)} left`:`${this.inventory.item.uses} uses left`}.`:`${name} used up. Slot clear — fish again.`;return true;
  }
  backpackAction(id,action,slot){
   if(!this.adventure||this.matchState!=='playing'||this.player.health<=0||this.fishing.state!=='idle')return false;
@@ -82,7 +82,7 @@ export class World {
   if(item.name==='Mysterious Lure'){this.message='Eli keeps the strange lure close.';return false;}
   if(item.name==='Region Core'){this.message='Eli keeps the Region Core close. He isn’t ready to eat it. Not yet.';return false;}
   if(action==='hotbar')return this.inventory.assignHotbar(id,slot);
-  if(action==='discard'){this.inventory.removeId(id);this.message=`${item.name} discarded.`;return true;}
+  if(action==='discard'||action==='discard-all'){const gone=itemCount(this.inventory.removeId(id,action==='discard'?1:Infinity));this.message=gone>1?`${gone} ${item.name} discarded.`:`${item.name} discarded.`;return true;}
   if(action==='drop')return dropItem(this,item);
   if(action==='use'){
    if(!canUseItem(item)){this.message='This item cannot be used yet.';return false;}
