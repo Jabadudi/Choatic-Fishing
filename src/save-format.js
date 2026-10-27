@@ -9,6 +9,7 @@ import {restoreCodex} from './codex-discovery.js';
 import {SLOTS} from './spawn-tables.js';
 import {createCreature,listFor,restoreSpawns,spawnable} from './spawns.js';
 import {ANIMAL_TYPES} from './entities.js';
+import {MARKS_LIMIT} from './trade.js';
 export const SAVE_VERSION=7;
 export const SAVE_FORMAT='the-wilds-save';
 const clone=value=>JSON.parse(JSON.stringify(value));
@@ -29,7 +30,7 @@ export function captureSave(world,reason='autosave',now=Date.now()){
  return {format:SAVE_FORMAT,version:SAVE_VERSION,savedAt:now,reason,journeyId:world.journeyId,state:{
   areaId:world.areaId,elapsed:world.elapsed,story:world.story?clone(world.story):null,
   player:{x:p.x,y:p.y,angle:p.angle,health:p.health,cooldown:p.cooldown,dashCharges:p.dashCharges,dashCooldown:p.dashCooldown},
-  inventory:{items:clone(p.inventory.allItems),hotbar:p.inventory.slots.map(item=>item?.id||null),selected:p.inventory.selected,nextId:p.inventory.nextId},
+  inventory:{items:clone(p.inventory.allItems),hotbar:p.inventory.slots.map(item=>item?.id||null),selected:p.inventory.selected,nextId:p.inventory.nextId,marks:p.inventory.marks},
   progression:{...clone(p.progression),eliminations:[...p.progression.eliminations]},catches:clone(p.catches),
   quests:clone(world.quests),discovered:[...world.discovered],hunting:clone(world.hunting),familiars:clone(world.familiars),codex:[...(world.codex||[])],
   spawns:world.spawns?{seed:world.spawns.seed,next:world.spawns.next,current:world.spawns.current,areas:clone(world.spawns.areas)}:null,
@@ -93,6 +94,8 @@ export function restoreSave(input){
  const ids=new Map(inv.items.map(item=>[item.id,item]));const shortcuts=inv.hotbar.filter(Boolean);
  if(new Set(shortcuts).size!==shortcuts.length||shortcuts.some(id=>!ids.has(id)))fail('Invalid hotbar shortcuts.');
  w.inventory.storedItems=clone(inv.items);const stored=new Map(w.inventory.storedItems.map(item=>[item.id,item]));w.inventory.slots=inv.hotbar.map(id=>stored.get(id)||null);w.inventory.selected=inv.selected;if(restack)w.inventory.restack();
+ // Reed marks arrived with save version 7's stacks; saves without them start with an empty purse.
+ if(inv.marks!==undefined&&(!Number.isSafeInteger(inv.marks)||!number(inv.marks,0,MARKS_LIMIT)))fail('Invalid purse data.');w.inventory.marks=inv.marks??0;
  w.inventory.nextId=Math.max(inv.nextId,...inv.items.map(item=>/^item-\d+$/.test(item.id)?Number(item.id.slice(5))+1:1));
  const p=s.player;if(!p||!number(p.x,0,AREAS[s.areaId].width)||!number(p.y,0,AREAS[s.areaId].height)||!number(p.health,0,w.progression.maxHealth)||!number(p.angle,-100,100))fail('Invalid player data.');
  Object.assign(w.player,{x:p.x,y:p.y,angle:p.angle,health:p.health});
@@ -138,5 +141,5 @@ export function restoreSave(input){
 export function parseSave(text){if(typeof text!=='string'||text.length>5*1024*1024)fail('Save file is too large.');let save;try{save=JSON.parse(text);}catch{fail('Could not read this file. Choose a valid The Wilds JSON save.');}restoreSave(save);return save;}
 export function importantProgress(world){
  const p=world.progression;
- return JSON.stringify([world.areaId,world.inventory.allItems,world.inventory.slots.map(i=>i?.id),p.totalXp,p.skills,p.skillTrees,p.pendingChoices,p.pendingUpgrades,p.upgrades,p.ranks,p.specials,world.quests,world.story,[...world.discovered],world.hunting,world.familiars,[...(world.codex||[])],world.drops,world.animals.map(a=>a.health)]);
+ return JSON.stringify([world.areaId,world.inventory.allItems,world.inventory.marks,world.inventory.slots.map(i=>i?.id),p.totalXp,p.skills,p.skillTrees,p.pendingChoices,p.pendingUpgrades,p.upgrades,p.ranks,p.specials,world.quests,world.story,[...world.discovered],world.hunting,world.familiars,[...(world.codex||[])],world.drops,world.animals.map(a=>a.health)]);
 }

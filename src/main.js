@@ -11,6 +11,8 @@ import {drawStoryWeather} from './story-weather.js';
 import {mountSaveUI} from './save-ui.js';
 import {nearbyDrop} from './drops.js';
 import {mountBackpack} from './backpack.js';
+import {mountTrade,markIcon} from './trade-ui.js';
+import {marksLabel} from './trade.js';
 import {mountSkills} from './skills-ui.js';
 import {mountCodex} from './codex-ui.js';
 import {setItemIcon} from './item-icons.js';
@@ -26,7 +28,7 @@ import {explorationHud} from './hud.js';
 let world=new World(Math.random,{botCount:0});
 const canvas=document.querySelector('#arena'),ctx=canvas.getContext('2d',{alpha:false});
 const touchState=new TouchInput(),touchMedia=matchMedia('(any-pointer: coarse), (max-width: 700px)');
-let backpackUI=null,skillsUI=null,codexUI=null,saveUI=null,storyUI=null,settingsUI=null;
+let tradeUI=null,backpackUI=null,skillsUI=null,codexUI=null,saveUI=null,storyUI=null,settingsUI=null;
 let touchMode=touchMedia.matches,touchUI=null;document.body.classList.toggle('touch-mode',touchMode);
 // Keep the explorer readable on a narrow portrait viewport.
 let view={scale:1,x:0,y:0,width:960,height:720,dpr:1};
@@ -41,11 +43,12 @@ new ResizeObserver(resize).observe(canvas);resize();
 const elements=new Map();
 const $=id=>{if(!elements.has(id))elements.set(id,document.getElementById(id));return elements.get(id);};const keys=new Set();let mouseHeld=false,spaceHeld=false,aim={x:480,y:0};
 const currentInput=()=>{camera();if(touchMode&&touchState.enabled){pointer=null;aim=touchState.aim(world.player);}const stick=touchMode&&touchState.movePointer!==null;return ({left:keys.has(preferences.value.keybinds.left)||(stick&&touchState.x<-.1),right:keys.has(preferences.value.keybinds.right)||(stick&&touchState.x>.1),up:keys.has(preferences.value.keybinds.up)||(stick&&touchState.y<-.1),down:keys.has(preferences.value.keybinds.down)||(stick&&touchState.y>.1),...(stick?{moveX:touchState.x,moveY:touchState.y}:{}),aim,held:mouseHeld||spaceHeld||touchState.held});};
-const act=action=>{if(!currentScene(world)&&!settingsUI?.open&&!storyUI?.open&&!backpackUI?.open&&!skillsUI?.open&&!codexUI?.open&&!saveUI?.open)lobby.action(action,currentInput());};
+const act=action=>{if(!currentScene(world)&&!settingsUI?.open&&!storyUI?.open&&!backpackUI?.open&&!tradeUI?.open&&!skillsUI?.open&&!codexUI?.open&&!saveUI?.open)lobby.action(action,currentInput());};
 const equip=slot=>act(`slot-${slot}`);
 addEventListener('keydown',e=>{
   if(settingsUI?.open||storyUI?.open||saveUI?.open||currentScene(world))return;
   if((e.ctrlKey||e.metaKey)&&e.code==='KeyS'&&lobby.world?.adventure){e.preventDefault();saveUI.manager.request('manual',true).catch(()=>{});return;}
+  if(tradeUI?.open)return;
   if(backpackUI?.open){if(matchesBinding('backpack',e.code)&&!e.repeat){e.preventDefault();backpackUI.toggle();}return;}
   if(skillsUI?.open){if(matchesBinding('skills',e.code)&&!e.repeat){e.preventDefault();skillsUI.toggle();}return;}
   if(codexUI?.open){if(matchesBinding('codex',e.code)&&!e.repeat){e.preventDefault();codexUI.toggle();}return;}
@@ -105,6 +108,8 @@ function updateUI(){
  storyUI?.update();
  saveUI?.update();
  backpackUI?.update(!!lobby.world?.adventure&&!atlasOpen&&world.player.health>0);
+ if(world.tradeRequest){const merchant=world.tradeRequest;world.tradeRequest=null;tradeUI?.show(merchant);}
+ tradeUI?.update(!!lobby.world?.adventure&&!atlasOpen&&world.player.health>0);
  skillsUI?.update(!!lobby.world?.adventure&&!atlasOpen&&world.player.health>0);
  codexUI?.update(!!lobby.world?.adventure&&!atlasOpen&&world.player.health>0);
  $('close-atlas').textContent=touchMode?'Close':`Close · ${bindingLabel('map')} / Esc`;
@@ -138,6 +143,7 @@ function updateUI(){
  if(world.adventure){
   const places=placesFor(world.areaId),place=nearestLandmark(world.player.x,world.player.y,world.areaId);
   $('region-name').textContent=regionAt(world.player.x,world.player.y,world.areaId);
+  const purse=marksLabel(world.inventory.marks||0),purseText=$('purse-hud').lastChild;if(purseText.textContent!==purse)purseText.textContent=purse;
   $('discovery-count').textContent=`${places.filter(p=>world.discovered.has(p.id)).length} / ${places.length} places found here`;
   document.querySelector('.atlas-heading h2').textContent=areaFor(world.areaId).name;
   const hud=explorationHud(world,(performance.now()-exploreStart)/1000);
@@ -162,8 +168,8 @@ document.querySelector('.lobby-note').textContent='WASD explore · Mouse aim · 
 document.querySelector('header h1').textContent='THE WILDS';
 document.querySelector('.controls').textContent='WASD MOVE · E FISH · G EXAMINE · M ATLAS · L-SHIFT DASH';
 document.querySelector('.lobby-actions').insertAdjacentHTML('afterbegin','<button id="explore-world">Enter the Wilds</button>');
-document.querySelector('.playfield').insertAdjacentHTML('beforeend',`<section id="exploration-hud" hidden><span class="exploration-kicker" id="area-kicker">YOUR JOURNEY</span><h2 id="region-name">Reedwater Delta</h2><p id="discovery-count">0 / 10 places found</p><div class="discovery-dots" id="discovery-dots"></div></section><button id="inspect-place" hidden>G · Examine</button><div id="explore-hint" hidden><kbd>WASD</kbd> walk · <kbd>E</kbd> fish · <kbd>G</kbd> examine · <kbd>M</kbd> map · <kbd>Shift</kbd> dash</div><button id="music-icon" aria-label="Music settings" aria-expanded="false">♪</button><button id="open-atlas" hidden aria-label="Open world atlas"><canvas id="mini-atlas" width="192" height="144"></canvas><span>M · WORLD ATLAS</span></button><section id="world-atlas" hidden role="dialog" aria-modal="true" aria-label="World atlas"><div class="atlas-card"><div class="atlas-heading"><div><small>THE WILDS</small><h2>World Atlas</h2></div><button id="close-atlas">Close · M / Esc</button></div><canvas id="atlas-canvas" width="800" height="600"></canvas><p>Follow the old trails and bridges. Gold marks the places you have found. Your position is the bright marker.</p></div></section>`);
-touchUI=mountMobileControls({state:touchState,active:()=>touchMode&&!!lobby.world&&!atlasOpen&&!saveUI?.open&&!backpackUI?.open&&!skillsUI?.open&&!codexUI?.open&&!settingsUI?.open&&!storyUI?.open&&!currentScene(world),action:()=>{pointer=null;const f=world.fishing;if(f.state==='waiting')act('cancel');else if(f.state==='idle')act('click');},examine:()=>{world.inspect();canvas.focus();}});
+document.querySelector('.playfield').insertAdjacentHTML('beforeend',`<section id="exploration-hud" hidden><span class="exploration-kicker" id="area-kicker">YOUR JOURNEY</span><h2 id="region-name">Reedwater Delta</h2><p id="discovery-count">0 / 10 places found</p><div class="discovery-dots" id="discovery-dots"></div><p id="purse-hud" title="Reed marks">${markIcon(14)}<span></span></p></section><button id="inspect-place" hidden>G · Examine</button><div id="explore-hint" hidden><kbd>WASD</kbd> walk · <kbd>E</kbd> fish · <kbd>G</kbd> examine · <kbd>M</kbd> map · <kbd>Shift</kbd> dash</div><button id="music-icon" aria-label="Music settings" aria-expanded="false">♪</button><button id="open-atlas" hidden aria-label="Open world atlas"><canvas id="mini-atlas" width="192" height="144"></canvas><span>M · WORLD ATLAS</span></button><section id="world-atlas" hidden role="dialog" aria-modal="true" aria-label="World atlas"><div class="atlas-card"><div class="atlas-heading"><div><small>THE WILDS</small><h2>World Atlas</h2></div><button id="close-atlas">Close · M / Esc</button></div><canvas id="atlas-canvas" width="800" height="600"></canvas><p>Follow the old trails and bridges. Gold marks the places you have found. Your position is the bright marker.</p></div></section>`);
+touchUI=mountMobileControls({state:touchState,active:()=>touchMode&&!!lobby.world&&!atlasOpen&&!saveUI?.open&&!backpackUI?.open&&!tradeUI?.open&&!skillsUI?.open&&!codexUI?.open&&!settingsUI?.open&&!storyUI?.open&&!currentScene(world),action:()=>{pointer=null;const f=world.fishing;if(f.state==='waiting')act('cancel');else if(f.state==='idle')act('click');},examine:()=>{world.inspect();canvas.focus();}});
 let atlasOpen=false,exploreStart=performance.now(),lastMessage='',messageSince=0,dotsKey='';
 $('upgrade-timer').insertAdjacentHTML('afterend','<div id="upgrade-bar"><i id="upgrade-fill"></i></div><p id="quest-objective" hidden aria-live="polite"></p>');
 document.querySelector('.hotbar').insertAdjacentHTML('beforeend','<div class="dash-mini"><div id="dash-pips"></div><span>DASH</span></div>');
@@ -187,6 +193,7 @@ $('open-atlas').onclick=()=>toggleAtlas(true);$('close-atlas').onclick=()=>toggl
 const lobby=new Lobby(updateLobby);
 skillsUI=mountSkills({getWorld:()=>world,onOpen:()=>{toggleAtlas(false);release();},onClose:()=>{release();canvas.focus();}});
 codexUI=mountCodex({getWorld:()=>world,onOpen:()=>{backpackUI?.close();skillsUI?.close();toggleAtlas(false);release();},onClose:()=>{release();canvas.focus();},onFamiliar:(id,action)=>world.familiarAction(id,action)});
+tradeUI=mountTrade({getWorld:()=>world,onOpen:()=>{backpackUI?.close();skillsUI?.close();codexUI?.close();toggleAtlas(false);release();},onClose:()=>{release();canvas.focus();}});
 backpackUI=mountBackpack({getWorld:()=>world,onOpen:()=>{toggleAtlas(false);release();},onClose:()=>{release();canvas.focus();},onAction:(id,action,slot)=>world.backpackAction(id,action,slot)});
 saveUI=mountSaveUI({getWorld:()=>lobby.world,
  onLoad:restored=>{lobby.stop();lobby.mode='solo';lobby.world=restored;lobby.notify();progressionKey='';exploreStart=performance.now();release();canvas.focus();},
@@ -240,7 +247,7 @@ storyUI=mountStory({getWorld:()=>lobby.world,onAdvance:()=>{release();lastAtlasD
 document.addEventListener('click',e=>{if(e.target.closest('button')&&!e.target.closest('#story-scene,#settings-sfx-test'))playSfx('ui');});
 updateLobby();
 let accumulator=0,last=performance.now(),lastUI=0,lastRender=0;
-function frame(now){accumulator+=Math.min((now-last)/1000,.1);last=now;while(accumulator>=1/120){if(!backpackUI?.open&&!skillsUI?.open&&!codexUI?.open&&!saveUI?.open&&!settingsUI?.open&&!document.hidden){if(storyAction(lobby.world))updateStoryAction(lobby.world,1/120);else if(!storyUI?.open){lobby.tick(1/120,currentInput());observeGameSounds(lobby.world);}}accumulator-=1/120;}
+function frame(now){accumulator+=Math.min((now-last)/1000,.1);last=now;while(accumulator>=1/120){if(!backpackUI?.open&&!tradeUI?.open&&!skillsUI?.open&&!codexUI?.open&&!saveUI?.open&&!settingsUI?.open&&!document.hidden){if(storyAction(lobby.world))updateStoryAction(lobby.world,1/120);else if(!storyUI?.open){lobby.tick(1/120,currentInput());observeGameSounds(lobby.world);}}accumulator-=1/120;}
  if(lobby.world)world=lobby.world;
  if(now-lastRender<1000/60){requestAnimationFrame(frame);return;}lastRender=now-((now-lastRender)%(1000/60));
  const display=lobby.presentation();camera(display?.player||world.player);const dpr=view.dpr;

@@ -6,6 +6,7 @@ import {FAMILIARS} from './familiars.js';
 import {SLOTS,SPAWN_AREAS,SHINY} from './spawn-tables.js';
 import {spawnWeights} from './spawns.js';
 import {createVillageResidents} from './village-life.js';
+import {WARES} from './trade.js';
 import {createNpcs} from './npcs.js';
 import {areaFor} from './wilds.js';
 export const CODEX_CATEGORIES=Object.freeze([
@@ -33,12 +34,6 @@ export function atlasPoint(areaId,x,y){
  const [left,top,width,height]=bounds;
  return {map:'delta',x:left+Math.min(1,Math.max(0,x/area.width))*width,y:top+Math.min(1,Math.max(0,y/area.height))*height,areaId:place};
 }
-// Barter offers. Trading opens in a later chapter; these are the planned wares.
-const WARES={
- blacksmith:[{item:'Hunting Knife',category:'weapons',price:'2 Deer Hide'},{item:'Iron Fishhooks',category:'upgrade-materials',price:'2 Eel Skin'},{item:'Whetstone',category:'upgrade-materials',price:'1 Deer Antlers'},{item:'Shell Buckler',category:'armor',price:'3 Turtle Shell'}],
- fisher:[{item:'Sardine',category:'consumables',price:'1 Rabbit Pelt',note:'×3'},{item:'Reed Spear',category:'weapons',price:'2 Eel Skin'},{item:'Woven Fish Trap',category:'upgrade-materials',price:'1 Turtle Shell'}],
- gardener:[{item:'Wild Herbs',category:'consumables',price:'1 Rabbit Meat'},{item:'Willow Apples',category:'consumables',price:'1 Sardine',note:'×4'},{item:'Healing Salve',category:'consumables',price:'1 Eel Oil'}]
-};
 const animal=(species,extra)=>({category:'wildlife',species,loot:ANIMAL_TYPES[species].loot,spawns:species,...extra});
 const resident=id=>createVillageResidents().find(n=>n.id===id);
 export const CODEX_ENTRIES=Object.freeze([
@@ -69,7 +64,7 @@ export const CODEX_ENTRIES=Object.freeze([
  {id:'blacksmith',category:'villagers',name:'Blacksmith',title:'Merchant · Smithy',glyph:'⚒',firstSeen:'Chapter 3',status:'Merchant',npc:'village-smith',wares:'blacksmith',
   description:'Works the forge with a Rimejaw sprawled across the doorway. Turns hides, antlers and shell into blades and gear.'},
  {id:'fisher',category:'villagers',name:'Fisher',title:'Merchant · Jetty',glyph:'♢',firstSeen:'Chapter 3',status:'Merchant',npc:'village-fisher',wares:'fisher',
-  description:'Keeps the village boats sound and the fish stall stocked. Happy to swap bait and tackle for pelts and skins.'},
+  description:'Keeps the village boats sound and the fish stall stocked. Sells bait and tackle, and pays fair marks for pelts and skins.'},
  {id:'gardener',category:'villagers',name:'Gardener',title:'Merchant · Kitchen gardens',glyph:'❦',firstSeen:'Chapter 3',status:'Merchant',npc:'basket-carrier',wares:'gardener',
   description:'Carries baskets between the kitchen gardens and the produce stall. Storm or no storm, the gardens still need tending.'}
 ].map(entry=>{

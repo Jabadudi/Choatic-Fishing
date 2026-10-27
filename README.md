@@ -65,6 +65,7 @@ checkpoints are described in [docs/STORY.md](docs/STORY.md).
   fuse in the Index into a familiar that follows Eli and grants a passive, which
   grows at 25 shards and gains a stronger one at 100.
 - **Backpack.** Category filters, use, throw, discard and a six-slot hotbar (**B**).
+- **Reed marks.** Willowback's copper coin. Sell hunting and fishing goods to the blacksmith, fisher and gardener, find a few marks tangled in a catch, and spend them at the same stalls. The purse shows under the area card and in the backpack.
   The Region Core is a protected quest item.
 - **Saves.** Autosaves with three backups, a separate manual save, and JSON
   export/import, all stored locally in the browser.
