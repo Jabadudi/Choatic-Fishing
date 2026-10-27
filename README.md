@@ -64,6 +64,12 @@ checkpoints are described in [docs/STORY.md](docs/STORY.md).
 - **Familiars.** Hunted creatures sometimes drop a familiar shard. Five of one kind
   fuse in the Index into a familiar that follows Eli and grants a passive, which
   grows at 25 shards and gains a stronger one at 100.
+- **Side missions.** Once Eli reaches Willowback, villagers with work for him show a
+  gold **!** over their heads. Talk to them to hunt rabbits, deer or eels, or to bring
+  back hides, eel skin or a lucky rabbit's foot, for reed marks, items and XP. Finished
+  missions show a gold **?** until handed in, and some lead to the next job. The quest
+  log (**J**) tracks what is under way, and the current mission shows under the story
+  objective. A shadow walker hunt waits for the day they can be fought.
 - **Backpack.** Category filters, use, throw, discard and a six-slot hotbar (**B**).
 - **Reed marks.** Willowback's copper coin. Sell hunting and fishing goods to the blacksmith, fisher and gardener, find a few marks tangled in a catch, and spend them at the same stalls. The purse shows under the area card and in the backpack.
   The Region Core is a protected quest item.
@@ -95,6 +101,7 @@ These are the default keys. All of them can be rebound in Settings.
 | B | Backpack |
 | K | Skills |
 | I | Creature Index |
+| J | Quest log |
 | M | Area map |
 | Q / Escape | Cancel the current action or close a menu |
 | F10 | Settings |
@@ -109,7 +116,7 @@ joystick moves, **Use** casts, reels and uses items, and **Examine** becomes
 - Chapter 6 and Drayfus's training at sunrise.
 - Aggressive creatures and shadow walkers you can fight outside the story.
 - Cooking outside the story, at any stove or campfire.
-- Village interiors for the inn and shops, trading and more quests.
+- Village interiors for the inn and shops, and more quests.
 
 ## Run it locally
 
@@ -131,7 +138,7 @@ Pages ([DEPLOYMENT.md](DEPLOYMENT.md)).
   input, the 120 Hz loop and the HUD. `world.js` runs the simulation and
   `renderer.js` draws it. Story chapters live in `chapter1.js` to `chapter5.js` and
   `story.js`. Interiors are `story-map.js`, `chief-house.js` and `guest-lodge.js`.
-  `loot.js`, `spawn-tables.js`, `spawns.js`, `skills.js`, `skill-trees.js`, `familiars.js` and `codex.js` hold the
+  `loot.js`, `spawn-tables.js`, `spawns.js`, `skills.js`, `skill-trees.js`, `familiars.js`, `side-quests.js` and `codex.js` hold the
   RPG systems, and `save-format.js` owns the versioned save contract.
 - `assets/` holds sprites, props, cutscene art, music and the vision video.
 - `tests/` covers the simulation, story chapters, saves, loot, skills and familiars.

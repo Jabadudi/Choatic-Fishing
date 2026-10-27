@@ -1,6 +1,7 @@
 // Quest progress belongs to the journey, independently of NPC artwork.
+import {createSideQuests} from './side-quests.js';
 export const MARA_SARDINE={id:'mara-sardine',title:"Mara's supper",item:'Sardine',quantity:1,rewardXp:15};
-export const createQuests=()=>({'mara-sardine':{status:'available'}});
+export const createQuests=()=>({'mara-sardine':{status:'available'},...createSideQuests()});
 export function maraQuestDialogue(world){
  const quest=world.quests[MARA_SARDINE.id];
  if(quest.status==='complete')return 'Thank you again for the sardine!';

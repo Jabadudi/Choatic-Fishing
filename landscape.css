@@ -69,3 +69,8 @@ body.touch-mode.exploring.has-fs-button #open-settings{right:52px}
  #story-scene .dialogue-text{margin-bottom:8px}
  #story-scene .dialogue-box button{min-height:36px;padding:6px 10px;font-size:12px}
 }
+@media(orientation:landscape) and (max-height:560px){
+ body.touch-mode.exploring #open-quests{top:8px;bottom:auto;min-height:34px;padding:4px 10px;font-size:10px;gap:4px;left:calc(50% + 228px)}
+ body.touch-mode.exploring #open-quests svg{width:16px;height:16px}
+ body.touch-mode.exploring #side-objective{font-size:10px;line-height:1.4;margin-top:4px;padding:4px 7px}
+}
