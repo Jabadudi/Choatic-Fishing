@@ -372,3 +372,6 @@ body.exploring #side-objective{font:11px/1.5 monospace;color:#f6d27a;margin:6px 
 @media(max-width:760px){#well-sheet{overflow-y:auto}#well-sheet[open]{display:block}.well-body{display:flex;flex-direction:column}.well-side{border-right:0;border-bottom:1px solid var(--bp-line)}.well-results{grid-template-columns:repeat(3,minmax(0,1fr))}.well-tabs{padding:0 10px}}
 @media(max-height:500px) and (orientation:landscape){#well-sheet{overflow-y:auto}#well-sheet[open]{display:block}.well-results{grid-template-columns:repeat(5,minmax(0,1fr))}}
 .well-results .trade-empty{grid-column:1/-1}
+.well-summon{position:fixed;inset:0;z-index:5;background:#061410;overflow:hidden}
+.well-summon-canvas{width:100%;height:100%;display:block}
+.well-skip{position:absolute;right:max(16px,env(safe-area-inset-right,0px));bottom:max(16px,env(safe-area-inset-bottom,0px));min-width:84px}
