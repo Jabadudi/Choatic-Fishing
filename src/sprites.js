@@ -60,13 +60,17 @@ const propListeners=new Set();
 // Cached scenery (terrain chunks) registers here to repaint once a prop image arrives.
 export const onPropLoad=fn=>propListeners.add(fn);
 // Fits a prop inside a w×h box whose bottom centre sits at (x,y). Returns false until the image is ready.
-export function drawProp(ctx,id,{x,y,w,h,flipX=false}){
- if(!PROPS[id]||typeof Image==='undefined')return false;
- const url=spriteAssetUrl(PROPS[id]);let img=images.get(url);
- if(!img){img=new Image();img.onload=()=>propListeners.forEach(fn=>fn());images.set(url,img);img.src=url;}
+export const drawProp=(ctx,id,box)=>!!PROPS[id]&&drawFitted(ctx,PROPS[id],box,true);
+// Same fit for any image under assets/, such as item icons. Nothing repaints when it loads, since the next frame draws it.
+// It keeps sub-pixel positions, so a small floating motion glides instead of stepping.
+export const drawImageAsset=(ctx,asset,box)=>drawFitted(ctx,asset,box,false);
+function drawFitted(ctx,asset,{x,y,w,h,flipX=false},notify){
+ if(typeof Image==='undefined')return false;
+ const url=spriteAssetUrl(asset);let img=images.get(url);
+ if(!img){img=new Image();if(notify)img.onload=()=>propListeners.forEach(fn=>fn());images.set(url,img);img.src=url;}
  if(!img.complete||!img.naturalWidth||!img.naturalHeight)return false;
  const k=Math.min(w/img.naturalWidth,h/img.naturalHeight),dw=img.naturalWidth*k,dh=img.naturalHeight*k;
- ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.translate(Math.round(x),Math.round(y));if(flipX)ctx.scale(-1,1);
+ ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';if(notify)ctx.translate(Math.round(x),Math.round(y));else ctx.translate(x,y);if(flipX)ctx.scale(-1,1);
  ctx.drawImage(img,-dw/2,-dh,dw,dh);ctx.restore();return true;
 }
 // Repeats a tile image across a rectangle, each tile drawn tw×th, starting at the rectangle's corner.
