@@ -1,4 +1,4 @@
-import {drawEntitySprite} from './sprites.js';
+import {drawEntitySprite,drawProp} from './sprites.js';
 import {drawWildlife} from './wildlife-art.js';
 import {drawRabbit} from './rabbits.js';
 import {FAMILIARS} from './familiars.js';
@@ -39,6 +39,7 @@ export function drawShard(c,drop,time){
  const halo=c.createRadialGradient(drop.x,y,1,drop.x,y,20);halo.addColorStop(0,`${glow}aa`);halo.addColorStop(1,`${glow}00`);
  c.fillStyle=halo;c.beginPath();c.arc(drop.x,y,20,0,Math.PI*2);c.fill();
  c.fillStyle='#17372c55';c.beginPath();c.ellipse(drop.x,drop.y+5,8,3,0,0,Math.PI*2);c.fill();
+ if(drawProp(c,`shard-${drop.item.familiar}`,{x:drop.x,y:y+11,w:24,h:24})){c.restore();return;}
  c.fillStyle=glow;c.strokeStyle='#ffffffcc';c.lineWidth=1.2;
  c.beginPath();c.moveTo(drop.x,y-10);c.lineTo(drop.x+6,y);c.lineTo(drop.x,y+9);c.lineTo(drop.x-6,y);c.closePath();c.fill();c.stroke();
  c.strokeStyle='#ffffff88';c.beginPath();c.moveTo(drop.x,y-10);c.lineTo(drop.x,y+9);c.stroke();

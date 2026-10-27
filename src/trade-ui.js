@@ -1,9 +1,9 @@
 import {WARES,MERCHANT_NAMES,marksLabel,marksOf,sellValue,buyWare,sellItem} from './trade.js';
-import {setItemIcon} from './item-icons.js';
+import {setItemIcon,MARK_ART} from './item-icons.js';
 import {itemCount} from './inventory.js';
 const svg=(body,size=24)=>`<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
 // A reed mark: a copper disc stamped with a single reed.
-export const markIcon=(size=18)=>`<svg class="mark-icon" viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="#c98a4b" stroke="#6e431f" stroke-width="1.5"/><circle cx="12" cy="12" r="6.6" fill="none" stroke="#f0c690" stroke-width="1" opacity=".7"/><path d="M12 17.5V7.5M12 10c-1.6-.4-2.6-1.6-2.8-3 1.6.3 2.6 1.4 2.8 3zM12 12.5c1.6-.4 2.6-1.6 2.8-3-1.6.3-2.6 1.4-2.8 3z" fill="#f5d7a4" stroke="#6e431f" stroke-width=".8" stroke-linejoin="round"/></svg>`;
+export const markIcon=(size=18)=>`<img class="mark-icon" src="${MARK_ART}" width="${size}" height="${size}" alt="" draggable="false">`;
 const STALL='<path d="M4 9l2-5h12l2 5M4 9h16v11H4zM4 9c0 1.7 1.3 3 3 3s3-1.3 3-3c0 1.7 1.3 3 3 3s3-1.3 3-3c0 1.7 1.3 3 3 3s3-1.3 3-3M10 20v-5h4v5"/>';
 const el=(tag,className,text)=>{const node=document.createElement(tag);if(className)node.className=className;if(text!==undefined)node.textContent=text;return node;};
 export function mountTrade({getWorld,onOpen,onClose}){

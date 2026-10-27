@@ -14,7 +14,7 @@ const assert=require('node:assert/strict');
  await page.locator('#open-backpack:not([hidden])').waitFor();await page.locator('#open-backpack').click();await page.locator('#backpack[open]').waitFor();await page.waitForTimeout(300);
  assert.equal(await page.locator('#backpack .backpack-cell').count(),25);
  assert.equal(await page.locator('.backpack-actions h3').innerText(),'Region Core');
- assert.ok(await page.locator('.backpack-art-icon img[src$="region-core.svg"]').count());
+ assert.ok(await page.locator('.backpack-art-icon img[src$="region-core.webp"]').count());
  await page.screenshot({path:'screenshots/backpack-region-core.png'});
  await page.evaluate(()=>{const inv=window.__storyQA.world.inventory;for(const name of ['Sardine','Sardine','Reed Spear','Old Boot','Treasure Key','Crab Maul','Grappling Squid'])inv.receive({name});});
  await page.locator('.backpack-item').nth(2).click();await page.locator('.backpack-action-row button',{hasText:'Add to hotbar'}).click();await page.locator('.backpack-slot-choices button').nth(1).click();
