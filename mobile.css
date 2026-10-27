@@ -41,3 +41,5 @@ body.touch-mode.exploring #inspect-place{display:none}
 @media(max-height:650px){body.touch-mode.exploring #line-panel{top:40%}body.touch-mode.exploring #line-panel .fishing{height:18dvh}}
 
 body.touch-mode.exploring.has-quest .status{top:calc(232px + env(safe-area-inset-top))}
+body.touch-mode.exploring .radio-chip:not([hidden]){right:10px;top:calc(206px + env(safe-area-inset-top));width:min(230px,calc(100vw - 20px))}
+body.touch-mode .radio-video{bottom:auto;top:calc(256px + env(safe-area-inset-top));left:auto;right:10px;width:160px;height:90px}

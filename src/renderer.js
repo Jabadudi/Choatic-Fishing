@@ -11,6 +11,7 @@ import {visibleNpcs,drawNpc,drawQuestMarker} from './npcs.js';
 import {questMarker} from './side-quests.js';
 import {nightAttackActors} from './story-action.js';
 import {drawFamiliar,drawShard} from './familiar-art.js';
+import {drawRadioBeside,radioBesideEli} from './radio-art.js';
 export function render(ctx,world,view){
  const {elapsed:t,player:p,bobber}=world;
  const actors=[];
@@ -21,9 +22,10 @@ export function render(ctx,world,view){
   for(const a of visibleWildlife(world,view))actors.push({y:a.y+14,ref:a});
   if(world.companion?.areaId===world.areaId)actors.push({y:world.companion.y+4,ref:world.companion});
   for(const drop of world.drops||[])if(drop.areaId===world.areaId)actors.push({y:drop.y+5,ref:drop});
+  const radio=radioBesideEli(world);if(radio)actors.push({y:radio.y+8,ref:radio});
   for(const n of visibleNpcs(world,view))actors.push({y:n.sortY??n.y+14,ref:n});
   for(const a of nightAttackActors(world))actors.push({y:a.y+14,ref:{...a,cutscene:true}});
-  drawDepthSorted(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500},actors,(c,ref)=>ref===p?drawPlayer(c,world):ref.cutscene?drawCutsceneActor(c,ref):ref===world.companion?drawFamiliar(c,ref,t):ref.entityType==='pickup'?(ref.item.familiar?drawShard(c,ref,t):drawDrop(c,ref,t)):ref.npc?drawNpc(c,ref,t):ref.species==='rabbit'?drawRabbit(c,ref):drawWildlife(c,ref));
+  drawDepthSorted(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500},actors,(c,ref)=>ref===p?drawPlayer(c,world):ref.radio?drawRadioBeside(c,ref,t):ref.cutscene?drawCutsceneActor(c,ref):ref===world.companion?drawFamiliar(c,ref,t):ref.entityType==='pickup'?(ref.item.familiar?drawShard(c,ref,t):drawDrop(c,ref,t)):ref.npc?drawNpc(c,ref,t):ref.species==='rabbit'?drawRabbit(c,ref):drawWildlife(c,ref));
   for(const n of visibleNpcs(world,view))drawQuestMarker(ctx,n,questMarker(world,n),t);
  }else{drawTerrain(ctx,world);drawRabbits(ctx,world,view);}
   for(const bot of world.actors.filter(actor=>actor!==world.player)){
