@@ -12,9 +12,11 @@ import {storyActionElapsed,NIGHT_ATTACK} from './story-action.js';
 const EMILIA_NAMES=['The old woman','The chief','Emilia'];
 export function mountStory({getWorld,onAdvance=()=>{},onSettings=()=>{},isSettingsOpen=()=>false}){
  const dialog=document.createElement('dialog');dialog.id='story-scene';dialog.setAttribute('aria-labelledby','story-title');
- dialog.innerHTML=`<div class="cutscene-picture" hidden><img id="story-image" alt=""><canvas id="story-creature" width="1000" height="500" hidden></canvas></div><div class="cutscene-veil"></div>${dialogueMarkup('story')}<div class="scene-toolbar"><button id="story-skip" hidden>Show dialogue</button><button id="story-settings">⚙ Settings</button></div><span class="scene-loading" hidden>Loading artwork…</span><div class="cutscene-video" hidden><video id="story-video" playsinline preload="auto"></video><button id="story-video-skip">Skip video ›</button></div>`;
+ dialog.innerHTML=`<div class="cutscene-picture" hidden><img id="story-image" alt=""><canvas id="story-creature" width="1000" height="500" hidden></canvas></div><div class="cutscene-veil"></div>${dialogueMarkup('story')}<div class="scene-toolbar"><button id="story-skip" hidden>Show dialogue</button><button id="story-admire" hidden>Admire art</button><button id="story-settings">⚙ Settings</button></div><span class="scene-loading" hidden>Loading artwork…</span><div class="cutscene-video" hidden><video id="story-video" playsinline preload="auto"></video><button id="story-video-skip">Skip video ›</button></div>`;
  document.body.append(dialog);const q=id=>dialog.querySelector('#'+id),picture=dialog.querySelector('.cutscene-picture'),veil=dialog.querySelector('.cutscene-veil'),box=dialog.querySelector('.dialogue-box'),img=q('story-image'),canvas=q('story-creature'),videoLayer=dialog.querySelector('.cutscene-video'),video=q('story-video');
- let key='',lastWorld=null,videoKey='',videoFailed=false,videoHeld=false,lastDialogue=null,historyPage=null,visualKey='',elapsed=0,ready=true,failed=false,loadingAt=0,lastTick=performance.now(),generation=0,canAdvance=true;
+ let key='',artId='',lastWorld=null,videoKey='',videoFailed=false,videoHeld=false,lastDialogue=null,historyPage=null,visualKey='',elapsed=0,ready=true,failed=false,loadingAt=0,lastTick=performance.now(),generation=0,canAdvance=true;
+ // Each artwork plays as a cutscene the first time only; later pages open straight on the dialogue, and Admire art brings it back.
+ const seenArt=new WeakMap(),seenFor=w=>{let s=seenArt.get(w);if(!s)seenArt.set(w,s=new Set());return s;};
  function model(){
   const w=getWorld();if(!w)return null;
   if(currentScene(w)){
@@ -38,17 +40,21 @@ export function mountStory({getWorld,onAdvance=()=>{},onSettings=()=>{},isSettin
  video.addEventListener('ended',()=>next(true));q('story-video-skip').onclick=()=>next(true);
  video.addEventListener('error',()=>{if(!videoKey)return;videoFailed=true;stopVideo(false);update();});
  q('story-settings').onclick=onSettings;q('story-skip').onclick=()=>{elapsed=1e6;update();};
+ q('story-admire').onclick=()=>{const m=model();if(!m||!artId)return;visualKey='';setupVisual(m,true);update();};
  dialog.addEventListener('cancel',e=>{e.preventDefault();closeConversation();});
  dialog.addEventListener('keydown',e=>{
   if(isSettingsOpen())return;
   if(['Enter','Space','ArrowRight'].includes(e.code)&&!e.repeat&&(!e.target.closest('button')||e.target.closest('#story-next'))){e.preventDefault();next();}
   if(e.code==='ArrowLeft'&&!e.repeat){e.preventDefault();previous();}e.stopPropagation();
  });
- function setupVisual(m){
-  const art=STORY_ART[m.scene.art],id=art?.asset||m.scene.creature||'';
-  if(id===visualKey)return;visualKey=id;elapsed=0;ready=!id;failed=false;loadingAt=performance.now();const token=++generation;
-  picture.hidden=!id;img.hidden=!art;canvas.hidden=!m.scene.creature;
-  if(art){img.alt=art.alt;img.src=spriteAssetUrl(art.asset);img.decode().then(()=>{if(token===generation)ready=true;}).catch(()=>{if(token===generation){ready=true;failed=true;}});}
+ function setupVisual(m,admire=false){
+  const art=STORY_ART[m.scene.art],id=art?.asset||m.scene.creature||'',seen=seenFor(m.w),moment=m.scene.artMoment||id;artId=id;
+  // Artwork already on screen stays behind the dialogue for the following pages.
+  if(id&&id===visualKey)return;
+  const show=id&&(admire||!seen.has(moment))?id:'';if(show)seen.add(moment);
+  if(show===visualKey)return;visualKey=show;elapsed=0;ready=!show;failed=false;loadingAt=performance.now();const token=++generation;
+  picture.hidden=!show;img.hidden=!(art&&show);canvas.hidden=!(m.scene.creature&&show);
+  if(art&&show){img.alt=art.alt;img.src=spriteAssetUrl(art.asset);img.decode().then(()=>{if(token===generation)ready=true;}).catch(()=>{if(token===generation){ready=true;failed=true;}});}
   else img.removeAttribute('src');
  }
  function stopVideo(clear=true){video.pause();videoLayer.hidden=true;videoHeld=false;holdMusic(false);if(clear){videoKey='';videoFailed=false;video.removeAttribute('src');video.load();}}
@@ -80,9 +86,9 @@ export function mountStory({getWorld,onAdvance=()=>{},onSettings=()=>{},isSettin
    q('story-next').firstChild.textContent=m.story?'Next › ':'Done ';if(!dialog.open)dialog.showModal();q('story-next').focus();
   }
   if(m.scene.video&&playVideo(m)){
-   canAdvance=false;dialog.dataset.phase='video';picture.style.opacity='0';veil.style.opacity='0';box.style.visibility='hidden';q('story-skip').hidden=true;dialog.querySelector('.scene-loading').hidden=true;return;
+   canAdvance=false;dialog.dataset.phase='video';picture.style.opacity='0';veil.style.opacity='0';box.style.visibility='hidden';q('story-skip').hidden=q('story-admire').hidden=true;dialog.querySelector('.scene-loading').hidden=true;return;
   }
-  if(m.scene.creature){
+  if(m.scene.creature&&visualKey){
    const c=canvas.getContext('2d');c.clearRect(0,0,1000,500);
    if(drawEntitySprite(c,m.scene.creature,{x:500,y:465,time:now/1000}))ready=true;
    else if(now-loadingAt>2500){ready=true;failed=true;}
@@ -92,6 +98,7 @@ export function mountStory({getWorld,onAdvance=()=>{},onSettings=()=>{},isSettin
   dialog.dataset.phase=ready?p.phase:'loading';picture.style.opacity=String(failed?0:p.art);veil.style.opacity=String(p.darkness);box.style.opacity=String(p.dialogue);
   box.style.visibility=p.dialogue>0&&ready&&!m.scene.action?'visible':'hidden';q('story-next').disabled=!canAdvance;q('story-previous').disabled=!canAdvance||!m.story||m.page===0;
   q('story-skip').hidden=!!m.scene.action||!visualKey||p.ready||!ready;dialog.querySelector('.scene-loading').hidden=ready;
+  q('story-admire').hidden=!!m.scene.action||!artId||!ready||!p.ready;
   drawDialoguePortrait(q('story-portrait'),m.speaker);
  }
  return {update,get open(){return dialog.open;}};
