@@ -10,7 +10,7 @@ import {SLOTS} from './spawn-tables.js';
 import {createCreature,listFor,restoreSpawns,spawnable} from './spawns.js';
 import {ANIMAL_TYPES} from './entities.js';
 import {MARKS_LIMIT} from './trade.js';
-export const SAVE_VERSION=6;
+export const SAVE_VERSION=7;
 export const SAVE_FORMAT='the-wilds-save';
 const clone=value=>JSON.parse(JSON.stringify(value));
 const fail=message=>{throw Error(message);};
@@ -22,7 +22,7 @@ function inspect(value,depth=0){
   if(['__proto__','prototype','constructor'].includes(key))fail('Save file contains invalid fields.');inspect(value[key],depth+1);
  }
 }
-function itemValid(item){return item&&typeof item.id==='string'&&item.id.length<100&&typeof item.name==='string'&&item.name.length>0&&item.name.length<120&&number(item.uses,1,100000)&&Number.isInteger(item.uses)&&(!item.description||typeof item.description==='string'&&item.description.length<2000);}
+function itemValid(item){return item&&typeof item.id==='string'&&item.id.length<100&&typeof item.name==='string'&&item.name.length>0&&item.name.length<120&&number(item.uses,1,100000)&&Number.isInteger(item.uses)&&(!item.description||typeof item.description==='string'&&item.description.length<2000)&&(item.count===undefined||number(item.count,1,100000)&&Number.isInteger(item.count));}
 const ANIMAL_FIELDS=['x','y','health','state','time','wait','alert','direction','seed','hopDuration','hopDistance','anger','attackerId','attackRemaining','attackCooldownRemaining','threat','deathRemaining'];
 export function captureSave(world,reason='autosave',now=Date.now()){
  if(!world?.adventure)fail('Only exploration progress can be saved.');
@@ -75,6 +75,8 @@ export function restoreSave(input){
  if(save.version===4){save.version=5;const story=save.state?.story;if(story?.scene&&Number.isInteger(story.page)&&pageForBeat(story.scene,story.page)>=0)story.page=pageForBeat(story.scene,story.page);}
  // Version 6 replaces fixed animals and their respawn timers with area spawn slots. Saved animals keep their slot, named by their id.
  if(save.version===5){save.version=6;for(const animal of save.state?.animals||[])if(animal&&typeof animal==='object'){animal.slotId=animal.id;delete animal.respawnRemaining;}}
+ // Version 7 stacks identical items in one backpack slot. Older backpacks hold one item per entry and are folded into stacks once restored.
+ const restack=save.version===6;if(restack)save.version=7;
  if(save.version!==SAVE_VERSION)fail('This save version is not supported. Your existing save was not changed.');
  if(!number(save.savedAt,0,1e16)||typeof save.journeyId!=='string'||save.journeyId.length>120)fail('Invalid save header.');
  const s=save.state;if(!s||!Object.hasOwn(AREAS,s.areaId))fail('Unknown saved area.');
@@ -91,8 +93,8 @@ export function restoreSave(input){
  if(!inv.items.every(itemValid)||new Set(inv.items.map(item=>item.id)).size!==inv.items.length)fail('Invalid backpack items.');
  const ids=new Map(inv.items.map(item=>[item.id,item]));const shortcuts=inv.hotbar.filter(Boolean);
  if(new Set(shortcuts).size!==shortcuts.length||shortcuts.some(id=>!ids.has(id)))fail('Invalid hotbar shortcuts.');
- w.inventory.storedItems=clone(inv.items);const stored=new Map(w.inventory.storedItems.map(item=>[item.id,item]));w.inventory.slots=inv.hotbar.map(id=>stored.get(id)||null);w.inventory.selected=inv.selected;
- // Reed marks arrived after save version 6 was set; saves without them start with an empty purse.
+ w.inventory.storedItems=clone(inv.items);const stored=new Map(w.inventory.storedItems.map(item=>[item.id,item]));w.inventory.slots=inv.hotbar.map(id=>stored.get(id)||null);w.inventory.selected=inv.selected;if(restack)w.inventory.restack();
+ // Reed marks arrived with save version 7's stacks; saves without them start with an empty purse.
  if(inv.marks!==undefined&&(!Number.isSafeInteger(inv.marks)||!number(inv.marks,0,MARKS_LIMIT)))fail('Invalid purse data.');w.inventory.marks=inv.marks??0;
  w.inventory.nextId=Math.max(inv.nextId,...inv.items.map(item=>/^item-\d+$/.test(item.id)?Number(item.id.slice(5))+1:1));
  const p=s.player;if(!p||!number(p.x,0,AREAS[s.areaId].width)||!number(p.y,0,AREAS[s.areaId].height)||!number(p.health,0,w.progression.maxHealth)||!number(p.angle,-100,100))fail('Invalid player data.');

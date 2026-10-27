@@ -16,8 +16,8 @@ test('caught sardine can be handed over from any slot, exactly once, for 15 addi
  w.inventory.receive({name:'Sardine'});w.inventory.assignHotbar(w.inventory.allItems[1].id,3);w.equip(3);const xp=w.progression.totalXp;
  assert.equal(xp,30);assert.match(questObjective(w),/1\/1/);w.player.health=40;w.inspect();
  assert.equal(w.progression.totalXp,xp+15);assert.equal(w.player.health,40);
- assert.equal(w.inventory.allItems[0].name,'Reed Spear');assert.equal(w.inventory.slots[1],null);
- assert.equal(w.inventory.allItems[1].name,'Sardine');assert.equal(w.inventory.selected,1);
+ assert.equal(w.inventory.allItems[0].name,'Reed Spear');assert.equal(w.inventory.slots[1].name,'Sardine');
+ assert.equal(w.inventory.countOf('Sardine'),1);assert.equal(w.inventory.selected,3);
  assert.equal(w.quests['mara-sardine'].status,'complete');assert.match(w.dialogue.text,/\+15 XP/);
  for(let i=0;i<10;i++)w.inspect();assert.equal(w.progression.totalXp,xp+15);assert.equal(w.inventory.allItems.length,2);
 });

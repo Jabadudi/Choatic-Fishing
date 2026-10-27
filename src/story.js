@@ -31,7 +31,7 @@ export const SUPPER=Object.freeze({Sardine:2,'Deer Meat':3});
 export const RACK={x:320,y:96};
 const PRE_STORM=['arrival','explore','fish'];
 export const rodReady=story=>!story||story.rod!==false;
-const carried=(w,name)=>w.inventory.allItems.filter(i=>i.name===name).length;
+const carried=(w,name)=>w.inventory.countOf(name);
 export const bowAvailable=w=>w.story?.stage==='fish'&&w.story.rod&&carried(w,'Sardine')>=SUPPER.Sardine;
 export function supperObjective(w){
  const s=w.story,fish=Math.min(SUPPER.Sardine,carried(w,'Sardine')),meat=Math.min(SUPPER['Deer Meat'],carried(w,'Deer Meat'));
@@ -140,7 +140,7 @@ export function inspectStory(w){
   if(s.stage!=='fish')w.message='Look around the cabin before settling in for the evening.';
   else if(missing.length)w.message=`Not enough for supper yet. Still needed: ${missing.map(([name,count])=>`${count-carried(w,name)} ${name}${name==='Sardine'&&count-carried(w,name)>1?'s':''}`).join(', ')}.`;
   else{
-   for(const [name,count] of Object.entries(SUPPER))for(const item of w.inventory.allItems.filter(i=>i.name===name).slice(0,count))w.inventory.removeId(item.id);
+   for(const [name,count] of Object.entries(SUPPER))w.inventory.removeName(name,count);
    practise(w,w.player,'cooking',COOKING_XP);show(w,'dinner');
   }
  }else if(prompt==='Rest until night'){

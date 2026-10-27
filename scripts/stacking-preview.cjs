@@ -1,0 +1,37 @@
+const {chromium}=require('playwright');
+const assert=require('node:assert/strict');
+(async()=>{
+ process.env.PORT='5187';await import('../server.mjs');
+ const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH});
+ const page=await browser.newPage({viewport:{width:1448,height:1086}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.route('**/src/main.js',async route=>{const response=await route.fetch();await route.fulfill({response,body:await response.text()+'\nwindow.__storyQA={get world(){return world;}};'});});
+ await page.goto('http://127.0.0.1:5187');
+ await page.evaluate(async()=>{const {World}=await import('/src/world.js'),{captureSave}=await import('/src/save-format.js'),{IndexedSaveStore}=await import('/src/save-store.js'),{LOOT_ITEMS}=await import('/src/loot.js');
+  const w=new World(()=>.2,{adventure:true,story:true});w.journeyId='stacking-browser';w.story.scene=null;
+  w.inventory.receive({name:'Hunting Bow',category:'weapons',description:'Grandpa’s recurve bow. Its quiver never seems to run dry. 22 damage per arrow.'});
+  for(let i=0;i<23;i++)w.inventory.receive({name:'Sardine',description:'A small snack. Restores 35 health.'});
+  for(const [name,count] of [['Deer Meat',7],['Deer Hide',4],['Deer Antlers',2],['Rabbit Meat',5],['Rabbit Pelt',3]])for(let i=0;i<count;i++)w.inventory.receive(LOOT_ITEMS[name]);
+  w.inventory.receive({name:'Reed Spear'});w.inventory.receive({name:'Reed Spear'});
+  w.inventory.receive({name:'Region Core',category:'quest-items',description:'The Region Core of Reedwater. It pulses in time with Eli’s heartbeat. To take its power, he would have to eat it.'});
+  const save=captureSave(w);await new IndexedSaveStore().update(()=>({journeyId:w.journeyId,current:save,writerId:null,manual:null,backups:[]}));});
+ await page.reload();await page.locator('#continue-journey:not([disabled])').click();await page.waitForFunction(()=>window.__storyQA?.world?.adventure);
+ await page.evaluate(()=>{for(const d of document.querySelectorAll('dialog[open]'))d.close();});
+ await page.locator('#open-backpack:not([hidden])').waitFor();await page.locator('#open-backpack').click();await page.locator('#backpack[open]').waitFor();await page.waitForTimeout(300);
+ // 48 items fit in 11 slots: a full stack of 20 sardines plus 3, and one slot per other kind.
+ assert.equal(await page.locator('.backpack-item').count(),11);
+ assert.match(await page.locator('#backpack .backpack-capacity').textContent(),/48 items in 11 slots/);
+ await page.locator('.backpack-item[title="Sardine"]').first().click();
+ assert.equal(await page.locator('.backpack-uses').innerText(),'20 in this stack');
+ await page.locator('.backpack-action-row button',{hasText:'Add to hotbar'}).click();await page.locator('.backpack-slot-choices button').nth(1).click();await page.waitForTimeout(200);
+ await page.locator('.backpack-item[title="Sardine"]').first().click();await page.waitForTimeout(200);
+ assert.ok(await page.locator('.backpack-action-row button',{hasText:'Discard all 20'}).count());
+ await page.screenshot({path:'screenshots/stacking-backpack.png'});
+ await page.locator('.backpack-filters button',{hasText:'Consumables'}).click();await page.waitForTimeout(200);
+ await page.screenshot({path:'screenshots/stacking-consumables.png'});
+ await page.locator('.backpack-filters button',{hasText:'All items'}).click();
+ await page.setViewportSize({width:390,height:844});await page.waitForTimeout(200);await page.screenshot({path:'screenshots/stacking-mobile.png'});
+ await page.setViewportSize({width:1448,height:1086});await page.locator('#backpack .backpack-close').click();await page.waitForTimeout(300);
+ assert.match(await page.locator('#slot-3 small').innerText(),/×20/);
+ await page.screenshot({path:'screenshots/stacking-hotbar.png'});
+ assert.deepEqual(errors,[]);console.log('Stacking browser checks passed: 48 items in 11 slots, stack details, discard all, hotbar count.');await browser.close();process.exit(0);
+})().catch(e=>{console.error(e);process.exit(1);});

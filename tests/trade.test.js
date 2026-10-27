@@ -6,6 +6,7 @@ import {WARES,MERCHANTS,buyWare,sellItem,sellValue,earnMarks,findMarks,marksLabe
 import {createVillageResidents} from '../src/village-life.js';
 import {codexEntry,codexLoot} from '../src/codex.js';
 import {WEAPONS} from '../src/combat.js';
+import {itemCount} from '../src/inventory.js';
 const fresh=()=>{const w=new World(()=>.1,{adventure:true});w.journeyId='trade-journey';return w;};
 const add=(w,name,extra={})=>{w.inventory.receive({name,...extra});return w.inventory.allItems.at(-1);};
 test('a new journey starts with an empty purse, and selling pays the listed value',()=>{
@@ -19,11 +20,11 @@ test('quest items and Grandpa’s bow are never for sale',()=>{
  for(const item of [lure,bow,key]){assert.equal(sellValue(item),0);assert.equal(sellItem(w,item.id),false);}
  assert.equal(w.inventory.allItems.length,3);assert.equal(w.inventory.marks,0);
 });
-test('buying spends marks, refuses when short, and bundles arrive as separate items',()=>{
+test('buying spends marks, refuses when short, and bundles arrive as one stack',()=>{
  const w=fresh();
  assert.equal(buyWare(w,'fisher',0),false);assert.match(w.message,/costs 4 marks\. You have 0 marks/);
  earnMarks(w,5);assert.ok(buyWare(w,'fisher',0));assert.equal(w.inventory.marks,1);
- assert.deepEqual(w.inventory.allItems.map(item=>item.name),['Sardine','Sardine','Sardine']);
+ assert.deepEqual(w.inventory.allItems.map(item=>[item.name,itemCount(item)]),[['Sardine',3]]);
  assert.equal(buyWare(w,'blacksmith',99),false);assert.equal(buyWare(w,'nobody',0),false);
  w.fishing.state='waiting';earnMarks(w,100);assert.equal(buyWare(w,'gardener',0),false);
 });
@@ -61,4 +62,9 @@ test('the purse survives a save, older saves start empty, and bad purses are ref
  const save=captureSave(w);assert.equal(restoreSave(save).inventory.marks,43);
  const old=structuredClone(save);delete old.state.inventory.marks;assert.equal(restoreSave(old).inventory.marks,0);
  for(const bad of [-1,1.5,'10',Infinity]){const broken=structuredClone(save);broken.state.inventory.marks=bad;assert.throws(()=>restoreSave(broken),/purse/);}
+});
+test('selling takes one from a stack, or the whole stack at once',()=>{
+ const w=fresh();w.inventory.receive({name:'Rabbit Pelt',count:5});const pelts=w.inventory.allItems[0];assert.equal(itemCount(pelts),5);
+ assert.ok(sellItem(w,pelts.id));assert.equal(itemCount(pelts),4);assert.equal(w.inventory.marks,3);assert.equal(w.message,'Sold Rabbit Pelt for 3 marks.');
+ assert.ok(sellItem(w,pelts.id,Infinity));assert.equal(w.inventory.allItems.length,0);assert.equal(w.inventory.marks,15);assert.equal(w.message,'Sold 4 Rabbit Pelt for 12 marks.');
 });

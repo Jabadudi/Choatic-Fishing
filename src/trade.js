@@ -1,4 +1,4 @@
-import {PERMANENT_ITEMS,itemCategory} from './inventory.js';
+import {PERMANENT_ITEMS,itemCategory,itemCount} from './inventory.js';
 // Willowback trades in reed marks: small copper discs stamped with a reed, struck for the delta's markets.
 // Marks are a plain count on the backpack, never an item, so they cannot be dropped, stacked or lost to a full hotbar.
 export const MARKS_LIMIT=1e6;
@@ -47,15 +47,16 @@ export function buyWare(world,merchant,index){
  const ware=WARES[merchant]?.[index];if(!ware||!tradeOpen(world))return false;
  if(marksOf(world)<ware.price){world.message=`${ware.item} costs ${marksLabel(ware.price)}. You have ${marksLabel(marksOf(world))}.`;return false;}
  world.inventory.marks-=ware.price;
- for(let i=0;i<(ware.count||1);i++)world.inventory.receive({name:ware.item,category:ware.category,description:ware.description});
+ world.inventory.receive({name:ware.item,category:ware.category,description:ware.description,count:ware.count||1});
  world.message=`Bought ${ware.count>1?`${ware.count} ${ware.item}`:ware.item} for ${marksLabel(ware.price)}.`;return true;
 }
-export function sellItem(world,id){
+// Sells one from a stack by default; pass Infinity to sell the whole stack.
+export function sellItem(world,id,amount=1){
  const item=world.inventory.allItems.find(item=>item.id===id),value=sellValue(item);
  if(!item||!tradeOpen(world))return false;
  if(!value){world.message=`${item.name} is not for sale.`;return false;}
- world.inventory.removeId(id);earnMarks(world,value);
- world.message=`Sold ${item.name} for ${marksLabel(value)}.`;return true;
+ const sold=itemCount(world.inventory.removeId(id,amount)),paid=earnMarks(world,value*sold);
+ world.message=`Sold ${sold>1?`${sold} ${item.name}`:item.name} for ${marksLabel(paid)}.`;return true;
 }
 // A few lost marks sometimes come up tangled in a landed catch.
 export const FOUND_MARKS={chance:.08,min:1,max:3};

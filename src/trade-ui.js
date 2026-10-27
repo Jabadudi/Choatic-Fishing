@@ -1,5 +1,6 @@
 import {WARES,MERCHANT_NAMES,marksLabel,marksOf,sellValue,buyWare,sellItem} from './trade.js';
 import {setItemIcon} from './item-icons.js';
+import {itemCount} from './inventory.js';
 const svg=(body,size=24)=>`<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
 // A reed mark: a copper disc stamped with a single reed.
 export const markIcon=(size=18)=>`<svg class="mark-icon" viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="#c98a4b" stroke="#6e431f" stroke-width="1.5"/><circle cx="12" cy="12" r="6.6" fill="none" stroke="#f0c690" stroke-width="1" opacity=".7"/><path d="M12 17.5V7.5M12 10c-1.6-.4-2.6-1.6-2.8-3 1.6.3 2.6 1.4 2.8 3zM12 12.5c1.6-.4 2.6-1.6 2.8-3-1.6.3-2.6 1.4-2.8 3z" fill="#f5d7a4" stroke="#6e431f" stroke-width=".8" stroke-linejoin="round"/></svg>`;
@@ -11,22 +12,30 @@ export function mountTrade({getWorld,onOpen,onClose}){
  document.body.append(dialog);
  const wares=dialog.querySelector('.trade-wares'),pack=dialog.querySelector('.trade-pack'),purse=dialog.querySelector('.trade-purse'),note=dialog.querySelector('.trade-note');
  let merchant=null,lastKey='';
- function row(list,{name,count,detail,price,label,disabled,title,action}){
+ function row(list,{name,count,detail,price,disabled,title,actions}){
   const item=el('li','trade-row'),icon=el('span','trade-icon');setItemIcon(icon,name);
   const text=el('span','trade-text');text.append(el('strong',null,count>1?`${name} ×${count}`:name),el('small',null,detail));
   const cost=el('span','trade-price');cost.innerHTML=markIcon(16);cost.append(String(price));cost.setAttribute('aria-label',marksLabel(price));
-  const button=el('button','trade-action',label);button.disabled=disabled;if(title)button.title=title;button.setAttribute('aria-label',`${label} ${name} for ${marksLabel(price)}`);
-  button.onclick=()=>{action();note.textContent=getWorld().message;lastKey='';refresh();};
-  item.append(icon,text,cost,button);list.append(item);
+  const buttons=el('span','trade-buttons');
+  for(const [label,action,aria] of actions){
+   const button=el('button','trade-action',label);button.disabled=disabled;if(title)button.title=title;button.setAttribute('aria-label',aria);
+   button.onclick=()=>{action();note.textContent=getWorld().message;lastKey='';refresh();};buttons.append(button);
+  }
+  item.append(icon,text,cost,buttons);list.append(item);
  }
  function refresh(){
   const world=getWorld(),marks=marksOf(world),items=world.inventory.allItems;
-  const key=JSON.stringify([merchant,marks,items.map(item=>[item.id,item.uses])]);if(key===lastKey)return;lastKey=key;
+  const key=JSON.stringify([merchant,marks,items.map(item=>[item.id,item.uses,itemCount(item)])]);if(key===lastKey)return;lastKey=key;
   purse.innerHTML=`${markIcon(20)}<span></span>`;purse.querySelector('span').textContent=`Your purse: ${marksLabel(marks)}`;
   wares.replaceChildren();pack.replaceChildren();
-  WARES[merchant].forEach((ware,index)=>row(wares,{name:ware.item,count:ware.count,detail:ware.description,price:ware.price,label:'Buy',disabled:marks<ware.price,title:marks<ware.price?`You need ${marksLabel(ware.price-marks)} more`:'',action:()=>buyWare(world,merchant,index)}));
+  WARES[merchant].forEach((ware,index)=>row(wares,{name:ware.item,count:ware.count,detail:ware.description,price:ware.price,disabled:marks<ware.price,title:marks<ware.price?`You need ${marksLabel(ware.price-marks)} more`:'',actions:[['Buy',()=>buyWare(world,merchant,index),`Buy ${ware.count>1?`${ware.count} ${ware.item}`:ware.item} for ${marksLabel(ware.price)}`]]}));
   const sellable=items.filter(item=>sellValue(item)>0);
-  for(const item of sellable)row(pack,{name:item.name,detail:item.description||'',price:sellValue(item),label:'Sell',disabled:false,action:()=>sellItem(world,item.id)});
+  for(const item of sellable){
+   const count=itemCount(item),value=sellValue(item),actions=[['Sell',()=>sellItem(world,item.id),`Sell one ${item.name} for ${marksLabel(value)}`]];
+   // Stacks can go in one trade.
+   if(count>1)actions.push([`All ×${count}`,()=>sellItem(world,item.id,Infinity),`Sell all ${count} ${item.name} for ${marksLabel(value*count)}`]);
+   row(pack,{name:item.name,count,detail:count>1?`${marksLabel(value)} each. ${item.description||''}`:item.description||'',price:value,disabled:false,actions});
+  }
   if(!sellable.length)pack.append(el('li','trade-empty','Nothing the merchant wants. Hunt or fish for goods to sell.'));
  }
  function open(id){

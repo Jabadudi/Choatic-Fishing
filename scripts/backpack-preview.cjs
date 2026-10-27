@@ -26,6 +26,6 @@ const assert=require('node:assert/strict');
  await page.setViewportSize({width:390,height:844});await page.waitForTimeout(200);
  const box=await page.locator('#backpack').boundingBox();assert.ok(box.x>=0&&box.x+box.width<=390,'mobile width');
  await page.screenshot({path:'screenshots/backpack-mobile.png'});
- await page.locator('.backpack-close').click();assert.equal(await page.locator('#backpack[open]').count(),0);
+ await page.locator('#backpack .backpack-close').click();assert.equal(await page.locator('#backpack[open]').count(),0);
  assert.deepEqual(errors,[]);console.log('Backpack browser checks passed: 5x5 grid, Region Core art, hotbar assignment, category filter, mobile, close.');await browser.close();process.exit(0);
 })().catch(e=>{console.error(e);process.exit(1);});

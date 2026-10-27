@@ -5,7 +5,7 @@ import {mountSettings} from './settings-ui.js';
 import {observeGameSounds,playSfx} from './sfx.js';
 import {mountStory} from './story-ui.js';
 import {currentScene,storyPrompt,cabinDamaged,rodReady} from './story.js';
-import {PERMANENT_ITEMS} from './inventory.js';
+import {amountLabel} from './inventory.js';
 import {paintStoryMap} from './story-map.js';
 import {drawStoryWeather} from './story-weather.js';
 import {mountSaveUI} from './save-ui.js';
@@ -135,9 +135,9 @@ function updateUI(){
  for(const kind of ['tidal','whirlpool'])$('fire-'+kind).disabled=busy||world.player.cooldown>0||world.progression.specials[kind]===0||world.matchState!=='playing';
  $('world-state').textContent=world.matchState==='countdown'?'GET READY':active?'REELING':busy?'WAITING FOR A BITE':'EXPLORING';
  $('catch-bar').style.bottom=`${(f.bar||0)*100}%`;$('target').style.bottom=`${(f.target||0)*100}%`;$('progress-fill').style.height=active?`${f.progress*100}%`:'0%';$('percent').textContent=active?`${Math.floor(f.progress*100)}%`:'0%';
- for(let slot=3;slot<=7;slot++){const button=$(`slot-${slot}`),item=inventory.slots[slot-2];setItemIcon(button.querySelector('.slot-icon'),item?.name);button.querySelector('strong').textContent=item?.name||'Empty';button.querySelector('small').textContent=item?`${PERMANENT_ITEMS.has(item.name)?'Unlimited':`${item.uses} uses`} · ${bindingLabel('use')}`:'Assign from backpack';button.setAttribute('aria-label',`Slot ${slot}: ${item?.name||'empty'}${item?', '+item.uses+' uses':''}`);button.classList.toggle('selected',inventory.selected===slot);button.setAttribute('aria-pressed',inventory.selected===slot);button.title=item?.description||'Open backpack to assign an item';}
+ for(let slot=3;slot<=7;slot++){const button=$(`slot-${slot}`),item=inventory.slots[slot-2];setItemIcon(button.querySelector('.slot-icon'),item?.name);button.querySelector('strong').textContent=item?.name||'Empty';button.querySelector('small').textContent=item?`${amountLabel(item)} · ${bindingLabel('use')}`:'Assign from backpack';button.setAttribute('aria-label',`Slot ${slot}: ${item?.name||'empty'}${item?', '+amountLabel(item):''}`);button.classList.toggle('selected',inventory.selected===slot);button.setAttribute('aria-pressed',inventory.selected===slot);button.title=item?.description||'Open backpack to assign an item';}
  for(const slot of [1,2]){const button=$(slot===1?'slot-rod':'slot-item');button.classList.toggle('selected',inventory.selected===slot);button.setAttribute('aria-pressed',inventory.selected===slot);}
- $('item-name').textContent=inventory.slots[0]?.name||'Empty slot';setItemIcon($('item-icon'),inventory.slots[0]?.name);$('slot-rod').querySelector('small').textContent=rodReady(world.story)?'Permanent':'On the rack';$('item-uses').textContent=inventory.slots[0]?`${PERMANENT_ITEMS.has(inventory.slots[0].name)?'Unlimited':`${inventory.slots[0].uses} uses`} · Click or ${bindingLabel('use')}`:'Assign from backpack';
+ $('item-name').textContent=inventory.slots[0]?.name||'Empty slot';setItemIcon($('item-icon'),inventory.slots[0]?.name);$('slot-rod').querySelector('small').textContent=rodReady(world.story)?'Permanent':'On the rack';$('item-uses').textContent=inventory.slots[0]?`${amountLabel(inventory.slots[0])} · Click or ${bindingLabel('use')}`:'Assign from backpack';
  $('status').textContent=active?`Move along shore · Hold ${bindingLabel('reel')} / mouse to reel · ${bindingLabel('fish')} to abandon.`:busy?`Waiting for a bite… ${bindingLabel('fish')} / Esc to abandon.`:world.message||`Walk to shore, aim into water, press ${bindingLabel('fish')}.`;
  if(touchMode){$('status').textContent=$('status').textContent.replace('M opens the area map.','Tap the map to explore.');if(active)$('status').textContent='Hold Reel to raise the bar · Release to lower it';else if(busy)$('status').textContent='Waiting for a bite… Tap Cancel to abandon.';else if(!world.message)$('status').textContent='Drag the right stick to move · Tap water to aim · Use to cast';}
  if(world.adventure){

@@ -26,8 +26,8 @@ const assert=require('node:assert/strict');
  await w(()=>__qa.world.inspect());await page.locator('#trade-sheet[open]').waitFor();await page.waitForTimeout(300);
  assert.equal(await page.locator('#trade-title').textContent(),'The Blacksmith');
  assert.equal(await page.locator('.trade-wares .trade-action:disabled').count(),4);
- assert.equal(await page.locator('.trade-pack .trade-row').count(),6,'the bow is not offered');await shot('02-blacksmith-stall');
- for(let i=0;i<3;i++){await page.locator('.trade-pack .trade-action').first().click();await page.waitForTimeout(80);}
+ assert.equal(await page.locator('.trade-pack .trade-row').count(),5,'the hides stack and the bow is not offered');await shot('02-blacksmith-stall');
+ for(let i=0;i<3;i++){await page.locator('.trade-pack .trade-row').first().locator('.trade-action').first().click();await page.waitForTimeout(80);}
  assert.equal(await w(()=>__qa.world.inventory.marks),7+5+5+8);await shot('03-after-selling');
  await page.locator('.trade-wares .trade-action').first().click();await page.waitForTimeout(150);
  assert.equal(await w(()=>__qa.world.inventory.marks),5);assert.ok(await w(()=>__qa.world.inventory.allItems.some(i=>i.name==='Hunting Knife')));
