@@ -31,13 +31,13 @@ const assert=require('node:assert/strict');
  assert.equal(await page.locator('#story-scene .cutscene-picture').evaluate(e=>e.hidden||getComputedStyle(e).opacity==='0'),true);
  await page.locator('#story-admire').click();await page.waitForTimeout(2000);await shot('04-admire-art');assert.ok(await visible('story-skip'));
  await page.locator('#story-skip').click();await page.waitForTimeout(600);
- // Chapter 3 creatures: each illustration shows once, then the dialogue box.
- await page.evaluate(async()=>{const {drawEntitySprite}=await import('/src/sprites.js'),c=document.createElement('canvas').getContext('2d');for(let i=0;i<100&&!['rimejaw-illustration','flitlynx-illustration'].every(id=>drawEntitySprite(c,id));i++)await new Promise(r=>setTimeout(r,100));});
+ // Chapter 3: the blacksmith scene plays once, then stays dimmed behind the dialogue; reopening goes straight to the dialogue box.
  await page.evaluate(()=>{const w=window.__storyQA.world;w.story.scene='ch3-beasts';w.story.page=0;w.storySuspended=false;});
- await page.locator('#story-title').filter({hasText:'The guardian at the door'}).waitFor({state:'attached'});await page.locator('#story-skip').waitFor();await page.waitForTimeout(1500);await shot('05-rimejaw-first');
- await page.locator('#story-skip').click();await page.waitForTimeout(600);await page.locator('#story-next').click();await page.locator('#story-skip').waitFor();await page.waitForTimeout(1500);await shot('06-flitlynx-first');
+ await page.locator('#story-title').filter({hasText:'The guardian at the door'}).waitFor({state:'attached'});await page.locator('#story-skip').waitFor();await page.waitForTimeout(1500);await shot('05-blacksmith-first');
  await page.locator('#story-skip').click();await page.waitForTimeout(600);await page.locator('#story-next').click();await page.waitForTimeout(400);
- await shot('07-rimejaw-again-dialogue');assert.ok(!await visible('story-skip'));assert.ok(await visible('story-admire'));
+ await shot('06-blacksmith-next-page');assert.ok(!await visible('story-skip'));assert.ok(await visible('story-admire'));
+ await page.locator('#story-close').click();await page.waitForTimeout(300);await page.evaluate(()=>{window.__storyQA.world.storySuspended=false;});await page.waitForTimeout(400);
+ await shot('07-blacksmith-reopened-dialogue');assert.ok(!await visible('story-skip'));assert.ok(await visible('story-admire'));
  await page.setViewportSize({width:844,height:390});await page.waitForTimeout(300);await shot('08-phone-landscape');
  assert.deepEqual(errors,[]);console.log('Cutscene-once preview passed.');
  await browser.close();process.exit(0);

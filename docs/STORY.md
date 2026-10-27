@@ -88,6 +88,7 @@ Files in `assets/story/` were downloaded from the user’s Drive folder **The Wi
 | `rimejaw-sheet.png`, `rimejaw-pose.png` | `sprites/creatures/rimejaw/` | Blacksmith guardian animation and discovery artwork |
 | `flitlynx-sheet.png`, `flitlynx-pose.png` | `sprites/creatures/flitlynx/` | Roof creature animation and discovery artwork |
 | `mara.png` | `characters/mara/mara_reference-sheet.png` | Character reference and Chapter 2 dialogue portrait |
+| `blacksmith.png` | `art/cutscenes/vol1/ch03/ch03_01_blacksmith-guardians.png` | Chapter 3 Rimejaw, Flitlynx and blacksmith |
 | `emilia-hearth.png` | `art/cutscenes/vol1/ch04/ch04_01_emilia-hearth.png` | Chapter 4 meeting in the red house |
 | `emilia.png` | `art/characters/emilia/emilia_reference-sheet.png` | Emilia’s dialogue portrait |
 | `eli-vision.mp4` | Netanel’s Chapter 5 vision video, made from `story/video-prompts/ch05-eli-vision.md` and `ch05-eli-voiceover.md`, converted from QuickTime (HEVC) to H.264/AAC MP4 with fast start | Chapter 5 vision cutscene |

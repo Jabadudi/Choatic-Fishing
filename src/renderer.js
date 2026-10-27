@@ -3,6 +3,7 @@ import {cabinDamaged,pendingScene} from './story.js';
 import {visibleWildlife} from './wildlife.js';
 import {drawWildlife,drawAnimalStatus} from './wildlife-art.js';
 import {drawEntitySprite} from './sprites.js';
+import {facingFor} from './entities.js';
 import {drawTerrain} from './terrain.js';
 import {drawWilds,drawWildsLabels,drawDepthSorted,drawExplorer,INTERIOR_AREAS,areaFor} from './wilds.js';
 import {drawRabbits,drawRabbit,visibleRabbits} from './rabbits.js';
@@ -76,10 +77,12 @@ function drawDefeat(ctx,world,view){
 }
 function drawPlayer(ctx,world){
  drawBobber(ctx,world);
+ // With a line out, Eli faces the cast.
+ const p=world.bobber?{...world.player,facing:facingFor(Math.cos(world.player.angle),Math.sin(world.player.angle))}:world.player;
  // Eli stays down in the mud from the collapse until the blackout, and after a monster brings him down.
  const fallen=!!world.defeat||world.story?.scene==='storm'&&['collapse','rescue'].includes(pendingScene(world)?.action);
- if(fallen){const p=world.player;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(Math.PI/2);drawExplorer(ctx,{...p,x:0,y:0},world.elapsed||0);ctx.restore();}
- else drawExplorer(ctx,world.player,world.elapsed||0);
+ if(fallen){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(Math.PI/2);drawExplorer(ctx,{...p,x:0,y:0,steppedAt:undefined},world.elapsed||0);ctx.restore();}
+ else drawExplorer(ctx,p,world.elapsed||0);
 }
 // Cutscene actors are poses computed by story-action.js. Visible silhouettes stand in while sheets load.
 function drawCutsceneActor(ctx,a){

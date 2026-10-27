@@ -60,3 +60,10 @@ test('casts land at the chosen water point at different distances and stay there
 });
 
 
+test('walking records the facing Eli is drawn with, and standing still keeps it',async()=>{
+ const {facingFor}=await import('../src/entities.js');
+ assert.deepEqual([facingFor(1,0),facingFor(-1,.5),facingFor(0,1),facingFor(.2,-1),facingFor(1,1)],['right','left','down','up','right']);
+ const w=new World(()=>0,{botCount:0,countdownSeconds:0}),still={right:false,left:false,up:false,down:false,aim:{x:0,y:0},held:false};
+ w.update(1/60,{...still,up:true});assert.equal(w.player.facing,'up');const at=w.player.steppedAt;
+ w.update(1/60,still);assert.equal(w.player.facing,'up');assert.equal(w.player.steppedAt,at);
+});

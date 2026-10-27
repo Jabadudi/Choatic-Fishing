@@ -1,5 +1,6 @@
 import {currentScene,CABIN} from './story.js';
 import {walkable} from './wilds.js';
+import {facingFor} from './entities.js';
 // Scripted story motion runs in fixed simulation steps; rendering only observes it.
 const playback=new WeakMap(),night=new WeakMap();
 // Night attack staging. About 8 world units to a foot: the walker appears 20 feet behind Eli and Moonfang strikes at 10.
@@ -42,7 +43,7 @@ export function updateStoryAction(world,dt){
   const goal=state.route[state.waypoint],p=world.player,speed=world.areaId==='landing'?NIGHT_ATTACK.fleeSpeed:180;
   if(goal){const dx=goal[0]-p.x,dy=goal[1]-p.y,d=Math.hypot(dx,dy),travel=Math.min(d,speed*step);
    if(d<1)state.waypoint++;
-   else{const x=p.x+dx/d*travel,y=p.y+dy/d*travel;if(walkable(x,y,world.areaId)){p.x=x;p.y=y;p.angle=Math.atan2(dy,dx);p.walkTime=(p.walkTime||0)+travel*.14;}else state.waypoint++;}
+   else{const x=p.x+dx/d*travel,y=p.y+dy/d*travel;if(walkable(x,y,world.areaId)){p.x=x;p.y=y;p.angle=Math.atan2(dy,dx);p.facing=facingFor(dx,dy);p.steppedAt=world.elapsed;p.walkTime=(p.walkTime||0)+travel*.14;}else state.waypoint++;}
   }else if(world.areaId==='cabin'){world.areaId='landing';p.x=CABIN.x;p.y=1570;state.route=SHORE_ROUTE;state.waypoint=0;}
   else{world.advanceStory();playback.delete(world);}
  }else if(action==='collapse'?approached:state.elapsed>=(DURATIONS[action]??2.2)){world.advanceStory();playback.delete(world);}

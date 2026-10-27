@@ -28,7 +28,7 @@ export function drawDialoguePortrait(canvas,speaker={name:'Eli',spriteId:'eli'})
   if(drawSprite(c,{...SPRITES['emilia-portrait'],scale:.51},{x:128,y:15}))return;
  }else if(speaker.creature){if(drawEntitySprite(c,speaker.spriteId,{x:128,y:210,time:0}))return;}
  c.save();c.scale(4,4);
- if(speaker.npc)drawNpc(c,{...speaker,x:32,y:43,name:''},0);else drawExplorer(c,{x:32,y:43,angle:0,spriteId:'eli'},0);
+ if(speaker.npc)drawNpc(c,{...speaker,x:32,y:43,name:''},0);else drawExplorer(c,{x:32,y:41,angle:0,spriteId:'eli'},0);
  c.restore();
 }
 

@@ -22,7 +22,14 @@ export const SPRITES={
  // A portrait crop, not a gameplay actor or hitbox.
  'mara-portrait':{asset:'story/mara.png',frames:[[850,130,500,620]],scale:.12,anchor:[.5,0],offset:[0,0]},
  'emilia-portrait':{asset:'story/emilia.png',frames:[[930,60,500,620]],scale:.12,anchor:[.5,0],offset:[0,0]},
- eli:{asset:null,scale:1,anchor:[.5,1],offset:[0,15],fallback:{hat:false,hair:'#49382d',shirt:'#b6ad8f'}},
+ // Made by scripts/prepare-eli-sprites.py from art/sprites/characters/eli/. Rows: walk right, left, toward the camera, away, then the throw.
+ // This 4-direction, 8-frame walk is the standard layout for every moving entity.
+ eli:{asset:'story/eli-sheet.png',frameSize:[126,120],columns:8,scale:.5,anchor:[.5,1],offset:[0,15],mirror:'right',mirrorDirections:{left:'right'},fallback:{hat:false,hair:'#49382d',shirt:'#b6ad8f'},animations:{
+  idle:{frames:[16]},'idle:down':{frames:[16]},'idle:up':{frames:[24]},'idle:right':{frames:[37]},
+  'walk:right':{frames:[0,1,2,3,4,5,6,7],fps:10},'walk:left':{frames:[8,9,10,11,12,13,14,15],fps:10},
+  'walk:down':{frames:[16,17,18,19,20,21,22,23],fps:10},'walk:up':{frames:[24,25,26,27,28,29,30,31],fps:10},
+  throw:{frames:[32,33,34,35,36,37],fps:8,loop:false}
+ }},
  'emilia-story':{asset:null,scale:1,anchor:[.5,1],offset:[0,14],fallback:{coat:'#3d5a8a',hair:'#d8d4cc',skin:'#c08a63'}},
  'mara-story':{asset:null,scale:1,anchor:[.5,1],offset:[0,14],fallback:{hair:'#3d2b24',coat:'#6b4b35'}},
  // Original Drive sheet has a green matte. The shared loader removes it once.
@@ -69,6 +76,7 @@ export const STORY_ART={
  rescue:{asset:'story/rescue.png',alt:'A gray Moonfang wolf tackles the shadowy attacker beside the cabin during the storm.'},
  campfire:{asset:'story/campfire.png',alt:'Eli’s rescuer cooks fish beside a campfire with the ruined cabin behind her.'},
  mara:{asset:'story/mara.png',alt:'Mara, with dark hair, a leather vest, and a scratch across her cheek.'},
+ blacksmith:{asset:'story/blacksmith.png',alt:'A frost-scaled Rimejaw guards the blacksmith’s doorway while a winged Flitlynx licks its paw on the roof and the smith hammers at his anvil.'},
  hearth:{asset:'story/emilia-hearth.png',alt:'Emilia pours tea at the hearth of the red house while a scarred swordsman sits by the round table.'}
 };
 // Furniture and props, cut from the AI sheets in art/sprites/props/ by scripts/prepare-prop-sprites.py.

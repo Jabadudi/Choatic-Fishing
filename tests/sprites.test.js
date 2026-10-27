@@ -8,9 +8,9 @@ import {createNpcs,drawNpc} from '../src/npcs.js';
 import {releaseFingerprint} from '../build-version.mjs';
 
 function fakeCanvas(){const ops=[];return {ops,ctx:new Proxy({drawImage(...a){ops.push(['image',...a]);},translate(...a){ops.push(['translate',...a]);},scale(...a){ops.push(['scale',...a]);}},{get:(o,k)=>k in o?o[k]:()=>{},set:(o,k,v)=>(o[k]=v,true)})};}
-function withImages(fn){
+function withImages(fn,[width,height]=[256,256]){
  const original=globalThis.Image;let loads=0;
- globalThis.Image=class {constructor(){loads++;this.complete=true;this.naturalWidth=256;this.naturalHeight=256;}set src(v){this.url=v;}};
+ globalThis.Image=class {constructor(){loads++;this.complete=true;this.naturalWidth=width;this.naturalHeight=height;}set src(v){this.url=v;}};
  clearSpriteCache();try{fn(()=>loads);}finally{globalThis.Image=original;clearSpriteCache();}
 }
 test('animation clips support directions, state fallback and nonlooping final poses',()=>{
@@ -73,3 +73,16 @@ test('every furniture prop ships an image and fits its box from the bottom centr
  });
  assert.equal(drawProp(fakeCanvas().ctx,'well',{x:0,y:0,w:10,h:10}),false);
 });
+const eliPng=readFileSync(new URL(`../assets/${SPRITES.eli.asset}`,import.meta.url));
+test('Eli walks in four directions from one sheet and borrows the right-facing stand when facing left',()=>withImages(()=>{
+ const d=SPRITES.eli,w=eliPng.readUInt32BE(16),h=eliPng.readUInt32BE(20);
+ assert.deepEqual([w,h],[d.frameSize[0]*8,d.frameSize[1]*5]);
+ for(const clip of Object.values(d.animations))for(const i of clip.frames){const [x,y,fw,fh]=frameRect(d,i,w,h);assert.ok(x+fw<=w&&y+fh<=h);}
+ for(const [dir,row] of [['right',0],['left',1],['down',2],['up',3]])assert.deepEqual(d.animations[`walk:${dir}`].frames,[0,1,2,3,4,5,6,7].map(i=>row*8+i));
+ assert.equal(frameIndex(d,'walk',.1,{direction:'left'}),9);
+ const draw=(state,direction)=>{const c=fakeCanvas();drawEntitySprite(c.ctx,'eli',{state,direction,facingX:direction==='left'?-1:1});return {flipped:c.ops.some(o=>o[0]==='scale'&&o[1]===-1),crop:c.ops.find(o=>o[0]==='image').slice(2,4)};};
+ assert.deepEqual(draw('walk','left'),{flipped:false,crop:frameRect(d,8,w,h).slice(0,2)});
+ assert.deepEqual(draw('idle','left'),{flipped:true,crop:frameRect(d,37,w,h).slice(0,2)});
+ assert.deepEqual(draw('idle','right'),{flipped:false,crop:frameRect(d,37,w,h).slice(0,2)});
+ assert.deepEqual(draw('throw','left'),{flipped:true,crop:frameRect(d,32,w,h).slice(0,2)});
+},[eliPng.readUInt32BE(16),eliPng.readUInt32BE(20)]));

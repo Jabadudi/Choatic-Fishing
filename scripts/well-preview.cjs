@@ -22,7 +22,12 @@ const assert=require('node:assert/strict');
  assert.match(await page.locator('#inspect-place').textContent(),/Look into the Wishing Well/);await shot('00-well-prompt');
  await w(()=>__qa.world.inspect());await page.locator('#well-sheet[open]').waitFor();await page.waitForTimeout(300);
  assert.equal(await page.locator('.well-tab[aria-selected="true"]').textContent(),'Artifact pool');await shot('01-well-open');
- await page.locator('.well-draw[data-count="10"]').click();await page.waitForTimeout(700);
+ await page.locator('.well-draw[data-count="10"]').click();
+ // The summon plays first: Eli at the well, then the cavern with fish, and the cards only after it ends or is skipped.
+ await page.locator('.well-summon:not([hidden])').waitFor();assert.equal(await page.locator('.well-card').count(),0);
+ await page.waitForTimeout(900);await shot('02a-summon-throw');await page.waitForTimeout(4200);await shot('02b-summon-fish');
+ await page.locator('.well-skip').click();await page.waitForTimeout(700);
+ assert.equal(await page.locator('.well-summon').isHidden(),true);
  assert.equal(await page.locator('.well-card').count(),10);assert.equal(await w(()=>__qa.world.well.stones),0);
  assert.ok(await page.locator('.well-card[data-rarity="rare"],.well-card[data-rarity="epic"],.well-card[data-rarity="legendary"]').count()>=1);
  await shot('02-artifact-ten-draw');
@@ -31,7 +36,7 @@ const assert=require('node:assert/strict');
  assert.equal(await page.locator('.well-buy').isDisabled(),true);
  await page.locator('.well-tab[data-pool="familiars"]').click();await page.waitForTimeout(150);
  assert.equal(await page.locator('.well-card').count(),0);
- await page.locator('.well-draw[data-count="1"]').click();await page.locator('.well-draw[data-count="1"]').click();await page.waitForTimeout(600);
+ for(let i=0;i<2;i++){await page.locator('.well-draw[data-count="1"]').click();await page.waitForTimeout(300);await page.locator('.well-skip').click();await page.waitForTimeout(300);}
  assert.equal(await page.locator('.well-card').count(),1);
  const shards=await w(()=>Object.values(__qa.world.familiars.shards).reduce((a,b)=>a+b,0));assert.ok(shards>=2);
  await shot('03-familiar-draw');
@@ -40,10 +45,13 @@ const assert=require('node:assert/strict');
  await page.locator('#backpack .backpack-close').click();await page.waitForTimeout(200);
  await w(()=>{__qa.world.well.stones=10;});
  await page.setViewportSize({width:390,height:844});await page.waitForTimeout(300);
- await w(()=>__qa.world.inspect());await page.locator('#well-sheet[open]').waitFor();await page.locator('.well-draw[data-count="10"]').click();await page.waitForTimeout(700);await shot('04-well-mobile');
+ await w(()=>__qa.world.inspect());await page.locator('#well-sheet[open]').waitFor();await page.locator('.well-draw[data-count="10"]').click();await page.waitForTimeout(6000);await shot('04a-summon-mobile');await page.locator('.well-skip').click();await page.waitForTimeout(700);await shot('04-well-mobile');
  await page.keyboard.press('Escape');await page.waitForTimeout(200);
  await page.setViewportSize({width:844,height:390});await page.waitForTimeout(300);
  await w(()=>{__qa.world.well.stones=1;__qa.world.inspect();});await page.locator('#well-sheet[open]').waitFor();await page.waitForTimeout(300);await shot('05-well-phone-landscape');
+ await page.locator('.well-tab[data-pool="artifacts"]').click();await page.locator('.well-draw[data-count="1"]').click();await page.waitForTimeout(1000);await shot('05a-summon-phone-landscape');
+ // Closing the window mid-summon stops it; the stone is already spent and the artifact already in the backpack.
+ await page.keyboard.press('Escape');await page.waitForTimeout(200);assert.equal(await w(()=>__qa.well.summoning),false);assert.equal(await w(()=>__qa.world.well.stones),0);
  assert.deepEqual(errors,[]);console.log('Well preview passed.');
  await browser.close();process.exit(0);
 })().catch(e=>{console.error(e);process.exit(1);});

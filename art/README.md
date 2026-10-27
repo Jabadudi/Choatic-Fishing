@@ -8,8 +8,9 @@ Generated concept art, references, cutscenes and sprite sheets for Volume 1. The
 | `characters/` | Reference sheets (front, side, face) for Mara, Emilia, Eli, Drayfus and Croshelda. |
 | `sprites/creatures/` | Rimejaw, Flitlynx and Moonfang: a single pose and an animation sheet each. |
 | `sprites/mobs/` | Nightwalker (shadow walker) enemy: reference sheet, pose and animation sheet. |
-| `sprites/characters/` | Playable and NPC character sprites: Drayfus so far. |
+| `sprites/characters/` | Playable and NPC character sprites: Eli (walk and throw sheets, the style and walk layout every moving entity follows) and Drayfus. |
 | `sprites/props/sheets/` | Five furniture and prop sheets (cabin and lodge, chief's house and shared pieces, village, training yard and blacksmith, inn and homes), 20 pieces each on a green background. |
+| `sprites/wishing-well/` | The Wishing Well summon: Eli's single and ten-stone throws, the well and the cavern under it, the five rarity fish, Eli's jump shot for Epic-or-better draws, and the stone, splash and sparkle effects. |
 | `sprites/items/sheets/` | Four item icon sheets (tools and weapons, food and wares, materials and trophies, shards and quest items) on a green background. |
 | `references/` | World and area maps used for the region layouts. |
 
@@ -24,6 +25,10 @@ The generated sheets are not on a regular grid yet, and most use a flat green (`
 
 Sheet rows are idle, walk or fly, run where present, attack, then extras (howl, guard, jump, flinch, defeat).
 
+## Eli
+
+`scripts/prepare-eli-sprites.py` cuts Eli's walk sheet (4 directions × 8 frames) and throw sheet (6 frames) into `assets/story/eli-sheet.png`. See [docs/ENTITY-SPRITES.md](../docs/ENTITY-SPRITES.md) for the layout new entities should follow.
+
 ## Furniture and props
 
 `scripts/prepare-prop-sprites.py OUT_DIR` cuts the five prop sheets into single sprites with the green removed. The pieces the game uses are resized to at most 320 px, saved as WebP in `assets/props/` and listed in `PROPS` in `src/sprite-definitions.js`. Scenes call `drawProp(ctx,id,{x,y,w,h})`, which fits the image inside the box with its bottom centre at `x,y`. Until an image loads, or if it is missing, the scene draws its original shapes, and collision never depends on the artwork. The training yard, blacksmith, inn and home pieces are cut and approved but not used yet.
@@ -31,3 +36,7 @@ Sheet rows are idle, walk or fly, run where present, attack, then extras (howl, 
 ## Item icons
 
 `scripts/prepare-item-icons.py` cuts the four item sheets into square 128 px WebP icons in `assets/items/`. `ITEM_ART` in `src/item-icons.js` maps each item name to its icon; an item without one falls back to its text symbol. The familiar shard icons also draw the shards lying on the ground, and `reed-mark.webp` is the coin shown beside every price and purse.
+
+## Wishing Well summon
+
+`scripts/prepare-well-summon.py` cuts the sheets in `sprites/wishing-well/` into strips in `assets/well-summon/`: Eli lined up by his feet, each fish by its snout (frames 1-4 swim, frame 5 bites), and the two scenes resized to 960 by 540. It prints the cell sizes and anchors that `SUMMON_ART` in `src/well-summon.js` uses, so paste them in after cutting a new sheet. The village scene sits on top of the cavern, joined by the flooded well shaft, and the camera follows the stones from Eli's hand down into the cavern in one shot. Until the art loads the summon draws its original pixel shapes.

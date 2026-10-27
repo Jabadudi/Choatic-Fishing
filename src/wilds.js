@@ -365,7 +365,9 @@ export function drawWildsLabels(ctx,world,view){
  for(const exit of area.exits){const horizontal=exit.edge==='east'||exit.edge==='west',x=horizontal?(exit.edge==='east'?area.width-160:160):(exit.from+exit.to)/2,y=horizontal?(exit.from+exit.to)/2:exit.edge==='north'?110:(interior(id)?area.height-45:area.height-200);parchmentTag(ctx,x,y-12,`${{north:'↑',south:'↓',west:'←',east:'→'}[exit.edge]} ${exit.label}`,1);}
 }
 export function drawExplorer(ctx,p,time=0){
- if(drawEntitySprite(ctx,p.spriteId||'player',{x:p.x,y:p.y,state:p.animationState||'idle',time}))return;
+ // Simulation records the last step's facing and time; a recent step plays the walk for that direction.
+ const walking=time-(p.steppedAt??-Infinity)<.12,direction=p.facing||'down';
+ if(drawEntitySprite(ctx,p.spriteId||'player',{x:p.x,y:p.y,state:p.animationState||(walking?'walk':'idle'),time,direction,facingX:direction==='left'?-1:1}))return;
  const art=SPRITES[p.spriteId]?.fallback||{};
  const x=Math.round(p.x),y=Math.round(p.y),step=Math.sin(p.walkTime||0)*2;
  ctx.fillStyle='rgba(30,40,50,.3)';ctx.beginPath();ctx.ellipse(x+5,y+14,15,5,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#423d3c';ctx.fillRect(x-8,y+6+step,6,9);ctx.fillRect(x+3,y+6-step,6,9);
