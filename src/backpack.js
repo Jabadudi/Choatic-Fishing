@@ -1,4 +1,4 @@
-import {ITEM_CATEGORIES,backpackItems,canUseItem,PERMANENT_ITEMS} from './inventory.js';
+import {ITEM_CATEGORIES,backpackItems,canUseItem,PERMANENT_ITEMS,stackable,itemCount,amountLabel} from './inventory.js';
 import {setItemIcon} from './item-icons.js';
 const svg=(body,size=24)=>`<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
 const CATEGORY_ICONS={
@@ -31,24 +31,27 @@ export function mountBackpack({getWorld,onOpen,onClose,onAction}){
   // Keep a selection visible like the reference design: fall back to the first item in the current category.
   if(!entries.some(({item})=>item.id===selectedId)){selectedId=entries[0]?.item.id??null;choosingSlot=false;}
   const key=JSON.stringify([inventory.allItems,inventory.slots,inventory.selected,category,selectedId,choosingSlot]);if(key===lastKey)return;lastKey=key;
-  dialog.querySelector('.backpack-capacity').textContent=`${inventory.allItems.length} ${inventory.allItems.length===1?'item':'items'} stored | ${inventory.slots.filter(Boolean).length} / 6 hotbar slots assigned`;
+  const total=inventory.allItems.reduce((sum,item)=>sum+itemCount(item),0),stacks=inventory.allItems.length;
+  dialog.querySelector('.backpack-capacity').textContent=`${total} ${total===1?'item':'items'} in ${stacks} ${stacks===1?'slot':'slots'} | ${inventory.slots.filter(Boolean).length} / 6 hotbar slots assigned`;
   for(const filter of filters.children)filter.setAttribute('aria-pressed',filter.dataset.category===category);
   items.replaceChildren();actions.replaceChildren();
   const selected=inventory.allItems.find(item=>item.id===selectedId);
   dialog.querySelector('.backpack-details').classList.toggle('empty',!selected);setItemIcon(artIcon,selected?.name);
   if(selected){
    const heading=document.createElement('h3');heading.textContent=selected.name;
-   const uses=document.createElement('small');uses.className='backpack-uses';uses.textContent=PERMANENT_ITEMS.has(selected.name)?'Unlimited uses':`${selected.uses} ${selected.uses===1?'use':'uses'}`;
+   const uses=document.createElement('small');uses.className='backpack-uses';uses.textContent=PERMANENT_ITEMS.has(selected.name)?'Unlimited uses':stackable(selected)?`${itemCount(selected)} in this stack`:amountLabel(selected);
    const divider=document.createElement('span');divider.className='backpack-divider';divider.setAttribute('aria-hidden','true');
    const description=document.createElement('p');description.textContent=selected.description||'Choose what to do with this item.';
    const place=document.createElement('strong');place.className='backpack-equip';const hotbarSlot=inventory.slots.findIndex(entry=>entry?.id===selected.id);place.textContent=hotbarSlot>=0?`Hotbar ${hotbarSlot+2}`:'In backpack';
    const actionRow=document.createElement('div');actionRow.className='backpack-action-row';
    actions.append(heading,uses,divider,description,place,actionRow);
    const addAction=(label,action)=>{const control=document.createElement('button');control.textContent=label;control.onclick=action;actionRow.append(control);return control;};
-   const execute=action=>{if(onAction(selected.id,action)){selectedId=null;choosingSlot=false;lastKey='';if(action==='use'||action==='drop')dialog.close();else refresh();}else{setNote(getWorld().fishing.state!=='idle'?'Finish or abandon fishing before managing items.':getWorld().message||'Action unavailable. Let your attack recover.');}};
+   const execute=action=>{const previous=selected.id;if(onAction(selected.id,action)){selectedId=null;choosingSlot=false;lastKey='';if(action==='use'||action==='drop')dialog.close();else{if(action==='discard')selectedId=getWorld().inventory.allItems.some(item=>item.id===previous)?previous:null;refresh();}}else{setNote(getWorld().fishing.state!=='idle'?'Finish or abandon fishing before managing items.':getWorld().message||'Action unavailable. Let your attack recover.');}};
    const usable=canUseItem(selected);
-   const use=addAction('Use',()=>execute('use'));use.disabled=!usable;use.title=usable?'Use one charge':'This item has no direct use yet';
-   addAction('Throw into world',()=>execute('drop'));addAction('Discard',()=>execute('discard')).className='danger';
+   const use=addAction('Use',()=>execute('use'));use.disabled=!usable;use.title=usable?stackable(selected)?'Use one from the stack':'Use one charge':'This item has no direct use yet';
+   const several=itemCount(selected)>1;
+   addAction(several?'Throw one':'Throw into world',()=>execute('drop'));addAction(several?'Discard one':'Discard',()=>execute('discard')).className='danger';
+   if(several)addAction(`Discard all ${itemCount(selected)}`,()=>execute('discard-all')).className='danger';
    const hotbar=addAction('Add to hotbar',()=>{choosingSlot=!choosingSlot;lastKey='';refresh();});hotbar.setAttribute('aria-expanded',choosingSlot);
    if(choosingSlot){
     const title=document.createElement('p');title.textContent='Choose a hotbar slot. Replaced items stay in the backpack.';actions.append(title);
@@ -66,9 +69,9 @@ export function mountBackpack({getWorld,onOpen,onClose,onAction}){
   for(let index=0;index<cells;index++){
    const item=entries[index]?.item;
    if(!item){const slot=document.createElement('span');slot.className='backpack-cell';slot.setAttribute('aria-hidden','true');items.append(slot);continue;}
-   const card=document.createElement('button');card.className='backpack-cell backpack-item';card.setAttribute('aria-label',`Select ${item.name}, ${item.uses} ${item.uses===1?'use':'uses'}`);card.setAttribute('aria-pressed',selectedId===item.id);card.title=item.name;
+   const card=document.createElement('button');card.className='backpack-cell backpack-item';card.setAttribute('aria-label',`Select ${item.name}, ${stackable(item)?`${itemCount(item)} carried`:amountLabel(item)}`);card.setAttribute('aria-pressed',selectedId===item.id);card.title=item.name;
    const icon=document.createElement('span');icon.className='backpack-item-icon';setItemIcon(icon,item.name);
-   const count=document.createElement('small');count.className='backpack-count';count.textContent=PERMANENT_ITEMS.has(item.name)?'∞':item.uses;
+   const count=document.createElement('small');count.className='backpack-count';count.textContent=PERMANENT_ITEMS.has(item.name)?'∞':stackable(item)?`×${itemCount(item)}`:item.uses;count.classList.toggle('backpack-stack',stackable(item)&&itemCount(item)>1);
    const hotbarSlot=inventory.slots.findIndex(entry=>entry?.id===item.id);
    card.append(icon,count);if(hotbarSlot>=0){const badge=document.createElement('small');badge.className='backpack-hotbar-badge';badge.textContent=hotbarSlot+2;badge.title=`Hotbar ${hotbarSlot+2}`;card.append(badge);}
    card.onclick=()=>{selectedId=item.id;choosingSlot=false;lastKey='';refresh();if(matchMedia('(max-width: 860px)').matches)actions.scrollIntoView({block:'nearest',behavior:'smooth'});};items.append(card);

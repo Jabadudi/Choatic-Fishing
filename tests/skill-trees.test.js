@@ -64,8 +64,8 @@ test('fishing talents shorten the wait, speed the meter, slow the drain and can 
  const held=perks=>{const f=new Fishing(()=>.5);f.cast();f.update(10,false);f.bar=.4;f.update(.1,false,perks);return f.progress;};
  assert.ok(held({reel:.24})>held({}),'reel speeds the meter');
  learnAll(p,'fishing','strong-reel',1);learnAll(p,'fishing','river-sense',1);learnAll(p,'fishing','slack-line',1);learnAll(p,'fishing','lucky-haul',1);
- const before=w.inventory.allItems.length;w.fishing.state='caught';w.fishing.result={name:'Sardine'};w.advanceFishing(w.player,0,false);
- assert.equal(w.inventory.allItems.length,before+2);assert.match(w.message,/Two Sardines caught/);
+ const before=w.inventory.countOf('Sardine');w.fishing.state='caught';w.fishing.result={name:'Sardine'};w.advanceFishing(w.player,0,false);
+ assert.equal(w.inventory.countOf('Sardine'),before+2);assert.match(w.message,/Two Sardines caught/);
 });
 
 test('hunting talents hit harder, take less from animals, heal on a kill and improve drops',()=>{

@@ -16,7 +16,7 @@ test('catches go into separate storage and a full hotbar allows continued real f
   for(let i=0;i<5000&&w.fishing.state!=='idle';i++){
    const f=w.fishing;w.advanceFishing(w.player,1/120,f.state==='reeling'&&f.bar+f.velocity*.2+.135<f.target);
   }
-  assert.equal(w.catches.length,n+1);assert.equal(w.inventory.allItems.length,7+n);
+  assert.equal(w.catches.length,n+1);assert.equal(w.inventory.allItems.length,7);assert.equal(w.inventory.countOf('Sardine'),n+1);
  }
  assert.deepEqual(w.inventory.slots.map(item=>item.id),ids);assert.equal(w.progression.totalXp,90);
 });

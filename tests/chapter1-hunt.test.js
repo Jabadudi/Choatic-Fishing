@@ -16,7 +16,7 @@ function toSupper(w){
  finish(w);go(w,'cabin',520,150);w.inspect();finish(w);go(w,'cabin',110,270);w.inspect();finish(w);assert.equal(w.story.stage,'fish');
 }
 const catchFish=w=>{w.fishing.state='caught';w.fishing.result={name:'Sardine'};w.advanceFishing(w.player,0,false);};
-const count=(w,name)=>w.inventory.allItems.filter(i=>i.name===name).length;
+const count=(w,name)=>w.inventory.countOf(name);
 const deer=w=>w.wildlife.filter(a=>a.id.startsWith('deer-meadow'));
 const hunt=(w,a)=>{w.areaId=a.areaId;while(a.health>0)damageAnimal(w,a,25,w.player,0);};
 
