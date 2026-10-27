@@ -47,11 +47,16 @@ const PATH_ROADS=[[[600,1800],[600,1330],[520,1000],[650,650],[600,320],[600,0]]
 const pathsFor=id=>id==='marsh'?MARSH_ROADS:id==='village'?VILLAGE_ROADS:id==='crossroads'?CROSSROADS_ROADS:id==='windchime'?PATH_ROADS:ROADS;
 export function hash(x,y,s=0){let h=Math.imul(x+WORLD.seed,374761393)^Math.imul(y+s,668265263);h=Math.imul(h^(h>>>13),1274126177);return ((h^(h>>>16))>>>0)/4294967296;}
 export function ellipseDistance(x,y,l){return (Math.hypot((x-l.x)/l.rx,(y-l.y)/l.ry)-1)*Math.min(l.rx,l.ry);}
-function lineDistance(x,y,lines){let d=Infinity;for(const line of lines)for(let i=1;i<line.length;i++){const a=line[i-1],b=line[i],dx=b[0]-a[0],dy=b[1]-a[1],t=Math.max(0,Math.min(1,((x-a[0])*dx+(y-a[1])*dy)/(dx*dx+dy*dy)));d=Math.min(d,Math.hypot(x-a[0]-t*dx,y-a[1]-t*dy));}return d;}
+// Segments whose bounding box is already farther than the best match are skipped; the nearest segment, and so the result, is unchanged.
+const segmentBoxes=new WeakMap();
+function boxesFor(lines){let boxes=segmentBoxes.get(lines);if(!boxes){boxes=[];for(const line of lines)for(let i=1;i<line.length;i++){const a=line[i-1],b=line[i];boxes.push([a,b,Math.min(a[0],b[0]),Math.max(a[0],b[0]),Math.min(a[1],b[1]),Math.max(a[1],b[1])]);}segmentBoxes.set(lines,boxes);}return boxes;}
+function lineDistance(x,y,lines){let d=Infinity;for(const [a,b,minX,maxX,minY,maxY] of boxesFor(lines)){if(minX-x>d+1e-6||x-maxX>d+1e-6||minY-y>d+1e-6||y-maxY>d+1e-6)continue;const dx=b[0]-a[0],dy=b[1]-a[1],t=Math.max(0,Math.min(1,((x-a[0])*dx+(y-a[1])*dy)/(dx*dx+dy*dy)));d=Math.min(d,Math.hypot(x-a[0]-t*dx,y-a[1]-t*dy));}return d;}
 export const roadDistance=(x,y,id='landing')=>lineDistance(x,y,pathsFor(id));
 export const riverDistance=(x,y)=>lineDistance(x,y,RIVERS);
 export const coastDistance=(x,y)=>y-(1910+Math.sin(x*.004)*35+Math.sin(x*.009)*12);
-export function waterDistance(x,y,id='landing'){return interior(id)?Infinity: id==='marsh'?marshWaterDistance(x,y):id==='village'?villageWaterDistance(x,y):id==='crossroads'?crossroadsWaterDistance(x,y):id==='windchime'?Infinity:Math.min(-coastDistance(x,y),...LAKES.map(l=>ellipseDistance(x,y,l)),riverDistance(x,y)-36);}
+export function waterDistance(x,y,id='landing'){return interior(id)?Infinity: id==='marsh'?marshWaterDistance(x,y):id==='village'?villageWaterDistance(x,y):id==='crossroads'?crossroadsWaterDistance(x,y):id==='windchime'?Infinity:landingWaterDistance(x,y);}
+// The shore, lakes and river, without allocating per call: this runs for every step of every animal.
+function landingWaterDistance(x,y){let d=-coastDistance(x,y);for(const l of LAKES)d=Math.min(d,ellipseDistance(x,y,l));return Math.min(d,riverDistance(x,y)-36);}
 export const isWater=(x,y,id='landing')=>waterDistance(x,y,id)<0;
 export const nearWater=(x,y,id='landing')=>waterDistance(x,y,id)<=110;
 export function regionAt(x,y,id='landing'){
@@ -78,7 +83,15 @@ export function surfaceAt(x,y,id='landing'){
  if(roadDistance(x,y,id)<29)return 'path';
  return waterDistance(x,y,id)<80?'sand':'ground';
 }
+// Scenery is fixed per grid cell, so each cell is worked out once per area. Collision checks look up nine cells per step.
+const scenery=new Map();
 export function sceneryAt(gx,gy,id='landing'){
+ let cells=scenery.get(id);if(!cells)scenery.set(id,cells=new Map());
+ const key=gx*65536+gy;let o=cells.get(key);
+ if(o===undefined){o=findScenery(gx,gy,id);if(o)Object.freeze(o);cells.set(key,o);}
+ return o;
+}
+function findScenery(gx,gy,id){
  if(interior(id)||id==='landing'&&cabinClearing(gx*72+36,gy*72+36))return null;
  if(id==='marsh')return null;
  const x=gx*72+12+hash(gx,gy)*48,y=gy*72+12+hash(gx,gy,3)*48,r=hash(gx,gy,9),region=regionAt(x,y,id);
@@ -155,8 +168,8 @@ function staticArea(ctx,left,top,width,height,id){
  if(id==='chief-house'){drawChiefHouse(ctx);return;}
  // The lodge's light follows the story, so drawWilds paints it each frame instead of caching it.
  if(id==='guest-lodge')return;
- const texturedGrass=id!=='marsh'&&drawGrassBase(ctx,left,top,width,height,clearTerrainCache);
- const dirt=pathPattern(ctx,clearTerrainCache);
+ const texturedGrass=id!=='marsh'&&drawGrassBase(ctx,left,top,width,height,markStale);
+ const dirt=pathPattern(ctx,markStale);
  for(let y=Math.floor(top/8)*8;y<top+height;y+=8)for(let x=Math.floor(left/8)*8;x<left+width;x+=8){
   const px=x+4,py=y+4,wet=waterDistance(px,py,id),road=roadDistance(px,py,id),r=hash(x,y,4),palette=COLORS[regionAt(px,py,id)];
   // Visual fringes soften the shoreline and trail without changing collision geometry.
@@ -191,16 +204,40 @@ function staticArea(ctx,left,top,width,height,id){
 
  }
 }
-const chunks=new Map(),CHUNK=512,MAX_CHUNKS=30;
+const chunks=new Map(),CHUNK=512,MAX_CHUNKS=40,AHEAD=CHUNK/2;
 export const clearTerrainCache=()=>chunks.clear();
-onPropLoad(clearTerrainCache);
+// Image loads arrive in bursts, so they mark the cache stale and the next frame repaints once instead of once per image.
+let stale=false;const markStale=()=>{stale=true;};
+onPropLoad(markStale);
 export const cachedChunkCount=()=>chunks.size;
+function buildChunk(key,cx,cy,id){
+ const canvas=document.createElement('canvas');canvas.width=CHUNK;canvas.height=CHUNK;const c=canvas.getContext('2d');c.translate(-cx*CHUNK,-cy*CHUNK);staticArea(c,cx*CHUNK,cy*CHUNK,CHUNK,CHUNK,id);
+ chunks.set(key,canvas);if(chunks.size>MAX_CHUNKS)chunks.delete(chunks.keys().next().value);return canvas;
+}
 function drawChunks(ctx,view,id){
+ if(stale){stale=false;chunks.clear();}
+ shownArea=id;
  for(let cy=Math.floor(view.top/CHUNK);cy<=Math.floor(view.bottom/CHUNK);cy++)for(let cx=Math.floor(view.left/CHUNK);cx<=Math.floor(view.right/CHUNK);cx++){
   const key=`${id}:${cx},${cy}`;let canvas=chunks.get(key);
-  if(!canvas){canvas=document.createElement('canvas');canvas.width=CHUNK;canvas.height=CHUNK;const c=canvas.getContext('2d');c.translate(-cx*CHUNK,-cy*CHUNK);staticArea(c,cx*CHUNK,cy*CHUNK,CHUNK,CHUNK,id);chunks.set(key,canvas);if(chunks.size>MAX_CHUNKS)chunks.delete(chunks.keys().next().value);}
+  if(!canvas)canvas=buildChunk(key,cx,cy,id);
   else{chunks.delete(key);chunks.set(key,canvas);}ctx.drawImage(canvas,cx*CHUNK,cy*CHUNK);
  }
+ prefetchChunks(view,id);
+}
+// Chunks just beyond the screen edge are painted one at a time while the browser is idle,
+// so walking onto new ground draws from the cache instead of painting several chunks in one frame.
+let prefetching=false,shownArea=null;
+const idle=typeof window==='undefined'?null:window.requestIdleCallback?fn=>window.requestIdleCallback(fn,{timeout:400}):fn=>setTimeout(fn,40);
+function prefetchChunks(view,id){
+ if(prefetching||!idle)return;
+ const area=areaFor(id),midX=(view.left+view.right)/2,midY=(view.top+view.bottom)/2;let best=null,bestDistance=Infinity;
+ for(let cy=Math.max(0,Math.floor((view.top-AHEAD)/CHUNK));cy<=Math.min(Math.floor((area.height-1)/CHUNK),Math.floor((view.bottom+AHEAD)/CHUNK));cy++)for(let cx=Math.max(0,Math.floor((view.left-AHEAD)/CHUNK));cx<=Math.min(Math.floor((area.width-1)/CHUNK),Math.floor((view.right+AHEAD)/CHUNK));cx++){
+  if(chunks.has(`${id}:${cx},${cy}`))continue;
+  const distance=Math.hypot((cx+.5)*CHUNK-midX,(cy+.5)*CHUNK-midY);if(distance<bestDistance){bestDistance=distance;best=[cx,cy];}
+ }
+ if(!best)return;
+ prefetching=true;
+ idle(()=>{prefetching=false;const key=`${id}:${best[0]},${best[1]}`;if(!stale&&shownArea===id&&!chunks.has(key))buildChunk(key,best[0],best[1],id);});
 }
 // Crowns are painted once into a sprite and drawn per frame with a gentle sway; trunks stay in the chunk cache.
 const crowns=new Map();

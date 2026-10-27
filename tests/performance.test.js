@@ -27,3 +27,8 @@ import {walkable,LAND,LAKES,lakeDistance,DECOR} from '../src/terrain.js';
 test('spatial collision lookup matches full scenery scan across the map',()=>{
  for(let x=140;x<1650;x+=17)for(let y=100;y<1250;y+=19){const expected=x>=LAND.left+15&&x<=LAND.right-15&&y>=LAND.top+15&&y<=LAND.bottom-15&&!LAKES.some(l=>lakeDistance(x,y,l)<15)&&!DECOR.some(o=>o.kind!=='bush'&&Math.hypot(x-o.x,y-o.y)<o.r+14);assert.equal(walkable(x,y),expected);}
 });
+import {MARSH_BOARDS,onMarshDeck,segmentDistance} from '../src/marsh.js';
+test('boxed marsh boardwalk lookup matches checking every plank segment',()=>{
+ const full=(x,y)=>MARSH_BOARDS.some(board=>board.points.some((point,i)=>i>0&&segmentDistance(x,y,board.points[i-1],point)<=board.width/2));
+ for(let x=0;x<2400;x+=7)for(let y=0;y<2000;y+=9)assert.equal(onMarshDeck(x,y),full(x,y));
+});

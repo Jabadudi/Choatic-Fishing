@@ -10,7 +10,10 @@ function imageSource(img,definition,url){
  const c=surface.getContext('2d',{willReadFrequently:true});
  try{c.drawImage(img,0,0);const pixels=c.getImageData(0,0,surface.width,surface.height),d=pixels.data;
   for(let i=0;i<d.length;i+=4)if(greenMattePixel(d[i],d[i+1],d[i+2]))d[i+3]=0;
-  c.putImageData(pixels,0,0);keyedImages.set(url,surface);return surface;
+  c.putImageData(pixels,0,0);
+  // The keying canvas is kept in memory for pixel reads; a plain copy can live on the GPU, so drawing it each frame needs no upload.
+  const keyed=document.createElement('canvas');keyed.width=surface.width;keyed.height=surface.height;keyed.getContext('2d').drawImage(surface,0,0);
+  keyedImages.set(url,keyed);return keyed;
  }catch{keyedImages.set(url,null);return null;}
 }
 export function spriteAssetUrl(asset){
@@ -78,5 +81,10 @@ export function drawTiles(ctx,id,{x,y,w,h,tw,th}){
  tw??=th*img.naturalWidth/img.naturalHeight;th??=tw*img.naturalHeight/img.naturalWidth;
  if(pattern.setTransform&&typeof DOMMatrix!=='undefined')pattern.setTransform(new DOMMatrix().translate(x,y).scale(tw/img.naturalWidth,th/img.naturalHeight));
  ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.fillStyle=pattern;ctx.fillRect(x,y,w,h);ctx.restore();return true;
+}
+// Scenery props are small; fetching them all early lets the terrain cache repaint once, before the player reaches them.
+export function preloadProps(){
+ if(typeof Image==='undefined')return;
+ for(const id of Object.keys(PROPS)){const url=spriteAssetUrl(PROPS[id]);if(images.has(url))continue;const img=new Image();img.onload=()=>propListeners.forEach(fn=>fn());images.set(url,img);img.src=url;}
 }
 export const clearSpriteCache=()=>{images.clear();keyedImages.clear();};
