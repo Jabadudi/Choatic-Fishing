@@ -23,7 +23,7 @@ body.touch-mode.exploring #explore-hint{display:none}
 body.touch-mode.exploring #inspect-place{bottom:calc(259px + env(safe-area-inset-bottom));font-size:10px;max-width:calc(100vw - 24px);white-space:normal}
 body.touch-mode.exploring #exploration-hud{left:10px;top:calc(10px + env(safe-area-inset-top));width:166px;padding:10px}
 body.touch-mode.exploring #region-name{font-size:15px}body.touch-mode.exploring .exploration-kicker{font-size:7px}
-body.touch-mode.exploring #timed-upgrades{left:10px;top:calc(119px + env(safe-area-inset-top));width:166px}
+body.touch-mode.exploring #timed-upgrades{left:10px;top:calc(154px + env(safe-area-inset-top));width:166px}
 body.touch-mode.exploring #open-atlas{right:10px;top:calc(10px + env(safe-area-inset-top));padding:4px}
 body.touch-mode.exploring #mini-atlas{width:98px;height:74px}body.touch-mode.exploring #open-atlas span{font-size:7px;letter-spacing:1px;margin:4px}
 body.touch-mode.exploring #music-icon{right:10px;top:calc(119px + env(safe-area-inset-top));width:32px;height:32px}
