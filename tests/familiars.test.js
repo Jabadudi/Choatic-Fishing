@@ -8,6 +8,8 @@ import {captureSave,restoreSave,importantProgress} from '../src/save-format.js';
 import {damageAnimal,updateWildlife} from '../src/wildlife.js';
 import {codexEntry,codexFamiliar,codexLoot} from '../src/codex.js';
 import {walkable} from '../src/wilds.js';
+import {SPAWN_AREAS} from '../src/spawn-tables.js';
+import {rollArea} from '../src/spawns.js';
 const fresh=()=>{const w=new World(()=>.2,{adventure:true});w.journeyId='familiar-test';return w;};
 const give=(w,id,n)=>{for(let i=0;i<n;i++)absorbShard(w,id);};
 
@@ -90,13 +92,15 @@ test('a hunted animal can drop its shard on the ground',()=>{
  assert.ok(w.drops.some(d=>d.item.familiar==='deer'),w.drops.map(d=>d.item.name).join());
 });
 
-test('every hunted species comes back after a while, so shards can keep dropping',()=>{
+test('every hunted species can come back from its area spawner, so shards can keep dropping',()=>{
  const w=fresh();
- for(const a of w.animals){
-  assert.ok(a.respawnSeconds>0,a.species);
-  w.areaId=a.areaId;w.player.x=a.x-60;w.player.y=a.y;damageAnimal(w,a,1000,w.player,0);assert.equal(a.health,0);
-  a.deathRemaining=0;updateWildlife(w,a.respawnSeconds+1);assert.equal(a.health,a.maxHealth,`${a.id} respawned`);
+ for(const species of ['rabbit','deer','turtle','eel'])assert.ok(Object.values(SPAWN_AREAS).some(area=>Object.keys(area.tables.land||{}).concat(Object.keys(area.tables.water||{})).includes(species)),species);
+ const species=new Set();
+ for(let round=0;round<15;round++){
+  for(const a of w.animals.filter(a=>a.areaId==='landing'&&a.health>0)){w.areaId=a.areaId;w.player.x=a.x-60;w.player.y=a.y;damageAnimal(w,a,1000,w.player,0);assert.equal(a.health,0);a.deathRemaining=0;}
+  w.player.x=10;w.player.y=10;for(const a of rollArea(w,'landing'))species.add(a.species);
  }
+ for(const kind of ['rabbit','deer','turtle','eel'])assert.ok(species.has(kind),kind);
 });
 
 test('the follower trails the player and reappears beside him after changing area',()=>{

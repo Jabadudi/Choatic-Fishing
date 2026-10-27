@@ -12,6 +12,7 @@ import {updateBot} from './bots.js';
 import {LAND,CHESTS,LAKES,lakeDistance,isWater,nearWater,walkable} from './terrain.js';
 import * as Wilds from './wilds.js';
 import {createRabbits,updateRabbits} from './rabbits.js';
+import {createSpawns,updateSpawns} from './spawns.js';
 import {createNpcs,nearbyNpc,updateDialogue} from './npcs.js';
 import {createFamiliars,absorbShard,updateFamiliar,familiarAction} from './familiars.js';
 import {noteEncounters} from './codex-discovery.js';
@@ -36,7 +37,7 @@ export class World {
   }
   this.story=adventure&&story?createStory():null;this.adventure=adventure;this.drops=[];this.nextDropId=1;
   if(adventure)this.player.inventory=new Inventory({separateStorage:true});
-  this.rabbits=adventure?createRabbits():[];this.wildlife=adventure?createWildlife():[];this.hunting={total:0,bySpecies:{}};this.familiars=createFamiliars();this.companion=null;this.codex=new Set();
+  this.rabbits=adventure?createRabbits():[];this.wildlife=adventure?createWildlife():[];this.hunting={total:0,bySpecies:{},shiny:{seen:{},hunted:{}}};this.spawns=adventure?createSpawns():null;this.familiars=createFamiliars();this.companion=null;this.codex=new Set();
   this.npcs=adventure?createNpcs():[];this.dialogue=null;this.quests=createQuests();
   if(adventure){this.areaId='landing';Object.assign(this.player,Wilds.SPAWN);this.bots=[];this.actors=[this.player];this.humans=[this.player];this.chests=[];this.countdownRemaining=0;this.matchState='playing';this.discovered=new Set();this.message='Welcome to Reedwater Landing. Follow the north trail to walk into Windchime Path. M opens the area map.';}
   if(adventure)this.player.progression.characterStats=true;
@@ -180,6 +181,7 @@ export class World {
   updateAnimalCombat(this,dt);
   updateRabbits(this,dt);
   updateWildlife(this,dt);
+  updateSpawns(this,dt);
   updateFamiliar(this,dt);
   updateDialogue(this,dt);
   updateStory(this,dt,Wilds.walkable);

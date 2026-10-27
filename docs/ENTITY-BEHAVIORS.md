@@ -18,7 +18,14 @@
 - Melee checks facing and reach. Projectiles use swept collision to hit small moving targets between simulation steps; they can travel over water.
 - Rabbits use their existing hop controller; other animals use `src/wildlife.js`. Land animals respect navigable ground; turtles and eels stay in water.
 - Injured animals show health and a behavior label. Passive animals flee; defensive deer retaliate only after injury. Death fades the body and grants species XP to the Hunting skill (and the main level) exactly once per life, separately from PvP eliminations. Injuring an animal grants nothing.
-- Health, position and hunt counts persist within this journey across area travel. Every species has `respawnSeconds` and returns to its home spot that long after a hunt, so the hunting skill and familiar shards keep growing with use.
+- Health, position and hunt counts persist within this journey across area travel.
+- Spawning is per area, not per animal. `src/spawn-tables.js` gives each outdoor area its spawn slots (land or water), a population cap, a spawn chance per empty slot, a respawn clock and a weighted table per habitat; `src/spawns.js` runs it with one seeded generator kept in the save.
+  - Walking into an area after at least 30 s away rolls every empty slot once. Interiors count as their outside area, so the cabin door is not a new visit.
+  - The area's respawn clock (60 to 90 s) rolls every empty slot again while Eli is there. Living creatures always stay; a roll only fills up to the cap, and never within 350 px of Eli.
+  - Creatures with no built AI (shadow walkers) keep their weight in the table but are skipped, so their share goes to the animals until aggressive AI ships.
+  - During Chapter 1's supper hunt the three meadow deer slots are story slots: always deer, never shiny, refilled on every landing roll.
+  - About 1 spawn in 100 is a Shiny: gold tint, glow and sparkles, 50% more health, double Hunting XP and four times every uncertain drop chance (on top of Luck, capped at 100%). Walking into an area with one chimes; the first close look and the hunt are counted in the Index, and hunting one turns a familiar of that kind gold.
+- A journey starts with the original hand-placed layout in Reedwater Landing and Windchime Path; the spawner keeps the hunting skill and familiar shards growing with use.
 - Loot tables live in `src/loot.js` and are referenced by species (`loot:'deer'`). Every huntable animal has one guaranteed drop plus rarer extras, each rolled on its own:
 
   | Animal | Always | Extra rolls |

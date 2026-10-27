@@ -3,6 +3,7 @@ import {walkable,isWater,waterDistance,areaFor} from './wilds.js';
 import {animalTraits,reactionFor,huntableInArea} from './entities.js';
 import {rollLoot} from './loot.js';
 import {practise} from './skills.js';
+import {startingSlots,SHINY} from './spawn-tables.js';
 
 export function animalGround(animal,x,y){
  const area=areaFor(animal.areaId),margin=animal.species==='rabbit'?80:Math.max(30,animal.radius+10);
@@ -20,9 +21,9 @@ export function moveAnimal(animal,dx,dy){
  return moved;
 }
 export function createWildlife(){
- const homes=[['deer-landing','deer','landing',1080,660],['deer-meadow-west','deer','landing',900,1250],['deer-meadow','deer','landing',1120,1060],['deer-meadow-east','deer','landing',1620,1120],['deer-windchime','deer','windchime',850,950],['turtle-landing','turtle','landing',1980,1060],['eel-landing','eel','landing',675,1910]];
- return homes.map(([id,species,areaId,x,y],index)=>{
-  const animal={id,areaId,x,y,...animalTraits(species),state:'idle',time:0,wait:1+index*.5,alert:0,direction:{x:-1,y:0},seed:9041+index*311};
+ // The starting layout. Later creatures come from the area spawner (spawns.js).
+ return startingSlots(species=>species!=='rabbit').map(({id,start:species,areaId,x,y},index)=>{
+  const animal={id,slotId:id,areaId,x,y,...animalTraits(species),state:'idle',time:0,wait:1+index*.5,alert:0,direction:{x:-1,y:0},seed:9041+index*311,shiny:false};
   let found=animalGround(animal,x,y);
   for(let ring=1;ring<14&&!found;ring++)for(let step=0;step<16;step++){
    const angle=step*Math.PI/8,nx=x+Math.cos(angle)*ring*12,ny=y+Math.sin(angle)*ring*12;
@@ -35,7 +36,8 @@ export function createWildlife(){
 function random(a){let s=a.seed;s^=s<<13;s^=s>>>17;s^=s<<5;a.seed=s>>>0;return a.seed/4294967296;}
 // Loot falls around the body as pickups; the animal's own seeded generator keeps rolls reproducible.
 function dropLoot(world,animal,source){
- const items=rollLoot(animal.loot,()=>random(animal),(source.progression?.lootMultiplier??1)*(1+(source.progression?.passive('hunting.loot')??0))),names=[];
+ const luck=(source.progression?.lootMultiplier??1)*(1+(source.progression?.passive('hunting.loot')??0))*(animal.shiny?SHINY.loot:1);
+ const items=rollLoot(animal.loot,()=>random(animal),luck),names=[];
  items.forEach((item,i)=>{
   let spot={x:animal.x,y:animal.y};
   // Water animals sink out of reach, so their drops wash up on the nearest walkable bank.
@@ -58,6 +60,12 @@ export function damageAnimal(world,animal,amount,source,angle,knockback=0){
   const trained=source.progression?practise(world,source,'hunting',animal.huntXp,{x:animal.x,y:animal.y-35}):null;
   const heal=source.progression?.passive('hunting.heal')??0;if(heal>0)source.health=Math.min(source.progression.maxHealth,source.health+heal);
   const loot=animal.loot?dropLoot(world,animal,source):[];
+  if(animal.shiny){
+   const hunted=world.hunting.shiny.hunted;hunted[animal.species]=(hunted[animal.species]||0)+1;
+   world.effects.push({name:'shiny',label:'',x:animal.x,y:animal.y-20,angle:0,life:1.2,duration:1.2});
+   // A familiar of the same kind takes on the shiny's gold for good.
+   if(world.companion?.id===animal.loot)world.companion.shiny=true;
+  }
   world.message=`${animal.name} hunted · +${trained?.amount??animal.huntXp} Hunting XP${loot.length?` · Dropped ${loot.join(', ')}`:''}${trained?.text?` · ${trained.text}`:''}`;
  }
  return true;
@@ -71,16 +79,8 @@ export function updateAnimalCombat(world,dt){
   if(a.vx||a.vy){moveAnimal(a,a.vx*dt,a.vy*dt);a.vx*=Math.exp(-10*dt);a.vy*=Math.exp(-10*dt);}
  }
 }
-// Species with respawnSeconds return to their home after a while, so skills can keep growing with use.
-function respawn(a,dt){
- if(!a.respawnSeconds)return;
- a.respawnRemaining=Math.max(0,(a.respawnRemaining??a.respawnSeconds)-dt);
- if(a.respawnRemaining>0)return;
- Object.assign(a,{health:a.maxHealth,x:a.home.x,y:a.home.y,vx:0,vy:0,state:'idle',time:0,wait:1,alert:0,anger:0,attackerId:null,attackRemaining:0,attackCooldownRemaining:0,threat:null,hurtRemaining:0,deathRemaining:0,respawnRemaining:undefined});
-}
 export function updateWildlife(world,dt){
  if(!world.adventure||world.matchState!=='playing')return;
- for(const a of world.animals)if(a.health<=0&&(a.areaId!==world.areaId||a.deathRemaining===0))respawn(a,dt);
  for(const a of world.wildlife){
   if(a.areaId!==world.areaId||a.health<=0)continue;
   a.time+=dt;a.alert=Math.max(0,a.alert-dt);

@@ -1,4 +1,4 @@
-import {CODEX_CATEGORIES,CODEX_ENTRIES,CODEX_MAPS,codexEntries,codexLocations,codexRegions,codexLoot,codexFamiliar,chanceLabel} from './codex.js';
+import {CODEX_CATEGORIES,CODEX_ENTRIES,CODEX_MAPS,codexEntries,codexLocations,codexRegions,codexSpawnRates,codexLoot,codexFamiliar,chanceLabel} from './codex.js';
 import {FAMILIAR_TIERS,familiarPassives,familiarStatus} from './familiars.js';
 import {codexRevealed,revealedCount} from './codex-discovery.js';
 import {ANIMAL_TYPES,BEHAVIOR_LABELS} from './entities.js';
@@ -67,7 +67,7 @@ export function mountCodex({getWorld,onOpen,onClose,onFamiliar=()=>false}){
  const facts=(entry,world)=>{
   const list=el('dl','codex-facts'),add=(term,value)=>list.append(el('dt',null,term),el('dd',null,String(value)));
   const spec=ANIMAL_TYPES[entry.species];
-  if(spec){add('Health',spec.maxHealth);add('Behaviour',BEHAVIOR_LABELS[spec.behavior||'passive']);add('Hunting XP',`+${spec.huntXp}`);add('Hunted',world.hunting?.bySpecies?.[entry.species]||0);}
+  if(spec){add('Health',spec.maxHealth);add('Behaviour',BEHAVIOR_LABELS[spec.behavior||'passive']);add('Hunting XP',`+${spec.huntXp}`);add('Hunted',world.hunting?.bySpecies?.[entry.species]||0);add('Shiny seen',world.hunting?.shiny?.seen?.[entry.species]||0);add('Shiny hunted',world.hunting?.shiny?.hunted?.[entry.species]||0);}
   else{if(entry.behavior)add('Behaviour',BEHAVIOR_LABELS[entry.behavior]);add('Status',entry.status);}
   add('First seen',entry.firstSeen);return list;
  };
@@ -78,7 +78,7 @@ export function mountCodex({getWorld,onOpen,onClose,onFamiliar=()=>false}){
   for(const point of points){const dot=el('span','codex-dot');dot.style.left=`${point.x*100}%`;dot.style.top=`${point.y*100}%`;frame.append(dot);}
   if(!points.length)frame.append(el('span','codex-unknown',entry.status||'Whereabouts unknown'));
   frame.setAttribute('role','img');frame.setAttribute('aria-label',points.length?`${points.length} ${points.length===1?'location':'locations'}: ${regions.join(', ')}`:'No known locations');
-  figure.append(caption,frame,el('p','codex-regions',regions.length?regions.join(' · '):'No sightings yet'));return figure;
+  const rates=codexSpawnRates(entry);figure.append(caption,frame,el('p','codex-regions',rates.length?rates.map(r=>`${r.name} · ${r.label}`).join(' · '):regions.length?regions.join(' · '):'No sightings yet'));return figure;
  }
  function lootPanel(entry){
   const loot=codexLoot(entry),panel=el('section','codex-loot'),title=el('h4','codex-panel-title');
@@ -86,17 +86,19 @@ export function mountCodex({getWorld,onOpen,onClose,onFamiliar=()=>false}){
   title.append(el('span',null,loot.kind==='wares'?'Wares for trade':'Loot table'));panel.append(title);
   if(!loot.rows.length){panel.append(el('p','codex-note',entry.lootNote||'Nothing to take.'));return panel;}
   const table=el('table','codex-table'),head=el('tr');
-  for(const text of ['Item',loot.kind==='wares'?'Trade for':'Drop chance'])head.append(el('th',null,text));
+  for(const text of loot.kind==='wares'?['Item','Trade for']:['Item','Drop chance','Shiny'])head.append(el('th',null,text));
   const thead=el('thead');thead.append(head);const body=el('tbody');
   for(const row of loot.rows){
    const tr=el('tr'),cell=el('td','codex-item'),icon=el('span','codex-item-icon');setItemIcon(icon,row.item);
    const text=el('span');text.append(el('strong',null,row.note?`${row.item} ${row.note}`:row.item),el('small',null,row.familiar?'Familiar shard':categoryLabel(row.category)));if(row.familiar)tr.classList.add('codex-shard-row');cell.append(icon,text);
    const value=el('td','codex-chance',loot.kind==='wares'?row.price:chanceLabel(row.chance));if(row.chance>=1)value.classList.add('always');
    if(loot.kind==='drops'){const bar=el('i','codex-chance-bar');bar.style.width=`${row.chance*100}%`;value.append(bar);}
-   tr.append(cell,value);body.append(tr);
+   tr.append(cell,value);
+   if(loot.kind==='drops'){const shiny=el('td','codex-chance codex-shiny',chanceLabel(row.shiny));if(row.shiny>=1)shiny.classList.add('always');tr.append(shiny);}
+   body.append(tr);
   }
   table.append(thead,body);panel.append(table);
-  panel.append(el('p','codex-note',loot.kind==='wares'?'Barter opens in a later chapter. These are the trades on offer.':entry.lootNote||'Each item rolls on its own. Luck raises the chance of the rarer ones.'));
+  panel.append(el('p','codex-note',loot.kind==='wares'?'Barter opens in a later chapter. These are the trades on offer.':entry.lootNote||'Each item rolls on its own. Luck raises the chance of the rarer ones, and a shiny makes them four times as likely.'));
   return panel;
  }
  // Shard progress toward the three passives, and the combine, summon or dismiss button.
@@ -123,7 +125,7 @@ export function mountCodex({getWorld,onOpen,onClose,onFamiliar=()=>false}){
   if(status.active)act('Dismiss','dismiss').classList.add('secondary');
   else if(status.bonded)act('Summon','summon');
   else act(status.canCombine?`Combine ${FAMILIAR_TIERS[0]} shards`:`Collect ${FAMILIAR_TIERS[0]-status.shards} more ${FAMILIAR_TIERS[0]-status.shards===1?'shard':'shards'}`,'combine',!status.canCombine);
-  actionsRow.append(el('p','codex-note',`Each ${familiar.name.toLowerCase()} you hunt has a ${chanceLabel(familiar.chance)} chance to drop a shard. One familiar follows you at a time.`));
+  actionsRow.append(el('p','codex-note',`Each ${familiar.name.toLowerCase()} you hunt has a ${chanceLabel(familiar.chance)} chance to drop a shard, ${chanceLabel(familiar.shinyChance)} for a shiny one. Hunt a shiny and your familiar turns gold. One familiar follows you at a time.`));
   panel.append(actionsRow);
   return panel;
  }
@@ -132,7 +134,7 @@ export function mountCodex({getWorld,onOpen,onClose,onFamiliar=()=>false}){
   const key=JSON.stringify([selectedId,world.hunting,world.familiars,[...revealed]]);if(key===lastKey)return;lastKey=key;
   const entry=CODEX_ENTRIES.find(e=>e.id===selectedId),hunted=Object.values(world.hunting?.bySpecies||{}).reduce((a,b)=>a+b,0);
   dialog.querySelector('.backpack-capacity').textContent=`${revealedCount(world)} / ${CODEX_ENTRIES.length} entries discovered | ${hunted} ${hunted===1?'animal':'animals'} hunted`;
-  for(const item of nav.querySelectorAll('.codex-entry')){fillEntry(item,CODEX_ENTRIES.find(e=>e.id===item.dataset.id),revealed.has(item.dataset.id));item.setAttribute('aria-pressed',item.dataset.id===selectedId);const bond=item.querySelector('.codex-bond');if(bond){const status=familiarStatus(world,codexFamiliar(CODEX_ENTRIES.find(e=>e.id===item.dataset.id)).id);bond.dataset.state=status.active?'active':status.bonded?'bonded':status.canCombine?'ready':'none';bond.title=status.active?'Familiar following you':status.bonded?'Familiar bonded':status.canCombine?'Shards ready to combine':'';}}
+  for(const item of nav.querySelectorAll('.codex-entry')){fillEntry(item,CODEX_ENTRIES.find(e=>e.id===item.dataset.id),revealed.has(item.dataset.id));item.setAttribute('aria-pressed',item.dataset.id===selectedId);const species=CODEX_ENTRIES.find(e=>e.id===item.dataset.id)?.species;item.dataset.shiny=!!(species&&revealed.has(item.dataset.id)&&world.hunting?.shiny?.hunted?.[species]);const bond=item.querySelector('.codex-bond');if(bond){const status=familiarStatus(world,codexFamiliar(CODEX_ENTRIES.find(e=>e.id===item.dataset.id)).id);bond.dataset.state=status.active?'active':status.bonded?'bonded':status.canCombine?'ready':'none';bond.title=status.active?'Familiar following you':status.bonded?'Familiar bonded':status.canCombine?'Shards ready to combine':'';}}
   const category=CODEX_CATEGORIES.find(c=>c.id===entry.category);
   if(!revealed.has(entry.id)){detail.replaceChildren(...lockedDetail(entry,category));return;}
   const hero=el('div','codex-hero'),about=el('div','codex-about');
