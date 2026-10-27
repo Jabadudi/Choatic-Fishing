@@ -34,6 +34,16 @@ export function drawNpc(c,n,t=0){
  }
  const labelWidth=Math.max(46,n.name.length*6+12);c.textAlign='center';c.font='bold 10px monospace';c.fillStyle='#183c35';c.fillRect(x-labelWidth/2,y+21,labelWidth,15);c.fillStyle='#f2e4bf';c.fillText(n.name,x,y+32);
 }
+// A floating sign over a villager with work for Eli: a gold ! for a new mission, a gold ? once it can be handed in, a grey ? while it is under way.
+export function drawQuestMarker(c,n,state,t=0){
+ if(!state)return;
+ const x=Math.round(n.x),y=Math.round(n.y-(n.child?44:54)+Math.sin(t*3)*2.5),glyph=state==='offer'?'!':'?',live=state!=='active';
+ c.save();c.fillStyle='#20372b88';c.beginPath();c.ellipse(x+1,y+2,11,12,0,0,Math.PI*2);c.fill();
+ c.fillStyle=live?'#3b2a12':'#2e3a36';c.beginPath();c.ellipse(x,y,10,11,0,0,Math.PI*2);c.fill();
+ c.lineWidth=2;c.strokeStyle=live?'#f6d27a':'#9fb3ab';c.stroke();
+ c.font='bold 16px monospace';c.textAlign='center';c.textBaseline='middle';c.fillStyle=live?'#ffd25e':'#c8d4cf';c.fillText(glyph,x,y+1);
+ c.restore();
+}
 export function drawDialogue(c,world){
  const d=world.dialogue;if(!d)return;
  const n=world.npcs.find(n=>n.id===d.npcId);if(!n||n.areaId!==world.areaId)return;

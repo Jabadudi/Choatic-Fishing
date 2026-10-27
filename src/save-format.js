@@ -10,6 +10,7 @@ import {SLOTS} from './spawn-tables.js';
 import {createCreature,listFor,restoreSpawns,spawnable} from './spawns.js';
 import {ANIMAL_TYPES} from './entities.js';
 import {MARKS_LIMIT} from './trade.js';
+import {SIDE_QUEST_IDS,restoreSideQuests} from './side-quests.js';
 export const SAVE_VERSION=7;
 export const SAVE_FORMAT='the-wilds-save';
 const clone=value=>JSON.parse(JSON.stringify(value));
@@ -104,11 +105,13 @@ export function restoreSave(input){
  for(const key of ['cooldown','dashCharges','dashCooldown'])if(p[key]!==undefined){if(!number(p[key],0,key==='dashCharges'?w.progression.maxDashes:10))fail('Invalid player timers.');w.player[key]=p[key];}
  if(!list(s.catches)||!list(s.discovered,10000)||!list(s.animals,1000)||!list(s.drops))fail('Invalid saved world data.');
  w.catches=clone(s.catches);w.discovered=new Set(s.discovered.filter(id=>typeof id==='string'));
- for(const [id,quest] of Object.entries(w.quests))if(s.quests?.[id]){if(!['available','active','complete'].includes(s.quests[id].status))fail('Invalid quest state.');quest.status=s.quests[id].status;}
+ for(const [id,quest] of Object.entries(w.quests))if(s.quests?.[id]&&!SIDE_QUEST_IDS.includes(id)){if(!['available','active','complete'].includes(s.quests[id].status))fail('Invalid quest state.');quest.status=s.quests[id].status;}
  if(!s.hunting||!Number.isSafeInteger(s.hunting.total)||s.hunting.total<0)fail('Invalid hunting data.');w.hunting.total=s.hunting.total;
  for(const species of Object.keys(ANIMAL_TYPES))if(s.hunting.bySpecies?.[species]!==undefined){const count=s.hunting.bySpecies[species];if(!Number.isSafeInteger(count)||count<0)fail('Invalid hunt counts.');w.hunting.bySpecies[species]=count;}
  // Shiny counts arrived with area spawns; older saves have seen none.
  for(const kind of ['seen','hunted'])for(const species of Object.keys(ANIMAL_TYPES)){const count=s.hunting.shiny?.[kind]?.[species];if(count===undefined)continue;if(!Number.isSafeInteger(count)||count<0)fail('Invalid shiny counts.');w.hunting.shiny[kind][species]=count;}
+ // Side missions arrived after save version 7 was set; saves without them start with every mission on offer. Kill progress is checked against the hunt counts above.
+ restoreSideQuests(s.quests,w,fail);
  restoreSpawns(s.spawns,w);
  // Every saved creature is rebuilt in its slot. Migrated saves name the slot of the journey's starting creature.
  const starting=w.animals;w.rabbits=[];w.wildlife=[];const animalIds=new Set();

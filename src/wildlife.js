@@ -3,6 +3,7 @@ import {walkable,isWater,waterDistance,areaFor} from './wilds.js';
 import {animalTraits,reactionFor,huntableInArea} from './entities.js';
 import {rollLoot} from './loot.js';
 import {practise} from './skills.js';
+import {huntProgress} from './side-quests.js';
 import {startingSlots,SHINY} from './spawn-tables.js';
 import {updateMonster} from './monsters.js';
 
@@ -67,7 +68,8 @@ export function damageAnimal(world,animal,amount,source,angle,knockback=0){
    // A familiar of the same kind takes on the shiny's gold for good.
    if(world.companion?.id===animal.loot)world.companion.shiny=true;
   }
-  world.message=`${animal.name} ${animal.behavior==='aggressive'?'defeated':'hunted'} · +${trained?.amount??animal.huntXp} Hunting XP${loot.length?` · Dropped ${loot.join(', ')}`:''}${trained?.text?` · ${trained.text}`:''}`;
+  const quest=huntProgress(world,animal.species);
+  world.message=`${animal.name} ${animal.behavior==='aggressive'?'defeated':'hunted'} · +${trained?.amount??animal.huntXp} Hunting XP${loot.length?` · Dropped ${loot.join(', ')}`:''}${quest?` · ${quest}`:''}${trained?.text?` · ${trained.text}`:''}`;
  }
  return true;
 }
