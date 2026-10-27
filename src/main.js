@@ -89,7 +89,7 @@ touchMedia.addEventListener('change',e=>{touchMode=e.matches;document.body.class
 addEventListener('resize',()=>release());
 addEventListener('blur',release);document.addEventListener('visibilitychange',release);
 for(let slot=3;slot<=7;slot++){const button=document.createElement('button');button.id=`slot-${slot}`;button.className='slot backpack-slot';button.innerHTML=`<kbd>${slot}</kbd><span class="slot-icon">—</span><strong>Empty</strong><small>Fish to fill</small>`;button.onclick=()=>{equip(slot);canvas.focus();};$('slot-item').after(button);}
-$('slot-rod').onclick=()=>equip(1);$('slot-item').onclick=()=>equip(2);$('cancel').onclick=()=>act('cancel');
+setItemIcon($('slot-rod').querySelector('.slot-icon'),'Fishing Rod');$('slot-rod').onclick=()=>equip(1);$('slot-item').onclick=()=>equip(2);$('cancel').onclick=()=>act('cancel');
 $('choose-whirlpool').onclick=()=>chooseReward('whirlpool');$('choose-special').onclick=()=>chooseReward('tidal');
 $('fire-tidal').onclick=()=>act('tidal');$('fire-whirlpool').onclick=()=>act('whirlpool');
 $('restart').onclick=restart;

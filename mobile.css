@@ -18,7 +18,7 @@ body.touch-mode .game,body.touch-mode .playfield{height:100dvh}body.touch-mode #
 body.touch-mode.exploring .hotbar{bottom:calc(190px + env(safe-area-inset-bottom));width:310px;max-width:calc(100vw - 20px);gap:4px;flex-wrap:nowrap;justify-content:center}
 body.touch-mode.exploring .hotbar .slot{flex:0 0 39px;width:39px;height:47px;min-height:47px;border-radius:7px;touch-action:manipulation}
 body.touch-mode.exploring .hotbar .slot strong{max-width:44px;font-size:7px;overflow:hidden;text-overflow:ellipsis}
-body.touch-mode.exploring .hotbar .slot-icon{font-size:21px}body.touch-mode.exploring .dash-mini{display:none}
+body.touch-mode.exploring .hotbar .slot-icon{font-size:21px}body.touch-mode.exploring .hotbar .slot-icon img{width:26px;height:26px}body.touch-mode.exploring .dash-mini{display:none}
 body.touch-mode.exploring #explore-hint{display:none}
 body.touch-mode.exploring #inspect-place{bottom:calc(259px + env(safe-area-inset-bottom));font-size:10px;max-width:calc(100vw - 24px);white-space:normal}
 body.touch-mode.exploring #exploration-hud{left:10px;top:calc(10px + env(safe-area-inset-top));width:166px;padding:10px}
