@@ -53,6 +53,11 @@ export function drawSprite(ctx,definition,{x=0,y=0,state='idle',time=0,direction
 }
 export function drawEntitySprite(ctx,id,pose={}){
  const def=SPRITES[id];
+ const clips=def?.animations||{},state=pose.state||'idle';
+ // A clip drawn for the requested direction already faces that way. A missing one can borrow its mirror image, e.g. left from right.
+ if(clips[`${state}:${pose.direction}`])return drawSprite(ctx,def,{...pose,flipX:pose.flipX??false});
+ const twin=def?.mirrorDirections?.[pose.direction];
+ if(twin&&clips[`${state}:${twin}`])return drawSprite(ctx,def,{...pose,direction:twin,flipX:pose.flipX??true});
  const flipX=pose.flipX??(def?.mirror==='left'?pose.facingX>0:def?.mirror==='right'?pose.facingX<0:false);
  return drawSprite(ctx,def,{...pose,flipX});
 }
