@@ -15,6 +15,12 @@ const assert=require('node:assert/strict');
  const finish=async()=>{const scene=await w(()=>__qa.world.story.scene);for(let i=0;i<60&&await w(()=>__qa.world.story.scene)===scene;i++){await page.locator('#story-next').click();await page.waitForTimeout(40);}};
  const shot=name=>page.screenshot({path:`${out}/${name}.png`});
  await finish();
+ // A new journey: everything is a question mark until Eli meets it or the story names it.
+ await w(()=>{const v=__qa.world;v.areaId='cabin';Object.assign(v.player,{x:320,y:300});});await page.waitForTimeout(150);
+ await page.keyboard.press('KeyI');await page.locator('#codex-sheet[open]').waitFor();await page.waitForTimeout(400);await shot('00-index-undiscovered');
+ assert.equal(await page.locator('.codex-entry.locked').count(),17-await w(()=>__qa.world.codex.size));
+ assert.ok(await page.locator('.codex-entry.locked').count()>=15);
+ await page.keyboard.press('KeyI');await page.waitForTimeout(200);
  // Hunt one rabbit and the turtle so their own loot tables drop.
  await w(()=>{const v=__qa.world;v.areaId='landing';for(const a of [v.rabbits[0],v.wildlife.find(x=>x.species==='turtle')]){Object.assign(v.player,{x:a.x-60,y:a.y});a.health=1;}});
  await w(async()=>{const {damageAnimal}=await import('/src/wildlife.js');const v=__qa.world;for(const a of [v.rabbits[0],v.wildlife.find(x=>x.species==='turtle')]){v.player.x=a.x-60;v.player.y=a.y;damageAnimal(v,a,50,v.player,0);}});
@@ -22,7 +28,13 @@ const assert=require('node:assert/strict');
  assert.ok(drops.includes('Rabbit Meat')&&drops.includes('Turtle Meat'),drops.join());
  const turtleDrops=await w(async()=>{const {walkable}=await import('/src/wilds.js');return __qa.world.drops.filter(d=>/Turtle|Pearl/.test(d.item.name)).every(d=>walkable(d.x,d.y,d.areaId));});
  assert.ok(turtleDrops,'turtle loot lands on walkable ground');
+ await page.waitForTimeout(200);
  await page.keyboard.press('KeyI');await page.locator('#codex-sheet[open]').waitFor();await page.waitForTimeout(500);await shot('01-index-rabbit');
+ assert.equal(await page.locator('.codex-entry[data-id="rabbit"].locked, .codex-entry[data-id="turtle"].locked').count(),0);
+ assert.equal(await page.locator('.codex-entry[data-id="croshelda"].locked').count(),1);
+ await page.locator('.codex-entry[data-id="croshelda"]').click();await page.waitForTimeout(300);await shot('01b-index-locked-entry');
+ // Reveal the rest to check every page renders.
+ await w(()=>{for(const id of ['deer','eel','shadow-walker','croshelda','moonfang','rimejaw','flitlynx','elk-spirit','ocelot','mara','emilia','drayfus','blacksmith','fisher','gardener'])__qa.world.codex.add(id);});
  for(const [id,name] of [['deer','02-index-deer'],['eel','03-index-eel'],['shadow-walker','04-index-shadow-walker'],['croshelda','05-index-croshelda'],['rimejaw','06-index-rimejaw'],['blacksmith','07-index-blacksmith'],['mara','08-index-mara']]){
   await page.locator(`.codex-entry[data-id="${id}"]`).click();await page.waitForTimeout(350);await shot(name);
  }

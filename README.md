@@ -55,7 +55,8 @@ checkpoints are described in [docs/STORY.md](docs/STORY.md).
 - **Skill trees.** Each skill earns its own talent points for a small tree of
   passive talents, opened from the Skills sheet.
 - **Creature Index.** An illustrated entry for every creature and villager with a
-  description, a map of where it lives and its loot table (**I**).
+  description, a map of where it lives and its loot table (**I**). Entries stay
+  question marks until Eli meets the creature or the story mentions it.
 - **Familiars.** Hunted creatures sometimes drop a familiar shard. Five of one kind
   fuse in the Index into a familiar that follows Eli and grants a passive, which
   grows at 25 shards and gains a stronger one at 100.

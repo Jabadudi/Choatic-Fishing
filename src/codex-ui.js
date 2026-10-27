@@ -1,5 +1,6 @@
 import {CODEX_CATEGORIES,CODEX_ENTRIES,CODEX_MAPS,codexEntries,codexLocations,codexRegions,codexLoot,codexFamiliar,chanceLabel} from './codex.js';
 import {FAMILIAR_TIERS,familiarPassives,familiarStatus} from './familiars.js';
+import {codexRevealed,revealedCount} from './codex-discovery.js';
 import {ANIMAL_TYPES,BEHAVIOR_LABELS} from './entities.js';
 import {ITEM_CATEGORIES} from './inventory.js';
 import {setItemIcon} from './item-icons.js';
@@ -37,12 +38,31 @@ export function mountCodex({getWorld,onOpen,onClose,onFamiliar=()=>false}){
  for(const category of CODEX_CATEGORIES){
   const group=el('div','codex-group'),heading=el('h3','codex-category');heading.innerHTML=svg(CATEGORY_ICONS[category.id],18);heading.append(el('span',null,category.label));group.append(heading);
   for(const entry of codexEntries(category.id)){
-   const item=el('button','codex-entry');item.dataset.id=entry.id;item.append(portrait(entry,'codex-thumb'));
-   const label=el('span','codex-entry-text');label.append(el('strong',null,entry.name),el('small',null,entry.title));item.append(label);
-   if(codexFamiliar(entry))item.append(el('span','codex-bond'));
+   const item=el('button','codex-entry');item.dataset.id=entry.id;
    item.onclick=()=>{selectedId=entry.id;lastKey='';refresh();};group.append(item);
   }
   nav.append(group);
+ }
+ // Undiscovered entries keep their place in the list but show only question marks.
+ const LOCKED={glyph:'?',name:'???',title:'Not yet discovered'};
+ function fillEntry(item,entry,revealed){
+  if(item.dataset.revealed===String(revealed))return;item.dataset.revealed=revealed;
+  const shown=revealed?entry:LOCKED,label=el('span','codex-entry-text');label.append(el('strong',null,shown.name),el('small',null,shown.title));
+  item.replaceChildren(portrait(shown,'codex-thumb'),label);item.classList.toggle('locked',!revealed);
+  item.setAttribute('aria-label',revealed?entry.name:'Undiscovered entry');
+  if(revealed&&codexFamiliar(entry))item.append(el('span','codex-bond'));
+ }
+ const HINTS={wildlife:'You have not come across this animal yet. Keep exploring the wilds.',villagers:'You have not met this person yet. Spend some time in the village.'};
+ function lockedDetail(entry,category){
+  const hero=el('div','codex-hero codex-locked'),about=el('div','codex-about');
+  about.append(el('small','codex-kicker',category.label),el('h3',null,LOCKED.name),el('p','codex-subtitle',LOCKED.title),el('p','codex-description',HINTS[entry.category]||'Nothing is known about this yet. Meet it in the wilds or hear of it in the story to fill in this page.'));
+  hero.append(portrait(LOCKED,'codex-portrait'),about);
+  const panels=el('div','codex-panels codex-locked'),map=el('figure','codex-map'),loot=el('section','codex-loot');
+  const caption=el('figcaption','codex-panel-title');caption.innerHTML=svg('<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14"/>',18);caption.append(el('span',null,'Where to find · ???'));
+  const frame=el('div','codex-map-frame'),image=el('img');image.src=spriteAssetUrl(CODEX_MAPS[entry.map].asset);image.alt='';image.draggable=false;frame.append(image,el('span','codex-unknown','Undiscovered'));map.append(caption,frame);
+  const title=el('h4','codex-panel-title');title.innerHTML=svg('<path d="M5 8h14l-1 12H6zM8 8V6a4 4 0 0 1 8 0v2M9 12h6"/>',18);title.append(el('span',null,'Loot table'));
+  const rows=el('ul','codex-locked-rows');for(let i=0;i<3;i++)rows.append(el('li',null,'???'));loot.append(title,rows);
+  panels.append(map,loot);return [hero,panels];
  }
  const facts=(entry,world)=>{
   const list=el('dl','codex-facts'),add=(term,value)=>list.append(el('dt',null,term),el('dd',null,String(value)));
@@ -108,17 +128,22 @@ export function mountCodex({getWorld,onOpen,onClose,onFamiliar=()=>false}){
   return panel;
  }
  function refresh(){
-  const world=getWorld(),entry=CODEX_ENTRIES.find(e=>e.id===selectedId),key=JSON.stringify([selectedId,world.hunting,world.familiars]);if(key===lastKey)return;lastKey=key;
-  const hunted=Object.values(world.hunting?.bySpecies||{}).reduce((a,b)=>a+b,0);
-  dialog.querySelector('.backpack-capacity').textContent=`${CODEX_ENTRIES.length} entries in ${CODEX_CATEGORIES.length} categories | ${hunted} ${hunted===1?'animal':'animals'} hunted`;
-  for(const item of nav.querySelectorAll('.codex-entry')){item.setAttribute('aria-pressed',item.dataset.id===selectedId);const bond=item.querySelector('.codex-bond');if(bond){const status=familiarStatus(world,codexFamiliar(CODEX_ENTRIES.find(e=>e.id===item.dataset.id)).id);bond.dataset.state=status.active?'active':status.bonded?'bonded':status.canCombine?'ready':'none';bond.title=status.active?'Familiar following you':status.bonded?'Familiar bonded':status.canCombine?'Shards ready to combine':'';}}
-  const category=CODEX_CATEGORIES.find(c=>c.id===entry.category),hero=el('div','codex-hero'),about=el('div','codex-about');
+  const world=getWorld(),revealed=new Set(CODEX_ENTRIES.filter(e=>codexRevealed(world,e.id)).map(e=>e.id));
+  const key=JSON.stringify([selectedId,world.hunting,world.familiars,[...revealed]]);if(key===lastKey)return;lastKey=key;
+  const entry=CODEX_ENTRIES.find(e=>e.id===selectedId),hunted=Object.values(world.hunting?.bySpecies||{}).reduce((a,b)=>a+b,0);
+  dialog.querySelector('.backpack-capacity').textContent=`${revealedCount(world)} / ${CODEX_ENTRIES.length} entries discovered | ${hunted} ${hunted===1?'animal':'animals'} hunted`;
+  for(const item of nav.querySelectorAll('.codex-entry')){fillEntry(item,CODEX_ENTRIES.find(e=>e.id===item.dataset.id),revealed.has(item.dataset.id));item.setAttribute('aria-pressed',item.dataset.id===selectedId);const bond=item.querySelector('.codex-bond');if(bond){const status=familiarStatus(world,codexFamiliar(CODEX_ENTRIES.find(e=>e.id===item.dataset.id)).id);bond.dataset.state=status.active?'active':status.bonded?'bonded':status.canCombine?'ready':'none';bond.title=status.active?'Familiar following you':status.bonded?'Familiar bonded':status.canCombine?'Shards ready to combine':'';}}
+  const category=CODEX_CATEGORIES.find(c=>c.id===entry.category);
+  if(!revealed.has(entry.id)){detail.replaceChildren(...lockedDetail(entry,category));return;}
+  const hero=el('div','codex-hero'),about=el('div','codex-about');
   about.append(el('small','codex-kicker',category.label),el('h3',null,entry.name),el('p','codex-subtitle',entry.title),el('p','codex-description',entry.description));
   hero.append(portrait(entry,'codex-portrait'),about,facts(entry,world));
   const panels=el('div','codex-panels');panels.append(minimap(entry),lootPanel(entry));if(codexFamiliar(entry))panels.append(familiarPanel(entry,world));
   detail.replaceChildren(hero,panels);
  }
- function open(){const world=getWorld();if(!world.adventure||world.player.health<=0||dialog.open)return;onOpen();lastKey='';refresh();dialog.showModal();button.setAttribute('aria-expanded','true');nav.querySelector('[aria-pressed="true"]')?.focus();}
+ function open(){const world=getWorld();if(!world.adventure||world.player.health<=0||dialog.open)return;onOpen();lastKey='';
+  // Open on something already discovered when the remembered page is still a question mark.
+  if(!codexRevealed(world,selectedId))selectedId=CODEX_ENTRIES.find(e=>codexRevealed(world,e.id))?.id??selectedId;refresh();dialog.showModal();button.setAttribute('aria-expanded','true');nav.querySelector('[aria-pressed="true"]')?.focus();}
  dialog.querySelector('.backpack-close').onclick=()=>dialog.close();
  dialog.addEventListener('close',()=>{button.setAttribute('aria-expanded','false');onClose();});
  dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close();}});

@@ -5,6 +5,7 @@ import {animalGround} from './wildlife.js';
 import {SKILL_IDS,skillXpToNext} from './skills.js';
 import {validTree} from './skill-trees.js';
 import {restoreFamiliars} from './familiars.js';
+import {restoreCodex} from './codex-discovery.js';
 export const SAVE_VERSION=5;
 export const SAVE_FORMAT='the-wilds-save';
 const clone=value=>JSON.parse(JSON.stringify(value));
@@ -27,7 +28,7 @@ export function captureSave(world,reason='autosave',now=Date.now()){
   player:{x:p.x,y:p.y,angle:p.angle,health:p.health,cooldown:p.cooldown,dashCharges:p.dashCharges,dashCooldown:p.dashCooldown},
   inventory:{items:clone(p.inventory.allItems),hotbar:p.inventory.slots.map(item=>item?.id||null),selected:p.inventory.selected,nextId:p.inventory.nextId},
   progression:{...clone(p.progression),eliminations:[...p.progression.eliminations]},catches:clone(p.catches),
-  quests:clone(world.quests),discovered:[...world.discovered],hunting:clone(world.hunting),familiars:clone(world.familiars),
+  quests:clone(world.quests),discovered:[...world.discovered],hunting:clone(world.hunting),familiars:clone(world.familiars),codex:[...(world.codex||[])],
   animals:world.animals.map(animal=>({id:animal.id,...Object.fromEntries(ANIMAL_FIELDS.filter(key=>animal[key]!==undefined).map(key=>[key,clone(animal[key])]))})),
   drops:clone(world.drops),nextDropId:world.nextDropId
  }};
@@ -77,6 +78,8 @@ export function restoreSave(input){
  progressionFrom(s.progression,w.progression);
  // Familiars arrived after save version 5 was set; saves without them start with none. Restored before health, which they can raise.
  restoreFamiliars(s.familiars,w);
+ // The creature index arrived after save version 5; older saves start with no encounters, and story reveals catch up on their own.
+ restoreCodex(s.codex,w);
  const inv=s.inventory;if(!inv||!list(inv.items)||!list(inv.hotbar,6)||inv.hotbar.length!==6||!Number.isInteger(inv.selected)||inv.selected<1||inv.selected>7||!Number.isSafeInteger(inv.nextId)||inv.nextId<1)fail('Invalid backpack data.');
  if(!inv.items.every(itemValid)||new Set(inv.items.map(item=>item.id)).size!==inv.items.length)fail('Invalid backpack items.');
  const ids=new Map(inv.items.map(item=>[item.id,item]));const shortcuts=inv.hotbar.filter(Boolean);
@@ -117,5 +120,5 @@ export function restoreSave(input){
 export function parseSave(text){if(typeof text!=='string'||text.length>5*1024*1024)fail('Save file is too large.');let save;try{save=JSON.parse(text);}catch{fail('Could not read this file. Choose a valid The Wilds JSON save.');}restoreSave(save);return save;}
 export function importantProgress(world){
  const p=world.progression;
- return JSON.stringify([world.areaId,world.inventory.allItems,world.inventory.slots.map(i=>i?.id),p.totalXp,p.skills,p.skillTrees,p.pendingChoices,p.pendingUpgrades,p.upgrades,p.ranks,p.specials,world.quests,world.story,[...world.discovered],world.hunting,world.familiars,world.drops,world.animals.map(a=>a.health)]);
+ return JSON.stringify([world.areaId,world.inventory.allItems,world.inventory.slots.map(i=>i?.id),p.totalXp,p.skills,p.skillTrees,p.pendingChoices,p.pendingUpgrades,p.upgrades,p.ranks,p.specials,world.quests,world.story,[...world.discovered],world.hunting,world.familiars,[...(world.codex||[])],world.drops,world.animals.map(a=>a.health)]);
 }
