@@ -4,6 +4,7 @@ import {World} from '../src/world.js';
 import {captureSave,restoreSave} from '../src/save-format.js';
 import {storyPrompt,storyObjective,restoreStory} from '../src/story.js';
 import {damageAnimal,updateWildlife} from '../src/wildlife.js';
+import {updateSpawns} from '../src/spawns.js';
 import {rollLoot} from '../src/loot.js';
 import {Progression} from '../src/progression.js';
 import {skillXpToNext} from '../src/skills.js';
@@ -79,11 +80,14 @@ test('arena matches keep their flat balance while exploration levels raise attri
  const p=fresh().progression;p.train('cooking',skillXpToNext(1));assert.equal(p.skills.cooking.level,2);
 });
 
-test('hunted deer return after a while so the hunting skill can keep growing',()=>{
- const w=fresh(),a=deer(w)[0];hunt(w,a);assert.equal(a.health,0);
- w.areaId='windchime';updateWildlife(w,30);assert.equal(a.health,0);updateWildlife(w,60);
- assert.equal(a.health,a.maxHealth);assert.deepEqual({x:a.x,y:a.y},a.home);
- hunt(w,a);assert.equal(w.hunting.bySpecies.deer,2);
+test('during the supper hunt the meadow deer come back on the landing timer, never shiny',()=>{
+ const w=fresh();w.story.stage='fish';const a=deer(w)[0];hunt(w,a);assert.equal(a.health,0);
+ // Eli stays in the landing, standing right where the deer fell; the story deer still return.
+ Object.assign(w.player,{x:a.x,y:a.y});a.deathRemaining=0;updateSpawns(w,1);
+ assert.equal(w.wildlife.some(x=>x.slotId===a.slotId),false,'the carcass frees its slot');
+ updateSpawns(w,60);const back=w.wildlife.find(x=>x.slotId===a.slotId);
+ assert.equal(back.species,'deer');assert.equal(back.shiny,false);assert.equal(back.health,back.maxHealth);
+ hunt(w,back);assert.equal(w.hunting.bySpecies.deer,2);
 });
 
 test('supper needs two Sardines and three Deer Meat, then cooking trains its own skill',()=>{
@@ -95,7 +99,7 @@ test('supper needs two Sardines and three Deer Meat, then cooking trains its own
  assert.equal(w.progression.skills.cooking.level,2);finish(w);assert.equal(w.story.stage,'rest');
 });
 
-test('rack tools, skills and respawn timers survive a save, and older saves keep working',()=>{
+test('rack tools, skills and hunted animals survive a save, and older saves keep working',()=>{
  const w=fresh();toSupper(w);go(w,'cabin',320,96);w.inspect();finish(w);catchFish(w);
  const a=deer(w)[0];hunt(w,a);updateWildlife(w,0);
  const restored=restoreSave(captureSave(w));

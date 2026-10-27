@@ -5,7 +5,10 @@ import {animalGround} from './wildlife.js';
 import {SKILL_IDS,skillXpToNext} from './skills.js';
 import {validTree} from './skill-trees.js';
 import {restoreFamiliars} from './familiars.js';
-export const SAVE_VERSION=5;
+import {SLOTS} from './spawn-tables.js';
+import {createCreature,listFor,restoreSpawns,spawnable} from './spawns.js';
+import {ANIMAL_TYPES} from './entities.js';
+export const SAVE_VERSION=6;
 export const SAVE_FORMAT='the-wilds-save';
 const clone=value=>JSON.parse(JSON.stringify(value));
 const fail=message=>{throw Error(message);};
@@ -18,7 +21,7 @@ function inspect(value,depth=0){
  }
 }
 function itemValid(item){return item&&typeof item.id==='string'&&item.id.length<100&&typeof item.name==='string'&&item.name.length>0&&item.name.length<120&&number(item.uses,1,100000)&&Number.isInteger(item.uses)&&(!item.description||typeof item.description==='string'&&item.description.length<2000);}
-const ANIMAL_FIELDS=['x','y','health','state','time','wait','alert','direction','seed','hopDuration','hopDistance','anger','attackerId','attackRemaining','attackCooldownRemaining','threat','deathRemaining','respawnRemaining'];
+const ANIMAL_FIELDS=['x','y','health','state','time','wait','alert','direction','seed','hopDuration','hopDistance','anger','attackerId','attackRemaining','attackCooldownRemaining','threat','deathRemaining'];
 export function captureSave(world,reason='autosave',now=Date.now()){
  if(!world?.adventure)fail('Only exploration progress can be saved.');
  const p=world.player;
@@ -28,7 +31,8 @@ export function captureSave(world,reason='autosave',now=Date.now()){
   inventory:{items:clone(p.inventory.allItems),hotbar:p.inventory.slots.map(item=>item?.id||null),selected:p.inventory.selected,nextId:p.inventory.nextId},
   progression:{...clone(p.progression),eliminations:[...p.progression.eliminations]},catches:clone(p.catches),
   quests:clone(world.quests),discovered:[...world.discovered],hunting:clone(world.hunting),familiars:clone(world.familiars),
-  animals:world.animals.map(animal=>({id:animal.id,...Object.fromEntries(ANIMAL_FIELDS.filter(key=>animal[key]!==undefined).map(key=>[key,clone(animal[key])]))})),
+  spawns:world.spawns?{seed:world.spawns.seed,next:world.spawns.next,current:world.spawns.current,areas:clone(world.spawns.areas)}:null,
+  animals:world.animals.map(animal=>({id:animal.id,slotId:animal.slotId,species:animal.species,shiny:!!animal.shiny,seen:!!animal.seen,...Object.fromEntries(ANIMAL_FIELDS.filter(key=>animal[key]!==undefined).map(key=>[key,clone(animal[key])]))})),
   drops:clone(world.drops),nextDropId:world.nextDropId
  }};
 }
@@ -67,6 +71,8 @@ export function restoreSave(input){
  if(save.version===3){save.version=4;if(save.state?.story?.guide)save.state.story.guide.areaId='landing';}
  // Version 5 splits each story page into one page per speaker. Resume at the start of the saved beat.
  if(save.version===4){save.version=5;const story=save.state?.story;if(story?.scene&&Number.isInteger(story.page)&&pageForBeat(story.scene,story.page)>=0)story.page=pageForBeat(story.scene,story.page);}
+ // Version 6 replaces fixed animals and their respawn timers with area spawn slots. Saved animals keep their slot, named by their id.
+ if(save.version===5){save.version=6;for(const animal of save.state?.animals||[])if(animal&&typeof animal==='object'){animal.slotId=animal.id;delete animal.respawnRemaining;}}
  if(save.version!==SAVE_VERSION)fail('This save version is not supported. Your existing save was not changed.');
  if(!number(save.savedAt,0,1e16)||typeof save.journeyId!=='string'||save.journeyId.length>120)fail('Invalid save header.');
  const s=save.state;if(!s||!Object.hasOwn(AREAS,s.areaId))fail('Unknown saved area.');
@@ -92,9 +98,18 @@ export function restoreSave(input){
  w.catches=clone(s.catches);w.discovered=new Set(s.discovered.filter(id=>typeof id==='string'));
  for(const [id,quest] of Object.entries(w.quests))if(s.quests?.[id]){if(!['available','active','complete'].includes(s.quests[id].status))fail('Invalid quest state.');quest.status=s.quests[id].status;}
  if(!s.hunting||!Number.isSafeInteger(s.hunting.total)||s.hunting.total<0)fail('Invalid hunting data.');w.hunting.total=s.hunting.total;
- for(const species of ['rabbit','deer','turtle','eel'])if(s.hunting.bySpecies?.[species]!==undefined){const count=s.hunting.bySpecies[species];if(!Number.isSafeInteger(count)||count<0)fail('Invalid hunt counts.');w.hunting.bySpecies[species]=count;}
- for(const animal of w.animals){
-  const saved=s.animals.find(a=>a.id===animal.id);if(!saved)continue;
+ for(const species of Object.keys(ANIMAL_TYPES))if(s.hunting.bySpecies?.[species]!==undefined){const count=s.hunting.bySpecies[species];if(!Number.isSafeInteger(count)||count<0)fail('Invalid hunt counts.');w.hunting.bySpecies[species]=count;}
+ // Shiny counts arrived with area spawns; older saves have seen none.
+ for(const kind of ['seen','hunted'])for(const species of Object.keys(ANIMAL_TYPES)){const count=s.hunting.shiny?.[kind]?.[species];if(count===undefined)continue;if(!Number.isSafeInteger(count)||count<0)fail('Invalid shiny counts.');w.hunting.shiny[kind][species]=count;}
+ restoreSpawns(s.spawns,w);
+ // Every saved creature is rebuilt in its slot. Migrated saves name the slot of the journey's starting creature.
+ const starting=w.animals;w.rabbits=[];w.wildlife=[];const animalIds=new Set();
+ for(const saved of s.animals){
+  if(!saved||typeof saved.id!=='string'||saved.id.length>80||typeof saved.slotId!=='string'||!Object.hasOwn(SLOTS,saved.slotId)||animalIds.has(saved.id))fail('Invalid animal state.');
+  const species=saved.species??starting.find(a=>a.id===saved.id)?.species;if(!species||!spawnable(species))fail('Invalid animal state.');
+  const animal=createCreature(SLOTS[saved.slotId],species,{id:saved.id,shiny:saved.shiny===true});if(!animal)fail('Invalid animal state.');
+  const start=starting.find(a=>a.id===saved.id&&a.species===species);if(start)Object.assign(animal,{x:start.x,y:start.y,home:start.home,seed:start.seed,wait:start.wait});
+  if(saved.seen===true)animal.seen=true;animalIds.add(saved.id);
   if(!number(saved.health,0,animal.maxHealth)||!number(saved.x,0,AREAS[animal.areaId].width)||!number(saved.y,0,AREAS[animal.areaId].height))fail('Invalid animal state.');
   animal.health=saved.health;
   if(animalGround(animal,saved.x,saved.y)){animal.x=saved.x;animal.y=saved.y;}
@@ -103,6 +118,7 @@ export function restoreSave(input){
   if(saved.threat&&number(saved.threat.x,0,3000)&&number(saved.threat.y,0,3000))animal.threat=clone(saved.threat);
   if(saved.attackerId==='player')animal.attackerId='player';
   animal.state=animal.health===0?'dead':['idle','walk','graze','hop','settle','flee','attack'].includes(saved.state)?saved.state:'idle';
+  listFor(w,species).push(animal);
  }
  for(const drop of s.drops){
   if(!drop||typeof drop.id!=='string'||!Object.hasOwn(AREAS,drop.areaId)||!itemValid(drop.item)||!number(drop.x,0,AREAS[drop.areaId].width)||!number(drop.y,0,AREAS[drop.areaId].height))fail('Invalid dropped item.');

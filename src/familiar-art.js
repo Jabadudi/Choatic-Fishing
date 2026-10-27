@@ -6,7 +6,7 @@ import {FAMILIARS} from './familiars.js';
 const GLOW={rabbit:'#cfe6ff',deer:'#ffe3a0',turtle:'#a8f0c8',eel:'#9ee6ff','shadow-walker':'#b9a0ff'};
 export function drawFamiliar(c,companion,time){
  const f=FAMILIARS[companion.id];if(!f)return;
- const glow=GLOW[companion.id],bob=Math.sin(time*3.2)*2.5,appear=1-companion.summonRemaining/.8;
+ const glow=companion.shiny?'#ffd36a':GLOW[companion.id],bob=Math.sin(time*3.2)*2.5,appear=1-companion.summonRemaining/.8;
  c.save();
  // Spirit ring at the feet and a soft halo.
  const halo=c.createRadialGradient(companion.x,companion.y-16,2,companion.x,companion.y-16,40);halo.addColorStop(0,`${glow}88`);halo.addColorStop(.6,`${glow}33`);halo.addColorStop(1,`${glow}00`);

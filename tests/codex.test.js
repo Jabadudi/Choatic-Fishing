@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {CODEX_CATEGORIES,CODEX_ENTRIES,AREA_BOUNDS,codexLocations,codexRegions,codexLoot,codexEntry,atlasPoint,chanceLabel} from '../src/codex.js';
+import {CODEX_CATEGORIES,CODEX_ENTRIES,AREA_BOUNDS,codexLocations,codexRegions,codexSpawnRates,codexLoot,codexEntry,atlasPoint,chanceLabel,shinyChance} from '../src/codex.js';
+import {SLOTS} from '../src/spawn-tables.js';
 import {ANIMAL_TYPES} from '../src/entities.js';
 import {LOOT_TABLES,LOOT_ITEMS,rollLoot} from '../src/loot.js';
 import {ITEM_CATEGORIES} from '../src/inventory.js';
@@ -46,11 +47,15 @@ test('the index lists every category, and every entry has a description, a map a
  for(const species of Object.keys(ANIMAL_TYPES))assert.ok(CODEX_ENTRIES.some(e=>e.species===species),species);
 });
 
-test('minimap dots come from real spawn points and NPC positions',()=>{
- const deer=codexEntry('deer'),dots=codexLocations(deer);
- assert.equal(dots.length,new World(()=>.2,{adventure:true}).wildlife.filter(a=>a.species==='deer').length);
- assert.deepEqual(codexRegions(deer),['Reedwater Landing','Windchime Path']);
- assert.equal(codexLocations(codexEntry('rabbit')).length,new World(()=>.2,{adventure:true}).rabbits.length);
+test('minimap dots come from real spawn slots and NPC positions',()=>{
+ const deer=codexEntry('deer'),dots=codexLocations(deer),land=Object.values(SLOTS).filter(slot=>slot.habitat==='land');
+ assert.equal(dots.length,land.length);
+ assert.deepEqual(codexRegions(deer),['Reedwater Landing','Windchime Path','Willowbank Crossroads','Shellback Marsh']);
+ assert.equal(codexLocations(codexEntry('rabbit')).length,land.length);
+ assert.equal(codexLocations(codexEntry('turtle')).length,Object.values(SLOTS).filter(slot=>slot.habitat==='water'&&['landing','marsh'].includes(slot.areaId)).length);
+ // Shadow walkers cannot roam yet, so their share goes to the animals: in the marsh land slots that makes deer common.
+ assert.deepEqual(codexSpawnRates(deer).map(r=>[r.areaId,r.label]),[['landing','common'],['windchime','common'],['crossroads','common'],['marsh','common']]);
+ assert.deepEqual(codexSpawnRates(codexEntry('eel')).map(r=>r.areaId),['landing','crossroads','marsh']);
  assert.deepEqual(codexRegions(codexEntry('blacksmith')),['Willowback Village']);
  assert.deepEqual(codexRegions(codexEntry('emilia')),['The Chief’s House']);
  assert.deepEqual(codexLocations(codexEntry('croshelda')),[]);
@@ -65,4 +70,10 @@ test('merchants list wares instead of drops, and drop chances read plainly',()=>
  const drops=codexLoot(codexEntry('deer'));assert.equal(drops.kind,'drops');assert.deepEqual(drops.rows.map(r=>chanceLabel(r.chance)),['Always','45%','20%','10%']);
  assert.equal(codexLoot(codexEntry('rimejaw')).kind,'none');
  assert.equal(DEFAULT_BINDINGS.codex,'KeyI');
+});
+
+test('loot rows show the shiny chance: four times every uncertain drop, capped at certainty',()=>{
+ const rows=codexLoot(codexEntry('deer')).rows,by=name=>rows.find(r=>r.item===name);
+ assert.equal(by('Deer Meat').shiny,1);assert.equal(by('Deer Hide').shiny,1);assert.ok(Math.abs(by('Deer Antlers').shiny-.8)<1e-9);assert.ok(Math.abs(by('Deer Familiar Shard').shiny-.4)<1e-9);
+ assert.equal(shinyChance(.05),.2);
 });
