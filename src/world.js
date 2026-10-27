@@ -19,6 +19,7 @@ import {createNpcs,nearbyNpc,updateDialogue} from './npcs.js';
 import {createFamiliars,absorbShard,updateFamiliar,familiarAction} from './familiars.js';
 import {noteEncounters} from './codex-discovery.js';
 import {updateDefeat} from './monsters.js';
+import {artifactBonus,combineArtifacts,isArtifact,itemLabel,slotArtifact,unslotArtifact,withArticle} from './artifacts.js';
 export {LAND} from './terrain.js';
 export const SHORE_DEPTH=110;
 export const INLAND={left:LAND.left+SHORE_DEPTH,right:LAND.right-SHORE_DEPTH,top:LAND.top+SHORE_DEPTH,bottom:LAND.bottom-SHORE_DEPTH};
@@ -88,6 +89,12 @@ export class World {
   const item=this.inventory.allItems.find(item=>item.id===id);if(!item)return false;
   if(item.name==='Mysterious Lure'){this.message='Eli keeps the strange lure close.';return false;}
   if(item.name==='Region Core'){this.message='Eli keeps the Region Core close. He isn’t ready to eat it. Not yet.';return false;}
+  if(['slot','unslot','combine'].includes(action)){
+   if(!isArtifact(item)){this.message='Only artifacts go in artifact slots.';return false;}
+   if(action==='unslot'){const done=unslotArtifact(this.inventory,item);if(done)this.message=`${itemLabel(item)} taken out of its slot.`;return done;}
+   const result=action==='slot'?slotArtifact(this.inventory,item):combineArtifacts(this.inventory,item);this.message=result.reason;return result.ok;
+  }
+  if(isArtifact(item)&&action==='hotbar'){this.message='Artifacts work from an artifact slot, not the hotbar.';return false;}
   if(action==='hotbar')return this.inventory.assignHotbar(id,slot);
   if(action==='discard'||action==='discard-all'){const gone=itemCount(this.inventory.removeId(id,action==='discard'?1:Infinity));this.message=gone>1?`${gone} ${item.name} discarded.`:`${item.name} discarded.`;return true;}
   if(action==='drop')return dropItem(this,item);
@@ -103,7 +110,7 @@ export class World {
  inspect(){
   if(!this.adventure||this.matchState!=='playing'||this.player.health<=0||currentScene(this))return false;
   if(inspectStory(this))return true;
-  const drop=nearbyDrop(this);if(drop){const shard=absorbShard(this,drop.item.familiar);if(!shard)this.inventory.receive(drop.item);this.drops=this.drops.filter(item=>item.id!==drop.id);this.message=shard||`Picked up ${drop.item.name}.`;return true;}
+  const drop=nearbyDrop(this);if(drop){this.collectDrop(drop);return true;}
   const npc=nearbyNpc(this);
   // Villagers with work for Eli open the quest sheet to offer it or take it back; a job in progress gets a reminder.
   const work=npc&&questFor(this,npc.id);
@@ -114,6 +121,24 @@ export class World {
   const place=Wilds.nearestLandmark(this.player.x,this.player.y,this.areaId);
   if(!place)return false;
   this.discovered.add(place.id);this.message=place.text;return true;
+ }
+ collectDrop(drop){
+  const shard=absorbShard(this,drop.item.familiar);if(!shard)this.inventory.receive(drop.item);this.drops=this.drops.filter(item=>item.id!==drop.id);
+  this.message=shard||(isArtifact(drop.item)&&drop.item.rarity!=='common'?`Picked up ${withArticle(itemLabel(drop.item))}!`:`Picked up ${itemLabel(drop.item)}.`);
+ }
+ // A slotted Lodestone draws nearby drops to Eli, faster the longer they fly, and collects them on arrival.
+ // Items Eli has just thrown out wait a moment first, so he can still put things down.
+ pullDrops(dt){
+  const reach=artifactBonus(this.player,'lodestone'),p=this.player;
+  if(!reach||p.health<=0||this.defeat)return;
+  for(const drop of [...this.drops]){
+   if(drop.areaId!==this.areaId||(drop.heldUntil??0)>this.elapsed)continue;
+   const dx=p.x-drop.x,dy=p.y-drop.y,distance=Math.hypot(dx,dy);
+   if(distance>reach){drop.pull=0;continue;}
+   drop.pull=Math.min(900,(drop.pull||0)+1600*dt);const step=drop.pull*dt;
+   if(step>=distance-12){this.collectDrop(drop);continue;}
+   drop.x+=dx/distance*step;drop.y+=dy/distance*step;
+  }
  }
  move(dx,dy,shoreOnly){this.moveActor(this.player,dx,dy,shoreOnly);}
  chooseUpgrade(kind,actor=this.player){
@@ -197,6 +222,7 @@ export class World {
   updateDefeat(this,dt);
   updateSpawns(this,dt);
   updateFamiliar(this,dt);
+  if(this.adventure)this.pullDrops(dt);
   updateDialogue(this,dt);
   updateStory(this,dt,Wilds.walkable);
   noteEncounters(this);

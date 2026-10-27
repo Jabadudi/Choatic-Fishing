@@ -111,6 +111,28 @@ span.backpack-cell::after{content:'';width:9px;height:9px;border:1px solid #6d86
 .backpack-action-row,.backpack-slot-choices{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}.backpack-actions button{min-height:44px;padding:9px;border:1px solid #b79a5c99;border-radius:7px;background:#1b3d2f;color:var(--bp-ink);font:13px Arial,sans-serif;cursor:pointer}.backpack-actions button:hover:not(:disabled){background:#265040;border-color:var(--bp-gold)}.backpack-actions button:disabled{opacity:.4;cursor:default}.backpack-actions button.danger{background:#4b2f27}.backpack-actions button[aria-expanded="true"]{background:#e6c77f;color:#1d2c22}.backpack-slot-choices button{font-size:12px}
 .backpack-empty{margin:0;font:16px/1.6 Arial,sans-serif;color:var(--bp-muted)}
 .backpack-note{display:flex;align-items:center;gap:12px;margin:auto 0 0;padding:12px 14px;border:1px solid #c9a85f55;border-radius:8px;background:#0c2119;font:14px/1.45 Arial,sans-serif;color:#dfe3cf}.backpack-note svg{flex:none;color:#dfe3cf}
+/* Artifacts: rarity colours the border, the corner gem and the detail panel. */
+#backpack{--r-common:#d9dccf;--r-uncommon:#7fd18b;--r-rare:#6fb6ff;--r-epic:#c58cff;--r-legendary:#ffb347}
+[data-rarity="common"]{--r:var(--r-common)}[data-rarity="uncommon"]{--r:var(--r-uncommon)}[data-rarity="rare"]{--r:var(--r-rare)}[data-rarity="epic"]{--r:var(--r-epic)}[data-rarity="legendary"]{--r:var(--r-legendary)}
+.backpack-artifact{border-color:var(--r);background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--r) 20%,#11281f),#11281f 72%)}
+.backpack-artifact::before{content:'';position:absolute;top:7px;left:7px;width:8px;height:8px;background:var(--r);transform:rotate(45deg);box-shadow:0 0 6px var(--r)}
+.backpack-artifact[aria-pressed="true"]{border:3px solid var(--r);box-shadow:0 0 0 2px #0c2119,0 0 18px color-mix(in srgb,var(--r) 55%,transparent)}
+.backpack-artifact-tag{position:absolute;top:-8px;left:50%;transform:translateX(-50%);padding:2px 6px;border-radius:4px;background:var(--bp-gold);color:#1d2c22;font:700 10px/1.2 Arial,sans-serif;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.backpack-artifact-slots{grid-column:1/-1;display:flex;flex-direction:column;gap:8px}
+.backpack-artifact-heading{display:flex;justify-content:space-between;margin:0;font:700 12px Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--bp-gold-dim)}
+.backpack-artifact-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;max-width:calc(60% + 4px);padding:10px;border:1px solid var(--bp-line);border-radius:10px;background:#0a1d15}
+.backpack-artifact-empty{border-style:dashed;color:#6d866f;font:700 10px Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.backpack-artifact-hint{margin:0 0 6px;font:13px Arial,sans-serif;color:var(--bp-muted)}
+.backpack-details[data-rarity]:not([data-rarity=""]) .backpack-art-icon{border-color:var(--r);box-shadow:0 0 22px color-mix(in srgb,var(--r) 35%,transparent)}
+.backpack-details[data-rarity]:not([data-rarity=""]) .backpack-uses{color:var(--r);font-weight:700}
+.backpack-artifact-details{display:flex;flex-direction:column;gap:8px}
+.backpack-artifact-effect{margin:0;font:15px/1.45 Arial,sans-serif;color:#9fd8a8}
+.backpack-artifact-tiers{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+.backpack-artifact-tiers span{padding:5px 2px;border:1px solid #c9a85f2e;border-radius:4px;text-align:center;font:10px Arial,sans-serif;color:var(--bp-muted);overflow:hidden;text-overflow:ellipsis}
+.backpack-artifact-tiers span.current{border-color:var(--r);color:var(--r);font-weight:700;background:color-mix(in srgb,var(--r) 14%,transparent)}
+.backpack-artifact-progress{margin:0;font:13px Arial,sans-serif;color:var(--bp-muted)}
+.backpack-actions button.primary{border-color:var(--bp-gold);color:var(--bp-gold);font-weight:700}
+@media(max-width:860px){.backpack-artifact-row{max-width:none}}
 .backpack-item:focus-visible,.backpack-filters button:focus-visible,.backpack-close:focus-visible,.backpack-actions button:focus-visible,#open-backpack:focus-visible{outline:2px solid #fff0cb;outline-offset:2px}
 @media(max-width:1020px){.backpack-heading h2{font-size:30px}.backpack-capacity{font-size:13px;margin-left:6px}.backpack-filters button{font-size:15px;gap:10px;min-height:52px}.backpack-actions h3{font-size:25px}.backpack-actions p,.backpack-uses,.backpack-equip{font-size:15px}}
 @media(max-width:860px){#backpack{overflow-y:auto}#backpack[open]{display:block}.backpack-heading{position:sticky;top:-6px;z-index:2;border-radius:8px 8px 0 0;background:#153529;flex-wrap:wrap;gap:8px 12px;padding:12px 14px}.backpack-emblem svg{width:30px;height:30px}.backpack-heading h2{font-size:26px}.backpack-sprig{display:none}.backpack-capacity{order:3;flex-basis:100%;margin:0;font-size:12px}.backpack-close{margin-left:auto;width:44px;height:44px}

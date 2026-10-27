@@ -10,6 +10,7 @@ import {paintStoryMap} from './story-map.js';
 import {drawStoryWeather} from './story-weather.js';
 import {mountSaveUI} from './save-ui.js';
 import {nearbyDrop} from './drops.js';
+import {itemLabel} from './artifacts.js';
 import {mountBackpack} from './backpack.js';
 import {mountTrade,markIcon} from './trade-ui.js';
 import {marksLabel} from './trade.js';
@@ -126,7 +127,7 @@ function updateUI(){
  setText($('close-atlas'),touchMode?'Close':`Close · ${bindingLabel('map')} / Esc`);
  setText($('cancel'),touchMode?'Abandon':`Abandon · ${bindingLabel('fish')} / Esc`);
  touchUI?.update(world,!touchMode||!lobby.world||atlasOpen||saveUI?.open||settingsUI?.open||storyUI?.open||world.player.health<=0);
- if(touchMode){const npc=nearbyNpc(world);$('touch-examine').disabled=!world.adventure||(!storyPrompt(world)&&!npc&&!nearbyDrop(world)&&!nearestLandmark(world.player.x,world.player.y,world.areaId));setText($('touch-examine').querySelector('strong'),nearbyDrop(world)?'Pick up':npc?'Talk':'Examine');$('touch-examine').setAttribute('aria-label',nearbyDrop(world)?`Pick up ${nearbyDrop(world).item.name}`:npc?`Talk to ${npc.name}`:'Examine nearby landmark');}
+ if(touchMode){const npc=nearbyNpc(world);$('touch-examine').disabled=!world.adventure||(!storyPrompt(world)&&!npc&&!nearbyDrop(world)&&!nearestLandmark(world.player.x,world.player.y,world.areaId));setText($('touch-examine').querySelector('strong'),nearbyDrop(world)?'Pick up':npc?'Talk':'Examine');$('touch-examine').setAttribute('aria-label',nearbyDrop(world)?`Pick up ${itemLabel(nearbyDrop(world).item)}`:npc?`Talk to ${npc.name}`:'Examine nearby landmark');}
  const f=world.fishing,active=f.state==='reeling',busy=f.state!=='idle',inventory=world.inventory;
  $('line-panel').hidden=!active;
  setText($('health-text'),`${Math.ceil(world.player.health)} / ${world.progression.maxHealth} HP`);

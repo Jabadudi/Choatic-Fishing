@@ -1,5 +1,6 @@
 import {damageAnimal} from './wildlife.js';
 import {huntableInArea} from './entities.js';
+import {artifactBonus} from './artifacts.js';
 export const combatTargets=world=>world.adventure?[...world.actors,...world.animals.filter(a=>huntableInArea(world,a))]:world.actors;
 // Swept collision prevents fast shells or harpoons skipping a small animal between steps.
 function shotHit(shot,target,startX,startY){
@@ -26,7 +27,7 @@ export function damage(world,target,amount,source,angle,knockback=0){
  if(target.entityType==='animal')return damageAnimal(world,target,amount,source,angle,knockback);
  if(target.health<=0||world.matchState!=='playing')return false;
  if(target.dashRemaining>0)return false;
- const taken=amount*(source.progression?.damageMultiplier??1)*(1-target.progression.damageReduction)*(source.entityType==='animal'?1-target.progression.passive('hunting.hide'):1);
+ const taken=amount*(source.progression?.damageMultiplier??1)*(1-target.progression.damageReduction)*(1-artifactBonus(target,'mossback-scute'))*(source.entityType==='animal'?1-target.progression.passive('hunting.hide'):1);
  target.health=Math.max(0,target.health-taken);
  target.vx+=Math.cos(angle)*knockback;target.vy+=Math.sin(angle)*knockback;
  if(world.adventure)world.effects.push({name:'player-hit',label:`-${Math.round(taken)}`,x:target.x,y:target.y-40,angle:0,life:.7,duration:.7});
@@ -49,7 +50,11 @@ export function attack(world,actor,item){
    const difference=Math.atan2(Math.sin(angle-actor.angle),Math.cos(angle-actor.angle));
    if(Math.hypot(dx,dy)<=spec.range+(target.radius||14)&&Math.abs(difference)<=1.05)damage(world,target,spec.damage,actor,angle,spec.knockback);
   }
- }else world.projectiles.push({x:actor.x,y:actor.y,angle:actor.angle,owner:actor,travel:0,...spec,name:item.name,hit:new Set(),radius:spec.kind==='bomb'?8:5});
+ }else{
+  // The Stag Crown strengthens arrows from the hunting bow.
+  const damage=spec.damage*(item.name==='Hunting Bow'?1+artifactBonus(actor,'stag-crown'):1);
+  world.projectiles.push({x:actor.x,y:actor.y,angle:actor.angle,owner:actor,travel:0,...spec,damage,name:item.name,hit:new Set(),radius:spec.kind==='bomb'?8:5});
+ }
 }
 export function special(world,actor,kind){
  if(actor.health<=0||actor.fishing.state!=='idle'||actor.cooldown>0||!actor.progression.specials[kind]||world.matchState!=='playing')return false;

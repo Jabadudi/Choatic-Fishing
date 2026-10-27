@@ -1,4 +1,7 @@
 import {PERMANENT_ITEMS,itemCategory,itemCount} from './inventory.js';
+import {RARITIES,isArtifact} from './artifacts.js';
+// Artifacts are worth more the rarer they are.
+export const ARTIFACT_SELL_VALUES=Object.freeze([8,20,50,120,300]);
 // Willowback trades in reed marks: small copper discs stamped with a reed, struck for the delta's markets.
 // Marks are a plain count on the backpack, never an item, so they cannot be dropped, stacked or lost to a full hotbar.
 export const MARKS_LIMIT=1e6;
@@ -35,6 +38,7 @@ export const SELL_VALUES=Object.freeze({
 // Quest items and Grandpa's bow are never for sale.
 export function sellValue(item){
  if(!item||PERMANENT_ITEMS.has(item.name)||itemCategory(item)==='quest-items')return 0;
+ if(isArtifact(item))return ARTIFACT_SELL_VALUES[RARITIES.indexOf(item.rarity)];
  return SELL_VALUES[item.name]??1;
 }
 export const marksOf=world=>world.inventory.marks||0;

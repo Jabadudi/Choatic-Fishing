@@ -1,3 +1,4 @@
+import {itemLabel} from './artifacts.js';
 import {WARES,MERCHANT_NAMES,marksLabel,marksOf,sellValue,buyWare,sellItem} from './trade.js';
 import {setItemIcon,MARK_ART} from './item-icons.js';
 import {itemCount} from './inventory.js';
@@ -12,9 +13,9 @@ export function mountTrade({getWorld,onOpen,onClose}){
  document.body.append(dialog);
  const wares=dialog.querySelector('.trade-wares'),pack=dialog.querySelector('.trade-pack'),purse=dialog.querySelector('.trade-purse'),note=dialog.querySelector('.trade-note');
  let merchant=null,lastKey='';
- function row(list,{name,count,detail,price,disabled,title,actions}){
+ function row(list,{name,label=name,count,detail,price,disabled,title,actions}){
   const item=el('li','trade-row'),icon=el('span','trade-icon');setItemIcon(icon,name);
-  const text=el('span','trade-text');text.append(el('strong',null,count>1?`${name} ×${count}`:name),el('small',null,detail));
+  const text=el('span','trade-text');text.append(el('strong',null,count>1?`${label} ×${count}`:label),el('small',null,detail));
   const cost=el('span','trade-price');cost.innerHTML=markIcon(16);cost.append(String(price));cost.setAttribute('aria-label',marksLabel(price));
   const buttons=el('span','trade-buttons');
   for(const [label,action,aria] of actions){
@@ -34,7 +35,7 @@ export function mountTrade({getWorld,onOpen,onClose}){
    const count=itemCount(item),value=sellValue(item),actions=[['Sell',()=>sellItem(world,item.id),`Sell one ${item.name} for ${marksLabel(value)}`]];
    // Stacks can go in one trade.
    if(count>1)actions.push([`All ×${count}`,()=>sellItem(world,item.id,Infinity),`Sell all ${count} ${item.name} for ${marksLabel(value*count)}`]);
-   row(pack,{name:item.name,count,detail:count>1?`${marksLabel(value)} each. ${item.description||''}`:item.description||'',price:value,disabled:false,actions});
+   row(pack,{name:item.name,label:itemLabel(item),count,detail:count>1?`${marksLabel(value)} each. ${item.description||''}`:item.description||'',price:value,disabled:false,actions});
   }
   if(!sellable.length)pack.append(el('li','trade-empty','Nothing the merchant wants. Hunt or fish for goods to sell.'));
  }

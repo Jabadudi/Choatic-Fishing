@@ -45,11 +45,11 @@ When Eli's health reaches 0 in exploration he collapses: the view darkens for 3 
 
   | Animal | Always | Extra rolls |
   | --- | --- | --- |
-  | Rabbit | Rabbit Meat | Rabbit Pelt 50%, Rabbit’s Foot 5%, Rabbit Familiar Shard 8% |
-  | Deer | Deer Meat | Deer Hide 45%, Deer Antlers 20%, Deer Familiar Shard 10% |
-  | Turtle | Turtle Meat | Turtle Shell 40%, River Pearl 5%, Turtle Familiar Shard 10% |
-  | Eel | Eel Fillet | Eel Skin 35%, Eel Oil 20%, Eel Familiar Shard 8% |
-  | Shadow walker | Shadow Ichor | Rusted Axe Head 30%, Black Light Shard 5%, Shadow Walker Familiar Shard 6% |
+  | Rabbit | Rabbit Meat | Rabbit Pelt 50%, Rabbit’s Foot artifact 4%, Rabbit Familiar Shard 8% |
+  | Deer | Deer Meat | Deer Hide 45%, Deer Antlers 20%, Stag Crown artifact 5%, Deer Familiar Shard 10% |
+  | Turtle | Turtle Meat | Turtle Shell 40%, River Pearl 5%, Mossback Scute artifact 5%, Turtle Familiar Shard 10% |
+  | Eel | Eel Fillet | Eel Skin 35%, Eel Oil 20%, Lodestone artifact 5%, Eel Familiar Shard 8% |
+  | Shadow walker | Shadow Ichor | Rusted Axe Head 30%, Black Light Shard 5%, Heart of Black Light artifact 7%, Shadow Walker Familiar Shard 6% |
 
   Luck scales only the uncertain rolls. Rolls use the animal's seeded generator; drops land as pickups beside the body. Water animals' drops land on the nearest walkable bank so they can be picked up.
 - Four deer live on Reedwater Landing (three in the meadow for Chapter 1's supper, one by the Hollow Tree) and one on Windchime Path.
@@ -67,6 +67,20 @@ Mara’s Chapter 3 guide route uses collision-checked movement in simulation, wa
 ## Skills and character level
 
 `src/skills.js` declares use-based skills: Fishing (landed fish), Hunting (killing blow) and Cooking (finished meal). XP is only granted on success; failed or abandoned attempts teach nothing. Every skill point also feeds the main level through `Progression.train`. In exploration, each main level adds +10 max health and +1 Strength (damage), Dexterity (attack speed), Luck (rare loot) and Wisdom (skill XP). Arena matches keep a flat balance (`characterStats` is off). Press K for the Skills sheet.
+
+## Artifacts
+
+`src/artifacts.js` declares artifacts: drop-only backpack items that work while they sit in one of three artifact slots (the Artifacts tab of the backpack). Each creature carries one artifact. When its roll succeeds, a second roll picks the rarity: Common 60%, Uncommon 25%, Rare 10%, Epic 4%, Legendary 1%. Luck raises both rolls. Copies stack by rarity, and three copies of one rarity combine into one copy a rarity higher. Only one copy of each artifact can be slotted.
+
+| Artifact | Dropped by | Common → Legendary |
+| --- | --- | --- |
+| Lodestone | Eels | Pulls drops into the backpack from 2, 3, 4, 5, 6 steps |
+| Stag Crown | Deer | Arrows hit 5%, 10%, 15%, 22%, 30% harder |
+| Rabbit’s Foot | Rabbits | Rare drops 5%, 10%, 15%, 22%, 30% more likely |
+| Mossback Scute | Turtles | 4%, 8%, 12%, 16%, 20% less damage taken |
+| Heart of Black Light | Shadow walkers | Each kill restores 1, 2, 3, 4, 6 health |
+
+Items Eli throws out wait four seconds before a Lodestone pulls them back. Rabbit’s Feet in saves from before artifacts become Common artifacts.
 
 ## Familiars
 
