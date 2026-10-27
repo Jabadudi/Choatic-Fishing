@@ -1,6 +1,8 @@
 import {drawEntitySprite} from './sprites.js';
 import {BEHAVIOR_LABELS} from './entities.js';
+import {drawShiny,SHINY_GOLD} from './shiny-art.js';
 export function drawWildlife(c,a){
+ if(a.shiny&&!a.plain){drawShiny(c,a,(globalThis.performance?.now()??0)/1000,l=>drawWildlife(l,{...a,plain:true}));return;}
  const {x,y}=a,t=a.time||0;
  c.save();if(a.health<=0)c.globalAlpha=Math.min(1,a.deathRemaining);else if(a.hurtRemaining>0)c.globalAlpha=.55;
  if(drawEntitySprite(c,a.spriteId,{x,y,state:a.health<=0?'death':a.hurtRemaining>0?'hurt':a.state==='flee'?'walk':a.state==='attack'?'idle':a.state,time:a.hurtRemaining>0?.25-a.hurtRemaining:t,facingX:a.direction.x})){c.restore();return;}
@@ -23,9 +25,12 @@ export function drawAnimalStatus(c,world){
  for(const a of world.animals){
   if(a.health<=0||a.areaId!==world.areaId)continue;
   const near=Math.hypot(a.x-world.player.x,a.y-world.player.y)<150;
-  if(a.health===a.maxHealth&&(!near||world.inventory.selected===1))continue;
+  if(a.health===a.maxHealth&&!a.shiny&&(!near||world.inventory.selected===1))continue;
   const y=a.y-(a.species==='deer'?51:a.species==='rabbit'?42:33);
   c.fillStyle='#19362de8';c.fillRect(a.x-23,y,46,6);c.fillStyle='#c8d78a';c.fillRect(a.x-22,y+1,44*a.health/a.maxHealth,4);
-  c.font='12px monospace';c.textAlign='center';c.fillStyle='#fff0cd';c.fillText(`${a.name} · ${BEHAVIOR_LABELS[a.behavior]||a.behavior}`,a.x,y-5);
+  c.font='12px monospace';c.textAlign='center';const tag=`${a.name} · ${BEHAVIOR_LABELS[a.behavior]||a.behavior}`;
+  // A shiny's tag is gold with a dark edge so it reads on bright grass.
+  if(a.shiny){c.lineWidth=3;c.strokeStyle='#10261d';c.strokeText(tag,a.x,y-5);}
+  c.fillStyle=a.shiny?SHINY_GOLD:'#fff0cd';c.fillText(tag,a.x,y-5);
  }
 }

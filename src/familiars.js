@@ -58,7 +58,8 @@ export function applyFamiliar(world){
 function place(world){
  const p=world.player,id=world.familiars.active;if(!id){world.companion=null;return;}
  const spot=[[-36,18],[36,18],[0,34],[-24,-10],[0,0]].map(([dx,dy])=>({x:p.x+dx,y:p.y+dy})).find(s=>walkable(s.x,s.y,world.areaId))||{x:p.x,y:p.y};
- world.companion={id,areaId:world.areaId,...spot,state:'idle',time:0,direction:{x:1,y:0},summonRemaining:.8};
+ // Hunting a shiny of its kind turns the familiar gold.
+ world.companion={id,areaId:world.areaId,...spot,state:'idle',time:0,direction:{x:1,y:0},summonRemaining:.8,shiny:(world.hunting?.shiny?.hunted?.[id]||0)>0};
 }
 export function absorbShard(world,id){
  if(!FAMILIARS[id]||!world.familiars)return null;

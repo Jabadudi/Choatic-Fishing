@@ -47,6 +47,10 @@ checkpoints are described in [docs/STORY.md](docs/STORY.md).
 - **Hunting and loot.** Rabbits, a turtle and an eel flee; deer fight back when
   hurt. Each creature has its own loot table of meat, hides, trophies and
   materials, and Luck raises the chance of rare drops.
+- **Area spawns and shinies.** Each outdoor area has spawn slots, a population
+  cap and a weighted table. Empty slots roll when you walk in after time away and
+  on the area's own respawn clock; living creatures stay. About 1 in 100 spawns is
+  a gold Shiny with four times the odds on every rare drop and shard.
 - **Cooking.** Cooking supper at Grandpa's stove in Chapter 1 earns Cooking XP.
   More recipes and stoves are still to come.
 - **Skills and main level.** Fishing, Hunting and Cooking level up only from a
@@ -125,7 +129,7 @@ Pages ([DEPLOYMENT.md](DEPLOYMENT.md)).
   input, the 120 Hz loop and the HUD. `world.js` runs the simulation and
   `renderer.js` draws it. Story chapters live in `chapter1.js` to `chapter5.js` and
   `story.js`. Interiors are `story-map.js`, `chief-house.js` and `guest-lodge.js`.
-  `loot.js`, `skills.js`, `skill-trees.js`, `familiars.js` and `codex.js` hold the
+  `loot.js`, `spawn-tables.js`, `spawns.js`, `skills.js`, `skill-trees.js`, `familiars.js` and `codex.js` hold the
   RPG systems, and `save-format.js` owns the versioned save contract.
 - `assets/` holds sprites, props, cutscene art, music and the vision video.
 - `tests/` covers the simulation, story chapters, saves, loot, skills and familiars.

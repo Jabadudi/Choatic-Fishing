@@ -1,20 +1,21 @@
 import {animalTraits,reactionFor} from './entities.js';
 import {walkable,waterDistance,areaFor} from './wilds.js';
+import {startingSlots} from './spawn-tables.js';
 
 import {drawEntitySprite,spriteFrame} from './sprites.js';
+import {drawShiny} from './shiny-art.js';
 export {RABBIT_FRAMES} from './sprite-definitions.js';
-const HOMES=[{x:1460,y:1540},{x:1000,y:1450},{x:1680,y:1300},{x:1070,y:850},{x:1670,y:770}];
 function random(r){let n=r.seed;n^=n<<13;n^=n>>>17;n^=n<<5;r.seed=n>>>0;return r.seed/4294967296;}
 export function rabbitGround(x,y,areaId){
  const a=areaFor(areaId);
  return x>80&&y>110&&x<a.width-80&&y<a.height-100&&waterDistance(x,y,areaId)>22&&walkable(x,y,areaId);
 }
 export function createRabbits(){
- return HOMES.map((home,i)=>{
+ return startingSlots(species=>species==='rabbit').map((home,i)=>{
   let position=null;
   for(let ring=0;ring<8&&!position;ring++)for(let j=0;j<16;j++){const angle=j*Math.PI/8,x=home.x+Math.cos(angle)*ring*14,y=home.y+Math.sin(angle)*ring*14;if(rabbitGround(x,y,'landing')){position={x,y};break;}}
   if(!position)return null;
-  return {...animalTraits('rabbit'),id:`rabbit-${i}`,areaId:'landing',...position,home:{...position},seed:7319+i*971,state:'idle',time:0,wait:1+i*.37,alert:0,direction:{x:-1,y:0},hopDuration:.65,hopDistance:0};
+  return {...animalTraits('rabbit'),id:home.id,slotId:home.id,shiny:false,areaId:'landing',...position,home:{...position},seed:7319+i*971,state:'idle',time:0,wait:1+i*.37,alert:0,direction:{x:-1,y:0},hopDuration:.65,hopDistance:0};
  }).filter(Boolean);
 }
 function startHop(r,player){
@@ -59,6 +60,7 @@ export function drawRabbits(ctx,world,view){
 }
 export const visibleRabbits=(world,view)=>(world.rabbits||[]).filter(r=>r.areaId===world.areaId&&(r.health>0||r.deathRemaining>0)&&(!view||(r.x>view.left-40&&r.x<view.right+40&&r.y>view.top-50&&r.y<view.bottom+40)));
 export function drawRabbit(ctx,r){
+ if(r.shiny&&!r.plain){drawShiny(ctx,r,(globalThis.performance?.now()??0)/1000,l=>drawRabbit(l,{...r,plain:true}));return;}
  ctx.save();if(r.health<=0)ctx.globalAlpha=Math.min(1,r.deathRemaining);else if(r.hurtRemaining>0)ctx.globalAlpha=.55;
  const hop=r.state==='hop'?Math.sin(Math.min(1,r.time/r.hopDuration)*Math.PI)*5:0;
  ctx.save();ctx.fillStyle='#263d3438';ctx.beginPath();ctx.ellipse(r.x,r.y+1,8-hop*.3,3,0,0,Math.PI*2);ctx.fill();ctx.restore();

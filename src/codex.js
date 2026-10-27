@@ -3,8 +3,8 @@
 import {ANIMAL_TYPES,BEHAVIOR_LABELS,BEHAVIORS} from './entities.js';
 import {LOOT_TABLES,LOOT_ITEMS,SHARD_CHANCES} from './loot.js';
 import {FAMILIARS} from './familiars.js';
-import {createWildlife} from './wildlife.js';
-import {createRabbits} from './rabbits.js';
+import {SLOTS,SPAWN_AREAS,SHINY} from './spawn-tables.js';
+import {spawnWeights} from './spawns.js';
 import {createVillageResidents} from './village-life.js';
 import {createNpcs} from './npcs.js';
 import {areaFor} from './wilds.js';
@@ -78,12 +78,19 @@ export const CODEX_ENTRIES=Object.freeze([
 }));
 export const codexEntry=id=>CODEX_ENTRIES.find(entry=>entry.id===id)||null;
 export const codexEntries=category=>CODEX_ENTRIES.filter(entry=>entry.category===category);
-let spawnCache=null;
-const spawnHomes=()=>spawnCache??=[...createRabbits(),...createWildlife()].map(a=>({species:a.species,areaId:a.areaId,...a.home}));
-// Red dots on the minimap. Species use every spawn point; NPCs use where they stand or patrol.
+// How likely a slot is to hold this species when it fills, by area: the species' share of its habitat's weights.
+export function codexSpawnRates(entry){
+ if(!entry.spawns)return [];
+ return Object.keys(SPAWN_AREAS).flatMap(areaId=>{
+  const share=Math.max(0,...['land','water'].map(habitat=>{const weights=spawnWeights(areaId,habitat),total=weights.reduce((sum,[,w])=>sum+w,0),own=weights.find(([s])=>s===entry.spawns)?.[1]||0;return total?own/total:0;}));
+  return share>0?[{areaId,name:areaFor(areaId).name,share,label:share>=.4?'common':share>=.2?'uncommon':'rare'}]:[];
+ });
+}
+const canSpawn=(slot,species)=>spawnWeights(slot.areaId,slot.habitat).some(([s])=>s===species);
+// Red dots on the minimap. Species use every spawn slot they can appear in; NPCs use where they stand or patrol.
 export function codexLocations(entry){
  const points=[];
- if(entry.spawns)for(const home of spawnHomes())if(home.species===entry.spawns)points.push(atlasPoint(home.areaId,home.x,home.y));
+ if(entry.spawns)for(const slot of Object.values(SLOTS))if(canSpawn(slot,entry.spawns))points.push(atlasPoint(slot.areaId,slot.x,slot.y));
  for(const id of [entry.npc,...(entry.npcs||[])].filter(Boolean)){const n=resident(id)||createNpcs().find(n=>n.id===id);if(n)points.push(atlasPoint(n.areaId,n.origin?.x??n.x,n.origin?.y??n.y));}
  for(const [areaId,x,y] of entry.places||[])points.push(atlasPoint(areaId,x,y));
  for(const id of entry.atlas||[]){const [map,x,y,label]=ATLAS_POINTS[id];points.push({map,x,y,label});}
@@ -100,8 +107,10 @@ export function codexLoot(entry){
  if(entry.wares)return {kind:'wares',rows:WARES[entry.wares].map(w=>({...w}))};
  const table=LOOT_TABLES[entry.loot];
  if(!table)return {kind:'none',rows:[]};
- return {kind:'drops',rows:table.map(({item,chance})=>({item,category:LOOT_ITEMS[item].category,familiar:LOOT_ITEMS[item].familiar,chance,description:LOOT_ITEMS[item].description}))};
+ return {kind:'drops',rows:table.map(({item,chance})=>({item,category:LOOT_ITEMS[item].category,familiar:LOOT_ITEMS[item].familiar,chance,shiny:shinyChance(chance),description:LOOT_ITEMS[item].description}))};
 }
+// A shiny multiplies every uncertain drop, still capped at certainty.
+export const shinyChance=chance=>chance>=1?1:Math.min(1,chance*SHINY.loot);
 export const chanceLabel=chance=>chance>=1?'Always':`${Math.round(chance*100)}%`;
 // Creatures with a familiar share its id with their loot table.
-export const codexFamiliar=entry=>entry.loot&&FAMILIARS[entry.loot]?{id:entry.loot,chance:SHARD_CHANCES[entry.loot],...FAMILIARS[entry.loot]}:null;
+export const codexFamiliar=entry=>entry.loot&&FAMILIARS[entry.loot]?{id:entry.loot,chance:SHARD_CHANCES[entry.loot],shinyChance:shinyChance(SHARD_CHANCES[entry.loot]),...FAMILIARS[entry.loot]}:null;
