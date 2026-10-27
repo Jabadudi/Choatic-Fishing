@@ -6,6 +6,7 @@ import {sideObjective,questFor} from './side-quests.js';
 import {placesFor,nearestLandmark} from './wilds.js';
 import {nearbyNpc} from './npcs.js';
 import {MERCHANTS} from './trade.js';
+import {nearWell} from './wishing-well.js';
 // What the exploration HUD shows, derived from world state so it can be tested without a DOM.
 export function explorationHud(world,exploringSeconds){
  const id=world.areaId,place=nearestLandmark(world.player.x,world.player.y,id),npc=nearbyNpc(world),work=npc&&questFor(world,npc.id);
@@ -14,7 +15,7 @@ export function explorationHud(world,exploringSeconds){
   quest:storyObjective(world)||questObjective(world),
   sideQuest:sideObjective(world),
   dots:placesFor(id).map(p=>world.discovered.has(p.id)),
-  prompt:storyPrompt(world)|| (nearbyDrop(world)?`Pick up ${itemLabel(nearbyDrop(world).item)}`:work?.state==='ready'?`Report to ${npc.name}`:work?.state==='offer'?`Talk to ${npc.name} · Side mission`:npc?`${npc.interactions?.includes('examine')?'Examine':MERCHANTS[npc.id]?'Trade with':'Talk to'} ${npc.name}`:place?`Examine ${place.name}`:null),
+  prompt:storyPrompt(world)|| (nearbyDrop(world)?`Pick up ${itemLabel(nearbyDrop(world).item)}`:work?.state==='ready'?`Report to ${npc.name}`:work?.state==='offer'?`Talk to ${npc.name} · Side mission`:npc?`${npc.interactions?.includes('examine')?'Examine':MERCHANTS[npc.id]?'Trade with':'Talk to'} ${npc.name}`:nearWell(world)?'Look into the Wishing Well':place?`Examine ${place.name}`:null),
   health:playerHealth(world.player,world.progression.maxHealth),
   upgradeFraction:Math.max(0,Math.min(1,1-world.progression.upgradeRemaining/30))
  };
