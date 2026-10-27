@@ -2,6 +2,7 @@ import {damage} from './combat.js';
 import {walkable,isWater,waterDistance,areaFor} from './wilds.js';
 import {animalTraits,reactionFor,huntableInArea} from './entities.js';
 import {rollLoot} from './loot.js';
+import {artifactBonus,itemLabel} from './artifacts.js';
 import {practise} from './skills.js';
 import {huntProgress} from './side-quests.js';
 import {startingSlots,SHINY} from './spawn-tables.js';
@@ -38,13 +39,13 @@ export function createWildlife(){
 function random(a){let s=a.seed;s^=s<<13;s^=s>>>17;s^=s<<5;a.seed=s>>>0;return a.seed/4294967296;}
 // Loot falls around the body as pickups; the animal's own seeded generator keeps rolls reproducible.
 function dropLoot(world,animal,source){
- const luck=(source.progression?.lootMultiplier??1)*(1+(source.progression?.passive('hunting.loot')??0))*(animal.shiny?SHINY.loot:1);
+ const luck=(source.progression?.lootMultiplier??1)*(1+(source.progression?.passive('hunting.loot')??0))*(1+artifactBonus(source,'rabbits-foot'))*(animal.shiny?SHINY.loot:1);
  const items=rollLoot(animal.loot,()=>random(animal),luck),names=[];
  items.forEach((item,i)=>{
   let spot={x:animal.x,y:animal.y};
   // Water animals sink out of reach, so their drops wash up on the nearest walkable bank.
   search:for(const r of [26,16,0,...Array.from({length:12},(_,n)=>48+n*36)])for(let k=0;k<(r>26?16:1);k++){const a=i*2.2+.4+k*Math.PI/8,x=animal.x+Math.cos(a)*r,y=animal.y+Math.sin(a)*r;if(walkable(x,y,animal.areaId)){spot={x,y};break search;}}
-  const id=`drop-${world.nextDropId++}`;world.drops.push({id,entityType:'pickup',spriteId:'pickup',areaId:animal.areaId,...spot,item:{...item,id:`loot-${id}`,uses:1}});names.push(item.name);
+  const id=`drop-${world.nextDropId++}`;world.drops.push({id,entityType:'pickup',spriteId:'pickup',areaId:animal.areaId,...spot,item:{...item,id:`loot-${id}`,uses:1}});names.push(itemLabel(item));
  });
  return names;
 }
@@ -60,7 +61,7 @@ export function damageAnimal(world,animal,amount,source,angle,knockback=0){
   world.hunting.total++;world.hunting.bySpecies[animal.species]=(world.hunting.bySpecies[animal.species]||0)+1;
   // Hunting XP lands only on the killing blow, once per life of the animal.
   const trained=source.progression?practise(world,source,'hunting',animal.huntXp,{x:animal.x,y:animal.y-35}):null;
-  const heal=source.progression?.passive('hunting.heal')??0;if(heal>0)source.health=Math.min(source.progression.maxHealth,source.health+heal);
+  const heal=(source.progression?.passive('hunting.heal')??0)+artifactBonus(source,'black-light-heart');if(heal>0)source.health=Math.min(source.progression.maxHealth,source.health+heal);
   const loot=animal.loot?dropLoot(world,animal,source):[];
   if(animal.shiny){
    const hunted=world.hunting.shiny.hunted;hunted[animal.species]=(hunted[animal.species]||0)+1;

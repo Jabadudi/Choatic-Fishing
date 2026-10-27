@@ -1,6 +1,7 @@
+import {RARITIES} from './artifacts.js';
 export const ITEM_CATEGORIES=Object.freeze([
  {id:'consumables',label:'Consumables'}, {id:'weapons',label:'Weapons'},
- {id:'armor',label:'Armor'}, {id:'quest-items',label:'Quest items'},
+ {id:'armor',label:'Armor'}, {id:'artifacts',label:'Artifacts'}, {id:'quest-items',label:'Quest items'},
  {id:'trophies',label:'Trophies'}, {id:'upgrade-materials',label:'Upgrade materials'}
 ]);
 const ITEM_CATEGORY={'Sardine':'consumables','Deer Meat':'consumables','Deer Hide':'upgrade-materials','Deer Antlers':'trophies','Grappling Squid':'consumables','Treasure Key':'quest-items','Old Boot':'trophies'};
@@ -11,6 +12,8 @@ export const PERMANENT_ITEMS=new Set(['Hunting Bow']);
 export const STACK_SIZE=20;
 const UNIQUE_ITEMS=new Set(['Mysterious Lure','Region Core']);
 export const stackable=item=>!!item&&!WEAPON_NAMES.has(item.name)&&!PERMANENT_ITEMS.has(item.name)&&!UNIQUE_ITEMS.has(item.name)&&(item.uses??1)===1;
+// Copies share a stack only at the same rarity, so a Rare artifact never folds into Common ones.
+export const sameStack=(a,b)=>a.name===b.name&&(a.rarity??null)===(b.rarity??null);
 export const itemCount=item=>Number.isInteger(item?.count)&&item.count>0?item.count:1;
 // The short amount shown on slots: a stack's size, a weapon's remaining uses, or unlimited.
 export const amountLabel=item=>PERMANENT_ITEMS.has(item.name)?'Unlimited':stackable(item)?`×${itemCount(item)}`:`${item.uses} ${item.uses===1?'use':'uses'}`;
@@ -26,7 +29,7 @@ export function backpackItems(inventory,category='all'){
 }
 const USES={'Frying Pan':3,'Swordfish':3,'Harpoon Gun':3,'Anchor':2,'Reed Spear':5,'Crab Maul':3,'Shell Sling':6,'Hunting Knife':12};
 export class Inventory {
- constructor({separateStorage=false}={}){this.selected=1;this.capacity=6;this.slots=Array(6).fill(null);this.separateStorage=separateStorage;this.storedItems=[];this.nextId=1;this.marks=0;}
+ constructor({separateStorage=false}={}){this.selected=1;this.capacity=6;this.slots=Array(6).fill(null);this.separateStorage=separateStorage;this.storedItems=[];this.nextId=1;this.marks=0;this.artifactSlots=[null,null,null];}
  get allItems(){return this.separateStorage?this.storedItems:this.slots.filter(Boolean);}
  get full(){return !this.separateStorage&&this.slots.every(Boolean);}
  get item(){return this.slots[this.selected===1?0:this.selected-2]||null;}
@@ -38,14 +41,14 @@ export class Inventory {
   if(!stackable(stored)){this.storedItems.push(stored);return true;}
   // Top up stacks already carried, then open new stacks for whatever is left over.
   let left=itemCount(item);
-  for(const stack of this.storedItems)if(left>0&&stack.name===stored.name&&stackable(stack)&&itemCount(stack)<STACK_SIZE){const added=Math.min(left,STACK_SIZE-itemCount(stack));stack.count=itemCount(stack)+added;left-=added;}
+  for(const stack of this.storedItems)if(left>0&&sameStack(stack,stored)&&stackable(stack)&&itemCount(stack)<STACK_SIZE){const added=Math.min(left,STACK_SIZE-itemCount(stack));stack.count=itemCount(stack)+added;left-=added;}
   for(let first=true;left>0;first=false){const stack={...stored,id:first?stored.id:`item-${this.nextId++}`,count:Math.min(left,STACK_SIZE)};left-=stack.count;this.storedItems.push(stack);}
   return true;
  }
  countOf(name){return this.allItems.reduce((total,item)=>total+(item.name===name?itemCount(item):0),0);}
- // Removes up to amount of a name across stacks and reports how many went.
+ // Removes up to amount of a name across stacks and reports how many went. Quests take the plainest artifacts first.
  removeName(name,amount){
-  let left=amount;for(const item of [...this.allItems])if(left>0&&item.name===name)left-=itemCount(this.removeId(item.id,left));
+  let left=amount;for(const item of [...this.allItems].sort((a,b)=>RARITIES.indexOf(a.rarity)-RARITIES.indexOf(b.rarity)))if(left>0&&item.name===name)left-=itemCount(this.removeId(item.id,left));
   return amount-left;
  }
  assignHotbar(id,slot){
@@ -59,7 +62,7 @@ export class Inventory {
   for(const item of [...this.storedItems]){
    if(!stackable(item))continue;
    for(const stack of this.storedItems){
-    if(stack===item)break;if(stack.name!==item.name||!stackable(stack)||itemCount(stack)>=STACK_SIZE)continue;
+    if(stack===item)break;if(!sameStack(stack,item)||!stackable(stack)||itemCount(stack)>=STACK_SIZE)continue;
     const moved=Math.min(itemCount(item),STACK_SIZE-itemCount(stack));stack.count=itemCount(stack)+moved;item.count=itemCount(item)-moved;
     if(item.count===0){this.storedItems=this.storedItems.filter(entry=>entry!==item);for(let i=0;i<this.slots.length;i++)if(this.slots[i]===item)this.slots[i]=this.slots.includes(stack)?null:stack;break;}
    }

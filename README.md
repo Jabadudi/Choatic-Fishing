@@ -61,6 +61,10 @@ checkpoints are described in [docs/STORY.md](docs/STORY.md).
 - **Creature Index.** An illustrated entry for every creature and villager with a
   description, a map of where it lives and its loot table (**I**). Entries stay
   question marks until Eli meets the creature or the story mentions it.
+- **Artifacts.** Each creature can drop an artifact at a random rarity, from
+  Common to Legendary. Three copies of one rarity combine into one a rarity
+  higher. Up to three work at once from the backpack's artifact slots; the
+  Lodestone, for one, pulls nearby drops straight into the backpack.
 - **Familiars.** Hunted creatures sometimes drop a familiar shard. Five of one kind
   fuse in the Index into a familiar that follows Eli and grants a passive, which
   grows at 25 shards and gains a stronger one at 100.

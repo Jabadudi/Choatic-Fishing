@@ -83,10 +83,10 @@ test('picking up a shard feeds the familiar instead of the backpack',()=>{
 
 test('a hunted animal can drop its shard on the ground',()=>{
  const w=fresh(),deer=w.wildlife.find(a=>a.species==='deer');
- // A seed whose fourth roll lands under the shard chance.
+ // A seed whose artifact roll misses and whose next roll lands under the shard chance.
  for(let seed=1;seed<5000;seed++){
-  deer.seed=seed;const rolls=[];let s=seed;for(let i=0;i<3;i++){s^=s<<13;s^=s>>>17;s^=s<<5;s>>>=0;rolls.push(s/4294967296);}
-  if(rolls[2]<SHARD_CHANCES.deer){deer.seed=seed;break;}
+  deer.seed=seed;const rolls=[];let s=seed;for(let i=0;i<4;i++){s^=s<<13;s^=s>>>17;s^=s<<5;s>>>=0;rolls.push(s/4294967296);}
+  if(rolls[2]>=.5&&rolls[3]<SHARD_CHANCES.deer){deer.seed=seed;break;}
  }
  w.player.x=deer.x-60;w.player.y=deer.y;damageAnimal(w,deer,1000,w.player,0);
  assert.ok(w.drops.some(d=>d.item.familiar==='deer'),w.drops.map(d=>d.item.name).join());

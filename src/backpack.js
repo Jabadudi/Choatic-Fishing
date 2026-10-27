@@ -2,11 +2,13 @@ import {ITEM_CATEGORIES,backpackItems,canUseItem,PERMANENT_ITEMS,stackable,itemC
 import {setItemIcon} from './item-icons.js';
 import {markIcon} from './trade-ui.js';
 import {marksLabel} from './trade.js';
+import {ARTIFACT_SLOT_COUNT,COMBINE_COUNT,RARITIES,RARITY_NAMES,artifactEffect,artifactKey,artifactSlots,copiesOf,inArtifactSlot,isArtifact,nextRarity,slottedArtifacts} from './artifacts.js';
 const svg=(body,size=24)=>`<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
 const CATEGORY_ICONS={
  all:'<path d="M4 4h4v4H4zM10 4h4v4h-4zM16 4h4v4h-4zM4 10h4v4H4zM10 10h4v4h-4zM16 10h4v4h-4zM4 16h4v4H4zM10 16h4v4h-4zM16 16h4v4h-4z" fill="currentColor" stroke="none"/>',
  consumables:'<path d="M9 3h6M10 3v5l-4.5 7.5A3.5 3.5 0 0 0 8.5 21h7a3.5 3.5 0 0 0 3-5.5L14 8V3M7.5 14h9"/>',
  weapons:'<path d="M20 4l-9.5 9.5M20 4h-3.5L8 12.5M20 4v3.5L11.5 16M6.5 13.5l4 4M5 19l3-3M4 20l1.5-1.5"/>',
+ artifacts:'<path d="M12 3l3.5 4.5L12 21 8.5 7.5zM8.5 7.5h7M5 7.5L12 21l7-13.5L15.5 3h-7z"/>',
  armor:'<path d="M12 3l7 3v5c0 5-3 8.5-7 10-4-1.5-7-5-7-10V6zM12 7v10M9.5 10.5L12 9l2.5 1.5M10 14h4"/>',
  'quest-items':'<path d="M7 4h11v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-1h3zM7 4a2 2 0 0 0-2 2v1h2M10 8h5M10 11h5M10 14h5"/>',
  trophies:'<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5v1a3 3 0 0 0 3 3M16 6h3v1a3 3 0 0 1-3 3M12 13v4M8.5 20h7M9.5 17h5v3h-5z"/>',
@@ -28,34 +30,76 @@ export function mountBackpack({getWorld,onOpen,onClose,onAction}){
   const filter=document.createElement('button');filter.innerHTML=`${svg(CATEGORY_ICONS[choice.id])}<span></span>`;filter.querySelector('span').textContent=choice.label;filter.dataset.category=choice.id;filter.setAttribute('aria-pressed',choice.id==='all');
   filter.onclick=()=>{category=choice.id;lastKey='';refresh();};filters.append(filter);
  }
+ const select=id=>{selectedId=id;choosingSlot=false;lastKey='';refresh();if(matchMedia('(max-width: 860px)').matches)actions.scrollIntoView({block:'nearest',behavior:'smooth'});};
+ // Rarity colours the border and corner gem; stacks ready to combine and slotted artifacts get a small tag.
+ function markArtifact(card,inventory,item){
+  card.classList.add('backpack-artifact');card.dataset.rarity=item.rarity;
+  const label=`${RARITY_NAMES[item.rarity]} ${item.name}`;card.title=label;card.setAttribute('aria-label',`Select ${label}, ${itemCount(item)} carried`);
+  const ready=nextRarity(item.rarity)&&copiesOf(inventory,artifactKey(item))>=COMBINE_COUNT,slotted=inArtifactSlot(inventory,item);
+  if(ready||slotted){const tag=document.createElement('small');tag.className='backpack-artifact-tag';tag.textContent=slotted?'In slot':'Ready';card.append(tag);}
+ }
+ // The three artifact slots sit above the collection while the Artifacts tab is open.
+ function artifactSlotPanel(inventory){
+  const panel=document.createElement('div');panel.className='backpack-artifact-slots';
+  const slotted=slottedArtifacts(inventory),heading=document.createElement('p');heading.className='backpack-artifact-heading';
+  heading.innerHTML='<span>Artifact slots</span><span></span>';heading.lastChild.textContent=`${slotted.length} / ${ARTIFACT_SLOT_COUNT}`;
+  const row=document.createElement('div');row.className='backpack-artifact-row';
+  for(const key of artifactSlots(inventory)){
+   const item=key&&inventory.allItems.find(entry=>isArtifact(entry)&&artifactKey(entry)===key);
+   if(!item){const empty=document.createElement('span');empty.className='backpack-cell backpack-artifact-empty';empty.textContent='Empty';row.append(empty);continue;}
+   const card=document.createElement('button');card.className='backpack-cell backpack-item backpack-artifact';card.dataset.rarity=item.rarity;card.setAttribute('aria-pressed',selectedId===item.id);
+   card.setAttribute('aria-label',`Artifact slot: ${RARITY_NAMES[item.rarity]} ${item.name}`);card.title=`${RARITY_NAMES[item.rarity]} ${item.name}`;
+   const icon=document.createElement('span');icon.className='backpack-item-icon';setItemIcon(icon,item.name);card.append(icon);card.onclick=()=>select(item.id);row.append(card);
+  }
+  const hint=document.createElement('p');hint.className='backpack-artifact-hint';hint.textContent=slotted.length?'Artifacts work only while they are in a slot.':'Put an artifact in a slot to use its power.';
+  const collection=document.createElement('p');collection.className='backpack-artifact-heading';collection.innerHTML='<span>Collection</span>';
+  panel.append(heading,row,hint,collection);return panel;
+ }
+ // What an artifact does now, what each rarity would do, and how close the stack is to combining.
+ function artifactDetails(inventory,item){
+  const box=document.createElement('div');box.className='backpack-artifact-details';
+  const effect=document.createElement('p');effect.className='backpack-artifact-effect';effect.textContent=artifactEffect(item.artifact,item.rarity)+'.';
+  const tiers=document.createElement('div');tiers.className='backpack-artifact-tiers';
+  for(const rarity of RARITIES){const tier=document.createElement('span');tier.dataset.rarity=rarity;tier.classList.toggle('current',rarity===item.rarity);tier.title=`${RARITY_NAMES[rarity]}: ${artifactEffect(item.artifact,rarity)}`;tier.textContent=RARITY_NAMES[rarity];tiers.append(tier);}
+  const next=nextRarity(item.rarity),copies=copiesOf(inventory,artifactKey(item)),progress=document.createElement('p');progress.className='backpack-artifact-progress';
+  progress.textContent=next?`${Math.min(copies,COMBINE_COUNT)} / ${COMBINE_COUNT} to combine into ${RARITY_NAMES[next]}`:'Legendary is the highest rarity.';
+  box.append(effect,tiers,progress);return box;
+ }
  function refresh(){
   const inventory=getWorld().inventory,entries=backpackItems(inventory,category);
   // Keep a selection visible like the reference design: fall back to the first item in the current category.
   if(!entries.some(({item})=>item.id===selectedId)){selectedId=entries[0]?.item.id??null;choosingSlot=false;}
-  const key=JSON.stringify([inventory.marks,inventory.allItems,inventory.slots,inventory.selected,category,selectedId,choosingSlot]);if(key===lastKey)return;lastKey=key;
+  const key=JSON.stringify([inventory.marks,inventory.allItems,inventory.slots,artifactSlots(inventory),inventory.selected,category,selectedId,choosingSlot]);if(key===lastKey)return;lastKey=key;
   const total=inventory.allItems.reduce((sum,item)=>sum+itemCount(item),0),stacks=inventory.allItems.length;
   dialog.querySelector('.backpack-capacity').textContent=`${total} ${total===1?'item':'items'} in ${stacks} ${stacks===1?'slot':'slots'} | ${inventory.slots.filter(Boolean).length} / 6 hotbar slots assigned`;
   dialog.querySelector('.backpack-marks span').textContent=marksLabel(inventory.marks||0);
   for(const filter of filters.children)filter.setAttribute('aria-pressed',filter.dataset.category===category);
   items.replaceChildren();actions.replaceChildren();
   const selected=inventory.allItems.find(item=>item.id===selectedId);
-  dialog.querySelector('.backpack-details').classList.toggle('empty',!selected);setItemIcon(artIcon,selected?.name);
+  const details=dialog.querySelector('.backpack-details');details.classList.toggle('empty',!selected);details.dataset.rarity=isArtifact(selected)?selected.rarity:'';setItemIcon(artIcon,selected?.name);
   if(selected){
    const heading=document.createElement('h3');heading.textContent=selected.name;
-   const uses=document.createElement('small');uses.className='backpack-uses';uses.textContent=PERMANENT_ITEMS.has(selected.name)?'Unlimited uses':stackable(selected)?`${itemCount(selected)} in this stack`:amountLabel(selected);
+   const uses=document.createElement('small');uses.className='backpack-uses';uses.textContent=isArtifact(selected)?`${RARITY_NAMES[selected.rarity]} artifact · ${itemCount(selected)} carried`:PERMANENT_ITEMS.has(selected.name)?'Unlimited uses':stackable(selected)?`${itemCount(selected)} in this stack`:amountLabel(selected);
    const divider=document.createElement('span');divider.className='backpack-divider';divider.setAttribute('aria-hidden','true');
    const description=document.createElement('p');description.textContent=selected.description||'Choose what to do with this item.';
-   const place=document.createElement('strong');place.className='backpack-equip';const hotbarSlot=inventory.slots.findIndex(entry=>entry?.id===selected.id);place.textContent=hotbarSlot>=0?`Hotbar ${hotbarSlot+2}`:'In backpack';
+   const place=document.createElement('strong');place.className='backpack-equip';const hotbarSlot=inventory.slots.findIndex(entry=>entry?.id===selected.id);place.textContent=inArtifactSlot(inventory,selected)?'In an artifact slot':hotbarSlot>=0?`Hotbar ${hotbarSlot+2}`:'In backpack';
    const actionRow=document.createElement('div');actionRow.className='backpack-action-row';
-   actions.append(heading,uses,divider,description,place,actionRow);
+   actions.append(heading,uses,divider,description);if(isArtifact(selected))actions.append(artifactDetails(inventory,selected));actions.append(place,actionRow);
    const addAction=(label,action)=>{const control=document.createElement('button');control.textContent=label;control.onclick=action;actionRow.append(control);return control;};
-   const execute=action=>{const previous=selected.id;if(onAction(selected.id,action)){selectedId=null;choosingSlot=false;lastKey='';if(action==='use'||action==='drop')dialog.close();else{if(action==='discard')selectedId=getWorld().inventory.allItems.some(item=>item.id===previous)?previous:null;refresh();}}else{setNote(getWorld().fishing.state!=='idle'?'Finish or abandon fishing before managing items.':getWorld().message||'Action unavailable. Let your attack recover.');}};
-   const usable=canUseItem(selected);
-   const use=addAction('Use',()=>execute('use'));use.disabled=!usable;use.title=usable?stackable(selected)?'Use one from the stack':'Use one charge':'This item has no direct use yet';
+   const execute=action=>{const previous=selected.id;if(onAction(selected.id,action)){selectedId=null;choosingSlot=false;lastKey='';if(action==='use'||action==='drop')dialog.close();else{if(isArtifact(selected))setNote(getWorld().message);if(action==='combine')selectedId=getWorld().inventory.allItems.find(item=>isArtifact(item)&&item.artifact===selected.artifact&&item.rarity===nextRarity(selected.rarity))?.id??null;if(['discard','slot','unslot'].includes(action))selectedId=getWorld().inventory.allItems.some(item=>item.id===previous)?previous:null;refresh();}}else{setNote(getWorld().fishing.state!=='idle'?'Finish or abandon fishing before managing items.':getWorld().message||'Action unavailable. Let your attack recover.');}};
+   // Artifacts work from their own slots instead of being used or put on the hotbar.
+   if(isArtifact(selected)){
+    const next=nextRarity(selected.rarity);
+    if(next&&copiesOf(inventory,artifactKey(selected))>=COMBINE_COUNT)addAction(`Combine ${COMBINE_COUNT} into ${RARITY_NAMES[next]}`,()=>execute('combine')).className='primary';
+    const slotted=inArtifactSlot(inventory,selected);addAction(slotted?'Take out of slot':'Put in slot',()=>execute(slotted?'unslot':'slot'));
+   }else{
+    const usable=canUseItem(selected);
+    const use=addAction('Use',()=>execute('use'));use.disabled=!usable;use.title=usable?stackable(selected)?'Use one from the stack':'Use one charge':'This item has no direct use yet';
+   }
    const several=itemCount(selected)>1;
    addAction(several?'Throw one':'Throw into world',()=>execute('drop'));addAction(several?'Discard one':'Discard',()=>execute('discard')).className='danger';
    if(several)addAction(`Discard all ${itemCount(selected)}`,()=>execute('discard-all')).className='danger';
-   const hotbar=addAction('Add to hotbar',()=>{choosingSlot=!choosingSlot;lastKey='';refresh();});hotbar.setAttribute('aria-expanded',choosingSlot);
+   if(!isArtifact(selected)){const hotbar=addAction('Add to hotbar',()=>{choosingSlot=!choosingSlot;lastKey='';refresh();});hotbar.setAttribute('aria-expanded',choosingSlot);}
    if(choosingSlot){
     const title=document.createElement('p');title.textContent='Choose a hotbar slot. Replaced items stay in the backpack.';actions.append(title);
     const slots=document.createElement('div');slots.className='backpack-slot-choices';actions.append(slots);
@@ -68,6 +112,7 @@ export function mountBackpack({getWorld,onOpen,onClose,onAction}){
    const empty=document.createElement('p');empty.className='backpack-empty';empty.textContent=category==='all'?'Your backpack is empty. Fish to find items.':'No items in this category yet.';actions.append(empty);
   }
   // A 5 x 5 grid at minimum, growing a row at a time when the backpack holds more.
+  if(category==='artifacts')items.append(artifactSlotPanel(inventory));
   const cells=Math.max(25,Math.ceil(entries.length/5)*5);
   for(let index=0;index<cells;index++){
    const item=entries[index]?.item;
@@ -76,8 +121,8 @@ export function mountBackpack({getWorld,onOpen,onClose,onAction}){
    const icon=document.createElement('span');icon.className='backpack-item-icon';setItemIcon(icon,item.name);
    const count=document.createElement('small');count.className='backpack-count';count.textContent=PERMANENT_ITEMS.has(item.name)?'∞':stackable(item)?`×${itemCount(item)}`:item.uses;count.classList.toggle('backpack-stack',stackable(item)&&itemCount(item)>1);
    const hotbarSlot=inventory.slots.findIndex(entry=>entry?.id===item.id);
-   card.append(icon,count);if(hotbarSlot>=0){const badge=document.createElement('small');badge.className='backpack-hotbar-badge';badge.textContent=hotbarSlot+2;badge.title=`Hotbar ${hotbarSlot+2}`;card.append(badge);}
-   card.onclick=()=>{selectedId=item.id;choosingSlot=false;lastKey='';refresh();if(matchMedia('(max-width: 860px)').matches)actions.scrollIntoView({block:'nearest',behavior:'smooth'});};items.append(card);
+   card.append(icon,count);if(isArtifact(item))markArtifact(card,inventory,item);if(hotbarSlot>=0){const badge=document.createElement('small');badge.className='backpack-hotbar-badge';badge.textContent=hotbarSlot+2;badge.title=`Hotbar ${hotbarSlot+2}`;card.append(badge);}
+   card.onclick=()=>select(item.id);items.append(card);
   }
  }
  function open(){const world=getWorld();if(!world.adventure||world.player.health<=0||dialog.open)return;onOpen();selectedId=null;choosingSlot=false;lastKey='';setNote('Select an item for actions. Catches stay in your backpack.');refresh();dialog.showModal();button.setAttribute('aria-expanded','true');}

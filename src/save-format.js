@@ -11,6 +11,7 @@ import {createCreature,listFor,restoreSpawns,spawnable} from './spawns.js';
 import {ANIMAL_TYPES} from './entities.js';
 import {MARKS_LIMIT} from './trade.js';
 import {SIDE_QUEST_IDS,restoreSideQuests} from './side-quests.js';
+import {ARTIFACTS,ARTIFACT_SLOT_COUNT,RARITIES,artifactIdFor,normalizeArtifact} from './artifacts.js';
 export const SAVE_VERSION=7;
 export const SAVE_FORMAT='the-wilds-save';
 const clone=value=>JSON.parse(JSON.stringify(value));
@@ -23,7 +24,10 @@ function inspect(value,depth=0){
   if(['__proto__','prototype','constructor'].includes(key))fail('Save file contains invalid fields.');inspect(value[key],depth+1);
  }
 }
-function itemValid(item){return item&&typeof item.id==='string'&&item.id.length<100&&typeof item.name==='string'&&item.name.length>0&&item.name.length<120&&number(item.uses,1,100000)&&Number.isInteger(item.uses)&&(!item.description||typeof item.description==='string'&&item.description.length<2000)&&(item.count===undefined||number(item.count,1,100000)&&Number.isInteger(item.count));}
+function itemValid(item){return item&&typeof item.id==='string'&&item.id.length<100&&typeof item.name==='string'&&item.name.length>0&&item.name.length<120&&number(item.uses,1,100000)&&Number.isInteger(item.uses)&&(!item.description||typeof item.description==='string'&&item.description.length<2000)&&(item.count===undefined||number(item.count,1,100000)&&Number.isInteger(item.count))&&artifactValid(item);}
+// An artifact names a known artifact, matches its name and carries a known rarity.
+const artifactValid=item=>item.artifact===undefined&&item.rarity===undefined||Object.hasOwn(ARTIFACTS,item.artifact)&&ARTIFACTS[item.artifact].name===item.name&&RARITIES.includes(item.rarity);
+const slotValid=key=>key===null||typeof key==='string'&&Object.hasOwn(ARTIFACTS,key.split(':')[0])&&RARITIES.includes(key.split(':')[1])&&key.split(':').length===2;
 const ANIMAL_FIELDS=['x','y','health','state','time','wait','alert','direction','seed','hopDuration','hopDistance','anger','attackerId','attackRemaining','attackCooldownRemaining','threat','deathRemaining'];
 export function captureSave(world,reason='autosave',now=Date.now()){
  if(!world?.adventure)fail('Only exploration progress can be saved.');
@@ -31,7 +35,7 @@ export function captureSave(world,reason='autosave',now=Date.now()){
  return {format:SAVE_FORMAT,version:SAVE_VERSION,savedAt:now,reason,journeyId:world.journeyId,state:{
   areaId:world.areaId,elapsed:world.elapsed,story:world.story?clone(world.story):null,
   player:{x:p.x,y:p.y,angle:p.angle,health:p.health,cooldown:p.cooldown,dashCharges:p.dashCharges,dashCooldown:p.dashCooldown},
-  inventory:{items:clone(p.inventory.allItems),hotbar:p.inventory.slots.map(item=>item?.id||null),selected:p.inventory.selected,nextId:p.inventory.nextId,marks:p.inventory.marks},
+  inventory:{items:clone(p.inventory.allItems),hotbar:p.inventory.slots.map(item=>item?.id||null),selected:p.inventory.selected,nextId:p.inventory.nextId,marks:p.inventory.marks,artifacts:[...p.inventory.artifactSlots]},
   progression:{...clone(p.progression),eliminations:[...p.progression.eliminations]},catches:clone(p.catches),
   quests:clone(world.quests),discovered:[...world.discovered],hunting:clone(world.hunting),familiars:clone(world.familiars),codex:[...(world.codex||[])],
   spawns:world.spawns?{seed:world.spawns.seed,next:world.spawns.next,current:world.spawns.current,areas:clone(world.spawns.areas)}:null,
@@ -94,7 +98,11 @@ export function restoreSave(input){
  if(!inv.items.every(itemValid)||new Set(inv.items.map(item=>item.id)).size!==inv.items.length)fail('Invalid backpack items.');
  const ids=new Map(inv.items.map(item=>[item.id,item]));const shortcuts=inv.hotbar.filter(Boolean);
  if(new Set(shortcuts).size!==shortcuts.length||shortcuts.some(id=>!ids.has(id)))fail('Invalid hotbar shortcuts.');
- w.inventory.storedItems=clone(inv.items);const stored=new Map(w.inventory.storedItems.map(item=>[item.id,item]));w.inventory.slots=inv.hotbar.map(id=>stored.get(id)||null);w.inventory.selected=inv.selected;if(restack)w.inventory.restack();
+ w.inventory.storedItems=clone(inv.items);const stored=new Map(w.inventory.storedItems.map(item=>[item.id,item]));w.inventory.slots=inv.hotbar.map(id=>stored.get(id)||null);w.inventory.selected=inv.selected;
+ // Artifacts arrived after save version 7. Rabbit's Feet carried from before become Common artifacts, and saves without slots start with all three empty.
+ const migrated=w.inventory.storedItems.filter(item=>artifactIdFor(item.name)&&item.rarity===undefined);w.inventory.storedItems.forEach(normalizeArtifact);if(restack||migrated.length)w.inventory.restack();
+ if(inv.artifacts!==undefined&&(!list(inv.artifacts,ARTIFACT_SLOT_COUNT)||inv.artifacts.length!==ARTIFACT_SLOT_COUNT||!inv.artifacts.every(slotValid)))fail('Invalid artifact slots.');
+ w.inventory.artifactSlots=inv.artifacts?[...inv.artifacts]:Array(ARTIFACT_SLOT_COUNT).fill(null);
  // Reed marks arrived with save version 7's stacks; saves without them start with an empty purse.
  if(inv.marks!==undefined&&(!Number.isSafeInteger(inv.marks)||!number(inv.marks,0,MARKS_LIMIT)))fail('Invalid purse data.');w.inventory.marks=inv.marks??0;
  w.inventory.nextId=Math.max(inv.nextId,...inv.items.map(item=>/^item-\d+$/.test(item.id)?Number(item.id.slice(5))+1:1));
@@ -134,7 +142,7 @@ export function restoreSave(input){
  for(const drop of s.drops){
   if(!drop||typeof drop.id!=='string'||!Object.hasOwn(AREAS,drop.areaId)||!itemValid(drop.item)||!number(drop.x,0,AREAS[drop.areaId].width)||!number(drop.y,0,AREAS[drop.areaId].height))fail('Invalid dropped item.');
   const position=walkable(drop.x,drop.y,drop.areaId)?{x:drop.x,y:drop.y}:AREAS[drop.areaId].spawn;
-  w.drops.push({id:drop.id,entityType:'pickup',spriteId:'pickup',areaId:drop.areaId,...position,item:clone(drop.item)});
+  w.drops.push({id:drop.id,entityType:'pickup',spriteId:'pickup',areaId:drop.areaId,...position,item:normalizeArtifact(clone(drop.item))});
  }
  if(new Set([...inv.items.map(item=>item.id),...w.drops.map(drop=>drop.item.id)]).size!==inv.items.length+w.drops.length)fail('Duplicate world inventory item.');
  if(new Set(w.drops.map(drop=>drop.id)).size!==w.drops.length)fail('Duplicate dropped item.');
@@ -144,5 +152,5 @@ export function restoreSave(input){
 export function parseSave(text){if(typeof text!=='string'||text.length>5*1024*1024)fail('Save file is too large.');let save;try{save=JSON.parse(text);}catch{fail('Could not read this file. Choose a valid The Wilds JSON save.');}restoreSave(save);return save;}
 export function importantProgress(world){
  const p=world.progression;
- return JSON.stringify([world.areaId,world.inventory.allItems,world.inventory.marks,world.inventory.slots.map(i=>i?.id),p.totalXp,p.skills,p.skillTrees,p.pendingChoices,p.pendingUpgrades,p.upgrades,p.ranks,p.specials,world.quests,world.story,[...world.discovered],world.hunting,world.familiars,[...(world.codex||[])],world.drops,world.animals.map(a=>a.health)]);
+ return JSON.stringify([world.areaId,world.inventory.allItems,world.inventory.marks,world.inventory.slots.map(i=>i?.id),world.inventory.artifactSlots,p.totalXp,p.skills,p.skillTrees,p.pendingChoices,p.pendingUpgrades,p.upgrades,p.ranks,p.specials,world.quests,world.story,[...world.discovered],world.hunting,world.familiars,[...(world.codex||[])],world.drops,world.animals.map(a=>a.health)]);
 }
