@@ -10,7 +10,7 @@ Generated concept art, references, cutscenes and sprite sheets for Volume 1. The
 | `sprites/mobs/` | Nightwalker (shadow walker) enemy: reference sheet, pose and animation sheet. |
 | `sprites/characters/` | Playable and NPC character sprites: Drayfus so far. |
 | `sprites/props/sheets/` | Five furniture and prop sheets (cabin and lodge, chief's house and shared pieces, village, training yard and blacksmith, inn and homes), 20 pieces each on a green background. |
-| `sprites/wishing-well/` | The Wishing Well summon: Eli's single and ten-stone throws, the well and the cavern under it, the five rarity fish and the stone, splash and sparkle effects. |
+| `sprites/wishing-well/` | The Wishing Well summon: Eli's single and ten-stone throws, the well and the cavern under it, the five rarity fish, Eli's jump shot for Epic-or-better draws, and the stone, splash and sparkle effects. |
 | `sprites/items/sheets/` | Four item icon sheets (tools and weapons, food and wares, materials and trophies, shards and quest items) on a green background. |
 | `references/` | World and area maps used for the region layouts. |
 

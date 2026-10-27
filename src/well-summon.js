@@ -14,6 +14,7 @@ const WELL={x:217,mouth:106},GROUND=142,ELI={x:70},HAND={x:16,y:-40},EARTH=150,S
 const CAVE={x:-1,y:186,w:400,h:225};
 // Strips cut by scripts/prepare-well-summon.py: cell size and anchor in scene units, at 4 pixels per unit.
 const SUMMON_ART={eliSingle:{src:'eli-throw-single',frames:6,w:37.25,h:45.5,ax:17.43,ay:45.25},eliMulti:{src:'eli-throw-multi',frames:6,w:35.25,h:44.5,ax:16,ay:44.25},
+ eliShot:{src:'eli-jump-shot',frames:7,w:33.5,h:61,ax:13.8,ay:60.41},
  common:{src:'fish-sardine',frames:5,w:34.5,h:16.75,ax:34.25,ay:7.5},uncommon:{src:'fish-reed-perch',frames:5,w:42.25,h:26,ax:42,ay:12.88},
  rare:{src:'fish-river-eel',frames:5,w:84.5,h:44.25,ax:84.25,ay:25.12},epic:{src:'fish-glowfin',frames:5,w:48.25,h:45.75,ax:48,ay:17.18},
  legendary:{src:'fish-golden-koi',frames:5,w:87.75,h:66.5,ax:87.5,ay:42},shadow:{src:'koi-shadow',frames:4,w:87.75,h:64.5,ax:87.5,ay:42},
@@ -22,6 +23,11 @@ const SUMMON_ART={eliSingle:{src:'eli-throw-single',frames:6,w:37.25,h:45.5,ax:1
 // Eli's frames change at these times; the stones leave his hand during the fourth frame.
 const ELI_FRAMES={single:[0,.22,.42,.56,.72,.95],multi:[0,.22,.42,.56,.8,1.35]};
 const RELEASE=.62;
+// A draw holding an Epic or better gets Eli's basketball jump shot instead of the toss: a crouch, a leap, a high arc
+// that hangs at the top, and a swish into the well. Until its sheet loads, the throw frames stand in, lifted off the ground.
+export const SHOT_RARITY='epic';
+const SHOT={release:.95,frames:[0,.22,.48,.82,1.05,1.4,1.75],standIn:[0,1,2,3,4,4,5]};
+const jumpAt=t=>16*Math.sin(Math.PI*clamp((t-.55)/.75));
 const rank=r=>RARITIES.indexOf(r);
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const ease=u=>{u=clamp(u);return u<.5?2*u*u:1-(-2*u+2)**2/2;};
@@ -54,7 +60,11 @@ export function planSummon(rarities,random=Math.random){
  const best=order.reduce((a,b)=>rank(b.rarity)>rank(a.rarity)?b:a,order[0]);
  const queue=[...order.filter(o=>o!==best),best];
  // Each stone's throw: when it leaves Eli's hand, when it drops into the well and where on the water.
- const flights=order.map((o,i)=>{const release=RELEASE+(multi?i*.07:0);return {release,land:release+(multi?.55+hash(i)*.25:.6),x:WELL.x+(multi?(hash(i+5)-.5)*18:0)};});
+ const shot=rarities.some(r=>rank(r)>=rank(SHOT_RARITY));
+ const flights=order.map((o,i)=>{
+  const release=shot?SHOT.release+(multi?i*.015:0):RELEASE+(multi?i*.07:0);
+  return {release,land:release+(shot?(multi?1+hash(i)*.15:1.05):multi?.55+hash(i)*.25:.6),x:WELL.x+(multi?(hash(i+5)-.5)*18:0)};
+ });
  const throwEnd=Math.max(...flights.map(f=>f.land))+.1,under=throwEnd+1.5,sinkEnd=under+1;
  const stones=order.map((o,i)=>multi?{x:WELL.x-116+(i%5)*58+(hash(i+3)-.5)*10,y:CAVE.y+80+Math.floor(i/5)*44+(hash(i+9)-.5)*8}:{x:WELL.x,y:CAVE.y+104});
  const beats=[];let start=sinkEnd;
@@ -70,13 +80,18 @@ export function planSummon(rarities,random=Math.random){
   start+=finale?0:multi?(fake?1.3:.62):0;
  });
  const last=beats.at(-1);
- return {count:n,multi,flights,throwEnd,under,sinkEnd,stones,beats,total:last.start+last.duration+.7};
+ return {count:n,multi,shot,flights,throwEnd,under,sinkEnd,stones,beats,total:last.start+last.duration+.7};
 }
+const handAt=(plan,t)=>plan.shot?{x:ELI.x+15,y:GROUND-46-jumpAt(t)}:{x:ELI.x+HAND.x,y:GROUND+HAND.y};
 // Where stone i is: in Eli's hand, arcing over to the well, sinking down the shaft, then drifting to its spot in the cavern.
 function stoneAt(plan,i,t){
- const f=plan.flights[i],hand={x:ELI.x+HAND.x,y:GROUND+HAND.y},exit=WELL.x+(hash(i+11)-.5)*12,spot=plan.stones[i];
+ const f=plan.flights[i],hand=handAt(plan,Math.min(t,f.release)),exit=WELL.x+(hash(i+11)-.5)*12,spot=plan.stones[i];
  if(t<f.release)return {...hand,phase:'hand'};
- if(t<f.land){const u=(t-f.release)/(f.land-f.release);return {x:lerp(hand.x,f.x,u),y:lerp(hand.y,WELL.mouth,u)-Math.sin(u*Math.PI)*(46+hash(i+7)*14),phase:'air'};}
+ if(t<f.land){
+  // A jump shot climbs higher and hangs at the top of its arc before it drops.
+  let u=(t-f.release)/(f.land-f.release);if(plan.shot)u+=.7*Math.sin(2*Math.PI*u)/(2*Math.PI);
+  return {x:lerp(hand.x,f.x,u),y:lerp(hand.y,WELL.mouth,u)-Math.sin(u*Math.PI)*(plan.shot?78+hash(i+7)*10:46+hash(i+7)*14),phase:'air'};
+ }
  if(t<plan.under){const u=ease((t-f.land)/(plan.under-f.land));return {x:lerp(f.x,exit,u)+Math.sin(t*3+i)*u*(1-u)*6,y:lerp(WELL.mouth+3,CAVE.y+22,u),phase:'sink'};}
  const u=ease((t-plan.under-i*.04)/.9);
  return {x:lerp(exit,spot.x,u),y:lerp(CAVE.y+22,spot.y,u)+Math.sin(t*2+i)*1.2*u,phase:'rest'};
@@ -85,7 +100,9 @@ function stoneAt(plan,i,t){
 const WIDE={x:VIEW.w/2,y:VIEW.h/2,z:1},TRACK_ZOOM=1.5;
 function rawCamera(plan,t){
  let x=0,y=0;for(let i=0;i<plan.count;i++){const s=stoneAt(plan,i,t);x+=s.x;y+=s.y;}
- const track={x:x/plan.count,y:y/plan.count,z:TRACK_ZOOM},follow=ease((t-.35)/.7);
+ // On a jump shot the camera pushes in a little more while the stones hang at the top.
+ const f=plan.flights[0],hang=plan.shot?.25*Math.sin(Math.PI*clamp((t-f.release)/(f.land-f.release))):0;
+ const track={x:x/plan.count,y:y/plan.count,z:TRACK_ZOOM+hang},follow=ease((t-.35)/.7);
  if(t<plan.under)return {x:lerp(WIDE.x,track.x,follow),y:lerp(WIDE.y,track.y,follow),z:lerp(WIDE.z,track.z,follow)};
  // In the cavern the camera settles on the whole pool, then leans in a little on the last fish.
  const last=plan.beats.at(-1),push=ease((t-last.start)/1.4)*.12,stone=plan.stones[last.stone];
@@ -121,7 +138,7 @@ function ellipse(c,col,cx,cy,rx,ry){c.fillStyle=col;for(let dy=-ry;dy<=ry;dy++){
 function glow(c,col,x,y,r,alpha){c.save();c.globalAlpha=alpha;ellipse(c,col,x,y,r,r);c.globalAlpha=alpha*.6;ellipse(c,col,x,y,Math.round(r*1.6),Math.round(r*1.6));c.restore();}
 function line(c,col,x0,y0,x1,y1){const n=Math.max(1,Math.ceil(Math.hypot(x1-x0,y1-y0)));for(let i=0;i<=n;i++)rect(c,col,lerp(x0,x1,i/n),lerp(y0,y1,i/n),1,1);}
 
-function drawVillage(c,t){
+function drawVillage(c,t,plan){
  if(ready('scene')){c.drawImage(art.scene,0,0,VIEW.w,VIEW.h);return;}
  // Sky, cottages, the commons and the well.
  const sky=['#9ed3e4','#acdae7','#bde2ea','#cdeaee'];sky.forEach((col,i)=>rect(c,col,0,i*22,VIEW.w,22));
@@ -131,7 +148,7 @@ function drawVillage(c,t){
  rect(c,'#7aa856',0,GROUND,VIEW.w,6);rect(c,'#a59a83',0,GROUND+6,VIEW.w,VIEW.h-GROUND);
  for(let x=0;x<VIEW.w;x+=12)rect(c,'#8f846e',x+((x/12)%2)*6,GROUND+12,8,1);
  // The well: stone ring, posts, roof and crank.
- const glowing=clamp((t-RELEASE)*2);
+ const glowing=clamp((t-plan.flights[0].release)*2);
  rect(c,'#7c7a72',WELL.x-24,WELL.mouth,48,GROUND-WELL.mouth-6);for(let r=0;r<4;r++)for(let k=0;k<4;k++)rect(c,'#5f5d57',WELL.x-24+k*12+(r%2)*6,WELL.mouth+3+r*7,1,6);
  for(let r=1;r<4;r++)rect(c,'#5f5d57',WELL.x-24,WELL.mouth+r*7,48,1);
  ellipse(c,'#8f8d85',WELL.x,WELL.mouth,25,3);ellipse(c,glowing?'#3d7fa8':'#1f3540',WELL.x,WELL.mouth,20,2);
@@ -179,16 +196,21 @@ function drawCavern(c,t){
 }
 // Eli in pixels: feet on the ground, throwing arm swinging from behind to forward.
 function drawEli(c,t,plan){
- const key=plan.multi?'eliMulti':'eliSingle';
- if(ready(key)){const times=ELI_FRAMES[plan.multi?'multi':'single'];sprite(c,key,times.filter(s=>t>=s).length-1,ELI.x,GROUND);return;}
- const x=ELI.x,y=GROUND,u=clamp((t-.35)/.5),arm=lerp(2.5,-.9,ease(u))+(t>.85?lerp(0,.6,clamp((t-.85)/.4)):0),lean=Math.round(Math.sin(clamp(u)*Math.PI)*2);
+ const key=plan.multi?'eliMulti':'eliSingle',release=plan.flights[0].release;
+ if(plan.shot&&ready('eliShot')){sprite(c,'eliShot',SHOT.frames.filter(s=>t>=s).length-1,ELI.x,GROUND);return;}
+ const lift=plan.shot?jumpAt(t):0;
+ if(ready(key)){
+  const times=ELI_FRAMES[plan.multi?'multi':'single'],frame=plan.shot?SHOT.standIn[SHOT.frames.filter(s=>t>=s).length-1]:times.filter(s=>t>=s).length-1;
+  sprite(c,key,frame,ELI.x,GROUND-lift);return;
+ }
+ const x=ELI.x,y=GROUND-Math.round(lift),u=clamp((t-release+.27)/.5),arm=lerp(2.5,-.9,ease(u))+(t>.85?lerp(0,.6,clamp((t-.85)/.4)):0),lean=Math.round(Math.sin(clamp(u)*Math.PI)*2);
  rect(c,'#3f4c5a',x-4,y-9,3,9);rect(c,'#3f4c5a',x+1+lean,y-9,3,9);rect(c,'#2b2622',x-5,y-1,4,1);rect(c,'#2b2622',x+1+lean,y-1,4,1);
  rect(c,'#b6ad8f',x-5+lean,y-19,10,10);rect(c,'#9c9374',x-5+lean,y-11,10,1);
  rect(c,'#e8b991',x-4+lean,y-26,8,7);rect(c,'#49382d',x-5+lean,y-28,10,3);rect(c,'#49382d',x-5+lean,y-26,2,4);rect(c,'#222',x+2+lean,y-24,1,1);
  // The other hand cups the spare stones in a ten-draw.
  rect(c,'#e8b991',x+lean-4,y-13,2,2);
  const sx=x+1+lean,sy=y-17,hx=sx+Math.cos(arm)*8,hy=sy-Math.sin(arm)*8;line(c,'#b6ad8f',sx,sy,lerp(sx,hx,.6),lerp(sy,hy,.6));line(c,'#e8b991',lerp(sx,hx,.6),lerp(sy,hy,.6),hx,hy);
- if(t<RELEASE){rect(c,'#6fb6ff',hx,hy-1,2,2);if(plan.multi){rect(c,'#6fb6ff',hx+1,hy,2,2);rect(c,'#9fd0ff',hx-1,hy+1,2,1);}}
+ if(t<release){rect(c,'#6fb6ff',hx,hy-1,2,2);if(plan.multi){rect(c,'#6fb6ff',hx+1,hy,2,2);rect(c,'#9fd0ff',hx-1,hy+1,2,1);}}
 }
 function drawStone(c,x,y,color='#6fb6ff',shine=1){
  glow(c,color,x,y,3,.3*shine);
@@ -196,8 +218,11 @@ function drawStone(c,x,y,color='#6fb6ff',shine=1){
 }
 // A splash where each stone drops into the well.
 function drawSplash(c,plan,t){
+ // A jump shot ends in a swish: a ring of light flashes out of the well.
+ const swish=t-Math.min(...plan.flights.map(f=>f.land));
+ if(plan.shot&&swish>0&&swish<.6){c.save();c.globalAlpha=(1-swish/.6)*.8;c.strokeStyle='#eaf8ff';c.lineWidth=2;c.beginPath();c.ellipse?.(WELL.x,WELL.mouth,8+swish*60,2+swish*14,0,0,Math.PI*2);c.stroke();c.restore();glow(c,'#eaf8ff',WELL.x,WELL.mouth-2,6,.5*(1-swish/.6));}
  plan.flights.forEach((f,i)=>{const age=t-f.land;if(age<0||age>=.42)return;
-  if(ready('splash'))sprite(c,'splash',Math.floor(age/.14),f.x,WELL.mouth+1,{scale:plan.multi?.45:.7,alpha:1-age*1.2});
+  if(ready('splash'))sprite(c,'splash',Math.floor(age/.14),f.x,WELL.mouth+1,{scale:plan.shot?1:plan.multi?.45:.7,alpha:1-age*1.2});
   else for(let k=0;k<4;k++)rect(c,'#bfe9ff',f.x+(hash(i+k)-.5)*14,WELL.mouth-age*30+age*age*80-k,1,1);});
 }
 // --- Fish, facing right at dir 1, with the mouth at x. ---
@@ -250,7 +275,7 @@ export function drawSummon(c,plan,t){
  c.clearRect(0,0,VIEW.w,VIEW.h);c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';
  const camera=cameraAt(plan,t);
  c.save();c.translate(VIEW.w/2,VIEW.h/2);c.scale(camera.z,camera.z);c.translate(-camera.x,-camera.y);
- drawEarth(c);drawCavern(c,t);drawVillage(c,t);drawShaft(c,t,plan);drawEli(c,t,plan);
+ drawEarth(c);drawCavern(c,t);drawVillage(c,t,plan);drawShaft(c,t,plan);drawEli(c,t,plan);
  // Stones fly, sink and wait for their fish. A flare tease lights a stone up in a rarer colour for a moment.
  for(let i=0;i<plan.count;i++){
   const beat=plan.beats.find(b=>b.stone===i),s=stoneAt(plan,i,t);

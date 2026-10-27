@@ -56,3 +56,10 @@ test('the camera is one continuous shot from Eli in the village, down the well, 
   }
  }
 });
+
+test('Eli only takes the jump shot when the draw holds an Epic or better',()=>{
+ assert.equal(planSummon(['rare'],random).shot,false);assert.equal(planSummon(['common','uncommon','rare'],random).shot,false);
+ assert.equal(planSummon(['epic'],random).shot,true);assert.equal(planSummon(['common','common','legendary'],random).shot,true);
+ const toss=planSummon(['rare'],random),shot=planSummon(['epic'],random);
+ assert.ok(shot.flights[0].release>toss.flights[0].release,'he crouches and jumps before he shoots');
+});

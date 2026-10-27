@@ -2,7 +2,7 @@
 
 Each sheet has its frames in one row on a green (#00FF00) background. Frames are found by connected regions,
 the green and its spill are removed, and every frame goes into an equal cell of one horizontal strip:
-Eli lined up by the feet, fish by the snout, effects by their centre. Pebbles already flying out of Eli's
+Eli lined up by the feet (by the ground line for the jump shot), fish by the snout, effects by their centre. Pebbles already flying out of Eli's
 hands are dropped, because the game draws those stones itself. Prints the cell sizes and anchors that
 SUMMON_ART in src/well-summon.js uses. Run from the repository root:
     python3 scripts/prepare-well-summon.py
@@ -57,7 +57,7 @@ def frames(path,count,attached=False,body_only=()):
         for _ in range(2):near=near|np.roll(near,1,0)|np.roll(near,-1,0)|np.roll(near,1,1)|np.roll(near,-1,1)
         edge=near&(lab[y0:y1,x0:x1]==0)&(rgba[y0:y1,x0:x1,3]>0)
         crop[...,3]=np.where(edge,rgba[y0:y1,x0:x1,3],crop[...,3])
-        out.append(Image.fromarray(crop,'RGBA'))
+        frame=Image.fromarray(crop,'RGBA');frame.top=int(y0);out.append(frame)
     return out
 def scaled(images,scale):
     return [im.resize((max(1,round(im.width*scale)),max(1,round(im.height*scale))),Image.LANCZOS) for im in images]
@@ -83,6 +83,10 @@ os.makedirs(OUT,exist_ok=True);art={}
 single=frames(SRC+'eli-throw-single.png',6,True,(3,));multi=frames(SRC+'eli-throw-multi.png',6,True,(3,4))
 eli=44*PX/single[0].height
 art['eliSingle']=strip('eli-throw-single',scaled(single,eli),feet);art['eliMulti']=strip('eli-throw-multi',scaled(multi,44*PX/multi[0].height),feet)
+# The jump shot leaves the ground, so its frames line up on the sheet's own ground line rather than on his feet.
+shot=frames(SRC+'eli-jump-shot.png',7,True,(3,));ground=max(im.top+im.height for im in shot);s=44*PX/shot[0].height;jump=scaled(shot,s)
+for im,src in zip(jump,shot):im.lift=(ground-src.top)*s
+art['eliShot']=strip('eli-jump-shot',jump,lambda im:(feet(im)[0],im.lift))
 # Each fish has a length in scene units; frames 1-4 swim and frame 5 bites.
 for rarity,name,length in [('common','sardine',34),('uncommon','reed-perch',40),('rare','river-eel',74),('epic','glowfin',46),('legendary','golden-koi',86)]:
     fish=frames(SRC+f'fish-{name}.png',5);s=length*PX/fish[0].width
