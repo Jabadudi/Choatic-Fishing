@@ -4,6 +4,7 @@ import {WELL_POOLS,POOL_NAMES,PITY,MAX_DRAWS,STONE_PRICE,SHARD_COUNTS,WELL_ODDS,
 import {marksLabel,marksOf} from './trade.js';
 import {markIcon} from './trade-ui.js';
 import {setItemIcon} from './item-icons.js';
+import {VIEW,planSummon,drawSummon,summonLabels} from './well-summon.js';
 const svg=(body,size=24)=>`<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
 // A stone well: rim, posts and a little roof.
 const WELL='<path d="M4 9h16M6 9V5.5L12 3l6 2.5V9M5 13h14v7H5zM5 13c0-1.5 3-2.5 7-2.5s7 1 7 2.5M9 16.5h6"/>';
@@ -24,7 +25,7 @@ export function mountWell({getWorld,onOpen,onClose}){
 <div class="well-pity" data-rarity="legendary"><div class="well-pity-row"><span>Legendary within</span><b class="pity-legendary"></b></div><div class="well-bar"><i class="bar-legendary"></i></div></div>
 <div class="well-buttons"><button type="button" class="trade-action well-draw" data-count="1">Draw once<small>${wishstonesLabel(1)}</small></button><button type="button" class="trade-action well-draw" data-count="${MAX_DRAWS}">Draw ${MAX_DRAWS}<small>${wishstonesLabel(MAX_DRAWS)}</small></button><button type="button" class="trade-action well-buy">Buy a stone<small>${marksLabel(STONE_PRICE)}</small></button></div></section>
 <section class="well-main" aria-label="What the well brought up"><h3 class="trade-column-title">What the well brought up</h3><ul class="well-results"></ul></section></div>
-<p class="trade-note well-note" aria-live="polite"></p></div>`;
+<p class="trade-note well-note" aria-live="polite"></p><div class="well-summon" hidden><canvas class="well-summon-canvas" aria-label="Eli throws the Wishstones into the well, and fish come to eat them"></canvas><button type="button" class="trade-action well-skip">Skip</button></div></div>`;
  document.body.append(dialog);
  const $=selector=>dialog.querySelector(selector),results=$('.well-results'),note=$('.well-note');
  let pool='artifacts',lastKey='',shown={artifacts:[],familiars:[]};
@@ -56,10 +57,33 @@ export function mountWell({getWorld,onOpen,onClose}){
   results.replaceChildren(...(shown[pool].length?shown[pool].map(card):[el('li','trade-empty','Drop a Wishstone in and see what comes up.')]));
  }
  for(const tab of dialog.querySelectorAll('.well-tab'))tab.onclick=()=>{pool=tab.dataset.pool;lastKey='';refresh();};
+ // The summon animation plays over the window; the cards appear when it ends or is skipped.
+ const stage=$('.well-summon'),screen=$('.well-summon-canvas'),buffer=document.createElement('canvas');buffer.width=VIEW.w;buffer.height=VIEW.h;
+ let playing=null;
+ function stop(){if(!playing)return;const done=playing.done;cancelAnimationFrame(playing.frame);playing=null;stage.hidden=true;done();}
+ function play(results,done){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){done();return;}
+  const plan=planSummon(results.map(r=>r.rarity)),started=performance.now();stage.hidden=false;
+  const tick=now=>{
+   const t=(now-started)/1000;if(t>=plan.total){stop();return;}
+   const ratio=Math.min(2,devicePixelRatio||1),w=Math.round(screen.clientWidth*ratio),h=Math.round(screen.clientHeight*ratio);
+   if(screen.width!==w||screen.height!==h){screen.width=w;screen.height=h;}
+   // The scene keeps its 16:9 shape inside whatever space the window has, letterboxed in the dark.
+   const ctx=screen.getContext('2d'),scale=Math.min(w/VIEW.w,h/VIEW.h),ox=(w-VIEW.w*scale)/2,oy=(h-VIEW.h*scale)/2;drawSummon(buffer.getContext('2d'),plan,t);
+   ctx.imageSmoothingEnabled=false;ctx.clearRect(0,0,w,h);ctx.drawImage(buffer,ox,oy,VIEW.w*scale,VIEW.h*scale);
+   ctx.textAlign='center';
+   for(const label of summonLabels(plan,t)){ctx.globalAlpha=label.alpha;ctx.font=`700 ${Math.round((label.big?9:6)*scale)}px Georgia,serif`;ctx.lineWidth=Math.max(2,scale);ctx.strokeStyle='#061410';ctx.strokeText(label.text,ox+label.x*scale,oy+label.y*scale);ctx.fillStyle=label.color;ctx.fillText(label.text,ox+label.x*scale,oy+label.y*scale);}
+   ctx.globalAlpha=1;playing.frame=requestAnimationFrame(tick);
+  };
+  playing={done,frame:requestAnimationFrame(tick)};$('.well-skip').focus();
+ }
+ $('.well-skip').onclick=stop;
  for(const button of dialog.querySelectorAll('.well-draw'))button.onclick=()=>{
-  const world=getWorld(),drawn=drawWell(world,pool,Number(button.dataset.count));
-  if(drawn.ok){shown[pool]=drawn.results;const well=$('.well-results');well.classList.remove('well-splash');void well.offsetWidth;well.classList.add('well-splash');}
-  note.textContent=world.message;lastKey='';refresh();
+  if(playing)return;
+  const world=getWorld(),drawn=drawWell(world,pool,Number(button.dataset.count)),message=world.message;
+  if(!drawn.ok){note.textContent=message;lastKey='';refresh();return;}
+  note.textContent='Eli throws the stones into the well…';lastKey='';refresh();
+  play(drawn.results,()=>{shown[pool]=drawn.results;const well=$('.well-results');well.classList.remove('well-splash');void well.offsetWidth;well.classList.add('well-splash');note.textContent=message;lastKey='';refresh();});
  };
  $('.well-buy').onclick=()=>{const world=getWorld();buyWishstone(world);note.textContent=world.message;lastKey='';refresh();};
  function open(){
@@ -68,7 +92,7 @@ export function mountWell({getWorld,onOpen,onClose}){
   refresh();dialog.showModal();
  }
  $('.backpack-close').onclick=()=>dialog.close();
- dialog.addEventListener('close',()=>{shown={artifacts:[],familiars:[]};onClose();});
+ dialog.addEventListener('close',()=>{if(playing){cancelAnimationFrame(playing.frame);playing=null;stage.hidden=true;}shown={artifacts:[],familiars:[]};onClose();});
  dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close();}});
- return {get open(){return dialog.open;},show:open,close(){if(dialog.open)dialog.close();},update(visible){if(!visible&&dialog.open)dialog.close();if(dialog.open)refresh();}};
+ return {get open(){return dialog.open;},get summoning(){return !!playing;},skip:stop,show:open,close(){if(dialog.open)dialog.close();},update(visible){if(!visible&&dialog.open)dialog.close();if(dialog.open)refresh();}};
 }
