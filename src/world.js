@@ -19,6 +19,7 @@ import {createNpcs,nearbyNpc,updateDialogue} from './npcs.js';
 import {createFamiliars,absorbShard,updateFamiliar,familiarAction} from './familiars.js';
 import {noteEncounters} from './codex-discovery.js';
 import {updateDefeat} from './monsters.js';
+import {createWell,updateWell,nearWell,findWishstone} from './wishing-well.js';
 import {artifactBonus,combineArtifacts,isArtifact,itemLabel,slotArtifact,unslotArtifact,withArticle} from './artifacts.js';
 export {LAND} from './terrain.js';
 export const SHORE_DEPTH=110;
@@ -41,7 +42,7 @@ export class World {
   }
   this.story=adventure&&story?createStory():null;this.adventure=adventure;this.drops=[];this.nextDropId=1;
   if(adventure)this.player.inventory=new Inventory({separateStorage:true});
-  this.rabbits=adventure?createRabbits():[];this.wildlife=adventure?createWildlife():[];this.hunting={total:0,bySpecies:{},shiny:{seen:{},hunted:{}}};this.spawns=adventure?createSpawns():null;this.familiars=createFamiliars();this.companion=null;this.codex=new Set();
+  this.rabbits=adventure?createRabbits():[];this.wildlife=adventure?createWildlife():[];this.hunting={total:0,bySpecies:{},shiny:{seen:{},hunted:{}}};this.spawns=adventure?createSpawns():null;this.familiars=createFamiliars();this.companion=null;this.codex=new Set();this.well=createWell();
   this.npcs=adventure?createNpcs():[];this.dialogue=null;this.quests=createQuests();
   if(adventure){this.areaId='landing';Object.assign(this.player,Wilds.SPAWN);this.bots=[];this.actors=[this.player];this.humans=[this.player];this.chests=[];this.countdownRemaining=0;this.matchState='playing';this.discovered=new Set();this.message='Welcome to Reedwater Landing. Follow the north trail to walk into Windchime Path. M opens the area map.';}
   if(adventure)this.player.progression.characterStats=true;
@@ -118,6 +119,8 @@ export class World {
   if(npc){const text=npc.id==='mara'&&!this.story?maraQuestDialogue(this):work&&!MERCHANTS[npc.id]?work.quest.reminder:npc.greeting;this.message=`${npc.name}: ${text}`;
    // Merchants greet you from their stall instead of a conversation. The interface opens it on its next frame.
    if(MERCHANTS[npc.id])this.tradeRequest=MERCHANTS[npc.id];else this.dialogue={npcId:npc.id,text,remaining:12};return true;}
+  // Once awake, the well opens its window instead of the commons description. The interface opens it on its next frame.
+  if(nearWell(this)){this.wellRequest=true;this.message='Eli looks into the well. The water glows blue.';return true;}
   const place=Wilds.nearestLandmark(this.player.x,this.player.y,this.areaId);
   if(!place)return false;
   this.discovered.add(place.id);this.message=place.text;return true;
@@ -195,8 +198,8 @@ export class World {
    // Fishing XP comes only from a landed fish; escapes and abandoned lines award nothing.
    const trained=practise(this,actor,'fishing',XP.catch,actor.bobber||undefined);
    const buff=this.story?null:actor.progression.grantCatchBuff(this.random);if(buff?.id==='vitality')actor.health+=10;
-   const found=actor===this.player?findMarks(this,this.random):0;
-   if(actor===this.player){this.catches.push(item);const gained=`+${trained.amount} Fishing XP${trained.text?` · ${trained.text}`:''}`;if(bonus)this.catches.push(item);const landed=bonus?`Two ${item.name}s`:item.name;this.message=buff?`${landed} caught! ${buff.name}: ${buff.description} · ${gained}`:this.story?.stage==='fish'?`${landed} caught! ${gained} · ${storyObjective(this).replace(/^Chapter 1 · /,'')}`:`${landed} caught! · ${gained}`;if(found)this.message+=` · ${marksLabel(found)} tangled in the line`;}
+   const found=actor===this.player?findMarks(this,this.random):0,stone=actor===this.player?findWishstone(this,this.random):0;
+   if(actor===this.player){this.catches.push(item);const gained=`+${trained.amount} Fishing XP${trained.text?` · ${trained.text}`:''}`;if(bonus)this.catches.push(item);const landed=bonus?`Two ${item.name}s`:item.name;this.message=buff?`${landed} caught! ${buff.name}: ${buff.description} · ${gained}`:this.story?.stage==='fish'?`${landed} caught! ${gained} · ${storyObjective(this).replace(/^Chapter 1 · /,'')}`:`${landed} caught! · ${gained}`;if(found)this.message+=` · ${marksLabel(found)} tangled in the line`;if(stone)this.message+=` · A Wishstone came up on the hook`;}
    actor.fishing.state='idle';actor.bobber=null;
   }else if(actor.fishing.state==='escaped'){if(actor===this.player)this.message='It got away. Try again.';actor.fishing.state='idle';actor.bobber=null;}
  }
@@ -226,7 +229,7 @@ export class World {
   updateDialogue(this,dt);
   updateStory(this,dt,Wilds.walkable);
   noteEncounters(this);
-  if(this.adventure){const place=Wilds.nearestLandmark(this.player.x,this.player.y,this.areaId);if(place)this.discovered.add(place.id);}
+  if(this.adventure){const place=Wilds.nearestLandmark(this.player.x,this.player.y,this.areaId);if(place)this.discovered.add(place.id);updateWell(this);}
   else if(this.online){if(this.actors.filter(actor=>actor.health>0).length<=1){this.matchState='finished';for(const actor of this.actors){actor.fishing.cancel();actor.bobber=null;}}}
   else if(this.player.health<=0){this.matchState='lost';this.cancel();this.message='You were eliminated.';}
   else if(this.bots.length&&this.bots.every(bot=>bot.health<=0)){this.matchState='won';this.cancel();this.message='Last angler standing!';}
