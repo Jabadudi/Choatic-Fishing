@@ -26,8 +26,8 @@ export const CHAPTER1_SCENES={
  ]),
  // Action beats stay one page each: the night attack keys its playback to these pages.
  storm:script([
-  {title:'12:30 A.M.',art:'lure',weather:'storm',lines:[narrate('Rain hammers the roof. The walls creak beneath the wind. Eli wakes to blue light pouring from the shelf. Bright. Dim. Exactly in time with his heartbeat.')]},
-  {title:'Take it',art:'lure',weather:'storm',lines:[narrate('A woman’s voice, close beside him. The room is empty.'),say(VOICE,'Take it. You have to live.'),narrate('Eli crosses the room and closes his hand around the warm lure.')]},
+  {title:'12:30 A.M.',art:'lure',artMoment:'storm-lure',weather:'storm',lines:[narrate('Rain hammers the roof. The walls creak beneath the wind. Eli wakes to blue light pouring from the shelf. Bright. Dim. Exactly in time with his heartbeat.')]},
+  {title:'Take it',art:'lure',artMoment:'storm-lure',weather:'storm',lines:[narrate('A woman’s voice, close beside him. The room is empty.'),say(VOICE,'Take it. You have to live.'),narrate('Eli crosses the room and closes his hand around the warm lure.')]},
   {action:'escape',title:'The strike',art:null,weather:'storm',lines:[narrate('Lightning tears open the roof. A beam throws Eli to the floor. Through the broken wall, another flash reveals a tall figure approaching with an axe. Eli pockets the lure and runs.')]},
   {action:'collapse',title:'Three steps',art:null,weather:'storm',lines:[narrate('Heat burns through Eli’s pocket. His muscles lock and he falls into the mud. The figure keeps coming. Ten feet. Eight. Six.')]},
   {action:'rescue',title:'Out of the darkness',art:'rescue',weather:'storm',lines:[narrate('A huge gray wolf slams into the figure. Snarling. A shout. The axe hits the ground. Eli’s last sight is silver fur against the rain.')]},
