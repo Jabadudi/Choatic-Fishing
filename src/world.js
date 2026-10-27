@@ -6,7 +6,8 @@ import {createQuests,maraQuestDialogue} from './quests.js';
 import {createWildlife,updateWildlife,updateAnimalCombat} from './wildlife.js';
 import {Fishing,ITEMS} from './fishing.js';
 import {Progression,XP} from './progression.js';
-import {Inventory,canUseItem} from './inventory.js';
+import {Inventory,canUseItem,HEALING} from './inventory.js';
+import {MERCHANTS,findMarks,marksLabel} from './trade.js';
 import {attack,special,updateProjectiles} from './combat.js';
 import {updateBot} from './bots.js';
 import {LAND,CHESTS,LAKES,lakeDistance,isWater,nearWater,walkable} from './terrain.js';
@@ -67,13 +68,17 @@ export class World {
    if(!chest){actor.message='Find an unopened chest and stand close to use your key.';return false;}
    consume();chest.opened=true;actor.health=actor.progression.maxHealth;actor.message='Treasure unlocked! Health fully restored.';return true;
   }
+  if(chosen&&Object.hasOwn(HEALING,chosen.name)){
+   const max=actor.progression.maxHealth;if(actor.health>=max){actor.message='Already at full health.';return false;}
+   consume();actor.health=Math.min(max,actor.health+HEALING[chosen.name]);actor.message=`${chosen.name} eaten. +${HEALING[chosen.name]} health.`;return true;
+  }
   const item=consume();if(!item)return false;
   attack(this,actor,item);return true;
  }
  useItem(){
   const name=this.inventory.item?.name,huntsBefore=this.hunting.total;
   if(!this.useActorItem(this.player)){if(!this.inventory.item)this.message='Selected slot is empty. Choose a filled slot with 2–7.';return false;}
-  if(name==='Treasure Key'||this.hunting.total>huntsBefore)return true;
+  if(name==='Treasure Key'||Object.hasOwn(HEALING,name)||this.hunting.total>huntsBefore)return true;
   this.message=PERMANENT_ITEMS.has(name)?`${name} · Arrow loosed.`:this.inventory.item?`${name} · ${this.inventory.item.uses} uses left.`:`${name} used up. Slot clear — fish again.`;return true;
  }
  backpackAction(id,action,slot){
@@ -86,7 +91,7 @@ export class World {
   if(action==='drop')return dropItem(this,item);
   if(action==='use'){
    if(!canUseItem(item)){this.message='This item cannot be used yet.';return false;}
-   const used=this.useActorItem(this.player,id);if(used)this.message=`Used ${item.name}.`;return used;
+   const used=this.useActorItem(this.player,id);if(used&&!Object.hasOwn(HEALING,item.name))this.message=`Used ${item.name}.`;return used;
   }
   return false;
  }
@@ -98,7 +103,9 @@ export class World {
   if(inspectStory(this))return true;
   const drop=nearbyDrop(this);if(drop){const shard=absorbShard(this,drop.item.familiar);if(!shard)this.inventory.receive(drop.item);this.drops=this.drops.filter(item=>item.id!==drop.id);this.message=shard||`Picked up ${drop.item.name}.`;return true;}
   const npc=nearbyNpc(this);
-  if(npc){const text=npc.id==='mara'&&!this.story?maraQuestDialogue(this):npc.greeting;this.dialogue={npcId:npc.id,text,remaining:12};this.message=`${npc.name}: ${text}`;return true;}
+  if(npc){const text=npc.id==='mara'&&!this.story?maraQuestDialogue(this):npc.greeting;this.message=`${npc.name}: ${text}`;
+   // Merchants greet you from their stall instead of a conversation. The interface opens it on its next frame.
+   if(MERCHANTS[npc.id])this.tradeRequest=MERCHANTS[npc.id];else this.dialogue={npcId:npc.id,text,remaining:12};return true;}
   const place=Wilds.nearestLandmark(this.player.x,this.player.y,this.areaId);
   if(!place)return false;
   this.discovered.add(place.id);this.message=place.text;return true;
@@ -158,7 +165,8 @@ export class World {
    // Fishing XP comes only from a landed fish; escapes and abandoned lines award nothing.
    const trained=practise(this,actor,'fishing',XP.catch,actor.bobber||undefined);
    const buff=this.story?null:actor.progression.grantCatchBuff(this.random);if(buff?.id==='vitality')actor.health+=10;
-   if(actor===this.player){this.catches.push(item);const gained=`+${trained.amount} Fishing XP${trained.text?` · ${trained.text}`:''}`;if(bonus)this.catches.push(item);const landed=bonus?`Two ${item.name}s`:item.name;this.message=buff?`${landed} caught! ${buff.name}: ${buff.description} · ${gained}`:this.story?.stage==='fish'?`${landed} caught! ${gained} · ${storyObjective(this).replace(/^Chapter 1 · /,'')}`:`${landed} caught! · ${gained}`;}
+   const found=actor===this.player?findMarks(this,this.random):0;
+   if(actor===this.player){this.catches.push(item);const gained=`+${trained.amount} Fishing XP${trained.text?` · ${trained.text}`:''}`;if(bonus)this.catches.push(item);const landed=bonus?`Two ${item.name}s`:item.name;this.message=buff?`${landed} caught! ${buff.name}: ${buff.description} · ${gained}`:this.story?.stage==='fish'?`${landed} caught! ${gained} · ${storyObjective(this).replace(/^Chapter 1 · /,'')}`:`${landed} caught! · ${gained}`;if(found)this.message+=` · ${marksLabel(found)} tangled in the line`;}
    actor.fishing.state='idle';actor.bobber=null;
   }else if(actor.fishing.state==='escaped'){if(actor===this.player)this.message='It got away. Try again.';actor.fishing.state='idle';actor.bobber=null;}
  }

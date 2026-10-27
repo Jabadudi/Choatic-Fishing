@@ -4,6 +4,7 @@ import {codexRevealed,revealedCount} from './codex-discovery.js';
 import {ANIMAL_TYPES,BEHAVIOR_LABELS} from './entities.js';
 import {ITEM_CATEGORIES} from './inventory.js';
 import {setItemIcon} from './item-icons.js';
+import {marksLabel} from './trade.js';
 import {spriteAssetUrl} from './sprites.js';
 const svg=(body,size=24)=>`<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
 const BOOK='<path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5zM20 5.5c0-.8-.7-1.5-1.5-1.5H13v16h5.5c.8 0 1.5-.7 1.5-1.5zM6.5 8h2.5M6.5 11h2.5M15 8h2.5M15 11h2.5"/>';
@@ -83,22 +84,22 @@ export function mountCodex({getWorld,onOpen,onClose,onFamiliar=()=>false}){
  function lootPanel(entry){
   const loot=codexLoot(entry),panel=el('section','codex-loot'),title=el('h4','codex-panel-title');
   title.innerHTML=svg(loot.kind==='wares'?'<path d="M4 9l2-5h12l2 5M4 9h16v11H4zM4 9c0 1.7 1.3 3 3 3s3-1.3 3-3c0 1.7 1.3 3 3 3s3-1.3 3-3c0 1.7 1.3 3 3 3s3-1.3 3-3M10 20v-5h4v5"/>':'<path d="M5 8h14l-1 12H6zM8 8V6a4 4 0 0 1 8 0v2M9 12h6"/>',18);
-  title.append(el('span',null,loot.kind==='wares'?'Wares for trade':'Loot table'));panel.append(title);
+  title.append(el('span',null,loot.kind==='wares'?'Wares for sale':'Loot table'));panel.append(title);
   if(!loot.rows.length){panel.append(el('p','codex-note',entry.lootNote||'Nothing to take.'));return panel;}
   const table=el('table','codex-table'),head=el('tr');
-  for(const text of loot.kind==='wares'?['Item','Trade for']:['Item','Drop chance','Shiny'])head.append(el('th',null,text));
+  for(const text of loot.kind==='wares'?['Item','Price']:['Item','Drop chance','Shiny'])head.append(el('th',null,text));
   const thead=el('thead');thead.append(head);const body=el('tbody');
   for(const row of loot.rows){
    const tr=el('tr'),cell=el('td','codex-item'),icon=el('span','codex-item-icon');setItemIcon(icon,row.item);
-   const text=el('span');text.append(el('strong',null,row.note?`${row.item} ${row.note}`:row.item),el('small',null,row.familiar?'Familiar shard':categoryLabel(row.category)));if(row.familiar)tr.classList.add('codex-shard-row');cell.append(icon,text);
-   const value=el('td','codex-chance',loot.kind==='wares'?row.price:chanceLabel(row.chance));if(row.chance>=1)value.classList.add('always');
+   const text=el('span');text.append(el('strong',null,row.count>1?`${row.item} ×${row.count}`:row.item),el('small',null,row.familiar?'Familiar shard':categoryLabel(row.category)));if(row.familiar)tr.classList.add('codex-shard-row');cell.append(icon,text);
+   const value=el('td','codex-chance',loot.kind==='wares'?marksLabel(row.price):chanceLabel(row.chance));if(row.chance>=1)value.classList.add('always');
    if(loot.kind==='drops'){const bar=el('i','codex-chance-bar');bar.style.width=`${row.chance*100}%`;value.append(bar);}
    tr.append(cell,value);
    if(loot.kind==='drops'){const shiny=el('td','codex-chance codex-shiny',chanceLabel(row.shiny));if(row.shiny>=1)shiny.classList.add('always');tr.append(shiny);}
    body.append(tr);
   }
   table.append(thead,body);panel.append(table);
-  panel.append(el('p','codex-note',loot.kind==='wares'?'Barter opens in a later chapter. These are the trades on offer.':entry.lootNote||'Each item rolls on its own. Luck raises the chance of the rarer ones, and a shiny makes them four times as likely.'));
+  panel.append(el('p','codex-note',loot.kind==='wares'?'Prices in reed marks. Talk to them in Willowback to buy, or to sell what you carry.':entry.lootNote||'Each item rolls on its own. Luck raises the chance of the rarer ones, and a shiny makes them four times as likely.'));
   return panel;
  }
  // Shard progress toward the three passives, and the combine, summon or dismiss button.

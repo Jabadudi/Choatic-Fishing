@@ -4,10 +4,12 @@ export const ITEM_CATEGORIES=Object.freeze([
  {id:'trophies',label:'Trophies'}, {id:'upgrade-materials',label:'Upgrade materials'}
 ]);
 const ITEM_CATEGORY={'Sardine':'consumables','Deer Meat':'consumables','Deer Hide':'upgrade-materials','Deer Antlers':'trophies','Grappling Squid':'consumables','Treasure Key':'quest-items','Old Boot':'trophies'};
-const WEAPON_NAMES=new Set(['Frying Pan','Swordfish','Harpoon Gun','Anchor','Reed Spear','Crab Maul','Shell Sling','Pufferfish Bomb','Hunting Bow']);
+const WEAPON_NAMES=new Set(['Frying Pan','Swordfish','Harpoon Gun','Anchor','Reed Spear','Crab Maul','Shell Sling','Pufferfish Bomb','Hunting Bow','Hunting Knife']);
 // Permanent tools are never used up, however often they are fired.
 export const PERMANENT_ITEMS=new Set(['Hunting Bow']);
-export const canUseItem=item=>!!item&&(WEAPON_NAMES.has(item.name)||['Sardine','Grappling Squid','Treasure Key','Old Boot'].includes(item.name));
+// Food bought from the gardens restores health instead of being thrown.
+export const HEALING=Object.freeze({'Wild Herbs':15,'Willow Apples':10,'Healing Salve':40});
+export const canUseItem=item=>!!item&&(WEAPON_NAMES.has(item.name)||Object.hasOwn(HEALING,item.name)||['Sardine','Grappling Squid','Treasure Key','Old Boot'].includes(item.name));
 export function itemCategory(item){
  if(ITEM_CATEGORIES.some(category=>category.id===item.category))return item.category;
  return ITEM_CATEGORY[item.name]||(WEAPON_NAMES.has(item.name)?'weapons':'upgrade-materials');
@@ -15,9 +17,9 @@ export function itemCategory(item){
 export function backpackItems(inventory,category='all'){
  return inventory.allItems.flatMap((item,index)=>item&&(category==='all'||itemCategory(item)===category)?[{item,slot:inventory.slots.includes(item)?inventory.slots.indexOf(item)+2:null,category:itemCategory(item)}]:[]);
 }
-const USES={'Frying Pan':3,'Swordfish':3,'Harpoon Gun':3,'Anchor':2,'Reed Spear':5,'Crab Maul':3,'Shell Sling':6};
+const USES={'Frying Pan':3,'Swordfish':3,'Harpoon Gun':3,'Anchor':2,'Reed Spear':5,'Crab Maul':3,'Shell Sling':6,'Hunting Knife':12};
 export class Inventory {
- constructor({separateStorage=false}={}){this.selected=1;this.capacity=6;this.slots=Array(6).fill(null);this.separateStorage=separateStorage;this.storedItems=[];this.nextId=1;}
+ constructor({separateStorage=false}={}){this.selected=1;this.capacity=6;this.slots=Array(6).fill(null);this.separateStorage=separateStorage;this.storedItems=[];this.nextId=1;this.marks=0;}
  get allItems(){return this.separateStorage?this.storedItems:this.slots.filter(Boolean);}
  get full(){return !this.separateStorage&&this.slots.every(Boolean);}
  get item(){return this.slots[this.selected===1?0:this.selected-2]||null;}

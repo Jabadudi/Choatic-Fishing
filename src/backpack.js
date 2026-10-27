@@ -1,5 +1,7 @@
 import {ITEM_CATEGORIES,backpackItems,canUseItem,PERMANENT_ITEMS} from './inventory.js';
 import {setItemIcon} from './item-icons.js';
+import {markIcon} from './trade-ui.js';
+import {marksLabel} from './trade.js';
 const svg=(body,size=24)=>`<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
 const CATEGORY_ICONS={
  all:'<path d="M4 4h4v4H4zM10 4h4v4h-4zM16 4h4v4h-4zM4 10h4v4H4zM10 10h4v4h-4zM16 10h4v4h-4zM4 16h4v4H4zM10 16h4v4h-4zM16 16h4v4h-4z" fill="currentColor" stroke="none"/>',
@@ -17,7 +19,7 @@ export function mountBackpack({getWorld,onOpen,onClose,onAction}){
  button.innerHTML='<svg viewBox="0 0 32 32" width="25" height="25" aria-hidden="true"><path d="M11 9V6c0-5 10-5 10 0v3M7 10h18l2 18H5zM9 18h14v7H9zM9 10v5m14-5v5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/></svg><span>Backpack</span>';
  document.querySelector('.playfield').append(button);
  const dialog=document.createElement('dialog');dialog.id='backpack';dialog.setAttribute('aria-labelledby','backpack-title');
- dialog.innerHTML=`<div class="backpack-frame"><div class="backpack-heading"><span class="backpack-emblem">${svg('<path d="M9 7V5.5a3 3 0 0 1 6 0V7M6 8.5A2.5 2.5 0 0 1 8.5 6h7A2.5 2.5 0 0 1 18 8.5V19a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2zM8.5 13h7v4h-7zM11 15h2"/>',40)}</span><h2 id="backpack-title">Backpack</h2><span class="backpack-sprig">${svg('<path d="M5 20C9 15 13 11 19 4M9 15c-2-1-3-3-2.5-5 2 .5 3 2.5 2.5 5zM12 12c-1.5-1.5-2-3.5-1-5.5 1.5 1 2 3.5 1 5.5zM12 12c2 .5 4 0 5-1.5-2-.8-4 0-5 1.5zM9 15c2 .5 4 0 5-1.5-2-.8-4 0-5 1.5z"/>',22)}</span><p class="backpack-capacity"></p><button class="backpack-close" aria-label="Close backpack">${svg('<path d="M6 6l12 12M18 6L6 18" stroke-width="2.4"/>',26)}</button></div><div class="backpack-body"><nav class="backpack-filters" role="group" aria-label="Inventory categories"></nav><div class="backpack-items" role="group" aria-label="Items"></div><section class="backpack-details" aria-live="polite"><div class="backpack-art"><span class="backpack-art-icon"></span>${SCENERY}</div><div class="backpack-actions" aria-label="Selected item actions"></div><p class="backpack-note"></p></section></div></div>`;
+ dialog.innerHTML=`<div class="backpack-frame"><div class="backpack-heading"><span class="backpack-emblem">${svg('<path d="M9 7V5.5a3 3 0 0 1 6 0V7M6 8.5A2.5 2.5 0 0 1 8.5 6h7A2.5 2.5 0 0 1 18 8.5V19a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2zM8.5 13h7v4h-7zM11 15h2"/>',40)}</span><h2 id="backpack-title">Backpack</h2><span class="backpack-sprig">${svg('<path d="M5 20C9 15 13 11 19 4M9 15c-2-1-3-3-2.5-5 2 .5 3 2.5 2.5 5zM12 12c-1.5-1.5-2-3.5-1-5.5 1.5 1 2 3.5 1 5.5zM12 12c2 .5 4 0 5-1.5-2-.8-4 0-5 1.5zM9 15c2 .5 4 0 5-1.5-2-.8-4 0-5 1.5z"/>',22)}</span><p class="backpack-capacity"></p><p class="backpack-marks" title="Reed marks">${markIcon(22)}<span></span></p><button class="backpack-close" aria-label="Close backpack">${svg('<path d="M6 6l12 12M18 6L6 18" stroke-width="2.4"/>',26)}</button></div><div class="backpack-body"><nav class="backpack-filters" role="group" aria-label="Inventory categories"></nav><div class="backpack-items" role="group" aria-label="Items"></div><section class="backpack-details" aria-live="polite"><div class="backpack-art"><span class="backpack-art-icon"></span>${SCENERY}</div><div class="backpack-actions" aria-label="Selected item actions"></div><p class="backpack-note"></p></section></div></div>`;
  document.body.append(dialog);
  let category='all',lastKey='',selectedId=null,choosingSlot=false;
  const filters=dialog.querySelector('.backpack-filters'),items=dialog.querySelector('.backpack-items'),actions=dialog.querySelector('.backpack-actions'),note=dialog.querySelector('.backpack-note'),artIcon=dialog.querySelector('.backpack-art-icon');
@@ -30,8 +32,9 @@ export function mountBackpack({getWorld,onOpen,onClose,onAction}){
   const inventory=getWorld().inventory,entries=backpackItems(inventory,category);
   // Keep a selection visible like the reference design: fall back to the first item in the current category.
   if(!entries.some(({item})=>item.id===selectedId)){selectedId=entries[0]?.item.id??null;choosingSlot=false;}
-  const key=JSON.stringify([inventory.allItems,inventory.slots,inventory.selected,category,selectedId,choosingSlot]);if(key===lastKey)return;lastKey=key;
+  const key=JSON.stringify([inventory.marks,inventory.allItems,inventory.slots,inventory.selected,category,selectedId,choosingSlot]);if(key===lastKey)return;lastKey=key;
   dialog.querySelector('.backpack-capacity').textContent=`${inventory.allItems.length} ${inventory.allItems.length===1?'item':'items'} stored | ${inventory.slots.filter(Boolean).length} / 6 hotbar slots assigned`;
+  dialog.querySelector('.backpack-marks span').textContent=marksLabel(inventory.marks||0);
   for(const filter of filters.children)filter.setAttribute('aria-pressed',filter.dataset.category===category);
   items.replaceChildren();actions.replaceChildren();
   const selected=inventory.allItems.find(item=>item.id===selectedId);
