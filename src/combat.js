@@ -29,6 +29,7 @@ export function damage(world,target,amount,source,angle,knockback=0){
  const taken=amount*(source.progression?.damageMultiplier??1)*(1-target.progression.damageReduction)*(source.entityType==='animal'?1-target.progression.passive('hunting.hide'):1);
  target.health=Math.max(0,target.health-taken);
  target.vx+=Math.cos(angle)*knockback;target.vy+=Math.sin(angle)*knockback;
+ if(world.adventure)world.effects.push({name:'player-hit',label:`-${Math.round(taken)}`,x:target.x,y:target.y-40,angle:0,life:.7,duration:.7});
  if(target.health===0){
   target.fishing.cancel();target.bobber=null;
   if(source!==target)source.progression?.recordElimination(target.id);

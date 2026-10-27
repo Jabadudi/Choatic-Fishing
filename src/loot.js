@@ -27,7 +27,6 @@ export const LOOT_TABLES=Object.freeze({
  deer:[{item:'Deer Meat',chance:1},{item:'Deer Hide',chance:.45},{item:'Deer Antlers',chance:.2},{item:FAMILIARS['deer'].shard,chance:SHARD_CHANCES['deer']}],
  turtle:[{item:'Turtle Meat',chance:1},{item:'Turtle Shell',chance:.4},{item:'River Pearl',chance:.05},{item:FAMILIARS['turtle'].shard,chance:SHARD_CHANCES['turtle']}],
  eel:[{item:'Eel Fillet',chance:1},{item:'Eel Skin',chance:.35},{item:'Eel Oil',chance:.2},{item:FAMILIARS['eel'].shard,chance:SHARD_CHANCES['eel']}],
- // Planned: shadow walkers cannot be fought outside the story yet, so nothing rolls this table today.
  'shadow-walker':[{item:'Shadow Ichor',chance:1},{item:'Rusted Axe Head',chance:.3},{item:'Black Light Shard',chance:.05},{item:FAMILIARS['shadow-walker'].shard,chance:SHARD_CHANCES['shadow-walker']}]
 });
 export function rollLoot(table,random,luck=1){

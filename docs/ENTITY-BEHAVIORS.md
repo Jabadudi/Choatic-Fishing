@@ -9,8 +9,23 @@
 | Deer (5) | Animal | Defensive | Wanders; retaliates after injury; huntable; drops loot; returns 75 s after a hunt |
 | Turtle (1) | Animal | Passive | Swims and flees; huntable; drops loot; returns 90 s after a hunt |
 | Eel (1) | Animal | Passive | Swims and flees; huntable; drops loot; returns 60 s after a hunt |
+| Shadow walker | Monster (animal entity) | Aggressive | Roams, notices Eli, chases and swings an axe; drops loot; spawned by area |
 
-`src/entities.js` owns type names, behavior names and species stats. `reactionFor` maps passive disturbance to flight, defensive provocation to retaliation, and aggression to pursuit. Deer ignore player proximity. After taking damage, they pursue the attacker at 115 units/second for up to 6 seconds, with a 320-unit leash from home and attacker. Their melee attack deals 12 damage within 52 units after a 0.45-second windup, with a 1.4-second recovery. Moving out of reach or dashing avoids damage. Rabbits scare within 55 units instead of 125. Aggressive AI is reserved for future work.
+`src/entities.js` owns type names, behavior names and species stats. `reactionFor` maps passive disturbance to flight, defensive provocation to retaliation, and aggression to pursuit. Deer ignore player proximity. After taking damage, they pursue the attacker at 115 units/second for up to 6 seconds, with a 320-unit leash from home and attacker. Their melee attack deals 12 damage within 52 units after a 0.45-second windup, with a 1.4-second recovery. Moving out of reach or dashing avoids damage. Rabbits scare within 55 units instead of 125.
+
+### Shadow walkers (aggressive)
+
+`src/monsters.js` runs them; their numbers live in `ANIMAL_TYPES['shadow-walker']` and the art (`nightwalker` sheet) only reads state.
+
+- **Roam:** wander near their spawn slot like deer.
+- **Notice:** when Eli comes within 240 units, or hurts one from any range, it stops for 0.6 s with a yellow **!** over its head ("A Shadow Walker has seen you!"), then gives chase.
+- **Chase:** 122 units/second, slower than Eli's 195, so he can always run. It gives up when he is more than 460 units away or it is 620 units from home, walks home, and heals to full there. Hitting it on the way home turns it around unless it is near the edge of its range.
+- **Attack:** within 58 units it raises the axe for 0.55 s (the `raise` clip), then swings (`swing`) for 16 damage and a shove. The blow only lands if Eli is still in reach and not dashing. 0.4 s recovery, 1.5 s between swings.
+- **Health 80, 40 Hunting XP.** The kill message says *defeated* rather than *hunted*.
+
+### Eli's fall and wake-up
+
+When Eli's health reaches 0 in exploration he collapses: the view darkens for 3 s ("Eli collapses…") and monsters lose interest. He then wakes at the current area's arrival point with full health and everything he carried, and monsters leave him alone for 4 s. A save made while he is down wakes him on load. Arena matches keep their own elimination rules.
 
 ## Hunting
 
@@ -22,7 +37,7 @@
 - Spawning is per area, not per animal. `src/spawn-tables.js` gives each outdoor area its spawn slots (land or water), a population cap, a spawn chance per empty slot, a respawn clock and a weighted table per habitat; `src/spawns.js` runs it with one seeded generator kept in the save.
   - Walking into an area after at least 30 s away rolls every empty slot once. Interiors count as their outside area, so the cabin door is not a new visit.
   - The area's respawn clock (60 to 90 s) rolls every empty slot again while Eli is there. Living creatures always stay; a roll only fills up to the cap, and never within 350 px of Eli.
-  - Creatures with no built AI (shadow walkers) keep their weight in the table but are skipped, so their share goes to the animals until aggressive AI ships.
+  - Shadow walkers take their table share: rare on the landing and Windchime Path, uncommon at the crossroads, common in Shellback Marsh. In the story they only spawn once the Chapter 1 storm has shown one; until then their share goes to the animals.
   - During Chapter 1's supper hunt the three meadow deer slots are story slots: always deer, never shiny, refilled on every landing roll.
   - About 1 spawn in 100 is a Shiny: gold tint, glow and sparkles, 50% more health, double Hunting XP and four times every uncertain drop chance (on top of Luck, capped at 100%). Walking into an area with one chimes; the first close look and the hunt are counted in the Index, and hunting one turns a familiar of that kind gold.
 - A journey starts with the original hand-placed layout in Reedwater Landing and Windchime Path; the spawner keeps the hunting skill and familiar shards growing with use.
@@ -34,7 +49,7 @@
   | Deer | Deer Meat | Deer Hide 45%, Deer Antlers 20%, Deer Familiar Shard 10% |
   | Turtle | Turtle Meat | Turtle Shell 40%, River Pearl 5%, Turtle Familiar Shard 10% |
   | Eel | Eel Fillet | Eel Skin 35%, Eel Oil 20%, Eel Familiar Shard 8% |
-  | Shadow walker (planned) | Shadow Ichor | Rusted Axe Head 30%, Black Light Shard 5%, Shadow Walker Familiar Shard 6% |
+  | Shadow walker | Shadow Ichor | Rusted Axe Head 30%, Black Light Shard 5%, Shadow Walker Familiar Shard 6% |
 
   Luck scales only the uncertain rolls. Rolls use the animal's seeded generator; drops land as pickups beside the body. Water animals' drops land on the nearest walkable bank so they can be picked up.
 - Four deer live on Reedwater Landing (three in the meadow for Chapter 1's supper, one by the Hollow Tree) and one on Windchime Path.
@@ -63,7 +78,7 @@ Mara’s Chapter 3 guide route uses collision-checked movement in simulation, wa
 | Deer | Antler Might: +2 Strength | Antler Might II: +5 Strength | Herd Sense: +25% Hunting XP |
 | Turtle | Shell Ward: +15 max HP | Shell Ward II: +40 max HP | Ancient Shell: 15% less damage taken |
 | Eel | Slippery Grip: +2 Dexterity | Slippery Grip II: +5 Dexterity | Current Sense: +25% Fishing XP |
-| Shadow walker (planned) | Whispers in the Dark: +2 Wisdom | Whispers in the Dark II: +5 Wisdom | Borrowed Power: +2 to every attribute |
+| Shadow walker | Whispers in the Dark: +2 Wisdom | Whispers in the Dark II: +5 Wisdom | Borrowed Power: +2 to every attribute |
 
 One familiar follows at a time; summoning another sends the current one back, and its bonus goes with it. The bonus lives on `Progression.familiar` and feeds the existing stat getters (attributes, max HP, damage reduction, speed, skill XP), so the Skills sheet shows it. The follower (`world.companion`) floats after the player, ignores terrain, and reappears beside him after area travel; `src/familiar-art.js` draws it from the species' own sprite over a spirit glow. Shards, bonds and the active familiar are saved; saves without them start with none.
 
