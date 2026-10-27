@@ -7,6 +7,8 @@ const ART_FILES={'Fishing Rod':'fishing-rod','Hunting Bow':'hunting-bow','Huntin
  'Rabbit Familiar Shard':'shard-rabbit','Deer Familiar Shard':'shard-deer','Turtle Familiar Shard':'shard-turtle','Eel Familiar Shard':'shard-eel','Shadow Walker Familiar Shard':'shard-shadow-walker',
  'Region Core':'region-core','Mysterious Lure':'region-core','Treasure Key':'treasure-key'};
 export const ITEM_ART=Object.fromEntries(Object.entries(ART_FILES).map(([name,file])=>[name,`assets/items/${file}.webp`]));
+// The same art as a path under assets/, for drawing on the canvas.
+export const itemAsset=name=>ART_FILES[name]&&`items/${ART_FILES[name]}.webp`;
 export const MARK_ART='assets/items/reed-mark.webp';
 export function setItemIcon(element,name){
  const key=name??'';if(element.dataset.icon===key)return;element.dataset.icon=key;
