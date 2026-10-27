@@ -10,6 +10,7 @@ Generated concept art, references, cutscenes and sprite sheets for Volume 1. The
 | `sprites/mobs/` | Nightwalker (shadow walker) enemy: reference sheet, pose and animation sheet. |
 | `sprites/characters/` | Playable and NPC character sprites: Drayfus so far. |
 | `sprites/props/sheets/` | Five furniture and prop sheets (cabin and lodge, chief's house and shared pieces, village, training yard and blacksmith, inn and homes), 20 pieces each on a green background. |
+| `sprites/wishing-well/` | The Wishing Well summon: Eli's single and ten-stone throws, the well and the cavern under it, the five rarity fish and the stone, splash and sparkle effects. |
 | `sprites/items/sheets/` | Four item icon sheets (tools and weapons, food and wares, materials and trophies, shards and quest items) on a green background. |
 | `references/` | World and area maps used for the region layouts. |
 
@@ -31,3 +32,7 @@ Sheet rows are idle, walk or fly, run where present, attack, then extras (howl, 
 ## Item icons
 
 `scripts/prepare-item-icons.py` cuts the four item sheets into square 128 px WebP icons in `assets/items/`. `ITEM_ART` in `src/item-icons.js` maps each item name to its icon; an item without one falls back to its text symbol. The familiar shard icons also draw the shards lying on the ground, and `reed-mark.webp` is the coin shown beside every price and purse.
+
+## Wishing Well summon
+
+`scripts/prepare-well-summon.py` cuts the sheets in `sprites/wishing-well/` into strips in `assets/well-summon/`: Eli lined up by his feet, each fish by its snout (frames 1-4 swim, frame 5 bites), and the two scenes resized to 960 by 540. It prints the cell sizes and anchors that `SUMMON_ART` in `src/well-summon.js` uses, so paste them in after cutting a new sheet. The village scene sits on top of the cavern, joined by the flooded well shaft, and the camera follows the stones from Eli's hand down into the cavern in one shot. Until the art loads the summon draws its original pixel shapes.

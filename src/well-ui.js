@@ -4,7 +4,7 @@ import {WELL_POOLS,POOL_NAMES,PITY,MAX_DRAWS,STONE_PRICE,SHARD_COUNTS,WELL_ODDS,
 import {marksLabel,marksOf} from './trade.js';
 import {markIcon} from './trade-ui.js';
 import {setItemIcon} from './item-icons.js';
-import {VIEW,planSummon,drawSummon,summonLabels} from './well-summon.js';
+import {VIEW,planSummon,drawSummon,summonLabels,loadSummonArt} from './well-summon.js';
 const svg=(body,size=24)=>`<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
 // A stone well: rim, posts and a little roof.
 const WELL='<path d="M4 9h16M6 9V5.5L12 3l6 2.5V9M5 13h14v7H5zM5 13c0-1.5 3-2.5 7-2.5s7 1 7 2.5M9 16.5h6"/>';
@@ -58,7 +58,7 @@ export function mountWell({getWorld,onOpen,onClose}){
  }
  for(const tab of dialog.querySelectorAll('.well-tab'))tab.onclick=()=>{pool=tab.dataset.pool;lastKey='';refresh();};
  // The summon animation plays over the window; the cards appear when it ends or is skipped.
- const stage=$('.well-summon'),screen=$('.well-summon-canvas'),buffer=document.createElement('canvas');buffer.width=VIEW.w;buffer.height=VIEW.h;
+ const stage=$('.well-summon'),screen=$('.well-summon-canvas');
  let playing=null;
  function stop(){if(!playing)return;const done=playing.done;cancelAnimationFrame(playing.frame);playing=null;stage.hidden=true;done();}
  function play(results,done){
@@ -68,10 +68,11 @@ export function mountWell({getWorld,onOpen,onClose}){
    const t=(now-started)/1000;if(t>=plan.total){stop();return;}
    const ratio=Math.min(2,devicePixelRatio||1),w=Math.round(screen.clientWidth*ratio),h=Math.round(screen.clientHeight*ratio);
    if(screen.width!==w||screen.height!==h){screen.width=w;screen.height=h;}
-   // The scene keeps its 16:9 shape inside whatever space the window has, letterboxed in the dark.
-   const ctx=screen.getContext('2d'),scale=Math.min(w/VIEW.w,h/VIEW.h),ox=(w-VIEW.w*scale)/2,oy=(h-VIEW.h*scale)/2;drawSummon(buffer.getContext('2d'),plan,t);
-   ctx.imageSmoothingEnabled=false;ctx.clearRect(0,0,w,h);ctx.drawImage(buffer,ox,oy,VIEW.w*scale,VIEW.h*scale);
-   ctx.textAlign='center';
+   // The scene keeps its 16:9 shape inside whatever space the window has, letterboxed in the dark, drawn at full resolution.
+   const ctx=screen.getContext('2d'),scale=Math.min(w/VIEW.w,h/VIEW.h),ox=(w-VIEW.w*scale)/2,oy=(h-VIEW.h*scale)/2;
+   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,w,h);
+   ctx.setTransform(scale,0,0,scale,ox,oy);ctx.save();ctx.beginPath();ctx.rect(0,0,VIEW.w,VIEW.h);ctx.clip();drawSummon(ctx,plan,t);ctx.restore();
+   ctx.setTransform(1,0,0,1,0,0);ctx.textAlign='center';
    for(const label of summonLabels(plan,t)){ctx.globalAlpha=label.alpha;ctx.font=`700 ${Math.round((label.big?9:6)*scale)}px Georgia,serif`;ctx.lineWidth=Math.max(2,scale);ctx.strokeStyle='#061410';ctx.strokeText(label.text,ox+label.x*scale,oy+label.y*scale);ctx.fillStyle=label.color;ctx.fillText(label.text,ox+label.x*scale,oy+label.y*scale);}
    ctx.globalAlpha=1;playing.frame=requestAnimationFrame(tick);
   };
@@ -88,7 +89,7 @@ export function mountWell({getWorld,onOpen,onClose}){
  $('.well-buy').onclick=()=>{const world=getWorld();buyWishstone(world);note.textContent=world.message;lastKey='';refresh();};
  function open(){
   const world=getWorld();if(!wellOpen(world)||dialog.open)return;
-  lastKey='';onOpen();note.textContent='Eli looks into the well. The water glows the same blue as the Region Core. Choose a pool and drop a stone in.';
+  lastKey='';onOpen();loadSummonArt();note.textContent='Eli looks into the well. The water glows the same blue as the Region Core. Choose a pool and drop a stone in.';
   refresh();dialog.showModal();
  }
  $('.backpack-close').onclick=()=>dialog.close();
