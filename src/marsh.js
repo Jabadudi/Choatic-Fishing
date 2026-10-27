@@ -10,9 +10,11 @@ export const MARSH_BOARDS=[
  {width:74,points:[[880,1110],[760,1130],[620,1200],[440,1370],[340,1420]]}
 ];
 export const MARSH_ROADS=MARSH_BOARDS.map(board=>board.points);
-export function marshWaterDistance(x,y){return Math.max(...MARSH_ISLANDS.map(island=>(1-Math.hypot((x-island.x)/island.rx,(y-island.y)/island.ry))*Math.min(island.rx,island.ry)));}
+export function marshWaterDistance(x,y){let d=-Infinity;for(const island of MARSH_ISLANDS)d=Math.max(d,(1-Math.hypot((x-island.x)/island.rx,(y-island.y)/island.ry))*Math.min(island.rx,island.ry));return d;}
 export function segmentDistance(x,y,a,b){const dx=b[0]-a[0],dy=b[1]-a[1],t=Math.max(0,Math.min(1,((x-a[0])*dx+(y-a[1])*dy)/(dx*dx+dy*dy)));return Math.hypot(x-a[0]-t*dx,y-a[1]-t*dy);}
-export const onMarshDeck=(x,y)=>MARSH_BOARDS.some(board=>board.points.some((point,i)=>i>0&&segmentDistance(x,y,board.points[i-1],point)<=board.width/2));
+// Each plank run is boxed once, so points far from every board skip the segment maths.
+const BOARD_SEGMENTS=MARSH_BOARDS.flatMap(board=>board.points.slice(1).map((b,i)=>{const a=board.points[i],h=board.width/2;return {a,b,h,left:Math.min(a[0],b[0])-h,right:Math.max(a[0],b[0])+h,top:Math.min(a[1],b[1])-h,bottom:Math.max(a[1],b[1])+h};}));
+export const onMarshDeck=(x,y)=>BOARD_SEGMENTS.some(s=>x>=s.left-1e-6&&x<=s.right+1e-6&&y>=s.top-1e-6&&y<=s.bottom+1e-6&&segmentDistance(x,y,s.a,s.b)<=s.h);
 export const MARSH_OBJECTS=[
  {id:'empty-shell',kind:'shell',x:950,y:975,radius:62},
  {id:'reedwatch',kind:'tower',x:1040,y:405,radius:33},

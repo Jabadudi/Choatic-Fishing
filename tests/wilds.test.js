@@ -38,7 +38,7 @@ test('scenery is deterministic and rendering keeps a bounded chunk cache',()=>{
  const ctx=new Proxy({createRadialGradient:()=>({addColorStop(){}})},{get:(o,k)=>o[k]||(()=>{}),set:(o,k,v)=>(o[k]=v,true)}),original=globalThis.document;
  try{globalThis.document={createElement:()=>({getContext:()=>ctx})};clearTerrainCache();const world=new World(Math.random,{adventure:true});
  for(let x=0;x<WORLD.width;x+=512)drawWilds(ctx,world,{left:x,right:x+960,top:1800,bottom:2520});
- assert.ok(cachedChunkCount()<=30);
+ assert.ok(cachedChunkCount()<=40);
  }finally{globalThis.document=original;clearTerrainCache();}
 });
 

@@ -22,6 +22,7 @@ import {mountScreenControls} from './fullscreen.js';
 import {nearbyNpc} from './npcs.js';
 import {World} from './world.js';
 import {render} from './renderer.js';
+import {preloadProps} from './sprites.js';
 import './music.js';
 import {Lobby} from './lobby.js';
 import {areaFor,placesFor,regionAt,nearestLandmark,paintAtlas,INTERIOR_AREAS} from './wilds.js';
@@ -107,6 +108,11 @@ function updateProgression(){
  $('reward-choice').hidden=!!world.story||p.pendingChoices===0||world.matchState!=='playing';$('reward-heading').textContent=`Level up · Choose a special (${p.pendingChoices})`;
 }
 let lastAtlasDraw=0;
+// The HUD refreshes 30 times a second; unchanged text and bar widths are left alone so the page does not restyle for nothing.
+const setText=(element,value)=>{value=String(value);if(element.textContent!==value)element.textContent=value;};
+const written=new WeakMap();
+function setStyle(element,property,value){let last=written.get(element);if(!last)written.set(element,last={});if(last[property]===value)return;last[property]=value;element.style[property]=value;}
+const setWidth=(element,value)=>setStyle(element,'width',value),setHeight=(element,value)=>setStyle(element,'height',value),setBottom=(element,value)=>setStyle(element,'bottom',value);
 function updateUI(){
  storyUI?.update();
  saveUI?.update();
@@ -117,50 +123,51 @@ function updateUI(){
  skillsUI?.update(!!lobby.world?.adventure&&!atlasOpen&&world.player.health>0);
  codexUI?.update(!!lobby.world?.adventure&&!atlasOpen&&world.player.health>0);
  questUI?.update(!!lobby.world?.adventure&&!atlasOpen&&world.player.health>0);
- $('close-atlas').textContent=touchMode?'Close':`Close · ${bindingLabel('map')} / Esc`;
- $('cancel').textContent=touchMode?'Abandon':`Abandon · ${bindingLabel('fish')} / Esc`;
+ setText($('close-atlas'),touchMode?'Close':`Close · ${bindingLabel('map')} / Esc`);
+ setText($('cancel'),touchMode?'Abandon':`Abandon · ${bindingLabel('fish')} / Esc`);
  touchUI?.update(world,!touchMode||!lobby.world||atlasOpen||saveUI?.open||settingsUI?.open||storyUI?.open||world.player.health<=0);
- if(touchMode){const npc=nearbyNpc(world);$('touch-examine').disabled=!world.adventure||(!storyPrompt(world)&&!npc&&!nearbyDrop(world)&&!nearestLandmark(world.player.x,world.player.y,world.areaId));$('touch-examine').querySelector('strong').textContent=nearbyDrop(world)?'Pick up':npc?'Talk':'Examine';$('touch-examine').setAttribute('aria-label',nearbyDrop(world)?`Pick up ${nearbyDrop(world).item.name}`:npc?`Talk to ${npc.name}`:'Examine nearby landmark');}
+ if(touchMode){const npc=nearbyNpc(world);$('touch-examine').disabled=!world.adventure||(!storyPrompt(world)&&!npc&&!nearbyDrop(world)&&!nearestLandmark(world.player.x,world.player.y,world.areaId));setText($('touch-examine').querySelector('strong'),nearbyDrop(world)?'Pick up':npc?'Talk':'Examine');$('touch-examine').setAttribute('aria-label',nearbyDrop(world)?`Pick up ${nearbyDrop(world).item.name}`:npc?`Talk to ${npc.name}`:'Examine nearby landmark');}
  const f=world.fishing,active=f.state==='reeling',busy=f.state!=='idle',inventory=world.inventory;
  $('line-panel').hidden=!active;
- $('health-text').textContent=`${Math.ceil(world.player.health)} / ${world.progression.maxHealth} HP`;
- $('upgrade-timer').textContent=world.story?'ELI’S JOURNEY':`Next upgrade · ${Math.ceil(world.progression.upgradeRemaining)}s`;
+ setText($('health-text'),`${Math.ceil(world.player.health)} / ${world.progression.maxHealth} HP`);
+ setText($('upgrade-timer'),world.story?'ELI’S JOURNEY':`Next upgrade · ${Math.ceil(world.progression.upgradeRemaining)}s`);
  $('upgrade-bar').hidden=!!world.story;
  $('upgrade-options').hidden=!!world.story||world.progression.pendingUpgrades===0||world.matchState!=='playing'||world.player.health<=0;
- $('upgrade-heading').textContent=`Choose an upgrade (${world.progression.pendingUpgrades} available)`;
- const stacks=world.progression.upgrades;$('upgrade-stacks').textContent=`Boots ×${stacks.hermes} · Dash ×${stacks.dash} · Health ×${stacks.health}`;
- $('dash-status').textContent=`${bindingLabel('dash')} · ${world.player.dashCharges}/${world.progression.maxDashes} DASHES`+(world.dashCooldown>0?` · +1 in ${world.dashCooldown.toFixed(1)}s`:'');
- $('dash-fill').style.width=`${world.dashRemaining>0?0:(1-world.dashCooldown/2)*100}%`;
- $('health-fill').style.width=`${world.player.health/world.progression.maxHealth*100}%`;
- $('alive-text').textContent=`${world.actors.filter(actor=>actor.health>0).length} / ${world.actors.length} ALIVE`;
- $('countdown').hidden=world.matchState!=='countdown';$('countdown-number').textContent=Math.ceil(world.countdownRemaining);
- $('match-end').hidden=!['won','lost','finished'].includes(world.matchState);$('match-title').textContent=world.matchState==='won'||(world.matchState==='finished'&&world.player.health>0)?'Last angler standing!':'You were eliminated';
- $('restart').disabled=lobby.mode==='guest';$('restart').textContent=lobby.mode==='guest'?'Waiting for host to return to lobby':lobby.mode==='host'?'Return to lobby':'Play again · Enter';
- $('match-summary').textContent=`${world.player.catchCount??world.catches.length} catches · ${world.progression.eliminations.size} eliminations · Level ${world.progression.level}`;
+ setText($('upgrade-heading'),`Choose an upgrade (${world.progression.pendingUpgrades} available)`);
+ const stacks=world.progression.upgrades;setText($('upgrade-stacks'),`Boots ×${stacks.hermes} · Dash ×${stacks.dash} · Health ×${stacks.health}`);
+ setText($('dash-status'),`${bindingLabel('dash')} · ${world.player.dashCharges}/${world.progression.maxDashes} DASHES`+(world.dashCooldown>0?` · +1 in ${world.dashCooldown.toFixed(1)}s`:''));
+ setWidth($('dash-fill'),`${world.dashRemaining>0?0:(1-world.dashCooldown/2)*100}%`);
+ setWidth($('health-fill'),`${world.player.health/world.progression.maxHealth*100}%`);
+ setText($('alive-text'),`${world.actors.filter(actor=>actor.health>0).length} / ${world.actors.length} ALIVE`);
+ $('countdown').hidden=world.matchState!=='countdown';setText($('countdown-number'),Math.ceil(world.countdownRemaining));
+ $('match-end').hidden=!['won','lost','finished'].includes(world.matchState);setText($('match-title'),world.matchState==='won'||(world.matchState==='finished'&&world.player.health>0)?'Last angler standing!':'You were eliminated');
+ $('restart').disabled=lobby.mode==='guest';setText($('restart'),lobby.mode==='guest'?'Waiting for host to return to lobby':lobby.mode==='host'?'Return to lobby':'Play again · Enter');
+ setText($('match-summary'),`${world.player.catchCount??world.catches.length} catches · ${world.progression.eliminations.size} eliminations · Level ${world.progression.level}`);
  for(const kind of ['tidal','whirlpool'])$('fire-'+kind).disabled=busy||world.player.cooldown>0||world.progression.specials[kind]===0||world.matchState!=='playing';
- $('world-state').textContent=world.matchState==='countdown'?'GET READY':active?'REELING':busy?'WAITING FOR A BITE':'EXPLORING';
- $('catch-bar').style.bottom=`${(f.bar||0)*100}%`;$('target').style.bottom=`${(f.target||0)*100}%`;$('progress-fill').style.height=active?`${f.progress*100}%`:'0%';$('percent').textContent=active?`${Math.floor(f.progress*100)}%`:'0%';
- for(let slot=3;slot<=7;slot++){const button=$(`slot-${slot}`),item=inventory.slots[slot-2];setItemIcon(button.querySelector('.slot-icon'),item?.name);button.querySelector('strong').textContent=item?.name||'Empty';button.querySelector('small').textContent=item?`${amountLabel(item)} · ${bindingLabel('use')}`:'Assign from backpack';button.setAttribute('aria-label',`Slot ${slot}: ${item?.name||'empty'}${item?', '+amountLabel(item):''}`);button.classList.toggle('selected',inventory.selected===slot);button.setAttribute('aria-pressed',inventory.selected===slot);button.title=item?.description||'Open backpack to assign an item';}
+ setText($('world-state'),world.matchState==='countdown'?'GET READY':active?'REELING':busy?'WAITING FOR A BITE':'EXPLORING');
+ setBottom($('catch-bar'),`${(f.bar||0)*100}%`);setBottom($('target'),`${(f.target||0)*100}%`);setHeight($('progress-fill'),active?`${f.progress*100}%`:'0%');setText($('percent'),active?`${Math.floor(f.progress*100)}%`:'0%');
+ for(let slot=3;slot<=7;slot++){const button=$(`slot-${slot}`),item=inventory.slots[slot-2];setItemIcon(button.querySelector('.slot-icon'),item?.name);setText(button.querySelector('strong'),item?.name||'Empty');setText(button.querySelector('small'),item?`${amountLabel(item)} · ${bindingLabel('use')}`:'Assign from backpack');button.setAttribute('aria-label',`Slot ${slot}: ${item?.name||'empty'}${item?', '+amountLabel(item):''}`);button.classList.toggle('selected',inventory.selected===slot);button.setAttribute('aria-pressed',inventory.selected===slot);button.title=item?.description||'Open backpack to assign an item';}
  for(const slot of [1,2]){const button=$(slot===1?'slot-rod':'slot-item');button.classList.toggle('selected',inventory.selected===slot);button.setAttribute('aria-pressed',inventory.selected===slot);}
- $('item-name').textContent=inventory.slots[0]?.name||'Empty slot';setItemIcon($('item-icon'),inventory.slots[0]?.name);$('slot-rod').querySelector('small').textContent=rodReady(world.story)?'Permanent':'On the rack';$('item-uses').textContent=inventory.slots[0]?`${amountLabel(inventory.slots[0])} · Click or ${bindingLabel('use')}`:'Assign from backpack';
- $('status').textContent=active?`Move along shore · Hold ${bindingLabel('reel')} / mouse to reel · ${bindingLabel('fish')} to abandon.`:busy?`Waiting for a bite… ${bindingLabel('fish')} / Esc to abandon.`:world.message||`Walk to shore, aim into water, press ${bindingLabel('fish')}.`;
- if(touchMode){$('status').textContent=$('status').textContent.replace('M opens the area map.','Tap the map to explore.');if(active)$('status').textContent='Hold Reel to raise the bar · Release to lower it';else if(busy)$('status').textContent='Waiting for a bite… Tap Cancel to abandon.';else if(!world.message)$('status').textContent='Drag the right stick to move · Tap water to aim · Use to cast';}
+ setText($('item-name'),inventory.slots[0]?.name||'Empty slot');setItemIcon($('item-icon'),inventory.slots[0]?.name);setText($('slot-rod').querySelector('small'),rodReady(world.story)?'Permanent':'On the rack');setText($('item-uses'),inventory.slots[0]?`${amountLabel(inventory.slots[0])} · Click or ${bindingLabel('use')}`:'Assign from backpack');
+ let status=active?`Move along shore · Hold ${bindingLabel('reel')} / mouse to reel · ${bindingLabel('fish')} to abandon.`:busy?`Waiting for a bite… ${bindingLabel('fish')} / Esc to abandon.`:world.message||`Walk to shore, aim into water, press ${bindingLabel('fish')}.`;
+ if(touchMode){status=status.replace('M opens the area map.','Tap the map to explore.');if(active)status='Hold Reel to raise the bar · Release to lower it';else if(busy)status='Waiting for a bite… Tap Cancel to abandon.';else if(!world.message)status='Drag the right stick to move · Tap water to aim · Use to cast';}
+ setText($('status'),status);
  if(world.adventure){
   const places=placesFor(world.areaId),place=nearestLandmark(world.player.x,world.player.y,world.areaId);
-  $('region-name').textContent=regionAt(world.player.x,world.player.y,world.areaId);
+  setText($('region-name'),regionAt(world.player.x,world.player.y,world.areaId));
   const purse=marksLabel(world.inventory.marks||0),purseText=$('purse-hud').lastChild;if(purseText.textContent!==purse)purseText.textContent=purse;
-  $('discovery-count').textContent=`${places.filter(p=>world.discovered.has(p.id)).length} / ${places.length} places found here`;
-  document.querySelector('.atlas-heading h2').textContent=areaFor(world.areaId).name;
+  setText($('discovery-count'),`${places.filter(p=>world.discovered.has(p.id)).length} / ${places.length} places found here`);
+  setText(document.querySelector('.atlas-heading h2'),areaFor(world.areaId).name);
   const hud=explorationHud(world,(performance.now()-exploreStart)/1000);
-  $('area-kicker').textContent=areaFor(world.areaId).name.toUpperCase();document.title=`The Wilds · ${areaFor(world.areaId).name}`;
-  $('inspect-place').hidden=!hud.prompt;$('inspect-place').textContent=hud.prompt?(touchMode?hud.prompt:`${bindingLabel('inspect')} · ${hud.prompt}`):'';
+  setText($('area-kicker'),areaFor(world.areaId).name.toUpperCase());document.title=`The Wilds · ${areaFor(world.areaId).name}`;
+  $('inspect-place').hidden=!hud.prompt;setText($('inspect-place'),hud.prompt?(touchMode?hud.prompt:`${bindingLabel('inspect')} · ${hud.prompt}`):'');
   $('explore-hint').hidden=!hud.hintVisible;
-  $('quest-objective').hidden=!hud.quest;if($('quest-objective').textContent!==(hud.quest||''))$('quest-objective').textContent=hud.quest||'';$('side-objective').hidden=!hud.sideQuest;if($('side-objective').textContent!==(hud.sideQuest||''))$('side-objective').textContent=hud.sideQuest||'';document.body.classList.toggle('has-quest',!!hud.quest);
+  $('quest-objective').hidden=!hud.quest;setText($('quest-objective'),hud.quest||'');$('side-objective').hidden=!hud.sideQuest;setText($('side-objective'),hud.sideQuest||'');document.body.classList.toggle('has-quest',!!hud.quest);
   const key=hud.dots.join();if(key!==dotsKey){dotsKey=key;$('discovery-dots').replaceChildren(...hud.dots.map(found=>{const dot=document.createElement('i');if(found)dot.className='found';return dot;}));}
-  $('upgrade-fill').style.width=`${hud.upgradeFraction*100}%`;
+  setWidth($('upgrade-fill'),`${hud.upgradeFraction*100}%`);
   const hp=hud.health,hpKey=`${hp.current}/${hp.max}`;if(hpKey!==hpShown){
    const bar=$('player-hp');if(hp.fraction<hpFraction){bar.classList.remove('hurt');void bar.offsetWidth;bar.classList.add('hurt');}hpShown=hpKey;hpFraction=hp.fraction;
-   $('player-hp-text').textContent=`${hp.current} / ${hp.max}`;$('player-hp-fill').style.width=$('player-hp-trail').style.width=`${hp.fraction*100}%`;
+   setText($('player-hp-text'),`${hp.current} / ${hp.max}`);const hpWidth=`${hp.fraction*100}%`;setWidth($('player-hp-fill'),hpWidth);setWidth($('player-hp-trail'),hpWidth);
    bar.classList.toggle('low',hp.low);bar.setAttribute('aria-valuenow',hp.current);bar.setAttribute('aria-valuemax',hp.max);
   }
   const pips=$('dash-pips');if(pips.childElementCount!==world.progression.maxDashes)pips.replaceChildren(...Array.from({length:world.progression.maxDashes},()=>document.createElement('i')));
@@ -267,3 +274,4 @@ function frame(now){accumulator+=Math.min((now-last)/1000,.1);last=now;while(acc
  render(ctx,display||world,{left:-view.x/view.scale,top:-view.y/view.scale,right:(view.width-view.x)/view.scale,bottom:(view.height-view.y)/view.scale});drawStoryWeather(ctx,world,{left:-view.x/view.scale,top:-view.y/view.scale,right:(view.width-view.x)/view.scale,bottom:(view.height-view.y)/view.scale},now/1000);if(touchMode&&touchState.manualAim&&lobby.world&&!atlasOpen){const a=touchState.manualAim;ctx.strokeStyle='#fff1bc';ctx.lineWidth=1.5/view.scale;ctx.beginPath();ctx.arc(a.x,a.y,9/view.scale,0,Math.PI*2);ctx.moveTo(a.x-14/view.scale,a.y);ctx.lineTo(a.x+14/view.scale,a.y);ctx.moveTo(a.x,a.y-14/view.scale);ctx.lineTo(a.x,a.y+14/view.scale);ctx.stroke();}if(lobby.world&&now-lastUI>=1000/30){lastUI=now;updateProgression();updateUI();}requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
+(window.requestIdleCallback||setTimeout)(()=>preloadProps());
