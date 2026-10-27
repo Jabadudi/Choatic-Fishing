@@ -4,6 +4,7 @@ import {SPAWN_AREAS,SPAWN_PARENT,AWAY_SECONDS,SPAWN_CLEARANCE,SHINY,SLOTS} from 
 import {ANIMAL_TYPES,animalTraits} from './entities.js';
 import {animalGround} from './wildlife.js';
 import {areaFor} from './wilds.js';
+import {storyRevealed} from './codex-discovery.js';
 export const spawnAreaFor=areaId=>{const id=SPAWN_PARENT[areaId]??areaId;return SPAWN_AREAS[id]?id:null;};
 // Only creatures with built behaviour can spawn; the others' weight is shared out to the rest of the table.
 export const spawnable=species=>Object.hasOwn(ANIMAL_TYPES,species);
@@ -11,6 +12,9 @@ export function spawnWeights(areaId,habitat){
  const table=SPAWN_AREAS[areaId]?.tables[habitat]||{};
  return Object.entries(table).filter(([species,weight])=>spawnable(species)&&weight>0);
 }
+// In the story, monsters only roam once the storm has shown Eli what a shadow walker is.
+export const monstersAwake=world=>!world.story||storyRevealed(world,'shadow-walker');
+const awake=(world,weights)=>monstersAwake(world)?weights:weights.filter(([species])=>ANIMAL_TYPES[species].behavior!=='aggressive');
 // The fishing-hut story needs three meadow deer until supper is cooked.
 const storyHunt=world=>!!world.story&&['arrival','explore','fish'].includes(world.story.stage);
 export function createSpawns(areaId='landing'){
@@ -65,7 +69,7 @@ export function rollArea(world,areaId){
   // Nothing pops into being right beside Eli. A story deer may, so the supper hunt cannot stall.
   if(!first&&here&&world.areaId===areaId&&Math.hypot(slot.x-p.x,slot.y-p.y)<SPAWN_CLEARANCE)continue;
   if(!first&&random(spawns)>=area.chance)continue;
-  const species=first?'deer':pick(spawnWeights(areaId,slot.habitat),random(spawns));if(!species)continue;
+  const species=first?'deer':pick(awake(world,spawnWeights(areaId,slot.habitat)),random(spawns));if(!species)continue;
   const shiny=!first&&random(spawns)<SHINY.chance;
   const creature=createCreature(slot,species,{id:`${slot.id}-${spawns.next}`,seed:Math.floor(random(spawns)*4294967295)||1,shiny});
   if(!creature)continue;

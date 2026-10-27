@@ -125,7 +125,7 @@ export function restoreSave(input){
   if(saved.direction&&number(saved.direction.x,-1,1)&&number(saved.direction.y,-1,1))animal.direction=clone(saved.direction);
   if(saved.threat&&number(saved.threat.x,0,3000)&&number(saved.threat.y,0,3000))animal.threat=clone(saved.threat);
   if(saved.attackerId==='player')animal.attackerId='player';
-  animal.state=animal.health===0?'dead':['idle','walk','graze','hop','settle','flee','attack'].includes(saved.state)?saved.state:'idle';
+  animal.state=animal.health===0?'dead':['idle','walk','graze','hop','settle','flee','attack','return'].includes(saved.state)?saved.state:'idle';
   listFor(w,species).push(animal);
  }
  for(const drop of s.drops){

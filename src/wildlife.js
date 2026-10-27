@@ -4,6 +4,7 @@ import {animalTraits,reactionFor,huntableInArea} from './entities.js';
 import {rollLoot} from './loot.js';
 import {practise} from './skills.js';
 import {startingSlots,SHINY} from './spawn-tables.js';
+import {updateMonster} from './monsters.js';
 
 export function animalGround(animal,x,y){
  const area=areaFor(animal.areaId),margin=animal.species==='rabbit'?80:Math.max(30,animal.radius+10);
@@ -66,7 +67,7 @@ export function damageAnimal(world,animal,amount,source,angle,knockback=0){
    // A familiar of the same kind takes on the shiny's gold for good.
    if(world.companion?.id===animal.loot)world.companion.shiny=true;
   }
-  world.message=`${animal.name} hunted · +${trained?.amount??animal.huntXp} Hunting XP${loot.length?` · Dropped ${loot.join(', ')}`:''}${trained?.text?` · ${trained.text}`:''}`;
+  world.message=`${animal.name} ${animal.behavior==='aggressive'?'defeated':'hunted'} · +${trained?.amount??animal.huntXp} Hunting XP${loot.length?` · Dropped ${loot.join(', ')}`:''}${trained?.text?` · ${trained.text}`:''}`;
  }
  return true;
 }
@@ -86,6 +87,7 @@ export function updateWildlife(world,dt){
   a.time+=dt;a.alert=Math.max(0,a.alert-dt);
   const distance=Math.hypot(a.x-world.player.x,a.y-world.player.y),disturbed=world.player.health>0&&distance<a.fearRange;
   const reaction=reactionFor(a,{disturbed,provoked:a.behavior==='defensive'?a.anger>0:a.alert>0});
+  if(reaction==='pursue'){updateMonster(world,a,dt);continue;}
   if(reaction==='retaliate'){
    const target=world.actors.find(actor=>actor.id===a.attackerId),range=target?Math.hypot(target.x-a.x,target.y-a.y):Infinity;
    a.anger=Math.max(0,a.anger-dt);a.attackCooldownRemaining=Math.max(0,(a.attackCooldownRemaining||0)-dt);

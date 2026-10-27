@@ -53,8 +53,9 @@ test('minimap dots come from real spawn slots and NPC positions',()=>{
  assert.deepEqual(codexRegions(deer),['Reedwater Landing','Windchime Path','Willowbank Crossroads','Shellback Marsh']);
  assert.equal(codexLocations(codexEntry('rabbit')).length,land.length);
  assert.equal(codexLocations(codexEntry('turtle')).length,Object.values(SLOTS).filter(slot=>slot.habitat==='water'&&['landing','marsh'].includes(slot.areaId)).length);
- // Shadow walkers cannot roam yet, so their share goes to the animals: in the marsh land slots that makes deer common.
- assert.deepEqual(codexSpawnRates(deer).map(r=>[r.areaId,r.label]),[['landing','common'],['windchime','common'],['crossroads','common'],['marsh','common']]);
+ // Shadow walkers take their share of the land slots: half the marsh, a quarter of the crossroads.
+ assert.deepEqual(codexSpawnRates(deer).map(r=>[r.areaId,r.label]),[['landing','common'],['windchime','common'],['crossroads','uncommon'],['marsh','uncommon']]);
+ assert.deepEqual(codexSpawnRates(codexEntry('shadow-walker')).map(r=>[r.areaId,r.label]),[['landing','rare'],['windchime','rare'],['crossroads','uncommon'],['marsh','common']]);
  assert.deepEqual(codexSpawnRates(codexEntry('eel')).map(r=>r.areaId),['landing','crossroads','marsh']);
  assert.deepEqual(codexRegions(codexEntry('blacksmith')),['Willowback Village']);
  assert.deepEqual(codexRegions(codexEntry('emilia')),['The Chief’s House']);
