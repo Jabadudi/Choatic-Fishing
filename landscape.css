@@ -62,12 +62,13 @@ body.touch-mode.exploring.has-fs-button #open-settings{right:52px}
  body.touch-mode.exploring:has(#line-panel:not([hidden])) .status{bottom:calc(18px + env(safe-area-inset-bottom))}
 
  /* Conversations: a shorter box so the scene stays visible above it. */
- #story-scene .dialogue-box{grid-template-columns:96px minmax(0,1fr);gap:14px;padding:12px 16px;bottom:8px;max-height:calc(100dvh - 60px);font-size:14px;line-height:1.45}
- #story-scene .dialogue-portrait-frame{width:86px;height:96px}
- #story-scene .dialogue-name{min-width:86px;font-size:10px;padding:4px}
- #story-scene .dialogue-content{min-height:0}
+ #story-scene .dialogue-box{grid-template-columns:72px minmax(0,1fr);gap:10px;width:max(min(560px,100vw - 24px),calc((100vw - 36px)*.75));padding:9px 12px;bottom:8px;max-height:calc(100dvh - 60px);font-size:14px;line-height:1.45}
+ #story-scene .dialogue-portrait-frame{width:64px;height:72px}
+ #story-scene .dialogue-name{min-width:64px;font-size:10px;padding:4px}
+ #story-scene .dialogue-content{min-height:0;padding-right:18px}
  #story-scene .dialogue-text{margin-bottom:8px}
  #story-scene .dialogue-box button{min-height:36px;padding:6px 10px;font-size:12px}
+ #story-scene .dialogue-actions .dialogue-end{flex-basis:auto;margin-right:auto}
 }
 @media(orientation:landscape) and (max-height:560px){
  body.touch-mode.exploring #open-quests{top:8px;bottom:auto;min-height:34px;padding:4px 10px;font-size:10px;gap:4px;left:calc(50% + 228px)}
