@@ -54,7 +54,7 @@ test('version 3 Chapter 2 checkpoints migrate guide geography without replay or 
 });
 test('save/resume preserves each map’s guide, creature scene page and village residents',()=>{
  let w=atTrail();throughForest(w);follow(w,()=>w.story.guide.waypoint===chapter3Route(w.story).length);Object.assign(w.player,{x:1220,y:500});w.inspect();w.advanceStory();
- w=restoreSave(captureSave(w));assert.equal(currentScene(w).creature,'flitlynx-illustration');assert.equal(w.story.page,1);assert.equal(w.npcs.length,9);
+ w=restoreSave(captureSave(w));assert.equal(currentScene(w).art,'blacksmith');assert.equal(w.story.page,1);assert.equal(w.npcs.length,9);
  const before=w.npcs.filter(n=>n.origin).map(n=>[n.id,n.x,n.y]);const again=restoreSave(captureSave(w));assert.deepEqual(again.npcs.filter(n=>n.origin).map(n=>[n.id,n.x,n.y]),before);
  finish(w);w.inspect();w.advanceStory();assert.equal(restoreSave(captureSave(w)).story.page,1);
 });
