@@ -1,6 +1,8 @@
 // Gameplay classification only. Sprite dimensions never determine these values.
 export const ENTITY_TYPES=Object.freeze({PLAYER:'player',NPC:'npc',ANIMAL:'animal'});
 export const BEHAVIORS=Object.freeze({PASSIVE:'passive',DEFENSIVE:'defensive',AGGRESSIVE:'aggressive'});
+// Which of the four walk directions a step faces. Sideways wins a tie, so diagonals use the side view.
+export const facingFor=(dx,dy)=>Math.abs(dx)>=Math.abs(dy)?(dx<0?'left':'right'):dy<0?'up':'down';
 export const BEHAVIOR_LABELS=Object.freeze({passive:'Passive',defensive:'Defensive',aggressive:'Aggressive'});
 // Friendly companions never join animal damage targets or hunting rewards.
 export const NPC_TYPES=Object.freeze({

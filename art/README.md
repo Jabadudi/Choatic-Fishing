@@ -8,7 +8,7 @@ Generated concept art, references, cutscenes and sprite sheets for Volume 1. The
 | `characters/` | Reference sheets (front, side, face) for Mara, Emilia, Eli, Drayfus and Croshelda. |
 | `sprites/creatures/` | Rimejaw, Flitlynx and Moonfang: a single pose and an animation sheet each. |
 | `sprites/mobs/` | Nightwalker (shadow walker) enemy: reference sheet, pose and animation sheet. |
-| `sprites/characters/` | Playable and NPC character sprites: Drayfus so far. |
+| `sprites/characters/` | Playable and NPC character sprites: Eli (walk and throw sheets, the style and walk layout every moving entity follows) and Drayfus. |
 | `sprites/props/sheets/` | Five furniture and prop sheets (cabin and lodge, chief's house and shared pieces, village, training yard and blacksmith, inn and homes), 20 pieces each on a green background. |
 | `sprites/items/sheets/` | Four item icon sheets (tools and weapons, food and wares, materials and trophies, shards and quest items) on a green background. |
 | `references/` | World and area maps used for the region layouts. |
@@ -23,6 +23,10 @@ The generated sheets are not on a regular grid yet, and most use a flat green (`
 2. Save the result in `assets/` and add a definition in `src/sprite-definitions.js`, following [docs/ENTITY-SPRITES.md](../docs/ENTITY-SPRITES.md).
 
 Sheet rows are idle, walk or fly, run where present, attack, then extras (howl, guard, jump, flinch, defeat).
+
+## Eli
+
+`scripts/prepare-eli-sprites.py` cuts Eli's walk sheet (4 directions × 8 frames) and throw sheet (6 frames) into `assets/story/eli-sheet.png`. See [docs/ENTITY-SPRITES.md](../docs/ENTITY-SPRITES.md) for the layout new entities should follow.
 
 ## Furniture and props
 
