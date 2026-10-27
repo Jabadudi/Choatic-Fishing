@@ -69,7 +69,7 @@ checkpoints are described in [docs/STORY.md](docs/STORY.md).
   back hides, eel skin or a lucky rabbit's foot, for reed marks, items and XP. Finished
   missions show a gold **?** until handed in, and some lead to the next job. The quest
   log (**J**) tracks what is under way, and the current mission shows under the story
-  objective. A shadow walker hunt waits for the day they can be fought.
+  objective. The blacksmith also wants shadow walkers dealt with once his harness is mended.
 - **Backpack.** Category filters, use, throw, discard and a six-slot hotbar (**B**).
 - **Reed marks.** Willowback's copper coin. Sell hunting and fishing goods to the blacksmith, fisher and gardener, find a few marks tangled in a catch, and spend them at the same stalls. The purse shows under the area card and in the backpack.
   The Region Core is a protected quest item.

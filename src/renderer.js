@@ -4,7 +4,7 @@ import {visibleWildlife} from './wildlife.js';
 import {drawWildlife,drawAnimalStatus} from './wildlife-art.js';
 import {drawEntitySprite} from './sprites.js';
 import {drawTerrain} from './terrain.js';
-import {drawWilds,drawWildsLabels,drawDepthSorted,drawExplorer,INTERIOR_AREAS} from './wilds.js';
+import {drawWilds,drawWildsLabels,drawDepthSorted,drawExplorer,INTERIOR_AREAS,areaFor} from './wilds.js';
 import {drawRabbits,drawRabbit,visibleRabbits} from './rabbits.js';
 import {drawAtmosphere} from './atmosphere.js';
 import {visibleNpcs,drawNpc,drawQuestMarker} from './npcs.js';
@@ -46,7 +46,8 @@ export function render(ctx,world,view){
     const duration=effect.duration||(['defeat','Whirlpool Burst'].includes(effect.name)?.8:.55);
     const age=Math.max(0,duration-effect.life);ctx.save();ctx.globalAlpha=Math.min(1,effect.life/duration);ctx.translate(effect.x,effect.y);ctx.rotate(effect.angle);
     ctx.strokeStyle='#f3d59d';ctx.fillStyle='#f3d59d';ctx.lineWidth=5;
-    if(effect.name==='animal-hit'||effect.name==='hunt'){ctx.font=effect.name==='hunt'?'bold 12px monospace':'bold 14px monospace';ctx.textAlign='center';ctx.fillStyle=effect.name==='hunt'?'#f8e6a7':'#fff4e4';ctx.fillText(effect.label,0,-age*30);}
+    if(effect.name==='player-hit'||effect.name==='notice'){ctx.font=`bold ${effect.name==='notice'?22:15}px monospace`;ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#1a0b0b';ctx.fillStyle=effect.name==='notice'?'#ffcf5a':'#ff6b5b';const y=effect.name==='notice'?-Math.min(age,.2)*30:-age*30;ctx.strokeText(effect.label,0,y);ctx.fillText(effect.label,0,y);}
+    else if(effect.name==='animal-hit'||effect.name==='hunt'){ctx.font=effect.name==='hunt'?'bold 12px monospace':'bold 14px monospace';ctx.textAlign='center';ctx.fillStyle=effect.name==='hunt'?'#f8e6a7':'#fff4e4';ctx.fillText(effect.label,0,-age*30);}
     else if(['skill','skill-up','level-up'].includes(effect.name)){const big=effect.name!=='skill';ctx.font=`bold ${big?14:12}px monospace`;ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#10261d';ctx.fillStyle=effect.name==='level-up'?'#ffd36e':effect.name==='skill-up'?'#bfe8a0':'#e8f0d0';const y=-age*(big?18:26);ctx.strokeText(effect.label,0,y);ctx.fillText(effect.label,0,y);}
     else if(effect.name==='shiny'){ctx.fillStyle='#ffe28a';for(let i=0;i<10;i++){const a=i*Math.PI/5+age,r=10+age*60;ctx.fillRect(Math.cos(a)*r-1,Math.sin(a)*r-3,2,6);ctx.fillRect(Math.cos(a)*r-3,Math.sin(a)*r-1,6,2);}if(effect.label){ctx.font='bold 13px monospace';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#10261d';ctx.strokeText(effect.label,0,-28-age*16);ctx.fillText(effect.label,0,-28-age*16);}}
     else if(effect.name==='Hunting Bow'){ctx.strokeStyle='#8a6438';ctx.lineWidth=3;ctx.beginPath();ctx.arc(10,0,14,-1.2,1.2);ctx.stroke();}
@@ -58,16 +59,23 @@ export function render(ctx,world,view){
     else{ctx.beginPath();ctx.arc(0,0,effect.name==='Anchor'?72:48,-1+age*2,1+age*2);ctx.stroke();}
     ctx.restore();
   }
-  if(world.adventure){drawWildsLabels(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500});if(view&&!INTERIOR_AREAS.includes(world.areaId)&&!cabinDamaged(world.story))drawAtmosphere(ctx,world,view);drawAnimalStatus(ctx,world);}
+  if(world.adventure){drawWildsLabels(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500});if(view&&!INTERIOR_AREAS.includes(world.areaId)&&!cabinDamaged(world.story))drawAtmosphere(ctx,world,view);drawAnimalStatus(ctx,world);if(world.defeat&&view)drawDefeat(ctx,world,view);}
 }
 function drawBobber(ctx,world){
  const {elapsed:t,player:p,bobber}=world;if(!bobber)return;
  ctx.strokeStyle='#f1e6c7';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(p.x+Math.cos(p.angle)*23,p.y+Math.sin(p.angle)*23);ctx.lineTo(bobber.x,bobber.y);ctx.stroke();ctx.strokeStyle='#99c8b788';ctx.beginPath();ctx.ellipse(bobber.x,bobber.y+4,12+Math.sin(t*3)*3,5,0,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#ef947a';ctx.beginPath();ctx.arc(bobber.x,bobber.y,5,0,Math.PI*2);ctx.fill();
 }
+// The view darkens while Eli is down, then clears as he wakes.
+function drawDefeat(ctx,world,view){
+ const {remaining,total}=world.defeat,fade=Math.min(1,(total-remaining)/.8),W=view.right-view.left,H=view.bottom-view.top;
+ ctx.save();ctx.fillStyle=`rgba(12,6,10,${.72*fade})`;ctx.fillRect(view.left,view.top,W,H);
+ ctx.globalAlpha=fade;ctx.textAlign='center';ctx.font='bold 26px Georgia, serif';ctx.fillStyle='#e9d8c4';ctx.fillText('Eli collapses…',view.left+W/2,view.top+H/2-10);
+ ctx.font='15px Georgia, serif';ctx.fillStyle='#bfae9c';ctx.fillText(`He will wake at ${areaFor(world.areaId).name}.`,view.left+W/2,view.top+H/2+18);ctx.restore();
+}
 function drawPlayer(ctx,world){
  drawBobber(ctx,world);
- // Eli stays down in the mud from the collapse until the blackout.
- const fallen=world.story?.scene==='storm'&&['collapse','rescue'].includes(pendingScene(world)?.action);
+ // Eli stays down in the mud from the collapse until the blackout, and after a monster brings him down.
+ const fallen=!!world.defeat||world.story?.scene==='storm'&&['collapse','rescue'].includes(pendingScene(world)?.action);
  if(fallen){const p=world.player;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(Math.PI/2);drawExplorer(ctx,{...p,x:0,y:0},world.elapsed||0);ctx.restore();}
  else drawExplorer(ctx,world.player,world.elapsed||0);
 }

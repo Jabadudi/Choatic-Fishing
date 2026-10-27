@@ -18,6 +18,7 @@ import {createSpawns,updateSpawns} from './spawns.js';
 import {createNpcs,nearbyNpc,updateDialogue} from './npcs.js';
 import {createFamiliars,absorbShard,updateFamiliar,familiarAction} from './familiars.js';
 import {noteEncounters} from './codex-discovery.js';
+import {updateDefeat} from './monsters.js';
 export {LAND} from './terrain.js';
 export const SHORE_DEPTH=110;
 export const INLAND={left:LAND.left+SHORE_DEPTH,right:LAND.right-SHORE_DEPTH,top:LAND.top+SHORE_DEPTH,bottom:LAND.bottom-SHORE_DEPTH};
@@ -193,6 +194,7 @@ export class World {
   updateAnimalCombat(this,dt);
   updateRabbits(this,dt);
   updateWildlife(this,dt);
+  updateDefeat(this,dt);
   updateSpawns(this,dt);
   updateFamiliar(this,dt);
   updateDialogue(this,dt);

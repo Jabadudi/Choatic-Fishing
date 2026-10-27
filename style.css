@@ -41,7 +41,7 @@ body.exploring .exploration-kicker{font:8px monospace;letter-spacing:3px;color:#
 body.exploring #region-name{font:bold 17px Georgia,serif;color:#f3e6bf;margin:4px 0 2px;text-shadow:0 1px 0 #0008}
 body.exploring #discovery-count{font:10px monospace;color:#b7cdb0}
 .discovery-dots{display:flex;gap:4px;margin-top:7px}.discovery-dots i{width:8px;height:8px;border-radius:50%;background:#3c5148;border:1px solid #c9b98a66}.discovery-dots i.found{background:#e6bd65;box-shadow:0 0 6px #e6bd65}
-body.exploring #timed-upgrades{left:16px;top:128px;width:220px;padding:0;background:none;border:0;text-shadow:0 1px 2px #000}
+body.exploring #timed-upgrades{left:16px;top:163px;width:220px;padding:0;background:none;border:0;text-shadow:0 1px 2px #000}
 body.exploring #upgrade-timer{font:9px monospace;color:#e9d4aa}
 #upgrade-bar{display:none}body.exploring #upgrade-bar{display:block;height:3px;margin-top:4px;background:#0006;border-radius:2px}#upgrade-fill{display:block;height:100%;width:0;background:#e6bd65;border-radius:2px}
 body.exploring #upgrade-options{padding:10px;margin-top:8px;background:#15312ced;border:1px solid #c9b98a66;border-radius:6px}
@@ -69,7 +69,7 @@ body.exploring .special-hud{display:none}
 .lobby-card{border-radius:8px;border-color:#c9b98a;background:linear-gradient(#233936,#18292a);box-shadow:0 14px 60px #000a}
 .lobby-card h1{font-family:Georgia,serif;color:#f3e6bf}
 #explore-world{border-radius:4px;background:#e6c98a;box-shadow:0 3px 0 #8a6d3b}
-@media(max-width:800px){body.exploring #exploration-hud{width:190px}body.exploring #timed-upgrades{width:190px;top:122px}body.exploring #explore-hint{display:none}}
+@media(max-width:800px){body.exploring #exploration-hud{width:190px}body.exploring #timed-upgrades{width:190px;top:163px}body.exploring #explore-hint{display:none}}
 
 .hotbar{flex-wrap:wrap;max-width:95vw}.backpack-slot{font:inherit;font-size:11px;padding:10px;min-height:56px;max-width:125px;color:#e9dcc0;background:#203b36;border:1px solid #79947b;cursor:pointer}.backpack-slot.selected{outline:2px solid #e8be65}.hotbar #slot-rod{order:0}.hotbar #slot-item{order:1}
 .hotbar #slot-3{order:2}.hotbar #slot-4{order:3}.hotbar #slot-5{order:4}.hotbar #slot-6{order:5}.hotbar #slot-7{order:6}
@@ -310,3 +310,16 @@ body.exploring #side-objective{font:11px/1.5 monospace;color:#f6d27a;margin:6px 
 .quest-done-list .quest-check{background:#2f5b3b;color:#c9f0cf}.quest-done-list small{color:#9fb3ab}
 @media(max-width:760px){#quest-sheet{overflow-y:auto}#quest-sheet[open]{display:block}.quest-body{overflow:visible;padding:12px}.quest-card{padding:12px}.quest-card h3{font-size:20px}.quest-quote{font-size:15px}#quest-sheet .backpack-heading{flex-wrap:wrap;gap:8px 12px;padding:12px 14px}#quest-sheet .backpack-heading h2{font-size:26px}#quest-sheet .backpack-capacity{order:3;flex-basis:100%;margin:0}}
 @media(max-height:560px){#quest-sheet{overflow-y:auto;max-height:calc(100dvh - 16px)}#quest-sheet[open]{display:block}#quest-sheet .backpack-heading{flex-wrap:nowrap;gap:10px;padding:8px 12px}#quest-sheet .backpack-emblem svg{width:26px;height:26px}#quest-sheet .backpack-heading h2{display:block;font-size:22px}#quest-sheet .backpack-capacity{order:0;flex-basis:auto;margin:0;font-size:12px}#quest-sheet .backpack-close{margin-left:auto;width:44px;height:44px}.quest-body{overflow:visible;padding:10px 12px}.quest-card{padding:10px 12px;gap:8px}.quest-card h3{font-size:19px}.quest-quote{font-size:14px}.quest-thought{font-size:13px}.quest-note{font-size:12px;padding:8px 12px}}
+/* Player health: the fill drops at once, the pale trail catches up so each hit reads clearly. */
+#player-hp{margin:4px 0 6px}
+#player-hp .hp-row{display:flex;justify-content:space-between;align-items:baseline;font:600 10px monospace;color:#f3d9c6;text-shadow:0 1px 0 #0009}
+#player-hp .hp-label{letter-spacing:2px;color:#f09a8a}
+#player-hp .hp-track{position:relative;height:9px;margin-top:3px;background:#2a1418e6;border:1px solid #0d0a0b;border-radius:3px;box-shadow:inset 0 1px 2px #000a,0 0 0 1px #c9b98a40;overflow:hidden}
+#player-hp .hp-track i{position:absolute;left:0;top:0;bottom:0;width:100%}
+#player-hp-trail{background:#f3e0b5;transition:width .5s ease .35s}
+#player-hp-fill{background:linear-gradient(#ef8a78,#c9473d 60%,#a7342e);box-shadow:inset 0 1px #ffc5b0aa;transition:width .12s linear}
+#player-hp.low #player-hp-fill{animation:hp-low 1s ease-in-out infinite}
+#player-hp.hurt .hp-track{animation:hp-hurt .35s ease-out}
+@keyframes hp-low{50%{filter:brightness(1.45)}}
+@keyframes hp-hurt{0%{box-shadow:0 0 0 2px #ff6b57,0 0 10px #ff6b57}100%{box-shadow:inset 0 1px 2px #000a,0 0 0 1px #c9b98a40}}
+@media(prefers-reduced-motion:reduce){#player-hp-trail,#player-hp-fill{transition:none}#player-hp.low #player-hp-fill,#player-hp.hurt .hp-track{animation:none}}

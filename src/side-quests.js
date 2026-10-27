@@ -48,10 +48,9 @@ export const SIDE_QUESTS=Object.freeze([
   thought:'Eli doubted a rabbit’s foot would stop anything carrying an axe. He also was not going to be the one to tell her.',
   reminder:'Did you find a lucky foot yet?',
   done:'It’s so soft! Here, all six marks. Don’t spend them on anything boring.'},
- // Offered once shadow walkers can be fought outside the story: until then nothing can spawn one.
  {id:'walker-iron',giver:'village-smith',giverName:'Blacksmith',title:'Ash and iron',requires:['harness-hides'],
   objectives:[{type:'kill',species:'shadow-walker',count:3}],rewards:{marks:30,xp:120,items:[{name:'Hunting Knife',count:1}]},
-  where:'Shadow walkers stalk Shellback Marsh and the crossroads after dark.',
+  where:'Shadow walkers haunt Shellback Marsh most of all, and the crossroads and Windchime Path too. They come at you, so keep your health up.',
   offer:'You saw one up close and lived. If they’re coming out of the marsh again, I want them gone before they reach the gardens. Three of them.',
   thought:'Last time, Eli had run, fallen over, and been rescued by a wolf. He decided not to mention that.',
   reminder:'Three walkers. Don’t let them close.',

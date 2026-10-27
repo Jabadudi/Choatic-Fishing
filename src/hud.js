@@ -14,6 +14,12 @@ export function explorationHud(world,exploringSeconds){
   sideQuest:sideObjective(world),
   dots:placesFor(id).map(p=>world.discovered.has(p.id)),
   prompt:storyPrompt(world)|| (nearbyDrop(world)?`Pick up ${nearbyDrop(world).item.name}`:work?.state==='ready'?`Report to ${npc.name}`:work?.state==='offer'?`Talk to ${npc.name} · Side mission`:npc?`${npc.interactions?.includes('examine')?'Examine':MERCHANTS[npc.id]?'Trade with':'Talk to'} ${npc.name}`:place?`Examine ${place.name}`:null),
+  health:playerHealth(world.player,world.progression.maxHealth),
   upgradeFraction:Math.max(0,Math.min(1,1-world.progression.upgradeRemaining/30))
  };
+}
+// Rounded for display; low health starts below 30% so the bar can warn before a fight is lost.
+export function playerHealth(player,max){
+ const current=Math.max(0,Math.ceil(player.health)),fraction=max>0?Math.max(0,Math.min(1,player.health/max)):0;
+ return {current:Math.min(current,max),max,fraction,low:fraction<.3};
 }

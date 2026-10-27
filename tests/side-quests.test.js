@@ -10,6 +10,8 @@ import {SIDE_QUESTS,sideQuest,questFor,questMarker,acceptQuest,turnInQuest,quest
 import {ANIMAL_TYPES} from '../src/entities.js';
 import {MERCHANTS} from '../src/trade.js';
 import {createVillageResidents} from '../src/village-life.js';
+import {createCreature,listFor} from '../src/spawns.js';
+import {SLOTS} from '../src/spawn-tables.js';
 // Willowback the evening after Chapter 4, when every villager is about.
 function village(){
  const w=new World(()=>.5,{adventure:true,story:true});w.journeyId='quests';
@@ -80,10 +82,15 @@ test('a merchant with a job under way opens the stall as before',()=>{
  const w=village();goTo(w,'village-fisher');acceptQuest(w,'tangled-nets');w.inspect();
  assert.equal(w.tradeRequest,MERCHANTS['village-fisher']);
 });
-test('the shadow walker mission waits until shadow walkers can be fought',()=>{
- const w=village(),q=sideQuest('walker-iron');w.quests['harness-hides'].status='complete';
- assert.equal(Object.hasOwn(ANIMAL_TYPES,'shadow-walker'),false);assert.equal(unlocked(w,q),false);
- assert.equal(questFor(w,'village-smith'),null);
+test('once the hides are in, the blacksmith sends Eli after shadow walkers',()=>{
+ const w=village(),q=sideQuest('walker-iron');
+ assert.equal(unlocked(w,q),false,'not before the harness');w.quests['harness-hides'].status='complete';
+ assert.ok(Object.hasOwn(ANIMAL_TYPES,'shadow-walker'));goTo(w,'village-smith');
+ assert.equal(questFor(w,'village-smith').quest.id,'walker-iron');assert.ok(acceptQuest(w,'walker-iron'));
+ const walker=createCreature(SLOTS['marsh-island'],'shadow-walker',{id:'qa-walker'});listFor(w,'shadow-walker').push(walker);
+ hunt(w,'shadow-walker',3);assert.match(w.message,/Ash and iron 3\/3/);
+ goTo(w,'village-smith');assert.equal(questFor(w,'village-smith').state,'ready');
+ assert.ok(turnInQuest(w,'walker-iron'));assert.equal(w.inventory.countOf('Hunting Knife'),1);
 });
 test('missions are saved with their hunt progress and restored without a second reward',()=>{
  const w=village();goTo(w,'basket-carrier');acceptQuest(w,'garden-raiders');hunt(w,'rabbit',2);

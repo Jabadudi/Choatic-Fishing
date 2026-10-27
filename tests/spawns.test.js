@@ -66,11 +66,14 @@ test('the same seed rolls the same creatures, so a reload cannot reroll a spawn'
  assert.deepEqual(run(),run());
 });
 
-test('creatures without built behaviour never spawn, and their share goes to the others',()=>{
- assert.deepEqual(spawnWeights('marsh','land').map(([s])=>s),['rabbit','deer']);
- const w=fresh();Object.assign(w.player,{x:10,y:10});w.areaId='marsh';
- for(let i=0;i<30;i++){for(const a of inArea(w,'marsh'))kill(w,a);w.areaId='marsh';rollArea(w,'marsh');}
- assert.ok(w.animals.every(a=>['rabbit','deer','turtle','eel'].includes(a.species)));
+test('shadow walkers roam the wilder areas, but in the story only after the storm has shown one',()=>{
+ assert.deepEqual(spawnWeights('marsh','land').map(([s])=>s),['shadow-walker','rabbit','deer']);
+ const roll=w=>{const seen=new Set();Object.assign(w.player,{x:10,y:10});for(let i=0;i<30;i++){for(const a of inArea(w,'marsh'))kill(w,a);w.areaId='marsh';rollArea(w,'marsh');for(const a of inArea(w,'marsh'))seen.add(a.species);}return seen;};
+ assert.ok(roll(fresh()).has('shadow-walker'));
+ const story=new World(()=>.2,{adventure:true,story:true});story.journeyId='spawn-story';
+ assert.ok(!roll(story).has('shadow-walker'),'no shadow walkers before the storm');
+ story.story.stage='complete';
+ assert.ok(roll(story).has('shadow-walker'),'they roam once the storm has played');
 });
 
 test('about one spawn in a hundred is shiny, with more health and double Hunting XP',()=>{
