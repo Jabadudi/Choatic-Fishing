@@ -239,3 +239,9 @@ body.touch-mode.exploring #open-skills{bottom:calc(274px + env(safe-area-inset-b
  .codex-detail{padding:14px}.codex-hero{grid-template-columns:88px minmax(0,1fr);gap:12px}.codex-portrait{width:88px;height:88px}.codex-about h3{font-size:24px}.codex-description{font-size:14px}}
 body.touch-mode.exploring #open-codex{bottom:calc(274px + env(safe-area-inset-bottom))}
 @media(orientation:landscape) and (max-height:560px){body.touch-mode.exploring #open-codex{bottom:82px}}
+/* Undiscovered index entries. */
+.codex-entry.locked strong{letter-spacing:2px;color:#9fae9b}.codex-entry.locked .codex-thumb{border-style:dashed;background:#0d2219}.codex-entry.locked .codex-glyph{color:#7d8f78}
+.codex-entry.locked[aria-pressed="true"] strong{color:#1d2c22}
+.codex-locked .codex-portrait{border-style:dashed;background:#0d2219}.codex-locked .codex-portrait .codex-glyph{color:#7d8f78}.codex-locked h3{letter-spacing:4px}
+.codex-locked .codex-map-frame img{filter:blur(6px) grayscale(.7) brightness(.55)}
+.codex-locked-rows{margin:0;padding:0;list-style:none}.codex-locked-rows li{padding:9px 6px;border-bottom:1px solid #c9a85f22;font:600 15px Georgia,serif;letter-spacing:3px;color:#7d8f78}

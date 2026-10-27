@@ -15,6 +15,7 @@ import {createRabbits,updateRabbits} from './rabbits.js';
 import {createSpawns,updateSpawns} from './spawns.js';
 import {createNpcs,nearbyNpc,updateDialogue} from './npcs.js';
 import {createFamiliars,absorbShard,updateFamiliar,familiarAction} from './familiars.js';
+import {noteEncounters} from './codex-discovery.js';
 export {LAND} from './terrain.js';
 export const SHORE_DEPTH=110;
 export const INLAND={left:LAND.left+SHORE_DEPTH,right:LAND.right-SHORE_DEPTH,top:LAND.top+SHORE_DEPTH,bottom:LAND.bottom-SHORE_DEPTH};
@@ -36,7 +37,7 @@ export class World {
   }
   this.story=adventure&&story?createStory():null;this.adventure=adventure;this.drops=[];this.nextDropId=1;
   if(adventure)this.player.inventory=new Inventory({separateStorage:true});
-  this.rabbits=adventure?createRabbits():[];this.wildlife=adventure?createWildlife():[];this.hunting={total:0,bySpecies:{},shiny:{seen:{},hunted:{}}};this.spawns=adventure?createSpawns():null;this.familiars=createFamiliars();this.companion=null;
+  this.rabbits=adventure?createRabbits():[];this.wildlife=adventure?createWildlife():[];this.hunting={total:0,bySpecies:{},shiny:{seen:{},hunted:{}}};this.spawns=adventure?createSpawns():null;this.familiars=createFamiliars();this.companion=null;this.codex=new Set();
   this.npcs=adventure?createNpcs():[];this.dialogue=null;this.quests=createQuests();
   if(adventure){this.areaId='landing';Object.assign(this.player,Wilds.SPAWN);this.bots=[];this.actors=[this.player];this.humans=[this.player];this.chests=[];this.countdownRemaining=0;this.matchState='playing';this.discovered=new Set();this.message='Welcome to Reedwater Landing. Follow the north trail to walk into Windchime Path. M opens the area map.';}
   if(adventure)this.player.progression.characterStats=true;
@@ -184,6 +185,7 @@ export class World {
   updateFamiliar(this,dt);
   updateDialogue(this,dt);
   updateStory(this,dt,Wilds.walkable);
+  noteEncounters(this);
   if(this.adventure){const place=Wilds.nearestLandmark(this.player.x,this.player.y,this.areaId);if(place)this.discovered.add(place.id);}
   else if(this.online){if(this.actors.filter(actor=>actor.health>0).length<=1){this.matchState='finished';for(const actor of this.actors){actor.fishing.cancel();actor.bobber=null;}}}
   else if(this.player.health<=0){this.matchState='lost';this.cancel();this.message='You were eliminated.';}
