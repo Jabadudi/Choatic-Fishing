@@ -1,9 +1,10 @@
 // Familiars: every hunted creature may drop a shard of its kind. Five shards fuse into a familiar that follows Eli.
+// The village guardians are never hunted, so their shards come only from the Wishing Well's Familiar pool (wellOnly).
 // Shards keep counting after the bond: 25 strengthens its passive and 100 wakes its last, strongest one.
 // Gameplay only. The follower is drawn by familiar-art.js from the species' own sprite.
 import {walkable,areaFor} from './wilds.js';
 export const FAMILIAR_TIERS=Object.freeze([5,25,100]);
-// Keyed by loot table, so a creature's shard, loot and index entry share one id.
+// Keyed by loot table, so a creature's shard, loot and index entry share one id. Guardians are keyed by their index entry.
 // passive.ranks[0] is the summoning passive, ranks[1] its stronger version at 25 shards. ultimate joins at 100.
 export const FAMILIARS=Object.freeze({
  rabbit:{name:'Rabbit',shard:'Rabbit Familiar Shard',spriteId:'rabbit',scale:1,
@@ -15,7 +16,13 @@ export const FAMILIARS=Object.freeze({
  eel:{name:'Eel',shard:'Eel Familiar Shard',spriteId:'eel',scale:1,
   passive:{name:'Slippery Grip',ranks:[{dexterity:2},{dexterity:5}]},ultimate:{name:'Current Sense',bonus:{fishingXp:.25}}},
  'shadow-walker':{name:'Shadow Walker',shard:'Shadow Walker Familiar Shard',spriteId:'nightwalker',scale:.75,
-  passive:{name:'Whispers in the Dark',ranks:[{wisdom:2},{wisdom:5}]},ultimate:{name:'Borrowed Power',bonus:{strength:2,dexterity:2,luck:2,wisdom:2}}}
+  passive:{name:'Whispers in the Dark',ranks:[{wisdom:2},{wisdom:5}]},ultimate:{name:'Borrowed Power',bonus:{strength:2,dexterity:2,luck:2,wisdom:2}}},
+ moonfang:{name:'Moonfang',shard:'Moonfang Familiar Shard',spriteId:'moonfang',scale:.45,wellOnly:true,
+  passive:{name:'Pack Guardian',ranks:[{strength:1,health:10},{strength:3,health:25}]},ultimate:{name:'Moonlit Run',bonus:{speed:.15}}},
+ rimejaw:{name:'Rimejaw',shard:'Rimejaw Familiar Shard',spriteId:'rimejaw',scale:.55,wellOnly:true,
+  passive:{name:'Frost Scales',ranks:[{health:10,dexterity:1},{health:30,dexterity:3}]},ultimate:{name:'Frozen Bite',bonus:{damageReduction:.1,strength:2}}},
+ flitlynx:{name:'Flitlynx',shard:'Flitlynx Familiar Shard',spriteId:'flitlynx',scale:.7,wellOnly:true,
+  passive:{name:'Sky Pounce',ranks:[{dexterity:1,luck:1},{dexterity:3,luck:3}]},ultimate:{name:'Wings on the Wind',bonus:{huntingXp:.15,speed:.08}}}
 });
 const BONUS_TEXT={health:n=>`+${n} max HP`,strength:n=>`+${n} Strength`,dexterity:n=>`+${n} Dexterity`,luck:n=>`+${n} Luck`,wisdom:n=>`+${n} Wisdom`,
  speed:n=>`+${Math.round(n*100)}% movement speed`,damageReduction:n=>`${Math.round(n*100)}% less damage taken`,

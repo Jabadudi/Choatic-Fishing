@@ -14,8 +14,9 @@ const fresh=()=>{const w=new World(()=>.2,{adventure:true});w.journeyId='familia
 const give=(w,id,n)=>{for(let i=0;i<n;i++)absorbShard(w,id);};
 
 test('every creature with a loot table drops its own familiar shard, and none fill the backpack categories by accident',()=>{
- assert.deepEqual(Object.keys(FAMILIARS).sort(),Object.keys(LOOT_TABLES).sort());
- for(const [id,f] of Object.entries(FAMILIARS)){
+ const hunted=Object.entries(FAMILIARS).filter(([,f])=>!f.wellOnly);
+ assert.deepEqual(hunted.map(([id])=>id).sort(),Object.keys(LOOT_TABLES).sort());
+ for(const [id,f] of hunted){
   const entry=LOOT_TABLES[id].find(e=>e.item===f.shard);assert.ok(entry,`${id} shard is in its table`);
   assert.equal(entry.chance,SHARD_CHANCES[id]);assert.ok(entry.chance>0&&entry.chance<1);
   assert.equal(LOOT_ITEMS[f.shard].familiar,id);
@@ -125,8 +126,20 @@ test('familiars survive a save round trip, older saves start without them and ba
  }
 });
 
-test('the index shows a familiar for every hunted creature and labels shards in the loot table',()=>{
+test('guardian familiars are never hunted: no loot table or ground drop, only the well, and a full set of passives',()=>{
+ for(const id of ['moonfang','rimejaw','flitlynx']){
+  const f=FAMILIARS[id];assert.ok(f.wellOnly);assert.equal(LOOT_TABLES[id],undefined);assert.equal(SHARD_CHANCES[id],undefined);
+  assert.equal(LOOT_ITEMS[f.shard].familiar,id);assert.match(LOOT_ITEMS[f.shard].description,/Wishing Well/);
+  assert.equal(familiarPassives(id).length,3);assert.ok(familiarBonus(id,3));
+  assert.ok(Object.values(LOOT_TABLES).every(table=>table.every(e=>e.item!==f.shard)));
+ }
+ const w=fresh();give(w,'rimejaw',5);assert.equal(w.familiarAction('rimejaw','combine'),true);
+ assert.equal(w.familiars.active,'rimejaw');assert.equal(w.progression.maxHealth,110);
+});
+
+test('the index shows a familiar for every hunted creature and guardian, and labels shards in the loot table',()=>{
  for(const id of ['rabbit','deer','turtle','eel','shadow-walker'])assert.equal(codexFamiliar(codexEntry(id)).id,id);
- for(const id of ['mara','moonfang','blacksmith','croshelda'])assert.equal(codexFamiliar(codexEntry(id)),null);
+ for(const id of ['moonfang','rimejaw','flitlynx']){const f=codexFamiliar(codexEntry(id));assert.equal(f.id,id);assert.equal(f.chance,null);}
+ for(const id of ['mara','blacksmith','croshelda','elk-spirit','ocelot'])assert.equal(codexFamiliar(codexEntry(id)),null);
  assert.equal(codexLoot(codexEntry('deer')).rows.at(-1).familiar,'deer');
 });

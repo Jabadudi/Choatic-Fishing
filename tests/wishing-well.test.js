@@ -60,6 +60,15 @@ test('the Artifact pool spends stones and puts artifacts in the backpack; a seco
  assert.equal(again.results[0].refund,5);assert.equal(copiesOf(lucky.inventory,'lodestone:legendary'),1);assert.equal(lucky.well.stones,5);
 });
 
+test('the village guardians join the Familiar pool once Eli has met them',()=>{
+ const w=awake(10);
+ for(const id of ['moonfang','rimejaw','flitlynx'])assert.ok(poolRates(w,'familiars').prizes.some(p=>p.id===id&&!p.inPool));
+ w.codex.add('rimejaw');assert.deepEqual(familiarPool(w),['rimejaw']);
+ const rare=drawWell(w,'familiars',1,sequence([.5,.1,0]));
+ assert.equal(rare.results[0].familiar,'rimejaw');assert.equal(w.familiars.shards.rimejaw,SHARD_COUNTS.rare);assert.match(w.message,/Rimejaw Familiar Shard ×5/);
+ assert.equal(w.familiarAction('rimejaw','combine'),true);
+});
+
 test('the Familiar pool gives shards only for creatures in the index',()=>{
  const w=awake(10);
  assert.equal(drawWell(w,'familiars',1).ok,false,'an empty index leaves nothing to draw');assert.equal(w.well.stones,10);
