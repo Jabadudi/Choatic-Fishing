@@ -13,20 +13,21 @@ import {questMarker} from './side-quests.js';
 import {nightAttackActors} from './story-action.js';
 import {drawFamiliar,drawShard} from './familiar-art.js';
 import {drawRadioBeside,radioBesideEli} from './radio-art.js';
-export function render(ctx,world,view){
+// others: players from the shared world standing in this area (hub.js); drawn with the scenery like Eli.
+export function render(ctx,world,view,{others=[]}={}){
  const {elapsed:t,player:p,bobber}=world;
  const actors=[];
  if(world.adventure){
   // Player and rabbits join the scenery in one ground-order pass; feet sit about 12 units below the explorer's centre.
   drawWilds(ctx,world,view);
-  actors.push({y:p.y+12,ref:p});for(const r of visibleRabbits(world,view))actors.push({y:r.y,ref:r});
+  actors.push({y:p.y+12,ref:p});for(const o of others)actors.push({y:o.y+12,ref:o});for(const r of visibleRabbits(world,view))actors.push({y:r.y,ref:r});
   for(const a of visibleWildlife(world,view))actors.push({y:a.y+14,ref:a});
   if(world.companion?.areaId===world.areaId)actors.push({y:world.companion.y+4,ref:world.companion});
   for(const drop of world.drops||[])if(drop.areaId===world.areaId)actors.push({y:drop.y+5,ref:drop});
   const radio=radioBesideEli(world);if(radio)actors.push({y:radio.y+8,ref:radio});
   for(const n of visibleNpcs(world,view))actors.push({y:n.sortY??n.y+14,ref:n});
   for(const a of nightAttackActors(world))actors.push({y:a.y+14,ref:{...a,cutscene:true}});
-  drawDepthSorted(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500},actors,(c,ref)=>ref===p?drawPlayer(c,world):ref.radio?drawRadioBeside(c,ref,t):ref.cutscene?drawCutsceneActor(c,ref):ref===world.companion?drawFamiliar(c,ref,t):ref.entityType==='pickup'?(ref.item.familiar?drawShard(c,ref,t):drawDrop(c,ref,t)):ref.npc?drawNpc(c,ref,t):ref.species==='rabbit'?drawRabbit(c,ref):drawWildlife(c,ref));
+  drawDepthSorted(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500},actors,(c,ref)=>ref===p?drawPlayer(c,world):ref.remote?drawOtherPlayer(c,ref,t):ref.radio?drawRadioBeside(c,ref,t):ref.cutscene?drawCutsceneActor(c,ref):ref===world.companion?drawFamiliar(c,ref,t):ref.entityType==='pickup'?(ref.item.familiar?drawShard(c,ref,t):drawDrop(c,ref,t)):ref.npc?drawNpc(c,ref,t):ref.species==='rabbit'?drawRabbit(c,ref):drawWildlife(c,ref));
   for(const n of visibleNpcs(world,view))drawQuestMarker(ctx,n,questMarker(world,n),t);
  }else{drawTerrain(ctx,world);drawRabbits(ctx,world,view);}
   for(const bot of world.actors.filter(actor=>actor!==world.player)){
@@ -83,6 +84,13 @@ function drawPlayer(ctx,world){
  const fallen=!!world.defeat||world.story?.scene==='storm'&&['collapse','rescue'].includes(pendingScene(world)?.action);
  if(fallen){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(Math.PI/2);drawExplorer(ctx,{...p,x:0,y:0,steppedAt:undefined},world.elapsed||0);ctx.restore();}
  else drawExplorer(ctx,p,world.elapsed||0);
+}
+// Another player: Eli's sprite with their nickname above, in a gold-edged tag so players stand apart from villagers. Away players are faded.
+function drawOtherPlayer(ctx,o,t){
+ ctx.save();if(o.afk)ctx.globalAlpha=.55;drawExplorer(ctx,o,t||0);ctx.restore();
+ const label=o.afk?`${o.name} · away`:o.name,x=Math.round(o.x),y=Math.round(o.y)-50,w=Math.max(46,label.length*6+12);
+ ctx.textAlign='center';ctx.font='bold 10px monospace';ctx.fillStyle='#10272ce0';ctx.fillRect(x-w/2,y-11,w,15);
+ ctx.strokeStyle=o.afk?'#8a917f':'#e8c46a';ctx.lineWidth=1;ctx.strokeRect(x-w/2+.5,y-10.5,w-1,14);ctx.fillStyle=o.afk?'#b9c2ad':'#f3e6bf';ctx.fillText(label,x,y);
 }
 // Cutscene actors are poses computed by story-action.js. Visible silhouettes stand in while sheets load.
 function drawCutsceneActor(ctx,a){

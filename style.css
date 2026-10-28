@@ -456,3 +456,26 @@ body:has(#lobby-screen.title-screen:not([hidden])) #toggle-fullscreen{background
 #cloud-panel [hidden]{display:none!important}
 .cloud-pick{display:grid;grid-template-columns:1fr 1fr;gap:10px}.cloud-pick div{display:flex;flex-direction:column;gap:6px;padding:10px;border:1px solid #c9b98a88;border-radius:9px;background:#1d3a31;font:12px/1.5 Arial,sans-serif}.cloud-pick b{color:#f3e6bf;font-size:13px}.cloud-pick button{margin-top:auto}
 @media(max-width:520px){.cloud-pick{grid-template-columns:1fr}}
+/* Friends sheet: nickname, online switch, friend requests and where friends are. */
+#players-sheet{--bp-gold:#e6c77f;--bp-gold-dim:#b7995a;--bp-line:#c9a85f99;--bp-ink:#f3e6bf;--bp-muted:#c2cdb6;width:min(560px,calc(100vw - 24px));max-height:calc(100dvh - 32px);box-sizing:border-box;padding:6px;border:1.5px solid var(--bp-gold-dim);border-radius:12px;background:#0c2119;color:var(--bp-ink);box-shadow:0 24px 80px #000c;overflow:hidden;font-family:Georgia,'Times New Roman',serif}
+#players-sheet[open]{display:flex;flex-direction:column}#players-sheet::backdrop{background:#061410b8;backdrop-filter:blur(3px)}
+#players-sheet .backpack-capacity{margin-left:auto;font:14px Arial,sans-serif;color:var(--bp-muted)}
+.players-body{display:flex;flex-direction:column;gap:14px;padding:4px 18px 16px;overflow-y:auto;min-height:0;font-family:Arial,sans-serif}
+.players-me{display:grid;gap:12px}
+.players-signin p,.players-nick small{margin:0 0 10px;color:var(--bp-muted);font-size:14px;line-height:1.45}
+.players-nick,.players-add{display:grid;gap:6px}.players-nick label,.players-add label,.players-body h3{margin:0;font:600 15px Georgia,serif;color:var(--bp-gold)}
+.players-requests,.players-friends{display:grid;gap:8px}
+.players-nick-row{display:flex;gap:8px}.players-nick input,.players-add input{flex:1;min-width:0;font:16px Arial,sans-serif;color:var(--bp-ink);background:#071812;border:1px solid var(--bp-line);border-radius:6px;padding:9px 10px}
+.players-body button{font:600 14px Arial,sans-serif;color:var(--bp-ink);background:#173b2f;border:1px solid var(--bp-line);border-radius:6px;padding:9px 14px;cursor:pointer;min-height:40px}
+.players-body button:hover{background:#1f4a3b}.players-body button:disabled{opacity:.6;cursor:default}
+.players-body button[aria-pressed=true]{border-color:var(--bp-gold);color:var(--bp-gold)}
+.players-toggles{display:flex;flex-wrap:wrap;gap:8px}
+.players-list{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.players-row{display:grid;grid-template-columns:10px minmax(0,1fr) auto;align-items:center;gap:10px;padding:9px 12px;border-radius:6px;background:#10291f;border:1px solid #c9a85f33}
+.players-row.me{border-color:#c9a85f88}
+.players-dot{width:9px;height:9px;border-radius:50%;background:#7fcf6a}.players-row.afk .players-dot{background:#c9a85f}.players-row.offline .players-dot{background:#5f6b62}.players-row.offline .players-who b{color:var(--bp-muted)}
+.players-actions{display:flex;gap:6px}.players-body .players-actions button{min-height:34px;padding:6px 10px;font-size:13px}.players-body .players-accept{border-color:#7fcf6a;color:#bfe8a0}.players-body .players-remove-confirm{border-color:#e0654b;color:#f0a090}
+#hud-shell #hud-icons .players-count.players-asking{background:#e8c46a;color:#10272c}
+.players-who{display:grid;min-width:0}.players-row>.players-who:last-child{grid-column:2/4}.players-who b{font-size:15px;overflow-wrap:anywhere}.players-who small{color:var(--bp-muted);font-size:12.5px}
+.players-empty{color:var(--bp-muted);font-size:14px;padding:6px 2px}
+@media(max-width:760px),(max-height:560px){#players-sheet{overflow-y:auto;max-height:calc(100dvh - 16px)}#players-sheet[open]{display:block}#players-sheet .backpack-heading{gap:10px;padding:8px 12px}#players-sheet .backpack-emblem svg{width:26px;height:26px}#players-sheet .backpack-heading{flex-wrap:nowrap}#players-sheet .backpack-heading h2{display:block;font-size:24px}#players-sheet .backpack-capacity{order:0;flex-basis:auto;margin:0 0 0 auto;font-size:12px}#players-sheet .backpack-close{width:44px;height:44px}.players-body{padding:4px 12px 12px}.players-row{grid-template-columns:10px minmax(0,1fr);}.players-actions{grid-column:2}}

@@ -1,0 +1,54 @@
+// Checks database.rules.json against the Realtime Database emulator on 127.0.0.1:9000.
+// Needs the firebase and @firebase/rules-unit-testing packages, which resolve next to the script, so copy it into a folder where both are installed:
+//   java -jar firebase-database-emulator-*.jar --host 127.0.0.1 --port 9000 &
+//   cp scripts/database-rules-check.mjs database.rules.json <that folder> && node database-rules-check.mjs
+import {initializeTestEnvironment,assertSucceeds,assertFails} from '@firebase/rules-unit-testing';
+import {readFileSync} from 'node:fs';
+import {ref,set,update,get,remove,serverTimestamp} from 'firebase/database';
+const env=await initializeTestEnvironment({projectId:'demo-wilds',database:{rules:readFileSync(process.argv[2]||'database.rules.json','utf8'),host:'127.0.0.1',port:9000}});
+await env.clearDatabase();
+const a=env.authenticatedContext('alice').database(),b=env.authenticatedContext('bob').database(),c=env.authenticatedContext('carol').database(),anon=env.unauthenticatedContext().database();
+let failed=0;
+const ok=async(name,p)=>{try{await assertSucceeds(p);console.log('ok   ',name);}catch(e){console.log('FAIL ',name,e.message);failed++;}};
+const no=async(name,p)=>{try{await assertFails(p);console.log('ok   ',name);}catch(e){console.log('FAIL ',name,e.message);failed++;}};
+const T=serverTimestamp;
+await no('presence needs a nickname first',set(ref(a,'presence/alice'),{n:'Alice',a:'village',afk:false,t:T()}));
+await no('profile nick without claiming the name',set(ref(a,'profiles/alice/nick'),'Alice'));
+await ok('claim nickname atomically',update(ref(a),{'nicknames/alice':'alice','profiles/alice/nick':'Alice'}));
+await no('bob cannot take the same name',update(ref(b),{'nicknames/alice':'bob','profiles/bob/nick':'ALICE'}));
+await no('reserved name',update(ref(b),{'nicknames/admin':'bob','profiles/bob/nick':'Admin'}));
+await ok('bob claims his own',update(ref(b),{'nicknames/bobby':'bob','profiles/bob/nick':'Bobby'}));
+await ok('carol claims hers',update(ref(c),{'nicknames/carol':'carol','profiles/carol/nick':'Carol'}));
+await ok('nickname lookup',get(ref(b,'nicknames/alice')));
+await ok('alice goes online',set(ref(a,'presence/alice'),{n:'Alice',a:'village',afk:false,t:T()}));
+await ok('alice position',set(ref(a,'pos/alice'),{a:'village',x:100,y:200,f:'l',w:true}));
+await no('alice cannot pretend to be Bobby',set(ref(a,'presence/alice'),{n:'Bobby',a:'village',afk:false,t:T()}));
+await no('position out of range',set(ref(a,'pos/alice'),{a:'village',x:-5,y:200,f:'l'}));
+await no('alice cannot write bob position',set(ref(a,'pos/bob'),{a:'village',x:1,y:2,f:'u'}));
+await no('stranger bob cannot read alice presence',get(ref(b,'presence/alice')));
+await no('stranger bob cannot read alice position',get(ref(b,'pos/alice')));
+await no('nobody lists all presence',get(ref(b,'presence')));
+await no('signed-out cannot read',get(ref(anon,'presence/alice')));
+await no('bob cannot add alice without asking',update(ref(b),{'friends/bob/alice':true,'friends/alice/bob':true}));
+await no('request under someone else\'s name',set(ref(b,'requests/alice/bob'),{n:'Carol',t:T()}));
+await no('bob cannot forge a request from carol',set(ref(b,'requests/alice/carol'),{n:'Carol',t:T()}));
+await ok('bob asks alice',set(ref(b,'requests/alice/bob'),{n:'Bobby',t:T()}));
+await ok('alice sees her requests',get(ref(a,'requests/alice')));
+await no('carol cannot read alice requests',get(ref(c,'requests/alice')));
+await no('bob cannot accept on alice\'s behalf',update(ref(b),{'friends/bob/alice':true,'friends/alice/bob':true}));
+await no('carol cannot ride on bob\'s request',update(ref(c),{'friends/carol/alice':true,'friends/alice/carol':true}));
+await ok('alice accepts',update(ref(a),{'friends/alice/bob':true,'friends/bob/alice':true,'requests/alice/bob':null}));
+await ok('friend bob reads alice presence',get(ref(b,'presence/alice')));
+await ok('friend bob reads alice position',get(ref(b,'pos/alice')));
+await no('carol still cannot',get(ref(c,'pos/alice')));
+await no('bob cannot read alice friend list',get(ref(b,'friends/alice')));
+await no('no request between friends',set(ref(b,'requests/alice/bob'),{n:'Bobby',t:T()}));
+await ok('carol asks alice',set(ref(c,'requests/alice/carol'),{n:'Carol',t:T()}));
+await ok('alice declines',remove(ref(a,'requests/alice/carol')));
+await ok('carol asks again and withdraws',set(ref(c,'requests/alice/carol'),{n:'Carol',t:T()}).then(()=>remove(ref(c,'requests/alice/carol'))));
+await ok('rename while online in one write',update(ref(a),{'nicknames/alicia':'alice','nicknames/alice':null,'profiles/alice/nick':'Alicia','presence/alice/n':'Alicia'}));
+await ok('bob unfriends alice (both sides)',update(ref(b),{'friends/bob/alice':null,'friends/alice/bob':null}));
+await no('bob can no longer read alice',get(ref(b,'pos/alice')));
+await ok('alice leaves',remove(ref(a,'presence/alice')));
+await env.cleanup();
+console.log(failed?`${failed} FAILED`:'all rules cases passed');process.exit(failed?1:0);

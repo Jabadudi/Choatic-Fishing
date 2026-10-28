@@ -1,6 +1,6 @@
 import {parseSave} from './save-format.js';
 // Public web identifiers for the Firebase project; access is enforced by firestore.rules.
-export const FIREBASE_CONFIG={apiKey:'AIzaSyA-yPYfwn-f0Wlh0X0iCRxI-mSEvSQ5t2U',authDomain:'the-wilds-ce2d5.firebaseapp.com',projectId:'the-wilds-ce2d5',storageBucket:'the-wilds-ce2d5.firebasestorage.app',messagingSenderId:'222729712969',appId:'1:222729712969:web:7de395a77e9d83bf381698'};
+export const FIREBASE_CONFIG={apiKey:'AIzaSyA-yPYfwn-f0Wlh0X0iCRxI-mSEvSQ5t2U',authDomain:'the-wilds-ce2d5.firebaseapp.com',projectId:'the-wilds-ce2d5',storageBucket:'the-wilds-ce2d5.firebasestorage.app',messagingSenderId:'222729712969',appId:'1:222729712969:web:7de395a77e9d83bf381698',databaseURL:'https://the-wilds-ce2d5-default-rtdb.firebaseio.com'};
 export const CLOUD_UPLOAD_INTERVAL=60000;
 
 // Decide what to do when a signed-in player has a local and/or cloud journey.
@@ -24,12 +24,15 @@ export function deviceLabel(nav=globalThis.navigator){
 }
 
 // Firebase Auth with Google, and one Firestore document per player at saves/{uid}.
+// The SDK file name carries its contents, so a phone holding an older cached copy fetches the new one.
+export const FIREBASE_SDK='../vendor/firebase-12.19.0-db.js';
 export async function firebaseBackend(config=FIREBASE_CONFIG){
- const fb=await import(new URL('../vendor/firebase.js',import.meta.url));
+ const fb=await import(new URL(FIREBASE_SDK,import.meta.url));
  const app=fb.initializeApp(config),auth=fb.getAuth(app),db=fb.getFirestore(app),provider=new fb.GoogleAuthProvider();
  fb.getRedirectResult(auth).catch(()=>{});
  const ref=uid=>fb.doc(db,'saves',uid);
  return {
+  fb,app,
   onUser(callback){return fb.onAuthStateChanged(auth,user=>callback(user?{uid:user.uid,name:user.displayName||user.email||'Player',photo:user.photoURL||''}:null));},
   async signIn(){
    try{await fb.signInWithPopup(auth,provider);}

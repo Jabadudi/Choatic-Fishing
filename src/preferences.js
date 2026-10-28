@@ -9,11 +9,11 @@ export const DIALOGUE_THEMES=[
  {id:'meadow-banner',name:'Meadow Banner',description:'An open cream panel with a raised portrait and ribbon.'},
  {id:'quiet-hud',name:'Quiet HUD',description:'A compact, translucent panel with subtle key hints.'}
 ];
-export const DEFAULT_PREFERENCES=Object.freeze({musicVolume:.3,sfxVolume:.7,musicMuted:false,sfxMuted:false,dialogueTheme:'hearthwood',keybinds:DEFAULT_BINDINGS});
+export const DEFAULT_PREFERENCES=Object.freeze({musicVolume:.3,sfxVolume:.7,musicMuted:false,sfxMuted:false,dialogueTheme:'hearthwood',hubOnline:false,keybinds:DEFAULT_BINDINGS});
 export function normalizePreferences(value){
  const v=value&&typeof value==='object'?value:{},out={...DEFAULT_PREFERENCES};
  for(const key of ['musicVolume','sfxVolume'])if(typeof v[key]==='number'&&Number.isFinite(v[key]))out[key]=Math.max(0,Math.min(1,v[key]));
- for(const key of ['musicMuted','sfxMuted'])if(typeof v[key]==='boolean')out[key]=v[key];
+ for(const key of ['musicMuted','sfxMuted','hubOnline'])if(typeof v[key]==='boolean')out[key]=v[key];
  if(DIALOGUE_THEMES.some(t=>t.id===v.dialogueTheme))out.dialogueTheme=v.dialogueTheme;
  out.keybinds=normalizeBindings(v.keybinds);return Object.freeze(out);
 }
