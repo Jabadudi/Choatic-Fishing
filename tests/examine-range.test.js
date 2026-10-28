@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {World} from '../src/world.js';
-import {explorationHud} from '../src/hud.js';
+import {explorationHud,promptParts} from '../src/hud.js';
 import {placesFor,walkable,examinableLandmark,EXAMINE_RANGE} from '../src/wilds.js';
 
 test('the examine prompt only appears when Eli stands beside a landmark',()=>{
@@ -18,4 +18,13 @@ test('every landmark can still be reached close enough to examine',()=>{
   for(let dx=-r;dx<=r&&!reachable;dx+=4)for(let dy=-r;dy<=r&&!reachable;dy+=4)reachable=walkable(p.x+dx,p.y+dy,id)&&examinableLandmark(p.x+dx,p.y+dy,id)?.id===p.id;
   assert.ok(reachable,`${id}/${p.id} cannot be examined from walkable ground`);
  }
+});
+
+test('the bubble over Eli splits the action from what it acts on',()=>{
+ assert.deepEqual(promptParts('Examine The Drowned Road'),{verb:'Examine',target:'The Drowned Road'});
+ assert.deepEqual(promptParts('Talk to Mara · Side mission'),{verb:'Talk',target:'Mara · Side mission'});
+ assert.deepEqual(promptParts('Pick up Sardine'),{verb:'Pick up',target:'Sardine'});
+ assert.deepEqual(promptParts('Examine the bed'),{verb:'Examine',target:'The bed'});
+ assert.deepEqual(promptParts('Look into the Wishing Well'),{verb:'Look',target:'The Wishing Well'});
+ assert.deepEqual(promptParts('Go to sleep'),{verb:'Sleep',target:''});assert.deepEqual(promptParts(null),{verb:'',target:''});
 });
