@@ -25,7 +25,8 @@ export function mountMobileControls({state,action,examine,active}){
  document.querySelector('.playfield').append(root);
  const stick=root.querySelector('#touch-stick'),thumb=root.querySelector('#touch-thumb'),use=root.querySelector('#touch-use'),inspect=root.querySelector('#touch-examine');
  const center=()=>{thumb.style.transform='translate(0px, 0px)';stick.classList.remove('engaged');};
- const move=e=>{const r=stick.getBoundingClientRect(),v=state.move(e.pointerId,e.clientX-r.left-r.width/2,e.clientY-r.top-r.height/2);if(v)thumb.style.transform=`translate(${v.thumbX}px, ${v.thumbY}px)`;};
+ // The UI size setting zooms the stick, so pointer offsets are converted back to its own pixels.
+ const move=e=>{const r=stick.getBoundingClientRect(),z=r.width/(stick.offsetWidth||r.width)||1,v=state.move(e.pointerId,(e.clientX-r.left-r.width/2)/z,(e.clientY-r.top-r.height/2)/z);if(v)thumb.style.transform=`translate(${v.thumbX}px, ${v.thumbY}px)`;};
  stick.addEventListener('pointerdown',e=>{if(e.button!==0||!active()||!state.beginMove(e.pointerId))return;e.preventDefault();stick.setPointerCapture(e.pointerId);stick.classList.add('engaged');move(e);});
  stick.addEventListener('pointermove',move);
  for(const type of ['pointerup','pointercancel','lostpointercapture'])stick.addEventListener(type,e=>{if(state.endMove(e.pointerId))center();});
