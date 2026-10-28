@@ -9,6 +9,7 @@ import {currentScene,storyPrompt,cabinDamaged,rodReady} from './story.js';
 import {amountLabel} from './inventory.js';
 import {paintStoryMap} from './story-map.js';
 import {drawStoryWeather} from './story-weather.js';
+import {mountAtmosphere,syncAtmosphere} from './atmosphere.js';
 import {mountSaveUI} from './save-ui.js';
 import {nearbyDrop} from './drops.js';
 import {itemLabel} from './artifacts.js';
@@ -50,7 +51,9 @@ function resize(){
   view.scale=gameScale(r.width,r.height,touchMode);
   view.x=(r.width-960*view.scale)/2;view.y=(r.height-720*view.scale)/2;
 }
-new ResizeObserver(resize).observe(canvas);resize();
+let worldDrawn=false;
+new ResizeObserver(()=>{resize();worldDrawn=false;}).observe(canvas);resize();
+mountAtmosphere(canvas.parentElement);
 const elements=new Map();
 const $=id=>{if(!elements.has(id))elements.set(id,document.getElementById(id));return elements.get(id);};const keys=new Set();let mouseHeld=false,spaceHeld=false,aim={x:480,y:0};
 const currentInput=()=>{camera();if(touchMode&&touchState.enabled){pointer=null;aim=touchState.aim(world.player);}const stick=touchMode&&touchState.movePointer!==null;return ({left:keys.has(preferences.value.keybinds.left)||(stick&&touchState.x<-.1),right:keys.has(preferences.value.keybinds.right)||(stick&&touchState.x>.1),up:keys.has(preferences.value.keybinds.up)||(stick&&touchState.y<-.1),down:keys.has(preferences.value.keybinds.down)||(stick&&touchState.y>.1),...(stick?{moveX:touchState.x,moveY:touchState.y}:{}),aim,held:mouseHeld||spaceHeld||touchState.held});};
@@ -310,16 +313,22 @@ updateLobby();
 let accumulator=0,last=performance.now(),lastUI=0,lastRender=0,titleArtIn=false;
 function frame(now){accumulator+=Math.min((now-last)/1000,.1);last=now;while(accumulator>=1/120){if(!hudUI?.open&&!hubUI?.open&&!backpackUI?.open&&!tradeUI?.open&&!wellUI?.open&&!radioUI?.open&&!skillsUI?.open&&!codexUI?.open&&!questUI?.open&&!saveUI?.open&&!settingsUI?.open&&!helpUI?.open&&!document.hidden){if(storyAction(lobby.world))updateStoryAction(lobby.world,1/120);else if(!storyUI?.open){lobby.tick(1/120,currentInput());observeGameSounds(lobby.world);}}accumulator-=1/120;}
  if(lobby.world)world=lobby.world;
- if(now-lastRender<1000/60){requestAnimationFrame(frame);return;}lastRender=now-((now-lastRender)%(1000/60));
+ // Cap drawing near 60fps on faster screens. Safari and Firefox round frame times to whole milliseconds, so a
+ // 60Hz frame can read as 16ms; the cap must sit well below 16.7ms or it drops every third frame there.
+ if(now-lastRender<10){requestAnimationFrame(frame);return;}lastRender=now;
  // A full-screen video cutscene hides the world, so only the UI keeps ticking until it ends.
  if(storyUI?.covering){if(now-lastUI>=1000/30){lastUI=now;updateUI();}requestAnimationFrame(frame);return;}
  // Drawing the world behind the opaque title screen would fetch Eli's sheet and the scenery before the menu art.
  if(!titleArtIn&&!lobby.world){if(now-lastUI>=1000/30){lastUI=now;updateUI();}requestAnimationFrame(frame);return;}
  hubUI?.sync(lobby.world);
+ // A menu sheet pauses the world and blurs it, so after one frame the picture cannot change; redrawing it would
+ // make Safari and Firefox re-blur the full screen every frame.
+ const sheet=backpackUI?.open||tradeUI?.open||wellUI?.open||radioUI?.open||skillsUI?.open||codexUI?.open||questUI?.open;
+ if(sheet&&worldDrawn){if(now-lastUI>=1000/30){lastUI=now;updateProgression();updateUI();}requestAnimationFrame(frame);return;}worldDrawn=!!sheet;
  const display=lobby.presentation();camera(display?.player||world.player);const dpr=view.dpr;
  ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle=INTERIOR_AREAS.includes(world.areaId)?'#101d20':'#1c4754';ctx.fillRect(0,0,canvas.width,canvas.height);
  ctx.setTransform(dpr*view.scale,0,0,dpr*view.scale,dpr*view.x,dpr*view.y);
- render(ctx,display||world,{left:-view.x/view.scale,top:-view.y/view.scale,right:(view.width-view.x)/view.scale,bottom:(view.height-view.y)/view.scale},{others:hubUI?.others(world)||[]});drawStoryWeather(ctx,world,{left:-view.x/view.scale,top:-view.y/view.scale,right:(view.width-view.x)/view.scale,bottom:(view.height-view.y)/view.scale},now/1000);if(touchMode&&touchState.manualAim&&lobby.world&&!atlasOpen){const a=touchState.manualAim;ctx.strokeStyle='#fff1bc';ctx.lineWidth=1.5/view.scale;ctx.beginPath();ctx.arc(a.x,a.y,9/view.scale,0,Math.PI*2);ctx.moveTo(a.x-14/view.scale,a.y);ctx.lineTo(a.x+14/view.scale,a.y);ctx.moveTo(a.x,a.y-14/view.scale);ctx.lineTo(a.x,a.y+14/view.scale);ctx.stroke();}if(lobby.world&&now-lastUI>=1000/30){lastUI=now;updateProgression();updateUI();}requestAnimationFrame(frame);
+ render(ctx,display||world,{left:-view.x/view.scale,top:-view.y/view.scale,right:(view.width-view.x)/view.scale,bottom:(view.height-view.y)/view.scale},{others:hubUI?.others(world)||[]});drawStoryWeather(ctx,world,{left:-view.x/view.scale,top:-view.y/view.scale,right:(view.width-view.x)/view.scale,bottom:(view.height-view.y)/view.scale},now/1000);syncAtmosphere();if(touchMode&&touchState.manualAim&&lobby.world&&!atlasOpen){const a=touchState.manualAim;ctx.strokeStyle='#fff1bc';ctx.lineWidth=1.5/view.scale;ctx.beginPath();ctx.arc(a.x,a.y,9/view.scale,0,Math.PI*2);ctx.moveTo(a.x-14/view.scale,a.y);ctx.lineTo(a.x+14/view.scale,a.y);ctx.moveTo(a.x,a.y-14/view.scale);ctx.lineTo(a.x,a.y+14/view.scale);ctx.stroke();}if(lobby.world&&now-lastUI>=1000/30){lastUI=now;updateProgression();updateUI();}requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
 titleArtReady.then(()=>{titleArtIn=true;(window.requestIdleCallback||setTimeout)(()=>preloadProps());});

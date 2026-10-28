@@ -161,7 +161,8 @@
 :root body.exploring #explore-hint{bottom:calc(76px + var(--hud-b))}
 /* The menu sheet */
 #hud-menu-sheet{width:min(760px,calc(100vw - 24px));max-height:calc(100dvh - 24px);padding:0;border:1px solid var(--hud-line);border-radius:10px;background:#0b1d1ef7;color:var(--hud-cream);font-family:Arial,sans-serif;overflow:auto}
-#hud-menu-sheet[open]{display:grid;grid-template-columns:190px minmax(0,1fr)}
+/* min-content rows: Safari otherwise sizes the row as if the buttons sat in one column, leaving the menu screen-tall. */
+#hud-menu-sheet[open]{display:grid;grid-template-columns:190px minmax(0,1fr);grid-template-rows:min-content}
 #hud-menu-sheet::backdrop{background:#0718198c}
 .hud-sheet-who{display:grid;align-content:start;justify-items:start;gap:6px;padding:18px 14px;background:#14302f;border-right:1px solid #c2b68e44}
 .hud-sheet-who h2{margin:4px 0 0;font:bold 20px Georgia,serif}
