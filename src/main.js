@@ -194,6 +194,7 @@ const sheetOpen=()=>!!(backpackUI?.open||tradeUI?.open||wellUI?.open||radioUI?.o
 document.title='The Wilds · Reedwater Landing';
 document.querySelector('.lobby-eyebrow').textContent='THE WILDS';
 document.querySelector('.lobby-card h1').textContent='Grandpa left you a map.';
+$('lobby-screen').classList.add('title-screen');document.querySelector('.lobby-card h1').insertAdjacentHTML('beforebegin','<img class="title-logo" src="assets/title/logo.webp" alt="The Wilds" width="1185" height="660">');
 document.querySelector('.lobby-note').textContent='WASD explore · Mouse aim · E fish · G examine · M atlas';
 document.querySelector('header h1').textContent='THE WILDS';
 document.querySelector('.controls').textContent='WASD MOVE · E FISH · G EXAMINE · M ATLAS · L-SHIFT DASH';
