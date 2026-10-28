@@ -1,7 +1,7 @@
 import {storyAction,updateStoryAction} from './story-action.js';
 import {matchesBinding,bindingLabel} from './keybinds.js';
 import {preferences} from './preferences.js';
-import {shinyNotice} from './spawns.js';
+import {shinyNotice,otherNotices} from './notices.js';
 import {mountSettings} from './settings-ui.js';
 import {mountControlsHelp} from './controls-help.js';
 import {observeGameSounds,playSfx} from './sfx.js';
@@ -183,6 +183,7 @@ function updateUI(){
  setText($('item-name'),inventory.slots[0]?.name||'Empty slot');setItemIcon($('item-icon'),inventory.slots[0]?.name);setText($('slot-rod').querySelector('small'),rodReady(world.story)?'Permanent':'On the rack');setText($('item-uses'),inventory.slots[0]?(touchMode?amountLabel(inventory.slots[0]):`${amountLabel(inventory.slots[0])} · Click`):'Assign from backpack');
  let status=active?`Move along shore · Hold ${bindingLabel('inspect')} / mouse to reel · ${bindingLabel('fish')} to abandon.`:busy?`Waiting for a bite… ${bindingLabel('fish')} / Esc to abandon.`:world.message||`Walk to shore, aim into water, press ${bindingLabel('fish')}.`;
  if(touchMode){status=status.replace('M opens the area map.','Tap the map to explore.');if(active)status='Hold Reel to raise the bar · Release to lower it';else if(busy)status='Waiting for a bite… Tap Cancel to abandon.';else if(!world.message)status='Drag the left stick to move · Tap water to aim · Use to cast';}
+ setText($('world-notice'),world.adventure?otherNotices(status):'');
  if(world.adventure)status=shinyNotice(world.message);
  setText($('status'),status);
  if(world.adventure){
@@ -207,6 +208,8 @@ function updateUI(){
   [...pips.children].forEach((pip,i)=>pip.classList.toggle('spent',i>=world.player.dashCharges));
   const message=$('status').textContent;if(message!==lastMessage){lastMessage=message;messageSince=performance.now();}
   document.querySelector('.status').classList.toggle('quiet',!busy&&performance.now()-messageSince>8000);
+  const notice=$('world-notice').textContent;if(notice!==lastNotice){lastNotice=notice;noticeSince=performance.now();}
+  $('world-notice').classList.toggle('quiet',!busy&&performance.now()-noticeSince>8000);
   drawMinimap($('mini-atlas'));if(atlasOpen&&performance.now()-lastAtlasDraw>250){lastAtlasDraw=performance.now();drawMap($('atlas-canvas'));}
   hudUI?.update(world,hud,{visible:true,blocked:!!currentScene(world)||!!storyUI?.open||atlasOpen||sheetOpen()});
  }
@@ -222,7 +225,7 @@ document.querySelector('header h1').textContent='THE WILDS';
 document.querySelector('.lobby-actions').insertAdjacentHTML('afterbegin','<button id="explore-world">Enter the Wilds</button>');
 document.querySelector('.playfield').insertAdjacentHTML('beforeend',`<section id="exploration-hud" hidden><span class="exploration-kicker" id="area-kicker">YOUR JOURNEY</span><h2 id="region-name">Reedwater Delta</h2><div id="player-hp" role="progressbar" aria-label="Health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><div class="hp-row"><span class="hp-label">HP</span><span id="player-hp-text">100 / 100</span></div><div class="hp-track"><i id="player-hp-trail"></i><i id="player-hp-fill"></i></div></div><p id="discovery-count">0 / 10 places found</p><div class="discovery-dots" id="discovery-dots"></div><p id="purse-hud" title="Reed marks">${markIcon(14)}<span></span></p></section><button id="inspect-place" hidden>G · Examine</button><div id="explore-hint" hidden></div><button id="music-icon" aria-label="Music settings" aria-expanded="false">♪</button><button id="open-atlas" hidden aria-label="Open world atlas"><canvas id="mini-atlas" width="176" height="176"></canvas><span>M · WORLD ATLAS</span></button><section id="world-atlas" hidden role="dialog" aria-modal="true" aria-label="World atlas"><div class="atlas-card"><div class="atlas-heading"><div><small>THE WILDS</small><h2>World Atlas</h2></div><button id="close-atlas">Close · M / Esc</button></div><canvas id="atlas-canvas" width="800" height="600"></canvas><p>Follow the old trails and bridges. Gold marks the places you have found. Your position is the bright marker.</p></div></section>`);
 touchUI=mountMobileControls({state:touchState,active:()=>touchMode&&!!lobby.world&&!atlasOpen&&!hubUI?.open&&!chatUI?.open&&!hudUI?.open&&!saveUI?.open&&!backpackUI?.open&&!tradeUI?.open&&!wellUI?.open&&!radioUI?.open&&!skillsUI?.open&&!codexUI?.open&&!questUI?.open&&!settingsUI?.open&&!helpUI?.open&&!storyUI?.open&&!currentScene(world),action:()=>{pointer=null;const f=world.fishing;if(f.state==='waiting')act('cancel');else if(f.state==='idle')act('click');},examine:()=>{world.inspect();canvas.focus();}});
-let atlasOpen=false,exploreStart=performance.now(),lastMessage='',messageSince=0,dotsKey='',hpShown='',hpFraction=1;
+let atlasOpen=false,exploreStart=performance.now(),lastMessage='',messageSince=0,lastNotice='',noticeSince=0,dotsKey='',hpShown='',hpFraction=1;
 $('upgrade-timer').insertAdjacentHTML('afterend','<div id="upgrade-bar"><i id="upgrade-fill"></i></div><p id="quest-objective" hidden aria-live="polite"></p><p id="side-objective" hidden aria-live="polite"></p>');
 document.querySelector('.hotbar').insertAdjacentHTML('beforeend','<div class="dash-mini"><div id="dash-pips"></div><span>DASH</span></div>');
 $('music-icon').onclick=()=>{const open=document.querySelector('.music-hud').classList.toggle('open');$('music-icon').setAttribute('aria-expanded',open);canvas.focus();};

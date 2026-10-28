@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {World} from '../src/world.js';
 import {SPAWN_AREAS,SLOTS,SHINY,AWAY_SECONDS,SPAWN_CLEARANCE} from '../src/spawn-tables.js';
-import {createCreature,rollArea,updateSpawns,spawnWeights,makeShiny,shinyNotice} from '../src/spawns.js';
+import {createCreature,rollArea,updateSpawns,spawnWeights,makeShiny} from '../src/spawns.js';
 import {damageAnimal} from '../src/wildlife.js';
 import {animalGround} from '../src/wildlife.js';
 import {captureSave,restoreSave} from '../src/save-format.js';
@@ -119,11 +119,4 @@ test('spawns, shinies and timers survive a save, and version 5 saves keep their 
  const migrated=restoreSave(old);assert.equal(migrated.animals.length,12);assert.equal(migrated.animals[0].health,0);assert.equal(migrated.spawns.current,'landing');
  const bad=captureSave(w);bad.state.animals[0].slotId='nowhere';assert.throws(()=>restoreSave(bad),/animal/);
  const water=captureSave(w);water.state.animals.find(x=>x.id==='gold-eel').species='deer';assert.throws(()=>restoreSave(water),/animal/);
-});
-
-test('the exploring status line keeps only the shiny notice and drops every other message',()=>{
- assert.equal(shinyNotice("Grandpa's fishing rod is on the weapon rack inside the cabin. · +1 Wishstone"),'');
- assert.equal(shinyNotice('Deer hunted · +10 Hunting XP · Something glimmers in Windchime Path…'),'Something glimmers in Windchime Path…');
- assert.equal(shinyNotice('Something glimmers in Shellback Marsh… · The old well glows'),'Something glimmers in Shellback Marsh…');
- assert.equal(shinyNotice(''),'');assert.equal(shinyNotice(undefined),'');
 });

@@ -77,8 +77,6 @@ export function rollArea(world,areaId){
  }
  return born;
 }
-// The only line the exploring HUD still shows: pull the shiny notice out of the current message.
-export const shinyNotice=message=>message?.match(/Something glimmers in [^·]+…/)?.[0]||'';
 function announce(world,areaId){
  if(!world.animals.some(a=>a.areaId===areaId&&a.shiny&&a.health>0))return;
  const text=`Something glimmers in ${areaFor(areaId).name}…`;
