@@ -97,7 +97,7 @@
 :root body.touch-mode .stick-arrows,:root body.touch-mode .stick-label{display:none}
 /* 5 · Hotbar down the right edge, names beside the icons */
 :root body.exploring .hotbar{left:auto;right:var(--hud-r);top:calc(58px + var(--hud-t));bottom:auto;transform:none;width:140px;max-width:none;display:flex;flex-direction:column;flex-wrap:nowrap;align-items:stretch;gap:3px;padding:0;background:none;border:0;box-shadow:none}
-:root body.exploring .hotbar .slot{position:relative;flex:none;width:100%;min-width:0;height:34px;min-height:0;padding:0 38px 0 0;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:0;border:0;border-radius:0;background:none;box-shadow:none;text-align:right;overflow:visible;outline:0}
+:root body.exploring .hotbar .slot{position:relative;flex:none;width:100%;min-width:0;max-width:none;height:34px;min-height:0;padding:0 38px 0 0;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:0;border:0;border-radius:0;background:none;box-shadow:none;text-align:right;overflow:visible;outline:0}
 :root body.exploring .hotbar .slot::after{content:'';position:absolute;right:0;top:0;width:34px;height:34px;box-sizing:border-box;border-radius:7px;background:#10272cd9;border:1.5px solid #c2b68e77;z-index:-1}
 :root body.exploring .hotbar .slot.selected::after{border-color:var(--hud-gold);box-shadow:0 0 0 2px #e8c46a55}
 :root body.exploring .hotbar .slot-icon{position:absolute;right:0;top:0;width:34px;height:34px;display:grid;place-items:center;font-size:18px;line-height:1}

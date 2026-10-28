@@ -23,7 +23,10 @@ const SE={...PHONE,viewport:{width:667,height:375}};
   const ids=['#hud-menu','#hud-map','#hud-tracker','#hud-icons','.hotbar','#hud-vitals','.radio-chip','#touch-use','#touch-examine','#touch-stick','.hud-act.tidal','.hud-act.whirlpool','.hud-act.dash','.hud-act.use','.hud-act.talk'];
   const boxes=[];for(const id of ids){const l=page.locator(id).first();if(await l.count()&&await l.isVisible())boxes.push([id,await l.boundingBox()]);}
   for(let i=0;i<boxes.length;i++)for(let j=i+1;j<boxes.length;j++){const [a,A]=boxes[i],[b,B]=boxes[j];if(A.x<B.x+B.width-1&&B.x<A.x+A.width-1&&A.y<B.y+B.height-1&&B.y<A.y+A.height-1&&!(a==='#hud-actions'||b==='#hud-actions'))errors.push(`${label}: ${a} overlaps ${b}`);}
-  const vw=page.viewportSize();for(const [id,B] of boxes)if(B.x<0||B.y<0||B.x+B.width>vw.width+1||B.y+B.height>vw.height+1)errors.push(`${label}: ${id} is off screen`);
+  // Every hotbar slot lines up on the same right edge, whichever stylesheet built it.
+  const edges=await page.$$eval('.hotbar .slot',slots=>slots.filter(s=>s.offsetParent).map(s=>Math.round(s.querySelector('.slot-icon').getBoundingClientRect().right)));
+  if(new Set(edges).size>1)errors.push(`${label}: hotbar slots are not aligned (${edges.join(', ')})`);
+ const vw=page.viewportSize();for(const [id,B] of boxes)if(B.x<0||B.y<0||B.x+B.width>vw.width+1||B.y+B.height>vw.height+1)errors.push(`${label}: ${id} is off screen`);
  }
  const phone=await open(PHONE,'phone');
  await noOverlap(phone,'phone');await phone.screenshot({path:`${out}/01-phone-explore.png`});
