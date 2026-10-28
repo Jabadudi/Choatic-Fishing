@@ -438,6 +438,7 @@ body.exploring:has(.music-hud.open) .radio-chip:not([hidden]){top:330px}
 #lobby-screen.title-screen .lobby-actions button:disabled{border-image-source:url(assets/title/button-disabled.webp);opacity:.75;cursor:default}
 #lobby-screen.title-screen #continue-journey:disabled{display:none}
 .title-screen .lobby-note{margin-top:min(3vh,22px);color:#c9d1e6;text-shadow:0 1px 3px #000;font-size:11px}
+.title-screen.booting .lobby-actions,.title-screen.booting .lobby-note{visibility:hidden}
 body.touch-mode .title-screen .lobby-note{display:none}
 body:has(#lobby-screen.title-screen:not([hidden])) #open-settings{width:56px;height:56px;min-height:0;padding:0;border:0;background:url(assets/title/gear.webp) center/contain no-repeat;font-size:0;color:transparent;filter:drop-shadow(0 3px 6px #000a)}
 @media(orientation:portrait){#lobby-screen.title-screen{place-items:start center;padding-top:max(60px,12vh)}#lobby-screen.title-screen::before{background-position:88% 100%}#lobby-screen.title-screen::after{background:linear-gradient(180deg,#070d24d9 0,#070d2480 45%,#070d2400 70%)}#lobby-screen.title-screen .lobby-card{width:min(88vw,460px)}}
