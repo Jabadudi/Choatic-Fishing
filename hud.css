@@ -218,3 +218,10 @@
 /* The shiny notice is the only text the status line still shows, so it sits in the middle of the screen, above Eli. */
 :root body.exploring .status,:root body.exploring.has-quest .status,:root body.exploring:has(#line-panel:not([hidden])) .status{top:30%;bottom:auto;left:var(--hud-l);right:var(--hud-r);transform:none;width:auto;max-width:none;align-items:flex-start}
 :root body.exploring .status p{max-width:min(520px,100%);padding:8px 18px;border-radius:14px;border:1px solid #ffd36a88;color:#ffe9b0;font-size:14px;font-weight:bold;box-shadow:0 4px 16px #0008}
+/* Every other message sits in the bottom notice line, where the save badge used to show. Autosave is implied; the badge only appears for a failed save. */
+#world-notice{display:none}
+:root body.exploring #world-notice:not(:empty){display:block;position:absolute;z-index:6;left:50%;bottom:calc(48px + var(--hud-b));transform:translateX(-50%);width:max-content;max-width:min(460px,calc(100vw - 24px));margin:0;padding:4px 12px;border-radius:12px;background:#0b1d1ecc;color:#edf3df;font:10.5px/1.35 Arial,sans-serif;text-align:center;text-shadow:0 1px 3px #000;pointer-events:none;transition:opacity .8s}
+:root body.exploring #world-notice.quiet{opacity:0}
+@media(min-height:600px) and (min-width:900px){:root body.exploring #world-notice{zoom:1.3}}
+@media(max-width:600px){:root body.exploring #world-notice:not(:empty){bottom:calc(224px + var(--hud-b))}}
+:root body.exploring:not(.touch-mode):has(#explore-hint:not([hidden])) #world-notice:not(:empty){bottom:calc(84px + var(--hud-b))}
