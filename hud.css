@@ -133,8 +133,9 @@
 :root body.exploring .radio-chip-next{display:none}
 :root body.exploring .radio-video{left:auto;right:calc(var(--hud-r) + 150px);top:calc(58px + var(--hud-t));bottom:auto;width:160px;height:90px}
 /* 10 · What Eli can do right here, beside him */
-:root body.exploring #inspect-place{display:flex;align-items:center;gap:6px;left:calc(var(--eli-x,50%) + 46px);top:calc(var(--eli-y,50%) - 34px);bottom:auto;transform:none;width:auto;max-width:min(260px,calc(50vw - 200px));margin:0;padding:3px 10px 3px 3px;border:0;border-radius:4px;background:linear-gradient(90deg,#0b1d1ee6,#0b1d1e99);color:var(--hud-cream);outline:1px solid #e8c46a99;font:11px/1.3 Arial,sans-serif;text-align:left;box-shadow:none;z-index:6}
-@media(min-width:601px){:root body.exploring #inspect-place.flip{left:calc(var(--eli-x,50%) - 46px);transform:translateX(-100%)}}
+:root body.exploring #inspect-place{display:flex;align-items:center;gap:5px;left:var(--eli-x,50%);top:var(--eli-y,50%);bottom:auto;transform:translate(-50%,-100%);width:auto;max-width:none;white-space:nowrap;margin:0;padding:2px 7px 2px 2px;border:0;border-radius:4px;background:#0b1d1ee6;color:var(--hud-cream);outline:1px solid #e8c46a99;font:11px/1.3 Arial,sans-serif;text-align:left;box-shadow:none;z-index:6}
+/* A small tail points the bubble down at Eli. */
+:root body.exploring #inspect-place::after{content:'';position:absolute;left:50%;bottom:-5px;margin-left:-4px;border:4px solid transparent;border-bottom:0;border-top:5px solid #0b1d1ee6}
 :root body.exploring #inspect-place::before{content:attr(data-key);flex:none;min-width:18px;padding:0 3px;font:10px/16px monospace;text-align:center;border-radius:3px;background:var(--hud-cream);color:#1a1608}
 /* 12 · First time Eli finds an item */
 #hud-shell #hud-found{position:absolute;inset:0;display:grid;place-items:center;width:100%;padding:0;border:0;background:radial-gradient(#0b1d1e44,#0b1d1eaa);cursor:pointer;z-index:2}
@@ -158,11 +159,13 @@
 :root body.exploring .status,:root body.exploring.has-quest .status{top:calc(10px + var(--hud-t));bottom:auto;left:calc(var(--hud-l) + 156px);right:calc(var(--hud-r) + 340px);transform:none;width:auto;max-width:none;display:flex;justify-content:center;padding:0;background:none;text-align:center;pointer-events:none}
 :root body.exploring .status p{max-width:460px;padding:4px 12px;border-radius:12px;background:#0b1d1ecc}
 :root body.exploring .status p{margin:0;font-size:10.5px;line-height:1.35}
+:root body.exploring .status p:empty{display:none}
 :root body.exploring #save-status{left:50%;right:auto;top:auto;bottom:calc(48px + var(--hud-b));transform:translateX(-50%)}
 :root body.exploring #explore-hint{bottom:calc(76px + var(--hud-b))}
 /* The menu sheet */
 #hud-menu-sheet{width:min(760px,calc(100vw - 24px));max-height:calc(100dvh - 24px);padding:0;border:1px solid var(--hud-line);border-radius:10px;background:#0b1d1ef7;color:var(--hud-cream);font-family:Arial,sans-serif;overflow:auto}
-#hud-menu-sheet[open]{display:grid;grid-template-columns:190px minmax(0,1fr)}
+/* min-content rows: Safari otherwise sizes the row as if the buttons sat in one column, leaving the menu screen-tall. */
+#hud-menu-sheet[open]{display:grid;grid-template-columns:190px minmax(0,1fr);grid-template-rows:min-content}
 #hud-menu-sheet::backdrop{background:#0718198c}
 .hud-sheet-who{display:grid;align-content:start;justify-items:start;gap:6px;padding:18px 14px;background:#14302f;border-right:1px solid #c2b68e44}
 .hud-sheet-who h2{margin:4px 0 0;font:bold 20px Georgia,serif}
@@ -195,6 +198,7 @@
  :root body.exploring #save-status{bottom:calc(224px + var(--hud-b))}
  :root body.exploring .radio-chip:not([hidden]){left:auto;right:var(--hud-r);bottom:calc(240px + var(--hud-b))}
  :root body.exploring #inspect-place{left:50%;top:auto;bottom:calc(250px + var(--hud-b));transform:translateX(-50%);max-width:calc(100vw - 24px)}
+ :root body.exploring #inspect-place::after{display:none}
 }
 @media(prefers-reduced-motion:reduce){.hud-got,#hud-banner.show,.hud-found-card{animation-duration:.01s}}
 /* Controls card: every key in plain words, opened with H or from the menu. */
@@ -210,3 +214,6 @@
 .controls-help-body kbd{display:inline-block;min-width:22px;padding:3px 7px;border:1px solid #c9b98a99;border-bottom-width:3px;border-radius:4px;background:#0d1d22;color:#f1e3bd;font:12px monospace;text-align:center}
 .controls-help-note{margin:14px 0 0;font-size:12px;color:#c0c9a1}
 @media(max-height:500px){#controls-help{padding:14px}.controls-help-body{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}}
+/* The shiny notice is the only text the status line still shows, so it sits in the middle of the screen, above Eli. */
+:root body.exploring .status,:root body.exploring.has-quest .status,:root body.exploring:has(#line-panel:not([hidden])) .status{top:30%;bottom:auto;left:var(--hud-l);right:var(--hud-r);transform:none;width:auto;max-width:none;align-items:flex-start}
+:root body.exploring .status p{max-width:min(520px,100%);padding:8px 18px;border-radius:14px;border:1px solid #ffd36a88;color:#ffe9b0;font-size:14px;font-weight:bold;box-shadow:0 4px 16px #0008}

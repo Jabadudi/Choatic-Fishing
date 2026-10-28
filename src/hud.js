@@ -20,6 +20,13 @@ export function explorationHud(world,exploringSeconds){
   upgradeFraction:Math.max(0,Math.min(1,1-world.progression.upgradeRemaining/30))
  };
 }
+// The bubble over Eli shows only the verb; the place or person already has its own label in the world.
+export function promptVerb(prompt){
+ if(!prompt)return '';
+ if(prompt.startsWith('Pick up'))return 'Pick up';
+ if(prompt==='Go to sleep')return 'Sleep';
+ return prompt.split(' ')[0];
+}
 // Rounded for display; low health starts below 30% so the bar can warn before a fight is lost.
 export function playerHealth(player,max){
  const current=Math.max(0,Math.ceil(player.health)),fraction=max>0?Math.max(0,Math.min(1,player.health/max)):0;

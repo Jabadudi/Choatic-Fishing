@@ -60,30 +60,32 @@ test('the Artifact pool spends stones and puts artifacts in the backpack; a seco
  assert.equal(again.results[0].refund,5);assert.equal(copiesOf(lucky.inventory,'lodestone:legendary'),1);assert.equal(lucky.well.stones,5);
 });
 
-test('the village guardians join the Familiar pool once Eli has met them',()=>{
+test('every familiar is in the Familiar pool before Eli has met it',()=>{
  const w=awake(10);
- for(const id of ['moonfang','rimejaw','flitlynx'])assert.ok(poolRates(w,'familiars').prizes.some(p=>p.id===id&&!p.inPool));
- w.codex.add('rimejaw');assert.deepEqual(familiarPool(w),['rimejaw']);
- const rare=drawWell(w,'familiars',1,sequence([.5,.1,0]));
+ assert.deepEqual(familiarPool(w),['rabbit','deer','turtle','eel','shadow-walker','moonfang','rimejaw','flitlynx']);
+ assert.ok(poolRates(w,'familiars').prizes.every(p=>p.inPool&&p.why===null));
+ assert.equal(w.codex.has('rimejaw'),false);
+ // Rimejaw is the seventh of eight, so a roll of .8 picks it.
+ const rare=drawWell(w,'familiars',1,sequence([.5,.1,.8]));
  assert.equal(rare.results[0].familiar,'rimejaw');assert.equal(w.familiars.shards.rimejaw,SHARD_COUNTS.rare);assert.match(w.message,/Rimejaw Familiar Shard ×5/);
+ assert.equal(w.codex.has('rimejaw'),true,'shards for an unmet creature open its index entry');
  assert.equal(w.familiarAction('rimejaw','combine'),true);
 });
 
-test('the Familiar pool gives shards only for creatures in the index',()=>{
+test('the Familiar pool drops a creature once it has every shard it can use',()=>{
  const w=awake(10);
- assert.equal(drawWell(w,'familiars',1).ok,false,'an empty index leaves nothing to draw');assert.equal(w.well.stones,10);
- w.codex.add('deer');assert.deepEqual(familiarPool(w),['deer']);
- const rare=drawWell(w,'familiars',1,sequence([.5,.1,0]));
+ const rare=drawWell(w,'familiars',1,sequence([.5,.1,.15]));
  assert.equal(rare.results[0].count,SHARD_COUNTS.rare);assert.equal(w.familiars.shards.deer,5);assert.match(w.message,/Deer Familiar Shard ×5 \(Rare\)/);
- w.familiars.shards.deer=99;w.codex.add('eel');
- drawWell(w,'familiars',1,sequence([.5,.5,0]));assert.equal(w.familiars.shards.deer,100);
- assert.deepEqual(familiarPool(w),['eel'],'a creature with 100 shards leaves the pool');
- w.familiars.shards.eel=100;const before=w.well.stones;
+ w.familiars.shards.deer=99;
+ drawWell(w,'familiars',1,sequence([.5,.5,.15]));assert.equal(w.familiars.shards.deer,100);
+ assert.ok(!familiarPool(w).includes('deer'),'a creature with 100 shards leaves the pool');
+ assert.match(poolRates(w,'familiars').prizes.find(p=>p.id==='deer').why,/Full/);
+ for(const id of familiarPool(w))w.familiars.shards[id]=100;const before=w.well.stones;
  assert.equal(drawWell(w,'familiars',1).ok,false);assert.equal(w.well.stones,before);
 });
 
 test('pools keep their own pity, and stones can be bought for marks',()=>{
- const w=awake(3);w.codex.add('rabbit');
+ const w=awake(3);
  drawWell(w,'artifacts',2,sequence([.5,.9]));drawWell(w,'familiars',1,sequence([.5,.9,0]));
  assert.deepEqual(w.well.pity,{artifacts:{rare:2,legendary:2},familiars:{rare:1,legendary:1}});
  w.inventory.marks=STONE_PRICE-1;assert.equal(buyWishstone(w),false);
@@ -115,9 +117,9 @@ test('the details page lists every prize with odds that add up to the rarity odd
  assert.equal(artifacts.prizes.length,5);assert.ok(artifacts.prizes.every(p=>p.inPool));
  for(const {rarity,chance} of artifacts.rarities)assert.ok(Math.abs(artifacts.prizes.reduce((sum,p)=>sum+p.chances[rarity],0)-chance)<1e-12);
  assert.ok(Math.abs(artifacts.prizes[0].chances.legendary-.002)<1e-12,'one artifact at Legendary is 0.2%');
- // Familiars: only creatures Eli has met and that still need shards; the others say why they are missing.
+ // Familiars: every creature that still needs shards; a full one says why it is missing.
  const familiars=poolRates(w,'familiars'),open=familiarPool(w);
  assert.deepEqual(familiars.rarities.map(r=>r.shards),Object.values(SHARD_COUNTS));
  assert.equal(familiars.prizes.filter(p=>p.inPool).length,open.length);
- for(const p of familiars.prizes)if(!p.inPool){assert.match(p.why,/Not met yet|Full/);assert.equal(p.chances.common,0);}
+ for(const p of familiars.prizes)if(!p.inPool){assert.match(p.why,/Full/);assert.equal(p.chances.common,0);}
 });

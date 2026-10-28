@@ -1,6 +1,7 @@
 import {storyAction,updateStoryAction} from './story-action.js';
 import {matchesBinding,bindingLabel} from './keybinds.js';
 import {preferences} from './preferences.js';
+import {shinyNotice} from './spawns.js';
 import {mountSettings} from './settings-ui.js';
 import {mountControlsHelp} from './controls-help.js';
 import {observeGameSounds,playSfx} from './sfx.js';
@@ -9,6 +10,7 @@ import {currentScene,storyPrompt,cabinDamaged,rodReady} from './story.js';
 import {amountLabel} from './inventory.js';
 import {paintStoryMap} from './story-map.js';
 import {drawStoryWeather} from './story-weather.js';
+import {mountAtmosphere,syncAtmosphere} from './atmosphere.js';
 import {mountSaveUI} from './save-ui.js';
 import {nearbyDrop} from './drops.js';
 import {itemLabel} from './artifacts.js';
@@ -32,7 +34,7 @@ import {titleArtReady} from './title-art.js';
 import './music.js';
 import {Lobby} from './lobby.js';
 import {areaFor,placesFor,regionAt,nearestLandmark,examinableLandmark,paintAtlas,INTERIOR_AREAS} from './wilds.js';
-import {explorationHud} from './hud.js';
+import {explorationHud,promptVerb} from './hud.js';
 import {mountHudShell} from './hud-shell.js';
 import {mountHub} from './hub-ui.js';
 import {mountChat} from './chat-ui.js';
@@ -50,15 +52,16 @@ function resize(){
   view.scale=gameScale(r.width,r.height,touchMode);
   view.x=(r.width-960*view.scale)/2;view.y=(r.height-720*view.scale)/2;
 }
-new ResizeObserver(resize).observe(canvas);resize();
-// The examine prompt sits beside Eli on screen, so it follows him once the camera stops at a map edge.
+let worldDrawn=false;
+new ResizeObserver(()=>{resize();worldDrawn=false;}).observe(canvas);resize();
+mountAtmosphere(canvas.parentElement);
+// The interact bubble floats over Eli's head, wherever the camera leaves him on screen.
 let promptFrame=null;
 function placePrompt(player){
  const el=$('inspect-place');if(!el||el.hidden||!el.offsetParent)return;
  if(!promptFrame||promptFrame.width!==view.width||promptFrame.height!==view.height){const c=canvas.getBoundingClientRect(),p=el.offsetParent.getBoundingClientRect();promptFrame={width:view.width,height:view.height,x:c.left-p.left,y:c.top-p.top,right:p.width,zoom:parseFloat(getComputedStyle(el).zoom)||1};}
- const f=promptFrame,x=f.x+view.x+player.x*view.scale,y=f.y+view.y+player.y*view.scale;
+ const f=promptFrame,half=el.offsetWidth*f.zoom/2+6,x=Math.max(half,Math.min(f.right-half,f.x+view.x+player.x*view.scale)),y=f.y+view.y+(player.y-44)*view.scale;
  el.style.setProperty('--eli-x',(x/f.zoom).toFixed(1)+'px');el.style.setProperty('--eli-y',(y/f.zoom).toFixed(1)+'px');
- el.classList.toggle('flip',x+(46+8)*f.zoom+el.offsetWidth*f.zoom>f.right);
 }
 const elements=new Map();
 const $=id=>{if(!elements.has(id))elements.set(id,document.getElementById(id));return elements.get(id);};const keys=new Set();let mouseHeld=false,spaceHeld=false,aim={x:480,y:0};
@@ -180,6 +183,7 @@ function updateUI(){
  setText($('item-name'),inventory.slots[0]?.name||'Empty slot');setItemIcon($('item-icon'),inventory.slots[0]?.name);setText($('slot-rod').querySelector('small'),rodReady(world.story)?'Permanent':'On the rack');setText($('item-uses'),inventory.slots[0]?(touchMode?amountLabel(inventory.slots[0]):`${amountLabel(inventory.slots[0])} · Click`):'Assign from backpack');
  let status=active?`Move along shore · Hold ${bindingLabel('inspect')} / mouse to reel · ${bindingLabel('fish')} to abandon.`:busy?`Waiting for a bite… ${bindingLabel('fish')} / Esc to abandon.`:world.message||`Walk to shore, aim into water, press ${bindingLabel('fish')}.`;
  if(touchMode){status=status.replace('M opens the area map.','Tap the map to explore.');if(active)status='Hold Reel to raise the bar · Release to lower it';else if(busy)status='Waiting for a bite… Tap Cancel to abandon.';else if(!world.message)status='Drag the left stick to move · Tap water to aim · Use to cast';}
+ if(world.adventure)status=shinyNotice(world.message);
  setText($('status'),status);
  if(world.adventure){
   const places=placesFor(world.areaId),place=nearestLandmark(world.player.x,world.player.y,world.areaId);
@@ -189,7 +193,7 @@ function updateUI(){
   setText(document.querySelector('.atlas-heading h2'),areaFor(world.areaId).name);
   const hud=explorationHud(world,(performance.now()-exploreStart)/1000);
   setText($('area-kicker'),areaFor(world.areaId).name.toUpperCase());document.title=`The Wilds · ${areaFor(world.areaId).name}`;
-  $('inspect-place').hidden=!hud.prompt;setText($('inspect-place'),hud.prompt||'');$('inspect-place').dataset.key=touchMode?'⌕':bindingLabel('inspect');
+  $('inspect-place').hidden=!hud.prompt;setText($('inspect-place'),promptVerb(hud.prompt));if(hud.prompt&&$('inspect-place').getAttribute('aria-label')!==hud.prompt)$('inspect-place').setAttribute('aria-label',hud.prompt);$('inspect-place').dataset.key=touchMode?'⌕':bindingLabel('inspect');
   $('explore-hint').hidden=!hud.hintVisible;
   $('quest-objective').hidden=!hud.quest;setText($('quest-objective'),hud.quest||'');$('side-objective').hidden=!hud.sideQuest;setText($('side-objective'),hud.sideQuest||'');document.body.classList.toggle('has-quest',!!hud.quest);
   const key=hud.dots.join();if(key!==dotsKey){dotsKey=key;$('discovery-dots').replaceChildren(...hud.dots.map(found=>{const dot=document.createElement('i');if(found)dot.className='found';return dot;}));}
@@ -319,16 +323,22 @@ updateLobby();
 let accumulator=0,last=performance.now(),lastUI=0,lastRender=0,titleArtIn=false;
 function frame(now){accumulator+=Math.min((now-last)/1000,.1);last=now;while(accumulator>=1/120){if(!hudUI?.open&&!hubUI?.open&&!backpackUI?.open&&!tradeUI?.open&&!wellUI?.open&&!radioUI?.open&&!skillsUI?.open&&!codexUI?.open&&!questUI?.open&&!saveUI?.open&&!settingsUI?.open&&!helpUI?.open&&!document.hidden){if(storyAction(lobby.world))updateStoryAction(lobby.world,1/120);else if(!storyUI?.open){lobby.tick(1/120,currentInput());observeGameSounds(lobby.world);}}accumulator-=1/120;}
  if(lobby.world)world=lobby.world;
- if(now-lastRender<1000/60){requestAnimationFrame(frame);return;}lastRender=now-((now-lastRender)%(1000/60));
+ // Cap drawing near 60fps on faster screens. Safari and Firefox round frame times to whole milliseconds, so a
+ // 60Hz frame can read as 16ms; the cap must sit well below 16.7ms or it drops every third frame there.
+ if(now-lastRender<10){requestAnimationFrame(frame);return;}lastRender=now;
  // A full-screen video cutscene hides the world, so only the UI keeps ticking until it ends.
  if(storyUI?.covering){if(now-lastUI>=1000/30){lastUI=now;updateUI();}requestAnimationFrame(frame);return;}
  // Drawing the world behind the opaque title screen would fetch Eli's sheet and the scenery before the menu art.
  if(!titleArtIn&&!lobby.world){if(now-lastUI>=1000/30){lastUI=now;updateUI();}requestAnimationFrame(frame);return;}
  hubUI?.sync(lobby.world);
+ // A menu sheet pauses the world and blurs it, so after one frame the picture cannot change; redrawing it would
+ // make Safari and Firefox re-blur the full screen every frame.
+ const sheet=backpackUI?.open||tradeUI?.open||wellUI?.open||radioUI?.open||skillsUI?.open||codexUI?.open||questUI?.open;
+ if(sheet&&worldDrawn){if(now-lastUI>=1000/30){lastUI=now;updateProgression();updateUI();}requestAnimationFrame(frame);return;}worldDrawn=!!sheet;
  const display=lobby.presentation();camera(display?.player||world.player);const dpr=view.dpr;
  ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle=INTERIOR_AREAS.includes(world.areaId)?'#101d20':'#1c4754';ctx.fillRect(0,0,canvas.width,canvas.height);
  ctx.setTransform(dpr*view.scale,0,0,dpr*view.scale,dpr*view.x,dpr*view.y);
- render(ctx,display||world,{left:-view.x/view.scale,top:-view.y/view.scale,right:(view.width-view.x)/view.scale,bottom:(view.height-view.y)/view.scale},{others:hubUI?.others(world)||[]});if(lobby.world?.adventure)placePrompt(display?.player||world.player);drawStoryWeather(ctx,world,{left:-view.x/view.scale,top:-view.y/view.scale,right:(view.width-view.x)/view.scale,bottom:(view.height-view.y)/view.scale},now/1000);if(touchMode&&touchState.manualAim&&lobby.world&&!atlasOpen){const a=touchState.manualAim;ctx.strokeStyle='#fff1bc';ctx.lineWidth=1.5/view.scale;ctx.beginPath();ctx.arc(a.x,a.y,9/view.scale,0,Math.PI*2);ctx.moveTo(a.x-14/view.scale,a.y);ctx.lineTo(a.x+14/view.scale,a.y);ctx.moveTo(a.x,a.y-14/view.scale);ctx.lineTo(a.x,a.y+14/view.scale);ctx.stroke();}if(lobby.world&&now-lastUI>=1000/30){lastUI=now;updateProgression();updateUI();}requestAnimationFrame(frame);
+ render(ctx,display||world,{left:-view.x/view.scale,top:-view.y/view.scale,right:(view.width-view.x)/view.scale,bottom:(view.height-view.y)/view.scale},{others:hubUI?.others(world)||[]});if(lobby.world?.adventure)placePrompt(display?.player||world.player);drawStoryWeather(ctx,world,{left:-view.x/view.scale,top:-view.y/view.scale,right:(view.width-view.x)/view.scale,bottom:(view.height-view.y)/view.scale},now/1000);syncAtmosphere();if(touchMode&&touchState.manualAim&&lobby.world&&!atlasOpen){const a=touchState.manualAim;ctx.strokeStyle='#fff1bc';ctx.lineWidth=1.5/view.scale;ctx.beginPath();ctx.arc(a.x,a.y,9/view.scale,0,Math.PI*2);ctx.moveTo(a.x-14/view.scale,a.y);ctx.lineTo(a.x+14/view.scale,a.y);ctx.moveTo(a.x,a.y-14/view.scale);ctx.lineTo(a.x,a.y+14/view.scale);ctx.stroke();}if(lobby.world&&now-lastUI>=1000/30){lastUI=now;updateProgression();updateUI();}requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
 titleArtReady.then(()=>{titleArtIn=true;(window.requestIdleCallback||setTimeout)(()=>preloadProps());});

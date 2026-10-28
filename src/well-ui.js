@@ -16,7 +16,7 @@ const exact=n=>`${+(n*100).toFixed(2)}%`;
 const ODDS_TEXT=`Common ${percent(1-Object.values(WELL_ODDS).reduce((a,b)=>a+b,0))} · Uncommon ${percent(WELL_ODDS.uncommon)} · Rare ${percent(WELL_ODDS.rare)} · Epic ${percent(WELL_ODDS.epic)} · Legendary ${percent(WELL_ODDS.legendary)}`;
 const POOL_TEXT={
  artifacts:'Every draw is an artifact. The rarity roll decides how strong it is. Three copies of one rarity still combine in the backpack.',
- familiars:`Every draw is familiar shards for one creature in your Creature Index. The rarity decides how many: ${Object.values(SHARD_COUNTS).join(', ')}.`
+ familiars:`Every draw is familiar shards for one creature, even one you have not met yet. The rarity decides how many: ${Object.values(SHARD_COUNTS).join(', ')}.`
 };
 export function mountWell({getWorld,onOpen,onClose}){
  const dialog=document.createElement('dialog');dialog.id='well-sheet';dialog.setAttribute('aria-labelledby','well-title');
@@ -84,7 +84,7 @@ export function mountWell({getWorld,onOpen,onClose}){
   const key=JSON.stringify([pool,well.stones,marksOf(world),pity,shown[pool].length,empty,open,details,details&&familiarPool(world)]);if(key===lastKey)return;lastKey=key;
   $('.well-stones .well-count').textContent=wishstonesLabel(well.stones);$('.well-marks .well-count').textContent=marksLabel(marksOf(world));
   for(const tab of dialog.querySelectorAll('.well-tab'))tab.setAttribute('aria-selected',String(tab.dataset.pool===pool));
-  $('.well-pool-text').textContent=empty?'No creature in your index can take more shards yet. Meet new creatures in the wild to widen this pool.':POOL_TEXT[pool];
+  $('.well-pool-text').textContent=empty?'Every familiar already has all the shards it can use.':POOL_TEXT[pool];
   $('.well-odds').textContent=ODDS_TEXT;
   const rareLeft=PITY.rare-pity.rare,legendaryLeft=PITY.legendary-pity.legendary;
   $('.pity-rare').textContent=`${rareLeft} ${rareLeft===1?'draw':'draws'}`;$('.bar-rare').style.width=`${pity.rare/PITY.rare*100}%`;

@@ -1,6 +1,7 @@
 import {ANIMAL_TYPES} from './entities.js';
 import {earnMarks,marksLabel} from './trade.js';
 import {levelUpText,LEVEL_GROWTH} from './skills.js';
+import {levelUpEffect} from './level-up-fx.js';
 import {nearbyNpc} from './npcs.js';
 // Side missions: villagers in Willowback ask Eli to hunt creatures or bring them goods.
 // Gameplay data only. The quest sheet (quest-ui.js) and the markers over heads read it; neither changes it.
@@ -104,7 +105,7 @@ export function acceptQuest(world,id){
 // Main experience from a reward, healing a level's worth of health the same way skill levels do.
 function grantXp(world,amount){
  const levels=world.progression.award(amount);
- if(levels){world.player.health=Math.min(world.progression.maxHealth,world.player.health+LEVEL_GROWTH.health*levels);world.effects.push({name:'level-up',label:`Level ${world.progression.level}`,x:world.player.x,y:world.player.y-62,angle:0,life:2.4,duration:2.4});}
+ if(levels){world.player.health=Math.min(world.progression.maxHealth,world.player.health+LEVEL_GROWTH.health*levels);world.effects.push(levelUpEffect(world,`Level ${world.progression.level}`));}
  return levelUpText(levels,world.progression.level);
 }
 export function turnInQuest(world,id){

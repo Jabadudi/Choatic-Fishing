@@ -13,6 +13,7 @@ import {questMarker} from './side-quests.js';
 import {nightAttackActors} from './story-action.js';
 import {drawFamiliar,drawShard} from './familiar-art.js';
 import {drawRadioBeside,radioBesideEli} from './radio-art.js';
+import {drawLevelBurst} from './level-up-fx.js';
 // others: players from the shared world standing in this area (hub.js); drawn with the scenery like Eli.
 export function render(ctx,world,view,{others=[]}={}){
  const {elapsed:t,player:p,bobber}=world;
@@ -47,6 +48,7 @@ export function render(ctx,world,view,{others=[]}={}){
   ctx.fillStyle='#edf3df';ctx.font='bold 10px Arial';ctx.fillText('YOU',p.x,p.y-25);
   }
   for(const effect of world.effects){
+    if(effect.burst){if(!world.adventure)drawLevelBurst(ctx,effect,world.player,'back');drawLevelBurst(ctx,effect,world.player);continue;}
     const duration=effect.duration||(['defeat','Whirlpool Burst'].includes(effect.name)?.8:.55);
     const age=Math.max(0,duration-effect.life);ctx.save();ctx.globalAlpha=Math.min(1,effect.life/duration);ctx.translate(effect.x,effect.y);ctx.rotate(effect.angle);
     ctx.strokeStyle='#f3d59d';ctx.fillStyle='#f3d59d';ctx.lineWidth=5;
@@ -63,7 +65,7 @@ export function render(ctx,world,view,{others=[]}={}){
     else{ctx.beginPath();ctx.arc(0,0,effect.name==='Anchor'?72:48,-1+age*2,1+age*2);ctx.stroke();}
     ctx.restore();
   }
-  if(world.adventure){drawWildsLabels(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500});if(view&&!INTERIOR_AREAS.includes(world.areaId)&&!cabinDamaged(world.story))drawAtmosphere(ctx,world,view);drawAnimalStatus(ctx,world);if(world.defeat&&view)drawDefeat(ctx,world,view);}
+  if(world.adventure){drawWildsLabels(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500});if(view&&!world.defeat&&!INTERIOR_AREAS.includes(world.areaId)&&!cabinDamaged(world.story))drawAtmosphere(ctx,world,view);drawAnimalStatus(ctx,world);if(world.defeat&&view)drawDefeat(ctx,world,view);}
 }
 function drawBobber(ctx,world){
  const {elapsed:t,player:p,bobber}=world;if(!bobber)return;
@@ -78,6 +80,7 @@ function drawDefeat(ctx,world,view){
 }
 function drawPlayer(ctx,world){
  drawBobber(ctx,world);
+ for(const effect of world.effects)if(effect.burst)drawLevelBurst(ctx,effect,world.player,'back');
  // With a line out, Eli faces the cast.
  const p=world.bobber?{...world.player,facing:facingFor(Math.cos(world.player.angle),Math.sin(world.player.angle))}:world.player;
  // Eli stays down in the mud from the collapse until the blackout, and after a monster brings him down.
