@@ -165,7 +165,7 @@ function updateUI(){
  if(world.adventure){
   const places=placesFor(world.areaId),place=nearestLandmark(world.player.x,world.player.y,world.areaId);
   setText($('region-name'),regionAt(world.player.x,world.player.y,world.areaId));
-  const purse=marksLabel(world.inventory.marks||0),purseText=$('purse-hud').lastChild;if(purseText.textContent!==purse)purseText.textContent=purse;
+  const purse=String(world.inventory.marks||0),purseText=$('purse-hud').lastChild;if(purseText.textContent!==purse){purseText.textContent=purse;$('purse-hud').setAttribute('aria-label',marksLabel(world.inventory.marks||0));}
   setText($('discovery-count'),`${places.filter(p=>world.discovered.has(p.id)).length} / ${places.length} places found here`);
   setText(document.querySelector('.atlas-heading h2'),areaFor(world.areaId).name);
   const hud=explorationHud(world,(performance.now()-exploreStart)/1000);
