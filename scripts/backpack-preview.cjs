@@ -39,7 +39,7 @@ const assert=require('node:assert/strict');
  await page.locator('.backpack-filters button',{hasText:'Weapons'}).click();await page.waitForTimeout(150);
  assert.equal(await page.locator('.backpack-items > .backpack-item[title="Shell Sling"] .backpack-tag').innerText(),'New');
  assert.equal(await page.locator('.backpack-crumb').innerText(),'Weapons');
- await page.locator('.backpack-items > .backpack-item[title="Reed Spear"]').click();await page.locator('.backpack-action-row button',{hasText:'Add to hotbar'}).click();await page.locator('.backpack-slot-choices button').nth(1).click();
+ await page.locator('.backpack-items > .backpack-item[title="Reed Spear"]').click();await page.locator('.backpack-action-row button',{hasText:'Equip to hotbar'}).click();await page.locator('.backpack-slot-choices button').nth(1).click();
  await page.waitForTimeout(150);assert.equal(await page.locator('.backpack-equip').innerText(),'Hotbar 3');
  await page.screenshot({path:`${out}/backpack-02-desktop-weapons.png`});
  await page.locator('.backpack-filters button',{hasText:'Artifacts'}).click();await page.waitForTimeout(150);await page.screenshot({path:`${out}/backpack-03-desktop-artifacts.png`});

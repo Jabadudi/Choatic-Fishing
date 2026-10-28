@@ -24,7 +24,7 @@ const assert=require('node:assert/strict');
  await page.locator('.backpack-action-row button',{hasText:'Combine 3 into Uncommon'}).click();await page.waitForTimeout(200);
  assert.equal(await page.locator('.backpack-kind').innerText(),'Uncommon artifact');assert.equal(await page.locator('.backpack-uses').innerText(),'2 carried');
  await page.screenshot({path:'screenshots/artifacts-02-combined.png'});
- await page.locator('.backpack-items > .backpack-artifact[title="Common Rabbit’s Foot"]').click();await page.locator('.backpack-action-row button',{hasText:'Put in slot'}).click();await page.waitForTimeout(200);
+ await page.locator('.backpack-items > .backpack-artifact[title="Common Rabbit’s Foot"]').click();await page.locator('.backpack-action-row button',{hasText:'Equip'}).click();await page.waitForTimeout(200);
  assert.equal(await page.locator('.backpack-artifact-row .backpack-artifact').count(),3);
  await page.screenshot({path:'screenshots/artifacts-03-slotted.png'});
  await page.setViewportSize({width:390,height:844});await page.waitForTimeout(200);await page.screenshot({path:'screenshots/artifacts-04-mobile.png'});

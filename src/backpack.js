@@ -1,4 +1,4 @@
-import {ITEM_CATEGORIES,BACKPACK_SORTS,backpackItems,sortBackpackItems,itemCategory,canUseItem,PERMANENT_ITEMS,stackable,itemCount,amountLabel} from './inventory.js';
+import {ITEM_CATEGORIES,BACKPACK_SORTS,backpackItems,sortBackpackItems,itemCategory,PERMANENT_ITEMS,stackable,itemCount,amountLabel} from './inventory.js';
 import {setItemIcon} from './item-icons.js';
 import {markIcon} from './trade-ui.js';
 import {marksLabel} from './trade.js';
@@ -97,20 +97,13 @@ export function mountBackpack({getWorld,onOpen,onClose,onAction}){
    const place=document.createElement('strong');place.className='backpack-equip';const hotbarSlot=inventory.slots.findIndex(entry=>entry?.id===selected.id);place.textContent=inArtifactSlot(inventory,selected)?'In an artifact slot':hotbarSlot>=0?`Hotbar ${hotbarSlot+2}`:'In backpack';
    actions.append(uses,description);if(isArtifact(selected))actions.append(artifactDetails(inventory,selected));actions.append(place);
    const addAction=(label,action)=>{const control=document.createElement('button');control.textContent=label;control.onclick=action;actionRow.append(control);return control;};
-   const execute=action=>{const previous=selected.id;if(onAction(selected.id,action)){selectedId=null;choosingSlot=false;lastKey='';if(action==='use'||action==='drop')dialog.close();else{if(isArtifact(selected))setNote(getWorld().message);if(action==='combine')selectedId=getWorld().inventory.allItems.find(item=>isArtifact(item)&&item.artifact===selected.artifact&&item.rarity===nextRarity(selected.rarity))?.id??null;if(['discard','slot','unslot'].includes(action))selectedId=getWorld().inventory.allItems.some(item=>item.id===previous)?previous:null;refresh();}}else{setNote(getWorld().fishing.state!=='idle'?'Finish or abandon fishing before managing items.':getWorld().message||'Action unavailable. Let your attack recover.');}};
-   // Artifacts work from their own slots instead of being used or put on the hotbar.
+   const execute=action=>{const previous=selected.id;if(onAction(selected.id,action)){selectedId=null;choosingSlot=false;lastKey='';if(isArtifact(selected))setNote(getWorld().message);if(action==='combine')selectedId=getWorld().inventory.allItems.find(item=>isArtifact(item)&&item.artifact===selected.artifact&&item.rarity===nextRarity(selected.rarity))?.id??null;if(['slot','unslot'].includes(action))selectedId=getWorld().inventory.allItems.some(item=>item.id===previous)?previous:null;refresh();}else{setNote(getWorld().fishing.state!=='idle'?'Finish or abandon fishing before managing items.':getWorld().message||'Action unavailable. Let your attack recover.');}};
+   // Only equipping and combining happen here: artifacts go into their own slots, everything else onto the hotbar.
    if(isArtifact(selected)){
     const next=nextRarity(selected.rarity);
     if(next&&copiesOf(inventory,artifactKey(selected))>=COMBINE_COUNT)addAction(`Combine ${COMBINE_COUNT} into ${RARITY_NAMES[next]}`,()=>execute('combine')).className='primary';
-    const slotted=inArtifactSlot(inventory,selected);addAction(slotted?'Take out of slot':'Put in slot',()=>execute(slotted?'unslot':'slot'));
-   }else{
-    const usable=canUseItem(selected);
-    const use=addAction('Use',()=>execute('use'));use.disabled=!usable;use.title=usable?stackable(selected)?'Use one from the stack':'Use one charge':'This item has no direct use yet';use.className='primary';
-   }
-   if(!isArtifact(selected)){const hotbar=addAction('Add to hotbar',()=>{choosingSlot=!choosingSlot;lastKey='';refresh();});hotbar.setAttribute('aria-expanded',choosingSlot);}
-   const several=itemCount(selected)>1;
-   addAction(several?'Throw one':'Throw into world',()=>execute('drop'));addAction(several?'Discard one':'Discard',()=>execute('discard')).className='danger';
-   if(several)addAction(`Discard all ${itemCount(selected)}`,()=>execute('discard-all')).className='danger';
+    const slotted=inArtifactSlot(inventory,selected);addAction(slotted?'Unequip':'Equip',()=>execute(slotted?'unslot':'slot'));
+   }else{const hotbar=addAction('Equip to hotbar',()=>{choosingSlot=!choosingSlot;lastKey='';refresh();});hotbar.className='primary';hotbar.setAttribute('aria-expanded',choosingSlot);}
    if(choosingSlot){
     const title=document.createElement('p');title.className='backpack-slot-title';title.textContent='Choose a hotbar slot. Replaced items stay in the backpack.';actions.prepend(title);
     const slots=document.createElement('div');slots.className='backpack-slot-choices';title.after(slots);
