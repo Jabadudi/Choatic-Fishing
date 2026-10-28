@@ -494,7 +494,9 @@ body:has(#lobby-screen.title-screen:not([hidden])) #toggle-fullscreen{background
 #chat-input:focus-visible{outline:2px solid #e8c46a;outline-offset:1px}
 .chat-send{font:600 14px Arial,sans-serif;color:#f3e6bf;background:#173b2f;border:1px solid #c2b68e99;border-radius:6px;padding:8px 12px;cursor:pointer}
 .chat-hint{margin:0;font:11px Arial,sans-serif;color:#b9c2ad}
-body.touch-mode #chat-box{left:50%;transform:translateX(-50%);bottom:calc(64px + var(--hud-b,0px));width:min(460px,52vw)}
+/* Phones: the whole box drawn at 60% so it covers less of the world. The input stays 16px before scaling so iOS does not zoom on focus. */
+body.touch-mode #chat-box{left:50%;transform:translateX(-50%) scale(.6);transform-origin:50% 100%;bottom:calc(64px + var(--hud-b,0px));width:min(460px,52vw)}
+body.touch-mode #chat-input{font-size:16px}
 body.touch-mode #chat-box:not(.open) .chat-log{max-height:4.3em}
-body.touch-mode #chat-box.open{bottom:auto;top:calc(8px + var(--hud-t,0px))}
+body.touch-mode #chat-box.open{bottom:auto;top:calc(8px + var(--hud-t,0px));transform-origin:50% 0}
 @media(max-height:560px){#chat-box.open .chat-log{max-height:7em}}
