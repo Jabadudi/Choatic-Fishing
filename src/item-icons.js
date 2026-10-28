@@ -5,7 +5,6 @@ const ART_FILES={'Fishing Rod':'fishing-rod','Hunting Bow':'hunting-bow','Huntin
  'Sardine':'sardine','Deer Meat':'deer-meat','Rabbit Meat':'rabbit-meat','Turtle Meat':'turtle-meat','Eel Fillet':'eel-fillet','Wild Herbs':'wild-herbs','Willow Apples':'willow-apples','Healing Salve':'healing-salve','Grappling Squid':'grappling-squid','Iron Fishhooks':'iron-fishhooks','Whetstone':'whetstone','Woven Fish Trap':'woven-fish-trap',
  'Deer Hide':'deer-hide','Rabbit Pelt':'rabbit-pelt','Turtle Shell':'turtle-shell','Eel Skin':'eel-skin','Eel Oil':'eel-oil','Shadow Ichor':'shadow-ichor','Rusted Axe Head':'rusted-axe-head','Deer Antlers':'deer-antlers','Rabbit’s Foot':'rabbits-foot','River Pearl':'river-pearl','Black Light Shard':'black-light-shard','Old Boot':'old-boot',
  'Rabbit Familiar Shard':'shard-rabbit','Deer Familiar Shard':'shard-deer','Turtle Familiar Shard':'shard-turtle','Eel Familiar Shard':'shard-eel','Shadow Walker Familiar Shard':'shard-shadow-walker',
- // Stand-ins from scripts/draw-guardian-shard-icons.py until the guardian shards are painted.
  'Moonfang Familiar Shard':'shard-moonfang','Rimejaw Familiar Shard':'shard-rimejaw','Flitlynx Familiar Shard':'shard-flitlynx',
  // Artifacts. Until they have their own paintings, the crown, scute and heart share the art of the antlers, shell and shard they come from.
  'Lodestone':'lodestone','Stag Crown':'deer-antlers','Mossback Scute':'turtle-shell','Heart of Black Light':'black-light-shard',
