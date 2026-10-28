@@ -1,6 +1,7 @@
 import {storyAction,updateStoryAction} from './story-action.js';
 import {matchesBinding,bindingLabel} from './keybinds.js';
 import {preferences} from './preferences.js';
+import {shinyNotice} from './spawns.js';
 import {mountSettings} from './settings-ui.js';
 import {mountControlsHelp} from './controls-help.js';
 import {observeGameSounds,playSfx} from './sfx.js';
@@ -174,6 +175,7 @@ function updateUI(){
  setText($('item-name'),inventory.slots[0]?.name||'Empty slot');setItemIcon($('item-icon'),inventory.slots[0]?.name);setText($('slot-rod').querySelector('small'),rodReady(world.story)?'Permanent':'On the rack');setText($('item-uses'),inventory.slots[0]?(touchMode?amountLabel(inventory.slots[0]):`${amountLabel(inventory.slots[0])} · Click`):'Assign from backpack');
  let status=active?`Move along shore · Hold ${bindingLabel('inspect')} / mouse to reel · ${bindingLabel('fish')} to abandon.`:busy?`Waiting for a bite… ${bindingLabel('fish')} / Esc to abandon.`:world.message||`Walk to shore, aim into water, press ${bindingLabel('fish')}.`;
  if(touchMode){status=status.replace('M opens the area map.','Tap the map to explore.');if(active)status='Hold Reel to raise the bar · Release to lower it';else if(busy)status='Waiting for a bite… Tap Cancel to abandon.';else if(!world.message)status='Drag the left stick to move · Tap water to aim · Use to cast';}
+ if(world.adventure)status=shinyNotice(world.message);
  setText($('status'),status);
  if(world.adventure){
   const places=placesFor(world.areaId),place=nearestLandmark(world.player.x,world.player.y,world.areaId);
