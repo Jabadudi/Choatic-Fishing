@@ -20,12 +20,12 @@ export function explorationHud(world,exploringSeconds){
   upgradeFraction:Math.max(0,Math.min(1,1-world.progression.upgradeRemaining/30))
  };
 }
-// The bubble over Eli shows only the verb; the place or person already has its own label in the world.
-export function promptVerb(prompt){
- if(!prompt)return '';
- if(prompt.startsWith('Pick up'))return 'Pick up';
- if(prompt==='Go to sleep')return 'Sleep';
- return prompt.split(' ')[0];
+// The bubble over Eli splits a prompt into its action ("Examine") and what it acts on ("The Drowned Road").
+export function promptParts(prompt){
+ if(!prompt)return {verb:'',target:''};
+ if(prompt==='Go to sleep')return {verb:'Sleep',target:''};
+ const m=prompt.match(/^(Pick up|Talk to|Trade with|Report to|Look into|\S+)\s*(.*)$/),verb=m[1].replace(/ (to|with|into)$/,''),target=m[2];
+ return {verb,target:target&&target[0].toUpperCase()+target.slice(1)};
 }
 // Rounded for display; low health starts below 30% so the bar can warn before a fight is lost.
 export function playerHealth(player,max){

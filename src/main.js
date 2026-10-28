@@ -34,7 +34,7 @@ import {titleArtReady} from './title-art.js';
 import './music.js';
 import {Lobby} from './lobby.js';
 import {areaFor,placesFor,regionAt,nearestLandmark,examinableLandmark,paintAtlas,INTERIOR_AREAS} from './wilds.js';
-import {explorationHud,promptVerb} from './hud.js';
+import {explorationHud,promptParts} from './hud.js';
 import {mountHudShell} from './hud-shell.js';
 import {mountHub} from './hub-ui.js';
 import {mountChat} from './chat-ui.js';
@@ -193,7 +193,7 @@ function updateUI(){
   setText(document.querySelector('.atlas-heading h2'),areaFor(world.areaId).name);
   const hud=explorationHud(world,(performance.now()-exploreStart)/1000);
   setText($('area-kicker'),areaFor(world.areaId).name.toUpperCase());document.title=`The Wilds · ${areaFor(world.areaId).name}`;
-  $('inspect-place').hidden=!hud.prompt;setText($('inspect-place'),promptVerb(hud.prompt));if(hud.prompt&&$('inspect-place').getAttribute('aria-label')!==hud.prompt)$('inspect-place').setAttribute('aria-label',hud.prompt);$('inspect-place').dataset.key=touchMode?'⌕':bindingLabel('inspect');
+  $('inspect-place').hidden=!hud.prompt;{const {verb,target}=promptParts(hud.prompt);setText($('inspect-place'),target);$('inspect-place').dataset.key=verb;}if(hud.prompt&&$('inspect-place').getAttribute('aria-label')!==hud.prompt)$('inspect-place').setAttribute('aria-label',hud.prompt);
   $('explore-hint').hidden=!hud.hintVisible;
   $('quest-objective').hidden=!hud.quest;setText($('quest-objective'),hud.quest||'');$('side-objective').hidden=!hud.sideQuest;setText($('side-objective'),hud.sideQuest||'');document.body.classList.toggle('has-quest',!!hud.quest);
   const key=hud.dots.join();if(key!==dotsKey){dotsKey=key;$('discovery-dots').replaceChildren(...hud.dots.map(found=>{const dot=document.createElement('i');if(found)dot.className='found';return dot;}));}
