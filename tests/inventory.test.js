@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Inventory,ITEM_CATEGORIES,itemCategory,backpackItems} from '../src/inventory.js';
+import {Inventory,ITEM_CATEGORIES,itemCategory,backpackItems,sortBackpackItems,BACKPACK_SORTS} from '../src/inventory.js';
 import {Fishing,ITEMS} from '../src/fishing.js';
 import {updateProjectiles} from '../src/combat.js';
 import {applyAction,snapshot,fromSnapshot} from '../src/protocol.js';
@@ -79,4 +79,19 @@ test('backpack filters classify every existing catch and preserve actual hotbar 
 test('explicit categories support future armor and materials without relying on their names',()=>{
  const bag=new Inventory();bag.receive({name:'Reed Vest',category:'armor'});bag.receive({name:'Copper',category:'upgrade-materials'});
  assert.equal(backpackItems(bag,'armor')[0].item.name,'Reed Vest');assert.equal(backpackItems(bag,'upgrade-materials')[0].item.name,'Copper');
+});
+test('backpack sorting orders by newest, quality, type, amount and name, and reverses',()=>{
+ const bag=new Inventory({separateStorage:true});
+ bag.receive({name:'Sardine'});bag.receive({name:'Reed Spear'});bag.receive({name:'Lodestone',artifact:'lodestone',rarity:'rare',category:'artifacts'});
+ bag.receive({name:'Old Boot'});bag.receive({name:'Sardine',count:3});bag.receive({name:'Lodestone',artifact:'lodestone',rarity:'common',category:'artifacts'});
+ const names=(sort,reverse)=>sortBackpackItems(backpackItems(bag),sort,reverse).map(({item})=>item.rarity?`${item.rarity} ${item.name}`:item.name);
+ assert.deepEqual(BACKPACK_SORTS.map(s=>s.id),['newest','quality','type','amount','name']);
+ assert.deepEqual(names('newest'),['common Lodestone','Old Boot','rare Lodestone','Reed Spear','Sardine']);
+ assert.deepEqual(names('newest',true),['Sardine','Reed Spear','rare Lodestone','Old Boot','common Lodestone']);
+ assert.deepEqual(names('quality').slice(0,2),['rare Lodestone','common Lodestone']);
+ assert.deepEqual(names('type'),['Sardine','Reed Spear','rare Lodestone','common Lodestone','Old Boot']);
+ assert.deepEqual(names('amount')[0],'Sardine');
+ assert.deepEqual(names('name'),['rare Lodestone','common Lodestone','Old Boot','Reed Spear','Sardine']);
+ assert.deepEqual(names('name',true),['Sardine','Reed Spear','Old Boot','common Lodestone','rare Lodestone']);
+ assert.deepEqual(names('unknown'),names('newest'));
 });

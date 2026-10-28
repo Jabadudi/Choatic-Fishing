@@ -27,6 +27,21 @@ export function itemCategory(item){
 export function backpackItems(inventory,category='all'){
  return inventory.allItems.flatMap((item,index)=>item&&(category==='all'||itemCategory(item)===category)?[{item,slot:inventory.slots.includes(item)?inventory.slots.indexOf(item)+2:null,category:itemCategory(item)}]:[]);
 }
+// Backpack sort orders. Each has a natural direction (newest, best, most, A to Z); reversing flips it. Ties keep the order found.
+export const BACKPACK_SORTS=Object.freeze([{id:'newest',label:'Newest'},{id:'quality',label:'Quality'},{id:'type',label:'Type'},{id:'amount',label:'Amount'},{id:'name',label:'Name'}]);
+const quality=item=>RARITIES.indexOf(item.rarity)+1;
+const categoryRank=item=>ITEM_CATEGORIES.findIndex(category=>category.id===itemCategory(item));
+const SORT_COMPARE={
+ newest:(a,b)=>b.index-a.index,
+ quality:(a,b)=>quality(b.item)-quality(a.item)||categoryRank(a.item)-categoryRank(b.item)||a.item.name.localeCompare(b.item.name),
+ type:(a,b)=>categoryRank(a.item)-categoryRank(b.item)||a.item.name.localeCompare(b.item.name)||quality(b.item)-quality(a.item),
+ amount:(a,b)=>itemCount(b.item)-itemCount(a.item)||a.item.name.localeCompare(b.item.name),
+ name:(a,b)=>a.item.name.localeCompare(b.item.name)||quality(b.item)-quality(a.item)
+};
+export function sortBackpackItems(entries,sort='newest',reverse=false){
+ const compare=SORT_COMPARE[sort]||SORT_COMPARE.newest,sign=reverse?-1:1;
+ return entries.map((entry,index)=>({entry,index,item:entry.item})).sort((a,b)=>sign*compare(a,b)||a.index-b.index).map(({entry})=>entry);
+}
 const USES={'Frying Pan':3,'Swordfish':3,'Harpoon Gun':3,'Anchor':2,'Reed Spear':5,'Crab Maul':3,'Shell Sling':6,'Hunting Knife':12};
 export class Inventory {
  constructor({separateStorage=false}={}){this.selected=1;this.capacity=6;this.slots=Array(6).fill(null);this.separateStorage=separateStorage;this.storedItems=[];this.nextId=1;this.marks=0;this.artifactSlots=[null,null,null];}
