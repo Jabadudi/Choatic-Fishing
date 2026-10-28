@@ -23,9 +23,9 @@ const ANDROID='Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTM
  // Hit Eli through the shared combat path, the same hook monsters use.
  const hurt=(page,amount)=>page.evaluate(async amount=>{const {damage}=await import('/src/combat.js'),w=window.__qa.world;damage(w,w.player,amount,{entityType:'monster'},0,0);},amount);
  const check=async(page,name)=>{
-  const hud=await page.locator('#exploration-hud').boundingBox(),hp=await page.locator('#player-hp').boundingBox(),quest=await page.locator('#timed-upgrades').boundingBox();
-  assert.ok(hp&&hp.width>100,`${name}: HP bar visible`);assert.ok(hp.y+hp.height<=hud.y+hud.height,`${name}: HP bar inside the card`);
-  assert.ok(!overlap(hud,quest),`${name}: card clears the journey panel (${hud.y+hud.height} vs ${quest?.y})`);
+  const vitals=await page.locator('#hud-vitals').boundingBox(),hp=await page.locator('#player-hp').boundingBox(),quest=await page.locator('#hud-tracker').boundingBox();
+  assert.ok(hp&&hp.width>100,`${name}: HP bar visible`);assert.ok(hp.y>=vitals.y&&hp.y+hp.height<=vitals.y+vitals.height+1,`${name}: HP bar sits with the level`);
+  assert.ok(!overlap(vitals,quest),`${name}: health clears the quest tracker`);
  };
  for(const [name,w,h,mobile] of [['desktop',1366,900],['desktop-short',1280,580],['narrow',780,900],['phone-portrait',390,844,true],['phone-landscape',844,390,true],['phone-landscape-small',667,375,true]]){
   const page=await open(w,h,mobile);
