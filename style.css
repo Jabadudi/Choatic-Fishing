@@ -110,7 +110,7 @@ body.exploring #quest-objective{font:11px/1.5 monospace;color:#f3e6bf;margin:10p
 .backpack-filters button:hover{background:#ffffff12;color:#fff4d8}
 .backpack-filters button[aria-pressed="true"]{background:#efe4c8;color:#2b3127;border-color:#fff6dc;box-shadow:0 0 12px #e6c77f66}
 .backpack-shelf{display:flex;flex-direction:column;min-width:0;min-height:0}
-.backpack-items{flex:1;display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));align-content:start;gap:14px 12px;padding:16px;overflow-y:auto;min-height:0}
+.backpack-items{flex:1;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));container-type:inline-size;align-content:start;gap:14px 12px;padding:16px;overflow-y:auto;min-height:0}
 .backpack-cell{position:relative;display:flex;flex-direction:column;min-width:0;box-sizing:border-box;padding:0;border:0;border-radius:8px;background:#efe4c8;box-shadow:0 2px 6px #0007}
 .backpack-item{color:#3a3226;cursor:pointer;font:inherit;transition:transform .12s}.backpack-item:hover{transform:translateY(-2px)}
 .backpack-item[aria-pressed="true"]{box-shadow:0 0 0 3px #fff6dc,0 0 16px 2px #e6c77fbb}
@@ -148,6 +148,9 @@ body.exploring #quest-objective{font:11px/1.5 monospace;color:#f3e6bf;margin:10p
 .backpack-action-row button:last-child:nth-child(odd){grid-column:1/-1}
 .backpack-empty{margin:0;font:15px/1.6 Arial,sans-serif;color:var(--bp-muted)}
 .backpack-note{display:flex;align-items:center;gap:10px;margin:0 16px 12px;padding:8px 12px;border:1px solid #c9a85f55;border-radius:8px;background:#0c2119;font:13px/1.4 Arial,sans-serif;color:#dfe3cf}.backpack-note svg{flex:none;width:16px;height:16px}
+/* Card text scales with the grid so 7 (desktop) or 5 (phone) cards always fit a row. */
+@supports(font-size:1cqi){.backpack-item-icon{font-size:clamp(20px,4.5cqi,38px)}.backpack-count{font-size:clamp(10px,1.9cqi,14px)}.backpack-card-stars{font-size:clamp(8px,1.5cqi,12px)}.backpack-tag{font-size:clamp(8px,1.5cqi,11px)}}
+@media(max-height:560px){@supports(font-size:1cqi){.backpack-count{font-size:clamp(10px,3.2cqi,13px)}.backpack-card-stars{font-size:clamp(8px,2.6cqi,11px)}.backpack-tag{font-size:clamp(8px,2.6cqi,10px)}}}
 .backpack-artifact-slots{grid-column:1/-1;display:flex;flex-direction:column;gap:8px}
 .backpack-artifact-heading{display:flex;justify-content:space-between;margin:0;font:700 12px Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--bp-gold-dim)}
 .backpack-artifact-row{display:grid;grid-template-columns:repeat(3,minmax(0,96px));gap:12px;width:max-content;max-width:100%;padding:10px;border:1px solid var(--bp-line);border-radius:10px;background:#0a1d15}
@@ -162,13 +165,13 @@ body.exploring #quest-objective{font:11px/1.5 monospace;color:#f3e6bf;margin:10p
 .backpack-artifact-progress{margin:0;font:13px Arial,sans-serif;color:var(--bp-muted)}
 .backpack-filters button:focus-visible,.backpack-sort select:focus-visible,.backpack-order:focus-visible,.backpack-details button:focus-visible{outline:2px solid #fff0cb;outline-offset:2px}
 /* Laptops: a narrower detail panel. */
-@media(max-width:1020px){.backpack-body{grid-template-columns:58px minmax(0,1fr) minmax(250px,34%)}.backpack-items{grid-template-columns:repeat(auto-fill,minmax(84px,1fr))}.backpack-name{font-size:21px}}
+@media(max-width:1020px){.backpack-body{grid-template-columns:58px minmax(0,1fr) minmax(250px,34%)}.backpack-name{font-size:21px}}
 /* Phones held sideways: the same three panes, tighter. */
 @media(max-height:560px){
  #backpack .backpack-heading{padding:5px 8px 5px 12px;gap:8px}#backpack .backpack-emblem svg{width:22px;height:22px}#backpack .backpack-heading h2{display:block;font-size:17px}.backpack-crumb{font-size:13px}#backpack .backpack-capacity{font-size:11px}#backpack .backpack-marks{padding:2px 9px;font-size:12px}#backpack .backpack-marks svg{width:16px;height:16px}#backpack .backpack-close{width:34px;height:34px}
  .backpack-body{grid-template-columns:50px minmax(0,1fr) minmax(220px,36%)}
  .backpack-filters{gap:4px;padding:6px 0}.backpack-filters button{width:40px;height:40px}.backpack-filters button svg{width:20px;height:20px}
- .backpack-items{grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:10px 8px;padding:10px}
+ .backpack-items{grid-template-columns:repeat(5,minmax(0,1fr));gap:10px 8px;padding:10px}
  .backpack-item-icon{font-size:24px}.backpack-count{font-size:11px;padding:2px 3px 3px}.backpack-tag{font-size:9px;padding:1px 5px}.backpack-hotbar-badge{font-size:10px}.backpack-card-stars{font-size:9px}
  .backpack-sortbar{padding:5px 10px;gap:6px}.backpack-sort>span{display:none}.backpack-sort select{min-width:112px;height:30px;font-size:12px}.backpack-order{width:30px;height:30px}.backpack-hotbar-count{font-size:11px}
  .backpack-art{min-height:0;padding:8px 12px}.backpack-name{font-size:17px}.backpack-kind{font-size:12px}.backpack-stars{font-size:14px}.backpack-art-icon{width:60px;height:60px;font-size:34px}
@@ -182,7 +185,7 @@ body.exploring #quest-objective{font:11px/1.5 monospace;color:#f3e6bf;margin:10p
  #backpack .backpack-heading{flex-wrap:wrap}#backpack .backpack-capacity{order:3;flex-basis:100%;text-align:left}#backpack .backpack-close{margin-left:auto}
  .backpack-body{display:flex;flex-direction:column}
  .backpack-filters{flex-direction:row;padding:8px;overflow-x:auto;border-right:0;border-bottom:1px solid var(--bp-line)}
- .backpack-items{overflow:visible;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));padding:12px}
+ .backpack-items{overflow:visible;grid-template-columns:repeat(5,minmax(0,1fr));padding:12px}
  .backpack-details{border-left:0;border-top:1px solid var(--bp-line)}.backpack-actions{overflow:visible}
 }
 body.touch-mode.exploring #open-backpack{bottom:calc(274px + env(safe-area-inset-bottom));min-height:44px}
