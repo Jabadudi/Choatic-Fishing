@@ -31,7 +31,7 @@ export function mountRadio({onOpen,onClose,store=new RadioStore()}){
 <label class="radio-volume"><span>Volume</span><input type="range" class="radio-volume-bar" min="0" max="100" value="70" aria-label="Radio volume"><b class="radio-volume-value">70</b></label></section>
 <section class="radio-list" aria-label="Playlist"><div class="radio-list-head"><h3 class="trade-column-title">Playlist</h3><small class="radio-kind-note"></small></div>
 <form class="radio-paste" hidden><input type="url" class="radio-url" placeholder="Paste a YouTube link" aria-label="YouTube link" autocomplete="off"><button type="submit" class="trade-action">Add link</button></form>
-<div class="radio-video-slot" hidden><div class="radio-video-frame"></div><p>YouTube songs play in YouTube’s own small player. It stays in the corner of the screen while you explore. Ads may play first, as on YouTube.</p></div>
+<p class="radio-video-slot" hidden>YouTube songs play in YouTube’s own small player, shown over the radio. While you explore it sits just above the mini player. Ads may play first, as on YouTube.</p>
 <ol class="radio-songs"></ol>
 <div class="radio-adds"><label class="trade-action radio-add">Add songs<small>MP3, M4A, OGG or WAV from your device</small><input type="file" class="radio-files" accept="audio/*,.mp3,.m4a,.aac,.ogg,.oga,.opus,.wav,.webm,.flac" multiple></label><button type="button" class="radio-clear">Clear these songs</button></div></section></div>
 <p class="trade-note radio-note" aria-live="polite"></p></div>`;
@@ -180,15 +180,19 @@ export function mountRadio({onOpen,onClose,store=new RadioStore()}){
  $('.backpack-close').onclick=close;backdrop.onclick=close;
  dialog.addEventListener('close',()=>{backdrop.hidden=true;onClose();});
  dialog.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();close();}});
- // The video window follows the sheet's YouTube tab while it is open, and the corner of the screen while exploring.
+ // The video window sits over the radio: over the boombox in the sheet, and just above the mini player while exploring.
  function placeVideo(exploring){
   const show=current()?.kind==='youtube'&&!!yt&&(dialog.open||(exploring&&playing));
   video.hidden=!show;if(!show)return;
-  const slot=$('.radio-video-slot');
-  if(dialog.open&&!slot.hidden){const r=slot.querySelector('.radio-video-frame').getBoundingClientRect();video.className='radio-video in-sheet';Object.assign(video.style,{left:`${r.left}px`,top:`${r.top}px`,width:`${r.width}px`,height:`${r.height}px`});}
-  // On the songs tab the player tucks behind the sheet rather than disappearing, so the song keeps going.
-  else if(dialog.open){video.className='radio-video tucked';video.removeAttribute('style');}
-  else{video.className='radio-video';video.removeAttribute('style');}
+  const box=dialog.open?$('.radio-boombox').getBoundingClientRect():chip.hidden?null:chip.getBoundingClientRect();
+  if(dialog.open){
+   // A 16:9 screen as tall as the boombox, centred on it.
+   const height=box.height*.92,width=Math.min(box.width,height*16/9);
+   video.className='radio-video in-sheet';Object.assign(video.style,{left:`${box.left+(box.width-width)/2}px`,top:`${box.top+(box.height-height)/2}px`,width:`${width}px`,height:`${width*9/16}px`,right:'auto',bottom:'auto'});
+  }else if(box&&box.width){
+   const width=Math.max(160,Math.min(220,box.width)),height=width*9/16,left=Math.min(Math.max(8,box.left),innerWidth-width-8),top=box.top-height-8;
+   video.className='radio-video over-chip';Object.assign(video.style,top>8?{left:`${left}px`,top:`${top}px`,width:`${width}px`,height:`${height}px`,right:'auto',bottom:'auto'}:{left:`${left}px`,top:`${box.bottom+8}px`,width:`${width}px`,height:`${height}px`,right:'auto',bottom:'auto'});
+  }else{video.className='radio-video';video.removeAttribute('style');}
  }
  return {
   get open(){return dialog.open;},get playing(){return playing;},
