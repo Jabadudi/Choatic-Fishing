@@ -157,6 +157,7 @@
 :root body.exploring .status,:root body.exploring.has-quest .status{top:calc(10px + var(--hud-t));bottom:auto;left:calc(var(--hud-l) + 156px);right:calc(var(--hud-r) + 340px);transform:none;width:auto;max-width:none;display:flex;justify-content:center;padding:0;background:none;text-align:center;pointer-events:none}
 :root body.exploring .status p{max-width:460px;padding:4px 12px;border-radius:12px;background:#0b1d1ecc}
 :root body.exploring .status p{margin:0;font-size:10.5px;line-height:1.35}
+:root body.exploring .status p:empty{display:none}
 :root body.exploring #save-status{left:50%;right:auto;top:auto;bottom:calc(48px + var(--hud-b));transform:translateX(-50%)}
 :root body.exploring #explore-hint{bottom:calc(76px + var(--hud-b))}
 /* The menu sheet */
