@@ -34,7 +34,7 @@ const ANDROID='Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTM
  page=await open(390,844,IPHONE,true);await start(page);await page.locator('#story-close').click();
  await page.locator('#rotate-prompt').waitFor();assert.equal(await page.locator('#rotate-fullscreen').count(),0);assert.ok(await page.locator('.rotate-ios').isVisible());
  await page.screenshot({path:`${out}/landscape-04-rotate-iphone.png`});
- await page.locator('#rotate-dismiss').click();await page.locator('#toggle-fullscreen').click();await page.locator('#install-tip[open]').waitFor();
+ await page.locator('#rotate-dismiss').click();await page.locator('#hud-menu').click();await page.locator('.hud-sheet-item',{hasText:'Full screen'}).click();await page.locator('#install-tip[open]').waitFor();
  await page.screenshot({path:`${out}/landscape-05-iphone-install-tip.png`});
  assert.deepEqual(page.errors,[]);await page.context().close();
 
@@ -45,17 +45,17 @@ const ANDROID='Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTM
   await page.locator('#story-close').click();await page.waitForTimeout(400);
   assert.equal(await page.locator('#rotate-prompt').isVisible(),false);
   const parts={};
-  for(const s of ['#exploration-hud','#quest-objective','#open-skills','#open-backpack','#open-saves','#open-codex','#open-atlas','#open-settings','#toggle-fullscreen','.hotbar','.touch-actions','.touch-movement','.status'])parts[s]=await box(page,s);
-  for(const s of ['#open-skills','#open-backpack','#open-atlas','#open-settings','#toggle-fullscreen','.hotbar','.touch-actions','.touch-movement'])assert.ok(parts[s],`${name}: ${s} visible`);
-  const keys=Object.keys(parts).filter(s=>parts[s]&&s!=='#quest-objective'&&s!=='.status');
-  for(let i=0;i<keys.length;i++)for(let j=i+1;j<keys.length;j++)if(!(keys[i]==='#exploration-hud'&&keys[j]==='#quest-objective'))assert.ok(!overlap(parts[keys[i]],parts[keys[j]]),`${name}: ${keys[i]} overlaps ${keys[j]}`);
+  for(const s of ['#hud-menu','#hud-map','#hud-tracker','#hud-icons','.hotbar','#hud-vitals','#touch-use','#touch-examine','.hud-act.dash','.touch-movement','.radio-chip','.status'])parts[s]=await box(page,s);
+  for(const s of ['#hud-menu','#hud-map','#hud-icons','#open-skills','#open-backpack','.hotbar','#hud-vitals','#touch-use','.touch-movement'])assert.ok(parts[s]||await box(page,s),`${name}: ${s} visible`);
+  const keys=Object.keys(parts).filter(s=>parts[s]&&s!=='.status');
+  for(let i=0;i<keys.length;i++)for(let j=i+1;j<keys.length;j++)if(true)assert.ok(!overlap(parts[keys[i]],parts[keys[j]]),`${name}: ${keys[i]} overlaps ${keys[j]}`);
   for(const s of keys)assert.ok(parts[s].x>=0&&parts[s].x+parts[s].width<=w&&parts[s].y>=0&&parts[s].y+parts[s].height<=h,`${name}: ${s} on screen`);
   await page.screenshot({path:`${out}/landscape-${name}-explore.png`});
   // Fishing: the line meter sits between the thumbs and leaves the joystick free.
   await page.evaluate(()=>Object.assign(window.__qa.world.fishing,{state:'reeling',time:0,bar:.4,velocity:0,target:.45,progress:.5,grace:99}));
   await page.locator('#line-panel').waitFor();const line=await box(page,'#line-panel');
   assert.equal(await page.locator('.hotbar').isVisible(),false);
-  for(const s of ['.touch-movement','.touch-actions','#open-skills','#open-backpack','#open-saves','#open-settings','#toggle-fullscreen',await box(page,'.status')])assert.ok(!overlap(line,typeof s==='string'?parts[s]:s),`${name}: line panel overlaps ${s}`);
+  for(const s of ['.touch-movement','#touch-use','#hud-icons','#hud-vitals',await box(page,'.status')])assert.ok(!overlap(line,typeof s==='string'?parts[s]:s),`${name}: line panel overlaps ${s}`);
   assert.ok(line.y>=0&&line.y+line.height<=h,`${name}: line panel on screen`);
   await page.screenshot({path:`${out}/landscape-${name}-fishing.png`});
   assert.deepEqual(page.errors,[]);await page.context().close();

@@ -43,7 +43,7 @@ export class World {
   }
   this.story=adventure&&story?createStory():null;this.adventure=adventure;this.drops=[];this.nextDropId=1;
   if(adventure)this.player.inventory=new Inventory({separateStorage:true});
-  this.rabbits=adventure?createRabbits():[];this.wildlife=adventure?createWildlife():[];this.hunting={total:0,bySpecies:{},shiny:{seen:{},hunted:{}}};this.spawns=adventure?createSpawns():null;this.familiars=createFamiliars();this.companion=null;this.codex=new Set();this.well=createWell();
+  this.rabbits=adventure?createRabbits():[];this.wildlife=adventure?createWildlife():[];this.hunting={total:0,bySpecies:{},shiny:{seen:{},hunted:{}}};this.spawns=adventure?createSpawns():null;this.familiars=createFamiliars();this.companion=null;this.codex=new Set();this.itemsFound=new Set();this.well=createWell();
   this.npcs=adventure?createNpcs():[];this.dialogue=null;this.quests=createQuests();
   if(adventure){this.areaId='landing';Object.assign(this.player,Wilds.SPAWN);this.bots=[];this.actors=[this.player];this.humans=[this.player];this.chests=[];this.countdownRemaining=0;this.matchState='playing';this.discovered=new Set();this.message='Welcome to Reedwater Landing. Follow the north trail to walk into Windchime Path. M opens the area map.';}
   if(adventure)this.player.progression.characterStats=true;
