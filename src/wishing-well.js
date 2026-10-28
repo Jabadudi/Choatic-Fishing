@@ -4,7 +4,7 @@
 import {STORY_STAGES} from './story.js';
 import {RARITIES,RARITY_NAMES,ARTIFACT_IDS,ARTIFACTS,artifactItem,copiesOf,itemLabel,withArticle} from './artifacts.js';
 import {FAMILIARS,absorbShard} from './familiars.js';
-import {codexRevealed,revealedCount} from './codex-discovery.js';
+import {revealedCount} from './codex-discovery.js';
 import {marksOf,marksLabel} from './trade.js';
 import {VILLAGE_PROPS} from './village.js';
 export const WELL_POOLS=Object.freeze(['artifacts','familiars']);
@@ -71,8 +71,8 @@ export function rollWell(pity,random){
  pity.rare=RARITIES.indexOf(rarity)>=RARITIES.indexOf('rare')?0:pity.rare+1;
  return rarity;
 }
-// Creatures Eli has met whose familiar can still take shards.
-export const familiarPool=world=>Object.keys(FAMILIARS).filter(id=>codexRevealed(world,id)&&(world.familiars?.shards[id]||0)<SHARD_CAP);
+// Every familiar that can still take shards, met or not.
+export const familiarPool=world=>Object.keys(FAMILIARS).filter(id=>(world.familiars?.shards[id]||0)<SHARD_CAP);
 const pick=(list,random)=>list[Math.min(list.length-1,Math.floor(random()*list.length))];
 function drawArtifact(world,random){
  const rarity=rollWell(world.well.pity.artifacts,random),id=pick(ARTIFACT_IDS,random),item=artifactItem(id,rarity),inv=world.inventory;
@@ -85,6 +85,8 @@ function drawArtifact(world,random){
 function drawShards(world,random){
  const pool=familiarPool(world);if(!pool.length)return null;
  const rarity=rollWell(world.well.pity.familiars,random),id=pick(pool,random),count=SHARD_COUNTS[rarity],isNew=!(world.familiars.shards[id]>0);
+ // Shards for a creature Eli has not met yet open its index entry, so they can be combined there.
+ world.codex?.add(id);
  let note='';for(let i=0;i<count;i++)note=absorbShard(world,id)||note;
  return {rarity,kind:'shards',familiar:id,name:FAMILIARS[id].shard,count,isNew,shards:world.familiars.shards[id],note};
 }
@@ -95,7 +97,7 @@ export function drawWell(world,pool,count=1,random=world.random){
  if(!WELL_POOLS.includes(pool)||!Number.isInteger(count)||count<1||count>MAX_DRAWS)return fail('The well does not answer that.');
  if(!wellOpen(world))return fail('The well is quiet.');
  if(well.stones<count)return fail(`That takes ${wishstonesLabel(count)}. You have ${wishstonesLabel(well.stones)}.`);
- if(pool==='familiars'&&!familiarPool(world).length)return fail('No creature in your index can take more shards. Meet new creatures to widen the Familiar pool.');
+ if(pool==='familiars'&&!familiarPool(world).length)return fail('Every familiar already has all the shards it can use.');
  well.stones-=count;
  const results=[];
  for(let i=0;i<count;i++){
@@ -116,7 +118,7 @@ export function poolRates(world,pool){
  if(pool==='artifacts')return {rarities,prizes:ARTIFACT_IDS.map(id=>({id,name:ARTIFACTS[id].name,inPool:true,chances:Object.fromEntries(RARITIES.map(r=>[r,rarityChance(r)/ARTIFACT_IDS.length]))}))};
  const open=familiarPool(world);
  return {rarities,prizes:Object.keys(FAMILIARS).map(id=>{
-  const inPool=open.includes(id),why=inPool?null:codexRevealed(world,id)?'Full: this familiar has every shard it can use':'Not met yet: find this creature in the wild to add it';
+  const inPool=open.includes(id),why=inPool?null:'Full: this familiar has every shard it can use';
   return {id,name:FAMILIARS[id].name,inPool,why,chances:Object.fromEntries(RARITIES.map(r=>[r,inPool?rarityChance(r)/open.length:0]))};
  })};
 }
