@@ -4,7 +4,7 @@ import {World} from '../src/world.js';
 import {copiesOf} from '../src/artifacts.js';
 import {captureSave,restoreSave} from '../src/save-format.js';
 import {explorationHud} from '../src/hud.js';
-import {PITY,SHARD_COUNTS,STONE_PRICE,STARTING_STONES,buyWishstone,drawWell,familiarPool,findWishstone,rollWell,updateWell,wellUnlocked} from '../src/wishing-well.js';
+import {PITY,SHARD_COUNTS,STONE_PRICE,STARTING_STONES,buyWishstone,drawWell,familiarPool,findWishstone,poolRates,rollWell,updateWell,wellUnlocked} from '../src/wishing-well.js';
 const fresh=(story=false)=>{const w=new World(()=>.5,{adventure:true,story});w.journeyId='well-journey';return w;};
 const awake=(stones=0)=>{const w=fresh();updateWell(w);w.well.stones=stones;return w;};
 const sequence=values=>{let i=0;return ()=>values[i++%values.length];};
@@ -98,4 +98,17 @@ test('the well survives a save, older saves start it asleep, and bad well data i
  for(const change of [s=>s.well.stones=-1,s=>s.well.awake='yes',s=>s.well.pity.artifacts.rare=PITY.rare,s=>s.well.pity.familiars=null,s=>s.well.credited=1.5]){
   const bad=copy(saved);change(bad.state);assert.throws(()=>restoreSave(bad),/wishing well/i);
  }
+});
+
+test('the details page lists every prize with odds that add up to the rarity odds',()=>{
+ const w=fresh(),artifacts=poolRates(w,'artifacts');
+ assert.deepEqual(artifacts.rarities.map(r=>Math.round(r.chance*100)),[55,28,12,4,1]);
+ assert.equal(artifacts.prizes.length,5);assert.ok(artifacts.prizes.every(p=>p.inPool));
+ for(const {rarity,chance} of artifacts.rarities)assert.ok(Math.abs(artifacts.prizes.reduce((sum,p)=>sum+p.chances[rarity],0)-chance)<1e-12);
+ assert.ok(Math.abs(artifacts.prizes[0].chances.legendary-.002)<1e-12,'one artifact at Legendary is 0.2%');
+ // Familiars: only creatures Eli has met and that still need shards; the others say why they are missing.
+ const familiars=poolRates(w,'familiars'),open=familiarPool(w);
+ assert.deepEqual(familiars.rarities.map(r=>r.shards),Object.values(SHARD_COUNTS));
+ assert.equal(familiars.prizes.filter(p=>p.inPool).length,open.length);
+ for(const p of familiars.prizes)if(!p.inPool){assert.match(p.why,/Not met yet|Full/);assert.equal(p.chances.common,0);}
 });
