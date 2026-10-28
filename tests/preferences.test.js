@@ -26,3 +26,13 @@ test('cutscenes fade in, hold clear artwork three seconds, then dim before dialo
  assert.equal(cutscenePresentation(5850).ready,true);assert.equal(cutscenePresentation(5850).darkness,.86);
  assert.equal(cutscenePresentation(0,false).ready,true);
 });
+test('cursor choice is kept, unknown styles fall back to the system pointer',async()=>{
+ const {CURSOR_STYLES,cursorValue}=await import('../src/cursors.js');
+ assert.equal(normalizePreferences({cursor:'hook'}).cursor,'hook');
+ assert.equal(normalizePreferences({cursor:'url(evil)'}).cursor,'system');
+ assert.equal(cursorValue('system'),'');
+ for(const c of CURSOR_STYLES.filter(c=>c.id!=='system')){
+  const [x,y]=c.hotspot;assert.ok(x>=0&&x<32&&y>=0&&y<32,c.id);
+  assert.match(cursorValue(c.id),new RegExp(`^url\\("data:image/svg\\+xml,[^"]+"\\) ${x} ${y}, auto$`));
+ }
+});
