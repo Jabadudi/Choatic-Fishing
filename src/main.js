@@ -217,12 +217,7 @@ function updateUI(){
 }
 const sheetOpen=()=>!!(hubUI?.open||backpackUI?.open||tradeUI?.open||wellUI?.open||radioUI?.open||skillsUI?.open||codexUI?.open||questUI?.open||saveUI?.open||settingsUI?.open||hudUI?.open);
 // The adventure is the main player flow; legacy arena code remains an internal fixture.
-document.title='The Wilds · Reedwater Landing';
-document.querySelector('.lobby-eyebrow').textContent='THE WILDS';
-document.querySelector('.lobby-card h1').textContent='Grandpa left you a map.';
-$('lobby-screen').classList.add('title-screen');document.querySelector('.lobby-card h1').insertAdjacentHTML('beforebegin','<img class="title-logo" src="assets/title/logo.webp" alt="The Wilds" width="1185" height="660">');
 document.querySelector('header h1').textContent='THE WILDS';
-document.querySelector('.lobby-actions').insertAdjacentHTML('afterbegin','<button id="explore-world">Enter the Wilds</button>');
 document.querySelector('.playfield').insertAdjacentHTML('beforeend',`<section id="exploration-hud" hidden><span class="exploration-kicker" id="area-kicker">YOUR JOURNEY</span><h2 id="region-name">Reedwater Delta</h2><div id="player-hp" role="progressbar" aria-label="Health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><div class="hp-row"><span class="hp-label">HP</span><span id="player-hp-text">100 / 100</span></div><div class="hp-track"><i id="player-hp-trail"></i><i id="player-hp-fill"></i></div></div><p id="discovery-count">0 / 10 places found</p><div class="discovery-dots" id="discovery-dots"></div><p id="purse-hud" title="Reed marks">${markIcon(14)}<span></span></p></section><button id="inspect-place" hidden>G · Examine</button><div id="explore-hint" hidden></div><button id="music-icon" aria-label="Music settings" aria-expanded="false">♪</button><button id="open-atlas" hidden aria-label="Open world atlas"><canvas id="mini-atlas" width="176" height="176"></canvas><span>M · WORLD ATLAS</span></button><section id="world-atlas" hidden role="dialog" aria-modal="true" aria-label="World atlas"><div class="atlas-card"><div class="atlas-heading"><div><small>THE WILDS</small><h2>World Atlas</h2></div><button id="close-atlas">Close · M / Esc</button></div><canvas id="atlas-canvas" width="800" height="600"></canvas><p>Follow the old trails and bridges. Gold marks the places you have found. Your position is the bright marker.</p></div></section>`);
 touchUI=mountMobileControls({state:touchState,active:()=>touchMode&&!!lobby.world&&!atlasOpen&&!hubUI?.open&&!chatUI?.open&&!hudUI?.open&&!saveUI?.open&&!backpackUI?.open&&!tradeUI?.open&&!wellUI?.open&&!radioUI?.open&&!skillsUI?.open&&!codexUI?.open&&!questUI?.open&&!settingsUI?.open&&!helpUI?.open&&!storyUI?.open&&!currentScene(world),action:()=>{pointer=null;const f=world.fishing;if(f.state==='waiting')act('cancel');else if(f.state==='idle')act('click');},examine:()=>{world.inspect();canvas.focus();}});
 let atlasOpen=false,exploreStart=performance.now(),lastMessage='',messageSince=0,lastNotice='',noticeSince=0,dotsKey='',hpShown='',hpFraction=1;
@@ -298,8 +293,8 @@ function updateLobby(){
  else {release();for(const id of ['countdown','match-end','reward-choice','line-panel'])$(id).hidden=true;}
 }
 $('practice').onclick=()=>{lobby.practice();progressionKey='';canvas.focus();};
-$('explore-world').textContent='New game';
 $('explore-world').onclick=()=>saveUI.newGame();
+$('lobby-screen').classList.remove('booting');
 $('create-room').onclick=()=>lobby.connect($('player-name').value);
 $('join-room').onclick=()=>{let code=$('join-code').value.trim();try{if(code.includes('://'))code=new URL(code).searchParams.get('room')||'';}catch{}if(!/^fish-[a-f0-9]{12}$/.test(code)){lobby.status='Paste a valid invite link or room code.';updateLobby();return;}lobby.connect($('player-name').value,code);};
 $('ready-up').onclick=()=>lobby.toggleReady();$('start-match').onclick=()=>{if(lobby.start()){release();canvas.focus();}};
