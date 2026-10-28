@@ -4,21 +4,21 @@ import {World} from '../src/world.js';
 import {copiesOf} from '../src/artifacts.js';
 import {captureSave,restoreSave} from '../src/save-format.js';
 import {explorationHud} from '../src/hud.js';
-import {PITY,SHARD_COUNTS,STONE_PRICE,WAKE_GIFT,buyWishstone,drawWell,familiarPool,findWishstone,rollWell,updateWell,wellUnlocked} from '../src/wishing-well.js';
+import {PITY,SHARD_COUNTS,STONE_PRICE,STARTING_STONES,buyWishstone,drawWell,familiarPool,findWishstone,rollWell,updateWell,wellUnlocked} from '../src/wishing-well.js';
 const fresh=(story=false)=>{const w=new World(()=>.5,{adventure:true,story});w.journeyId='well-journey';return w;};
 const awake=(stones=0)=>{const w=fresh();updateWell(w);w.well.stones=stones;return w;};
 const sequence=values=>{let i=0;return ()=>values[i++%values.length];};
 const copy=value=>JSON.parse(JSON.stringify(value));
 
-test('the well sleeps through the story until Chapter 5 ends, then wakes with ten Wishstones',()=>{
- const w=fresh(true);
- for(const stage of ['arrival','ch2-complete','ch4-complete','ch5-sleep']){w.story.stage=stage;updateWell(w);assert.equal(w.well.awake,false,stage);assert.equal(w.well.stones,0);}
- // Progress made before the well woke is covered by the gift, not paid again.
- w.discovered.add('village-commons');w.discovered.add('village-gate');w.hunting.shiny.hunted.deer=2;
- w.story.stage='ch5-morning';updateWell(w);
- assert.equal(w.well.awake,true);assert.equal(w.well.stones,WAKE_GIFT);assert.match(w.message,/glowing the same blue as the Region Core/);
- updateWell(w);assert.equal(w.well.stones,WAKE_GIFT);
- assert.equal(wellUnlocked(fresh()),true,'journeys without the story have no chapter to wait for');
+test('the well is open from the start of every journey, story or not, with 38 Wishstones',()=>{
+ for(const story of [true,false]){
+  const w=fresh(story);assert.equal(STARTING_STONES,38);assert.equal(wellUnlocked(w),true);
+  updateWell(w);assert.equal(w.well.awake,true);assert.equal(w.well.stones,STARTING_STONES);assert.match(w.message,/38 Wishstones wait at its rim/);
+  updateWell(w);assert.equal(w.well.stones,STARTING_STONES,'the starting stones are given once');
+ }
+ // A journey saved before the well opened gets the starting stones, but not back pay for what it already did.
+ const old=fresh(true);old.story.stage='ch4-complete';old.discovered.add('village-commons');old.hunting.shiny.hunted.deer=2;
+ updateWell(old);assert.equal(old.well.stones,STARTING_STONES);
 });
 
 test('Eli earns Wishstones for new places, side missions and shiny hunts, each paid once',()=>{
