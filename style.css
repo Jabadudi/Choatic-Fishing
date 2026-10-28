@@ -443,3 +443,16 @@ body:has(#lobby-screen.title-screen:not([hidden])) #open-settings{width:56px;hei
 @media(orientation:portrait){#lobby-screen.title-screen{place-items:start center;padding-top:max(60px,12vh)}#lobby-screen.title-screen::before{background-position:88% 100%}#lobby-screen.title-screen::after{background:linear-gradient(180deg,#070d24d9 0,#070d2480 45%,#070d2400 70%)}#lobby-screen.title-screen .lobby-card{width:min(88vw,460px)}}
 body:has(#lobby-screen.title-screen:not([hidden])) #toggle-fullscreen{background:#2b1b10e8;border-color:#c8913f;color:#f3d79a}
 @media(max-height:500px){.title-screen #lobby-status{display:none}}
+/* Google sign-in follows Google's button branding: white, the full-colour G, dark label. */
+.google-signin{display:inline-flex!important;align-items:center;justify-content:center;gap:10px;min-height:42px;padding:0 16px!important;border:1px solid #dadce0!important;border-radius:21px!important;background:#fff!important;color:#1f1f1f!important;font:500 14px Roboto,Arial,sans-serif!important;letter-spacing:.2px;box-shadow:0 1px 3px #0005;cursor:pointer}
+.google-signin:hover{background:#f2f2f2!important}
+#title-account{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:min(2.4vh,18px);padding:0 6%;font:12px/1.4 Arial,sans-serif;color:#e7dfc6;text-shadow:0 1px 3px #000}
+#title-account[hidden]{display:none}
+#title-account .account-hint{color:#c9d1e6}
+.account-avatar{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;overflow:hidden;background:#c58b4a;border:2px solid #e8c77a;color:#fff;font:bold 15px Arial,sans-serif;flex:none}.account-avatar img{width:100%;height:100%;object-fit:cover}
+.account-who{flex:1;min-width:0}.account-who b{color:#f6e7bf}.account-who small{display:block;color:#a9e3b0}
+#title-signout{padding:7px 12px;border:1px solid #c8913f;border-radius:7px;background:#2b1b10e8;color:#f3d79a;font:12px Arial,sans-serif;cursor:pointer}
+#cloud-panel{margin:14px 0;padding:12px;border:1px solid #8fb7c9aa;border-radius:9px;background:#183a3a}#cloud-panel h3{margin:0 0 4px;font:bold 13px Arial,sans-serif;color:#cfe8ef}#cloud-panel p{margin:0 0 10px;color:#b8cfc9}
+#cloud-panel [hidden]{display:none!important}
+.cloud-pick{display:grid;grid-template-columns:1fr 1fr;gap:10px}.cloud-pick div{display:flex;flex-direction:column;gap:6px;padding:10px;border:1px solid #c9b98a88;border-radius:9px;background:#1d3a31;font:12px/1.5 Arial,sans-serif}.cloud-pick b{color:#f3e6bf;font-size:13px}.cloud-pick button{margin-top:auto}
+@media(max-width:520px){.cloud-pick{grid-template-columns:1fr}}

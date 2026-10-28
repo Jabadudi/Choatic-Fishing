@@ -27,3 +27,13 @@ Two local browser tabs connected through PeerJS, joined the same lobby, readied 
 
 References: [GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site), [PeerJS connections](https://peerjs.com/client/faq).
 
+
+## Google sign-in and cloud saves
+
+Players can optionally sign in with Google. Every save is also copied to their account, so they can continue on another device. The game still saves locally and works offline when signed out.
+
+- Firebase project: `the-wilds-ce2d5` (Spark, free). The web config is in `src/cloud-save.js`; it identifies the project and is safe to publish.
+- Auth: Google provider enabled. `jabadudi.github.io` must stay in Authentication → Settings → Authorized domains (add any new domain the game is served from, `localhost` is allowed by default).
+- Firestore: one document per player at `saves/{uid}` holding the newest save (`current`) and a set-aside journey (`previous`), each as save-file JSON text. Uploads happen at most once a minute, immediately on manual saves, and when the tab is hidden.
+- Security rules: `firestore.rules` lets each player read and write only their own document. After changing it, paste it into Firestore → Rules in the Firebase console and click Publish.
+- The SDK is bundled into `vendor/firebase.js` (see `vendor/FIREBASE-LICENSE.txt` for how to rebuild it).

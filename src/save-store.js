@@ -35,7 +35,7 @@ export class SaveManager{
   const save=captureSave(world,imported?'import':'new-game',this.now());
   return this.enqueue(async()=>{await this.store.update(()=>({journeyId:world.journeyId,writerId:this.writerId,current:save,backups:[],manual:null}));this.attach(world);this.saved(save);return true;});
  }
- saved(save){this.lastPeriodic=this.now();this.lastSavedFingerprint=JSON.stringify(save.state);this.onStatus({kind:'saved',text:'Saved',at:save.savedAt});}
+ saved(save){this.lastPeriodic=this.now();this.lastSavedFingerprint=JSON.stringify(save.state);this.onStatus({kind:'saved',text:'Saved',at:save.savedAt});this.onSaved?.(save);}
  enqueue(work){const pending=this.queue.then(work);this.queue=pending.catch(()=>{});return pending.catch(error=>{this.retryAfter=this.now()+5000;this.lastImportant=null;this.onStatus({kind:'error',text:`Save failed: ${error.message||'Storage unavailable'}. Export a backup.`,error});throw error;});}
  request(kind='auto',force=false){
   const world=this.world;if(!world?.adventure)return Promise.resolve(false);
