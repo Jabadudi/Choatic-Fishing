@@ -36,7 +36,7 @@ Players can optionally sign in with Google. Every save is also copied to their a
 - Auth: Google provider enabled. `jabadudi.github.io` must stay in Authentication → Settings → Authorized domains (add any new domain the game is served from, `localhost` is allowed by default).
 - Firestore: one document per player at `saves/{uid}` holding the newest save (`current`) and a set-aside journey (`previous`), each as save-file JSON text. Uploads happen at most once a minute, immediately on manual saves, and when the tab is hidden.
 - Security rules: `firestore.rules` lets each player read and write only their own document. After changing it, paste it into Firestore → Rules in the Firebase console and click Publish.
-- The SDK is bundled into `vendor/firebase-12.19.0-db.js` (see `vendor/FIREBASE-LICENSE.txt` for how to rebuild it). Give a rebuilt bundle a new file name so phones do not keep an old cached copy.
+- The SDK is bundled into `vendor/firebase-12.19.0-db2.js` (see `vendor/FIREBASE-LICENSE.txt` for how to rebuild it). Give a rebuilt bundle a new file name so phones do not keep an old cached copy.
 
 
 ## Shared world with friends
@@ -46,6 +46,7 @@ Signed-in players open **Friends**, pick a nickname, add friends by nickname and
 - Backend: Firebase Realtime Database in the same project. `databaseURL` in `src/cloud-save.js` assumes the default database in the United States (`https://the-wilds-ce2d5-default-rtdb.firebaseio.com`). If the database is created in another region, copy the URL shown at the top of the Realtime Database page into `databaseURL`.
 - Data: `presence/{uid}` (nickname, area, AFK) and `pos/{uid}` (area, x, y, facing, walking), readable only by the player and their friends; `friends/{uid}/{other}`, private to its owner; `requests/{to}/{from}`; `profiles/{uid}` (nickname) and `nicknames/{name}` (which account owns a name). The server removes presence and position when a player disconnects.
 - Security rules: `database.rules.json`. Each player writes only their own entries, a friendship needs the other player's request, nicknames are unique and checked, positions are range checked, and signed-out visitors can read nothing.
+- Chat: the chat box (Enter, or the Chat button) sends plain text to every online friend and `/msg name text` to one friend. Data: `chat/{uid}` (the newest 30 lines, readable by friends), `dm/{to}` (private messages waiting for one friend, deleted once shown) and `rate/{uid}` (time of the last message). The rules check the nickname, cap messages at 200 characters, allow only friends to send private messages and allow at most one message every 0.7 seconds.
 - Traffic: a moving player sends about four position updates a second, only while moving, and players only receive positions of friends in the same area. The free Spark plan allows 100 simultaneous connections and 360 MB downloaded a day.
 
 ### One-time setup

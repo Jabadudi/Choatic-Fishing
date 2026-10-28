@@ -25,7 +25,7 @@ export function deviceLabel(nav=globalThis.navigator){
 
 // Firebase Auth with Google, and one Firestore document per player at saves/{uid}.
 // The SDK file name carries its contents, so a phone holding an older cached copy fetches the new one.
-export const FIREBASE_SDK='../vendor/firebase-12.19.0-db.js';
+export const FIREBASE_SDK='../vendor/firebase-12.19.0-db2.js';
 export async function firebaseBackend(config=FIREBASE_CONFIG){
  const fb=await import(new URL(FIREBASE_SDK,import.meta.url));
  const app=fb.initializeApp(config),auth=fb.getAuth(app),db=fb.getFirestore(app),provider=new fb.GoogleAuthProvider();

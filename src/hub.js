@@ -6,6 +6,9 @@ export const HUB_SEND_INTERVAL=.25;
 export const HUB_SMOOTHING=.3;
 export const AFK_AFTER=300;
 export const MAX_FRIENDS=50;
+export const MAX_MESSAGE=200;
+export const MESSAGE_GAP=.8;
+const LOG_SIZE=80,CHAT_REPLAY=60000;
 export const NICK_RULES='3 to 16 letters, numbers or _, starting with a letter.';
 const NICK_PATTERN=/^[A-Za-z][A-Za-z0-9_]{2,15}$/;
 // Names a player could use to pass as staff or as a story character.
@@ -31,6 +34,12 @@ export function readPosition(raw){
  return {areaId:raw.a,x:Math.max(0,Math.min(area.width,raw.x)),y:Math.max(0,Math.min(area.height,raw.y)),facing:FACING_NAMES[raw.f]||'down',walking:raw.w===true};
 }
 const shared=areaId=>!!AREAS[areaId]&&!INTERIOR_AREAS.includes(areaId);
+// Messages are one line of plain text; control characters go, runs of spaces collapse, and a short list of slurs is masked.
+const BLOCKED=/\b(n[i1]gg(?:er|a)s?|f[a@]gg?(?:ot)?s?|retards?|k[i1]kes?|sp[i1]cs?|ch[i1]nks?|tr[a@]nn(?:y|ies))\b/gi;
+export function clean(text){
+ const line=String(text??'').replace(/[\u0000-\u001f\u007f]/g,' ').replace(/\s+/g,' ').trim().slice(0,MAX_MESSAGE);
+ return line.replace(BLOCKED,word=>'*'.repeat(word.length));
+}
 const denied=error=>error?.code==='PERMISSION_DENIED'||/permission/i.test(error?.message||'');
 
 export class Hub{
@@ -39,6 +48,8 @@ export class Hub{
   this.user=null;this.nick='';this.wantOnline=false;this.state='signed-out';this.error='';
   // friends: uid → {nick, presence, stopPresence, stopPosition}; remote: uid → smoothed position of a friend in this area.
   this.friends=new Map();this.requests=new Map();this.remote=new Map();this.afk=false;
+  // log: chat lines for the chat box, newest last. muted: friends whose messages are hidden on this device.
+  this.log=[];this.seen=new Set();this.muted=new Set();this.replyTo=null;this.lastMessage=-Infinity;this.onMessage=()=>{};
   this.areaId=null;this.sent=null;this.sentAt=-Infinity;this.stillSince=this.now();this.stops=[];this.generation=0;
  }
  set(state,error=''){this.state=state;this.error=error;this.onChange(this);}
@@ -69,6 +80,8 @@ export class Hub{
  watchFriends(){
   const uid=this.user.uid,realtime=this.realtime,generation=this.generation;
   this.stops.push(realtime.watchFriends(uid,(id,present)=>{if(generation!==this.generation)return;if(present)this.addFriend(id);else this.dropFriend(id);}));
+  // Private messages wait in the inbox until this player is signed in; each is removed once shown.
+  this.stops.push(realtime.watchInbox(uid,(id,raw)=>{if(generation!==this.generation||!raw)return;realtime.clearInbox(uid,id).catch(()=>{});const from=String(raw.f||'');if(!validNick(raw.n)||!clean(raw.m)||this.muted.has(from))return;this.replyTo=from;this.post({kind:'from',uid:from,nick:String(raw.n),text:clean(raw.m)});}));
   this.stops.push(realtime.watchRequests(uid,(id,raw)=>{if(generation!==this.generation)return;if(raw&&validNick(raw.n))this.requests.set(id,{uid:id,nick:String(raw.n)});else this.requests.delete(id);this.onChange(this);}));
  }
  unwatchFriends(){this.stops.forEach(stop=>stop());this.stops=[];for(const id of [...this.friends.keys()])this.dropFriend(id);this.requests.clear();}
@@ -87,13 +100,17 @@ export class Hub{
    friend.presence=readPresence(raw);if(friend.presence)friend.nick=friend.presence.nick;
    this.followPosition(friend);this.onChange(this);
   });
+  friend.stopChat=this.realtime.watchChat(friend.uid,Date.now()-CHAT_REPLAY,(id,raw)=>{
+   const key=`${friend.uid}/${id}`,text=clean(raw?.m);if(this.seen.has(key)||!text||!validNick(raw.n))return;this.seen.add(key);
+   if(!this.muted.has(friend.uid))this.post({kind:'chat',uid:friend.uid,nick:String(raw.n),text});
+  });
  }
  followPosition(friend){
   const near=this.state==='online'&&friend.presence&&friend.presence.areaId===this.areaId&&shared(this.areaId);
   if(near&&!friend.stopPosition)friend.stopPosition=this.realtime.watchPosition(friend.uid,raw=>this.heard(friend.uid,readPosition(raw)));
   else if(!near&&friend.stopPosition){friend.stopPosition();friend.stopPosition=null;this.remote.delete(friend.uid);}
  }
- unfollow(friend){friend.stopPresence?.();friend.stopPosition?.();friend.stopPresence=friend.stopPosition=null;friend.presence=null;this.remote.delete(friend.uid);}
+ unfollow(friend){friend.stopPresence?.();friend.stopPosition?.();friend.stopChat?.();friend.stopPresence=friend.stopPosition=friend.stopChat=null;friend.presence=null;this.remote.delete(friend.uid);}
  heard(uid,pos){
   if(!pos){this.remote.delete(uid);return;}
   const now=this.now(),known=this.remote.get(uid),at=known&&known.to.areaId===pos.areaId?this.position(known,now):pos;
@@ -138,6 +155,33 @@ export class Hub{
  }
  async answer(uid,accept){await(await this.backend()).answer(this.user.uid,uid,accept);this.requests.delete(uid);this.onChange(this);}
  async unfriend(uid){await(await this.backend()).unfriend(this.user.uid,uid);this.dropFriend(uid);}
+ post(line){this.log.push({...line,at:Date.now()});if(this.log.length>LOG_SIZE)this.log.shift();this.onMessage(line);this.onChange(this);}
+ note(text){this.post({kind:'note',text});}
+ friendNamed(nick){const lower=String(nick||'').toLowerCase();return [...this.friends.values()].find(f=>(f.presence?.nick||f.nick).toLowerCase()===lower)||null;}
+ checkMessage(text){
+  const message=clean(text);
+  if(!message)throw Error('Type a message first.');
+  if(this.now()-this.lastMessage<MESSAGE_GAP)throw Error('Slow down a little.');
+  return message;
+ }
+ // Says something to every friend who is online.
+ async say(text){
+  if(this.state!=='online')throw Error('Go online to chat with your friends.');
+  const message=this.checkMessage(text);this.lastMessage=this.now();
+  await this.realtime.say(this.user.uid,this.nick,message);
+  this.post({kind:'chat',uid:this.user.uid,nick:this.nick,text:message,me:true});
+ }
+ // A private message to one friend, delivered now or the next time they sign in.
+ async whisper(nick,text){
+  if(!this.user||!this.nick)throw Error('Sign in and pick a nickname first.');
+  const friend=this.friendNamed(nick);if(!friend)throw Error(`${nick||'That player'} is not on your friends list.`);
+  const message=this.checkMessage(text);this.lastMessage=this.now();
+  await(await this.backend()).whisper(this.user.uid,friend.uid,this.nick,message);
+  this.replyTo=friend.uid;
+  this.post({kind:'to',uid:friend.uid,nick:friend.presence?.nick||friend.nick,text:message,me:true});
+  return friend;
+ }
+ setMuted(uids){this.muted=new Set(uids);this.onChange(this);}
  setAfk(afk){this.applyAfk(afk);}
  applyAfk(afk){if(afk===this.afk)return;this.afk=afk;if(this.state==='online')this.realtime?.updatePresence(this.user.uid,{afk}).catch(()=>{});this.onChange(this);}
  // Runs every frame with the local journey (null on the title screen). Sends Eli's position a few times a second while he moves.
