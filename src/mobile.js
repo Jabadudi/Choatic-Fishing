@@ -32,7 +32,10 @@ export function mountMobileControls({state,action,examine,active}){
  use.addEventListener('pointerdown',e=>{if(e.button!==0||!active()||!state.beginUse(e.pointerId))return;e.preventDefault();use.setPointerCapture(e.pointerId);use.classList.add('pressed');action();});
  for(const type of ['pointerup','pointercancel','lostpointercapture'])use.addEventListener(type,e=>{if(state.endUse(e.pointerId))use.classList.remove('pressed');});
  use.addEventListener('click',e=>{if(e.detail===0&&active())action();});
- inspect.addEventListener('click',()=>{if(active())examine();});
+ // Examine fires on touch-down too, so it works while the other thumb is walking.
+ let touched=false;
+ inspect.addEventListener('pointerdown',e=>{touched=false;if(e.pointerType==='mouse'||!active())return;touched=true;examine();});
+ inspect.addEventListener('click',e=>{if(touched&&e.detail){touched=false;return;}touched=false;if(active())examine();});
  root.addEventListener('contextmenu',e=>e.preventDefault());
  return {
   reset(){state.reset();center();use.classList.remove('pressed');},

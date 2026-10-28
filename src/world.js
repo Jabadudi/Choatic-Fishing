@@ -154,7 +154,8 @@ export class World {
  }
  dash(input={}){
   if(currentScene(this)||this.matchState!=='playing'||this.player.health<=0||this.fishing.state==='waiting'||this.dashRemaining>0||this.player.dashCharges<=0)return false;
-  let x=Number(!!input.right)-Number(!!input.left),y=Number(!!input.down)-Number(!!input.up);
+  const analog=Number.isFinite(input.moveX)&&Number.isFinite(input.moveY);
+  let x=analog?input.moveX:Number(!!input.right)-Number(!!input.left),y=analog?input.moveY:Number(!!input.down)-Number(!!input.up);
   const length=Math.hypot(x,y);
   if(length){x/=length;y/=length;}else{x=Math.cos(this.player.angle);y=Math.sin(this.player.angle);}
   this.player.dashCharges--;this.dashDirection={x,y};this.dashRemaining=.16;return true;

@@ -32,3 +32,7 @@ test('dash obeys shoreline restriction and countdown/bite-wait locks',()=>{
  w.fishing.update(2,false);assert.ok(w.dash({right:true}));w.update(.16,input);
  assert.equal(w.player.x,INLAND.left);assert.equal(w.fishing.state,'reeling');assert.deepEqual(w.bobber,{x:0,y:365});
 });
+test('joystick dash follows the stick exactly, not the nearest of eight directions',()=>{
+ const w=fresh();assert.ok(w.dash({right:true,down:true,moveX:.8,moveY:.3}));
+ const d=Math.hypot(.8,.3);assert.ok(Math.abs(w.dashDirection.x-.8/d)<1e-9);assert.ok(Math.abs(w.dashDirection.y-.3/d)<1e-9);
+});

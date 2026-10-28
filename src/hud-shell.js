@@ -76,7 +76,11 @@ export function mountHudShell({act,openHelp,examine,openAtlas,openQuests,openWel
  sheet.addEventListener('click',e=>{if(e.target===sheet)sheet.close();});
  const tracker=$('hud-tracker');tracker.addEventListener('click',e=>{if(e.target.closest('.hud-quest'))openQuests();});
  $('hud-well').onclick=()=>openWell();
- shell.querySelector('#hud-actions').addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act;if(a==='talk')examine();else if(a==='use')act(world?.inventory.selected===1?'toggle':'use');else act(a);});
+ const actions=shell.querySelector('#hud-actions'),run=b=>{const a=b.dataset.act;if(a==='talk')examine();else if(a==='use')act(world?.inventory.selected===1?'toggle':'use');else act(a);};
+ // Fingers fire on touch-down: phones send no click for a tap while another finger holds the joystick.
+ let touched=null;
+ actions.addEventListener('pointerdown',e=>{const b=e.target.closest('[data-act]');touched=null;if(!b||b.disabled||e.pointerType==='mouse')return;touched=b;run(b);});
+ actions.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;if(b===touched&&e.detail){touched=null;return;}touched=null;run(b);});
  const found=$('hud-found'),banner=$('hud-banner'),feed=$('hud-feed');
  let world=null,carried=null,region='',queue=[],foundUntil=0,sheetWorld=null,showing=null;
  found.onclick=()=>{found.hidden=true;showing=null;};
