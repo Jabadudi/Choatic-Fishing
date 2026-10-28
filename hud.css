@@ -230,3 +230,10 @@
 @media(min-height:600px) and (min-width:900px){:root body.exploring #world-notice{zoom:1.3}}
 @media(max-width:600px){:root body.exploring #world-notice:not(:empty){bottom:calc(224px + var(--hud-b))}}
 :root body.exploring:not(.touch-mode):has(#explore-hint:not([hidden])) #world-notice:not(:empty){bottom:calc(84px + var(--hud-b))}
+/* Menu windows on phones: leave a margin all round and clear the notch and home bar, so no window fills the whole screen. */
+:root{--safe-l:env(safe-area-inset-left,0px);--safe-r:env(safe-area-inset-right,0px);--safe-t:env(safe-area-inset-top,0px);--safe-b:env(safe-area-inset-bottom,0px)}
+@media(max-width:960px),(max-height:560px){
+ :root{--sheet-gap-x:max(20px,calc(max(var(--safe-l),var(--safe-r)) + 14px));--sheet-gap-y:max(12px,calc(max(var(--safe-t),var(--safe-b)) + 4px))}
+ :root :is(#backpack,#save-menu,#skills-sheet,#codex-sheet,#trade-sheet,#quest-sheet,#well-sheet,#radio-sheet,#players-sheet,#settings-menu,#controls-help,#hud-menu-sheet){max-width:calc(100vw - 2 * var(--sheet-gap-x));max-height:calc(100dvh - 2 * var(--sheet-gap-y))}
+ :root #codex-sheet{height:calc(100dvh - 2 * var(--sheet-gap-y))}
+}
