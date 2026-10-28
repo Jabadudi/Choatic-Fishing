@@ -1,6 +1,6 @@
 import {practise} from './skills.js';
 import {PERMANENT_ITEMS} from './inventory.js';
-import {rodReady,createStory,currentScene,inspectStory,advanceStory,storyObjective,updateStory,inlandUnlocked,storyTransitionAllowed,onStoryAreaChange} from './story.js';
+import {rodReady,createStory,currentScene,inspectStory,advanceStory,skipStory,storyObjective,updateStory,inlandUnlocked,storyTransitionAllowed,onStoryAreaChange} from './story.js';
 import {nearbyDrop,dropItem} from './drops.js';
 import {createQuests,maraQuestDialogue} from './quests.js';
 import {questFor} from './side-quests.js';
@@ -50,6 +50,7 @@ export class World {
   if(this.story){this.player.name='Eli';this.player.spriteId='eli';this.npcs=[];this.message=storyObjective(this);}
  }
  advanceStory(){return advanceStory(this);}
+ skipStory(){return skipStory(this);}
  familiarAction(id,action){return familiarAction(this,id,action);}
  get animals(){return [...this.rabbits,...this.wildlife];}
  get fishing(){return this.player.fishing;}get progression(){return this.player.progression;}get inventory(){return this.player.inventory;}

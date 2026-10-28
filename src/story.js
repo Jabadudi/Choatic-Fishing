@@ -192,6 +192,12 @@ export function advanceStory(w){
  if(scene==='ch5-sleep'&&s.stage==='ch5-sleep'){s.stage='ch5-morning';s.guide=chapterFiveGuide('ch5-morning');Object.assign(w.player,LODGE_WAKE_SPOT,{vx:0,vy:0});w.npcs=createStoryNpcs(s,w.elapsed);}
  w.message=storyObjective(w);return true;
 }
+// Skip turns every remaining page in one go, so each finished scene still sets its flags, items and stage. It stops at scripted action pages, which play out on their own.
+export function skipStory(w){
+ let turned=0;
+ while(currentScene(w)&&!currentScene(w).action&&turned<1000){advanceStory(w);turned++;}
+ return turned>0;
+}
 export function createStoryNpcs(story,elapsed=0){
  if(!cabinDamaged(story)||story.stage==='storm')return [];
  const position=story.guide||{x:1850,y:1640};
