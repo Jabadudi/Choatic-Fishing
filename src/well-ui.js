@@ -3,7 +3,7 @@ import {FAMILIARS} from './familiars.js';
 import {WELL_POOLS,POOL_NAMES,PITY,MAX_DRAWS,STONE_PRICE,SHARD_COUNTS,SHARD_CAP,WELL_ODDS,LEGENDARY_REFUND,drawWell,buyWishstone,familiarPool,wishstonesLabel,wellOpen,poolRates} from './wishing-well.js';
 import {marksLabel,marksOf} from './trade.js';
 import {markIcon} from './trade-ui.js';
-import {setItemIcon} from './item-icons.js';
+import {setItemIcon,ITEM_ART} from './item-icons.js';
 import {VIEW,planSummon,drawSummon,summonLabels,loadSummonArt} from './well-summon.js';
 const svg=(body,size=24)=>`<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
 // A stone well: rim, posts and a little roof.
@@ -13,25 +13,39 @@ export const stoneIcon=(size=18)=>`<span class="wishstone-icon" style="width:${s
 const percent=n=>`${Math.round(n*100)}%`;
 // Finer percentages for the details page: 12%, 13.75%, 0.2%.
 const exact=n=>`${+(n*100).toFixed(2)}%`;
-const ODDS_TEXT=`Common ${percent(1-Object.values(WELL_ODDS).reduce((a,b)=>a+b,0))} · Uncommon ${percent(WELL_ODDS.uncommon)} · Rare ${percent(WELL_ODDS.rare)} · Epic ${percent(WELL_ODDS.epic)} · Legendary ${percent(WELL_ODDS.legendary)}`;
+const ODDS={common:1-Object.values(WELL_ODDS).reduce((a,b)=>a+b,0),...WELL_ODDS};
 const POOL_TEXT={
  artifacts:'Every draw is an artifact. The rarity roll decides how strong it is. Three copies of one rarity still combine in the backpack.',
  familiars:`Every draw is familiar shards for one creature, even one you have not met yet. The rarity decides how many: ${Object.values(SHARD_COUNTS).join(', ')}.`
 };
+// Each pool is shown as a painted banner with a few of its prizes up front.
+const BANNERS={
+ artifacts:{kicker:'Artifact pool',name:'Relics of the Sunken Hall',featured:[
+  {name:'Heart of Black Light',x:58,y:46,size:128,glow:'var(--r-legendary)'},{name:'Lodestone',x:28,y:66,size:84,glow:'var(--r-epic)'},{name:'Stag Crown',x:84,y:68,size:84,glow:'var(--r-rare)'}]},
+ familiars:{kicker:'Familiar pool',name:'Guardians of the Wilds',featured:[
+  {id:'moonfang',x:56,y:44,size:150,glow:'#9fd8ff'},{id:'rimejaw',x:24,y:66,size:104,glow:'#8fe3ff'},{id:'flitlynx',x:86,y:66,size:104,glow:'#ffe39a'}]}
+};
+const STARS={common:1,uncommon:2,rare:3,epic:4,legendary:5};
 export function mountWell({getWorld,onOpen,onClose}){
  const dialog=document.createElement('dialog');dialog.id='well-sheet';dialog.setAttribute('aria-labelledby','well-title');
- dialog.innerHTML=`<div class="backpack-frame"><div class="backpack-heading"><span class="backpack-emblem">${svg(WELL,40)}</span><h2 id="well-title">The Wishing Well</h2><p class="backpack-capacity well-purse"><span class="well-stones">${stoneIcon(20)}<span class="well-count"></span></span><span class="well-marks">${markIcon(18)}<span class="well-count"></span></span></p><button class="backpack-close" aria-label="Close the well">${svg('<path d="M6 6l12 12M18 6L6 18" stroke-width="2.4"/>',26)}</button></div>
-<div class="well-tabs" role="tablist" aria-label="Pools">${WELL_POOLS.map(pool=>`<button type="button" role="tab" class="well-tab" data-pool="${pool}" aria-selected="false">${POOL_NAMES[pool]}</button>`).join('')}</div>
-<div class="well-body"><section class="well-side" aria-label="Draw"><p class="well-pool-text"></p><p class="well-odds"></p>
+ dialog.innerHTML=`<div class="wish-frame"><div class="wish-top"><h2 id="well-title" class="wish-title"><span class="wish-emblem">${svg(WELL,26)}</span>The Wishing Well</h2>
+<div class="well-tabs wish-tabs" role="tablist" aria-label="Pools">${WELL_POOLS.map(pool=>`<button type="button" role="tab" class="well-tab" data-pool="${pool}" aria-selected="false"><span>${POOL_NAMES[pool]}</span></button>`).join('')}</div>
+<p class="well-purse"><span class="wish-pill well-stones" title="Wishstones">${stoneIcon(18)}<span class="well-count"></span></span><span class="wish-pill well-marks" title="Marks">${markIcon(18)}<span class="well-count"></span></span></p>
+<button class="backpack-close wish-close" aria-label="Close the well">${svg('<path d="M6 6l12 12M18 6L6 18" stroke-width="2.4"/>',22)}</button></div>
+<div class="wish-stage"><section class="wish-banner" aria-labelledby="wish-name"><div class="wish-banner-text"><p class="wish-kicker"></p><h3 class="wish-name" id="wish-name"></h3><p class="well-pool-text"></p><p class="well-odds"></p>
 <div class="well-pity" data-rarity="rare"><div class="well-pity-row"><span>Rare or better within</span><b class="pity-rare"></b></div><div class="well-bar"><i class="bar-rare"></i></div></div>
-<div class="well-pity" data-rarity="legendary"><div class="well-pity-row"><span>Legendary within</span><b class="pity-legendary"></b></div><div class="well-bar"><i class="bar-legendary"></i></div></div>
-<button type="button" class="well-details-toggle" aria-expanded="false">Rates, prizes and pity</button>
-<div class="well-buttons"><button type="button" class="trade-action well-draw" data-count="1">Draw once<small>${wishstonesLabel(1)}</small></button><button type="button" class="trade-action well-draw" data-count="${MAX_DRAWS}">Draw ${MAX_DRAWS}<small>${wishstonesLabel(MAX_DRAWS)}</small></button><button type="button" class="trade-action well-buy">Buy a stone<small>${marksLabel(STONE_PRICE)}</small></button></div></section>
-<section class="well-main" aria-label="What the well brought up"><h3 class="trade-column-title">What the well brought up</h3><ul class="well-results"></ul></section><section class="well-main well-details" aria-label="Rates, prizes and pity" hidden></section></div>
-<p class="trade-note well-note" aria-live="polite"></p><div class="well-summon" hidden><canvas class="well-summon-canvas" aria-label="Eli throws the Wishstones into the well, and fish come to eat them"></canvas><button type="button" class="trade-action well-skip">Skip</button></div></div>`;
+<div class="well-pity" data-rarity="legendary"><div class="well-pity-row"><span>Legendary within</span><b class="pity-legendary"></b></div><div class="well-bar"><i class="bar-legendary"></i></div></div></div>
+<div class="wish-featured" aria-hidden="true"></div></section>
+<section class="well-main wish-results-view" aria-label="What the well brought up" hidden><div class="wish-results-head"><h3 class="trade-column-title">What the well brought up</h3><button type="button" class="wish-link wish-done">Back to the well</button></div><ul class="well-results"></ul></section>
+<section class="well-main well-details" aria-label="Rates, prizes and pity" hidden></section></div>
+<div class="wish-bottom"><button type="button" class="wish-link well-buy">Buy a stone<small>${markIcon(14)}${STONE_PRICE}</small></button><button type="button" class="wish-link well-details-toggle" aria-expanded="false">Details</button><button type="button" class="wish-link wish-last" hidden>Last draw</button>
+<p class="trade-note well-note" aria-live="polite"></p>
+<div class="wish-draws"><button type="button" class="well-draw" data-count="1">Draw ×1<small>${stoneIcon(14)}× 1</small></button><button type="button" class="well-draw" data-count="${MAX_DRAWS}">Draw ×${MAX_DRAWS}<small>${stoneIcon(14)}× ${MAX_DRAWS}</small></button></div></div>
+<div class="well-summon" hidden><canvas class="well-summon-canvas" aria-label="Eli throws the Wishstones into the well, and fish come to eat them"></canvas><button type="button" class="trade-action well-skip">Skip</button></div></div>`;
  document.body.append(dialog);
  const $=selector=>dialog.querySelector(selector),results=$('.well-results'),note=$('.well-note');
- let pool='artifacts',lastKey='',shown={artifacts:[],familiars:[]},details=false;
+ let pool='artifacts',lastKey='',shown={artifacts:[],familiars:[]},details=false,showing=false;
+ $('.well-odds').replaceChildren(...RARITIES.map(r=>{const chip=el('span','wish-chip',`${RARITY_NAMES[r]} ${percent(ODDS[r])}`);chip.dataset.rarity=r;return chip;}));
  function card(result){
   const item=el('li','well-card');item.dataset.rarity=result.rarity;
   if(['epic','legendary'].includes(result.rarity))item.classList.add('well-card-big');
@@ -41,6 +55,7 @@ export function mountWell({getWorld,onOpen,onClose}){
   if(result.refund)item.append(el('small','well-card-extra',`+${wishstonesLabel(result.refund)}`));
   else if(result.kind==='artifact'&&result.copies>=3)item.append(el('small','well-card-extra','Ready to combine'));
   else if(result.kind==='shards')item.append(el('small','well-card-extra',`${result.shards} ${result.shards===1?'shard':'shards'} now`));
+  item.prepend(el('span','well-card-stars','★'.repeat(STARS[result.rarity])));
   if(result.isNew){item.append(el('span','well-card-new','NEW'));}
   item.setAttribute('aria-label',result.kind==='shards'?`${RARITY_NAMES[result.rarity]}: ${label}`:`${itemLabel(artifactItem(result.artifact,result.rarity))}${result.refund?`, returned as ${wishstonesLabel(result.refund)}`:''}`);
   return item;
@@ -81,21 +96,30 @@ export function mountWell({getWorld,onOpen,onClose}){
  }
  function refresh(){
   const world=getWorld(),well=world.well,pity=well.pity[pool],empty=pool==='familiars'&&!familiarPool(world).length,open=wellOpen(world);
-  const key=JSON.stringify([pool,well.stones,marksOf(world),pity,shown[pool].length,empty,open,details,details&&familiarPool(world)]);if(key===lastKey)return;lastKey=key;
+  const key=JSON.stringify([pool,well.stones,marksOf(world),pity,shown[pool].length,empty,open,details,showing,details&&familiarPool(world)]);if(key===lastKey)return;lastKey=key;
   $('.well-stones .well-count').textContent=wishstonesLabel(well.stones);$('.well-marks .well-count').textContent=marksLabel(marksOf(world));
   for(const tab of dialog.querySelectorAll('.well-tab'))tab.setAttribute('aria-selected',String(tab.dataset.pool===pool));
   $('.well-pool-text').textContent=empty?'Every familiar already has all the shards it can use.':POOL_TEXT[pool];
-  $('.well-odds').textContent=ODDS_TEXT;
+  const banner=$('.wish-banner'),info=BANNERS[pool];
+  if(banner.dataset.pool!==pool){
+   banner.dataset.pool=pool;$('.wish-kicker').textContent=info.kicker;$('.wish-name').textContent=info.name;
+   $('.wish-featured').replaceChildren(...info.featured.map(f=>{const hero=el('figure','wish-hero'),img=el('img');
+    img.src=f.id?`assets/codex/${f.id}.png`:ITEM_ART[f.name];img.alt='';img.draggable=false;hero.style.cssText=`left:${f.x}%;top:${f.y}%;--s:${f.size}px;--glow:${f.glow};margin:0`;
+    hero.append(img,el('b',null,f.id?FAMILIARS[f.id].name:f.name));return hero;}));
+  }
   const rareLeft=PITY.rare-pity.rare,legendaryLeft=PITY.legendary-pity.legendary;
   $('.pity-rare').textContent=`${rareLeft} ${rareLeft===1?'draw':'draws'}`;$('.bar-rare').style.width=`${pity.rare/PITY.rare*100}%`;
   $('.pity-legendary').textContent=`${legendaryLeft} ${legendaryLeft===1?'draw':'draws'}`;$('.bar-legendary').style.width=`${pity.legendary/PITY.legendary*100}%`;
   for(const button of dialog.querySelectorAll('.well-draw')){const n=Number(button.dataset.count);button.disabled=!open||empty||well.stones<n;button.title=well.stones<n?`You need ${wishstonesLabel(n-well.stones)} more`:'';}
   const buy=$('.well-buy');buy.disabled=!open||marksOf(world)<STONE_PRICE;buy.title=marksOf(world)<STONE_PRICE?`You need ${marksLabel(STONE_PRICE-marksOf(world))} more`:'';
-  const toggle=$('.well-details-toggle');toggle.textContent=details?'Back to my draws':'Rates, prizes and pity';toggle.setAttribute('aria-expanded',String(details));
-  $('.well-main:not(.well-details)').hidden=details;$('.well-details').hidden=!details;if(details)renderDetails();
+  const toggle=$('.well-details-toggle'),drawn=showing&&shown[pool].length>0;toggle.textContent=details?'Back to the well':'Details';toggle.setAttribute('aria-expanded',String(details));
+  banner.hidden=details||drawn;$('.wish-results-view').hidden=details||!drawn;$('.well-details').hidden=!details;if(details)renderDetails();
+  $('.wish-last').hidden=details||drawn||!shown[pool].length;
   results.replaceChildren(...(shown[pool].length?shown[pool].map(card):[el('li','trade-empty','Drop a Wishstone in and see what comes up.')]));
  }
- for(const tab of dialog.querySelectorAll('.well-tab'))tab.onclick=()=>{pool=tab.dataset.pool;lastKey='';refresh();};
+ for(const tab of dialog.querySelectorAll('.well-tab'))tab.onclick=()=>{pool=tab.dataset.pool;showing=false;lastKey='';refresh();};
+ $('.wish-done').onclick=()=>{showing=false;lastKey='';refresh();};
+ $('.wish-last').onclick=()=>{showing=true;details=false;lastKey='';refresh();};
  $('.well-details-toggle').onclick=()=>{details=!details;lastKey='';refresh();};
  // The summon animation plays over the window; the cards appear when it ends or is skipped.
  const stage=$('.well-summon'),screen=$('.well-summon-canvas');
@@ -124,7 +148,7 @@ export function mountWell({getWorld,onOpen,onClose}){
   const world=getWorld(),drawn=drawWell(world,pool,Number(button.dataset.count)),message=world.message;
   if(!drawn.ok){note.textContent=message;lastKey='';refresh();return;}
   note.textContent='Eli throws the stones into the well…';lastKey='';refresh();
-  play(drawn.results,()=>{shown[pool]=drawn.results;details=false;const well=$('.well-results');well.classList.remove('well-splash');void well.offsetWidth;well.classList.add('well-splash');note.textContent=message;lastKey='';refresh();});
+  play(drawn.results,()=>{shown[pool]=drawn.results;details=false;showing=true;const well=$('.well-results');well.classList.remove('well-splash');void well.offsetWidth;well.classList.add('well-splash');note.textContent=message;lastKey='';refresh();});
  };
  $('.well-buy').onclick=()=>{const world=getWorld();buyWishstone(world);note.textContent=world.message;lastKey='';refresh();};
  function open(){
@@ -133,7 +157,7 @@ export function mountWell({getWorld,onOpen,onClose}){
   refresh();dialog.showModal();
  }
  $('.backpack-close').onclick=()=>dialog.close();
- dialog.addEventListener('close',()=>{if(playing){cancelAnimationFrame(playing.frame);playing=null;stage.hidden=true;}shown={artifacts:[],familiars:[]};details=false;onClose();});
+ dialog.addEventListener('close',()=>{if(playing){cancelAnimationFrame(playing.frame);playing=null;stage.hidden=true;}shown={artifacts:[],familiars:[]};details=false;showing=false;onClose();});
  dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close();}});
  return {get open(){return dialog.open;},get summoning(){return !!playing;},skip:stop,show:open,close(){if(dialog.open)dialog.close();},update(visible){if(!visible&&dialog.open)dialog.close();if(dialog.open)refresh();}};
 }
