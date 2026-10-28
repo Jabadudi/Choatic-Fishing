@@ -6,6 +6,7 @@ import {setItemIcon} from './item-icons.js';
 import {bindingLabel} from './keybinds.js';
 import {regionAt} from './wilds.js';
 import {FAMILIARS} from './familiars.js';
+import {wishstonesLabel} from './wishing-well.js';
 const svg=(body,size=24)=>`<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
 const el=(tag,className,text)=>{const node=document.createElement(tag);if(className)node.className=className;if(text!==undefined)node.textContent=text;return node;};
 const ICONS={
@@ -50,7 +51,9 @@ export function mountHudShell({act,examine,openAtlas,openQuests,openWell,openRad
  // Existing pieces move into the new layout; their own modules keep updating them by id.
  const map=$('hud-map'),where=map.querySelector('.hud-where');
  map.prepend($('open-atlas'));where.append($('region-name'),$('discovery-dots'),$('discovery-count'));
- const icons=$('hud-icons');icons.prepend($('purse-hud'));
+ const icons=$('hud-icons'),wallet=el('div');wallet.id='hud-wallet';
+ const stones=el('p');stones.id='hud-stones';stones.title='Wishstones';stones.innerHTML='<span class="wishstone-icon" style="width:14px;height:11px" aria-hidden="true"></span><span></span>';
+ wallet.append($('purse-hud'),stones);icons.prepend(wallet);
  for(const id of ['open-quests','open-codex','open-skills','open-backpack'])if($(id)){$(id).classList.add('hud-icon');icons.append($(id));}
  const vitals=$('hud-vitals');vitals.insertBefore($('player-hp'),$('hud-xp'));vitals.append(document.querySelector('.dash-mini'));
  const hotbar=document.querySelector('.hotbar'),pager=el('button','hotbar-pager','1–4');pager.id='hotbar-pager';pager.setAttribute('aria-label','Show hotbar slots 5 to 7');hotbar.append(pager);
@@ -110,6 +113,7 @@ export function mountHudShell({act,examine,openAtlas,openQuests,openWell,openRad
     card.hidden=!text;if(!text)continue;const {title,body}=splitObjective(text,fallback);setText(card.querySelector('b'),title);setText(card.querySelector('span'),body);
    }
    $('hud-well').hidden=!world.well?.awake;
+   const stoneCount=String(world.well?.stones||0);setText(stones.lastChild,stoneCount);stones.setAttribute('aria-label',wishstonesLabel(world.well?.stones||0));
    // Hotbar paging follows the selected slot on phones.
    const slot=world.inventory.selected;if(slot!==selected){selected=slot;const want=slot>=5?2:1;if(want!==page){page=want;draw();}}
    // Action buttons: the selected item on Use, charges on the specials, key hints on desktop.

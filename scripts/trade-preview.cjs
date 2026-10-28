@@ -19,7 +19,7 @@ const assert=require('node:assert/strict');
   for(const name of ['Deer Hide','Deer Hide','Deer Antlers','Rabbit Pelt','Turtle Shell','River Pearl'])v.inventory.receive({name});v.inventory.receive({name:'Hunting Bow',category:'weapons'});v.inventory.marks=7;
   const smith=v.npcs.find(n=>n.id==='village-smith');Object.assign(v.player,{x:smith.x+30,y:smith.y+20});});
  await page.waitForTimeout(400);
- assert.equal(await page.locator('#purse-hud span').textContent(),'7 marks');await shot('00-hud-purse');
+ assert.equal(await page.locator('#purse-hud span').textContent(),'7');await shot('00-hud-purse');
  await page.locator('#open-backpack').click();await page.locator('#backpack[open]').waitFor();await page.waitForTimeout(300);
  assert.equal(await page.locator('.backpack-marks span').textContent(),'7 marks');await shot('01-backpack-purse');
  await page.locator('#backpack .backpack-close').click();await page.waitForTimeout(200);

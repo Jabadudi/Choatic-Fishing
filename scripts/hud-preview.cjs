@@ -29,6 +29,7 @@ const SE={...PHONE,viewport:{width:667,height:375}};
  const vw=page.viewportSize();for(const [id,B] of boxes)if(B.x<0||B.y<0||B.x+B.width>vw.width+1||B.y+B.height>vw.height+1)errors.push(`${label}: ${id} is off screen`);
  }
  const phone=await open(PHONE,'phone');
+ await phone.evaluate(()=>{__qa.world.well.stones=23;});await phone.waitForTimeout(150);assert.equal(await phone.locator('#hud-stones').innerText(),'23');assert.match(await phone.locator('#purse-hud').innerText(),/37/);
  await noOverlap(phone,'phone');await phone.screenshot({path:`${out}/01-phone-explore.png`});
  // Pickups slide in on the left; the first one ever found gets a card.
  await phone.evaluate(()=>{__qa.world.inventory.receive({name:'River Pearl',description:'A small pearl, faintly warm, found under the shell.'});__qa.world.inventory.receive({name:'Sardine'});});
