@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {existsSync} from 'node:fs';
 import {createPreferenceStore,normalizePreferences,DEFAULT_PREFERENCES,channelVolume} from '../src/preferences.js';
 import {cutscenePresentation} from '../src/cutscene-presentation.js';
 test('preferences reject malformed fields and clamp channel levels independently',()=>{
@@ -32,7 +33,7 @@ test('cursor choice is kept, unknown styles fall back to the system pointer',asy
  assert.equal(normalizePreferences({cursor:'url(evil)'}).cursor,'system');
  assert.equal(cursorValue('system'),'');
  for(const c of CURSOR_STYLES.filter(c=>c.id!=='system')){
-  const [x,y]=c.hotspot;assert.ok(x>=0&&x<32&&y>=0&&y<32,c.id);
-  assert.match(cursorValue(c.id),new RegExp(`^url\\("data:image/svg\\+xml,[^"]+"\\) ${x} ${y}, auto$`));
+  const [x,y]=c.hotspot;assert.ok(x>=0&&x<32&&y>=0&&y<32,c.id);assert.ok(existsSync(new URL(`../${c.art}`,import.meta.url)),c.art);
+  assert.match(cursorValue(c.id),new RegExp(`^url\\("assets/cursors/${c.id}\\.png"\\) ${x} ${y}, url\\("data:image/svg\\+xml,[^"]+"\\) ${x} ${y}, auto$`));
  }
 });
