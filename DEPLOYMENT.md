@@ -36,4 +36,24 @@ Players can optionally sign in with Google. Every save is also copied to their a
 - Auth: Google provider enabled. `jabadudi.github.io` must stay in Authentication → Settings → Authorized domains (add any new domain the game is served from, `localhost` is allowed by default).
 - Firestore: one document per player at `saves/{uid}` holding the newest save (`current`) and a set-aside journey (`previous`), each as save-file JSON text. Uploads happen at most once a minute, immediately on manual saves, and when the tab is hidden.
 - Security rules: `firestore.rules` lets each player read and write only their own document. After changing it, paste it into Firestore → Rules in the Firebase console and click Publish.
-- The SDK is bundled into `vendor/firebase.js` (see `vendor/FIREBASE-LICENSE.txt` for how to rebuild it).
+- The SDK is bundled into `vendor/firebase-12.19.0-db.js` (see `vendor/FIREBASE-LICENSE.txt` for how to rebuild it). Give a rebuilt bundle a new file name so phones do not keep an old cached copy.
+
+
+## Shared world (multiplayer presence)
+
+Signed-in players can open **Players**, pick a nickname and choose **Go online**. Players who are online see each other walking in the same area, with name tags, and see everyone's area on the Players list. Story, animals, drops and progress stay in each player's own game; only nickname, area, AFK and position are shared. Rooms (the cabin, the chief's house, the guest lodge) share no position.
+
+- Backend: Firebase Realtime Database in the same project. `databaseURL` in `src/cloud-save.js` assumes the default database in the United States (`https://the-wilds-ce2d5-default-rtdb.firebaseio.com`). If the database is created in another region, copy the URL shown at the top of the Realtime Database page into `databaseURL`.
+- Data: `presence/{uid}` (nickname, area, AFK), `pos/{area}/{uid}` (x, y, facing, walking), `profiles/{uid}` (nickname) and `nicknames/{name}` (which account owns a name). The server removes presence and position when a player disconnects.
+- Security rules: `database.rules.json`. Each player can write only their own entries, nicknames are unique and checked, positions are range checked, and signed-out visitors can read nothing.
+- Traffic: a moving player sends about four position updates a second, only while moving, and players only receive positions for the area they are in. The free Spark plan allows 100 simultaneous connections and 360 MB downloaded a day.
+
+### One-time setup
+
+1. Firebase console → project `the-wilds-ce2d5` → Build → **Realtime Database** → Create Database. Choose **United States (us-central1)** and **Start in locked mode**.
+2. Open the **Rules** tab, replace everything with the contents of `database.rules.json`, and click **Publish**.
+3. Nothing else changes: Google sign-in and Firestore stay as they are.
+
+### Verification
+
+`scripts/hub-preview.cjs` runs two or three browsers against the Realtime Database emulator with the real rules: nickname checks, seeing each other, walking with smoothing, AFK, changing areas, phone landscape, and going offline. The rules were also exercised directly against the emulator (claim, rename, impersonation, out-of-range positions, reads while signed out).

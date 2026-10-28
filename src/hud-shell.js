@@ -54,7 +54,7 @@ export function mountHudShell({act,examine,openAtlas,openQuests,openWell,openRad
  const icons=$('hud-icons'),wallet=el('div');wallet.id='hud-wallet';
  const stones=el('p');stones.id='hud-stones';stones.title='Wishstones';stones.innerHTML='<span class="wishstone-icon" style="width:14px;height:11px" aria-hidden="true"></span><span></span>';
  wallet.append($('purse-hud'),stones);icons.prepend(wallet);
- for(const id of ['open-quests','open-codex','open-skills','open-backpack'])if($(id)){$(id).classList.add('hud-icon');icons.append($(id));}
+ for(const id of ['open-players','open-quests','open-codex','open-skills','open-backpack'])if($(id)){$(id).classList.add('hud-icon');icons.append($(id));}
  const vitals=$('hud-vitals');vitals.insertBefore($('player-hp'),$('hud-xp'));vitals.append(document.querySelector('.dash-mini'));
  const hotbar=document.querySelector('.hotbar'),pager=el('button','hotbar-pager','1–4');pager.id='hotbar-pager';pager.setAttribute('aria-label','Show hotbar slots 5 to 7');hotbar.append(pager);
  let page=1,selected=0;
@@ -62,7 +62,7 @@ export function mountHudShell({act,examine,openAtlas,openQuests,openWell,openRad
  const draw=()=>{hotbar.classList.toggle('page-2',page===2);pager.textContent=page===1?'1–4 ▾':'5–7 ▴';pager.setAttribute('aria-label',page===1?'Show hotbar slots 5 to 7':'Show hotbar slots 1 to 4');};
  draw();
  // The menu launches every screen. Buttons that live elsewhere are clicked, so their own rules still apply.
- const ENTRIES=[['Backpack','open-backpack'],['Skills','open-skills'],['Index','open-codex'],['Quest log','open-quests'],['World Atlas',openAtlas,ICONS.atlas,'map'],['Radio',openRadio,ICONS.radio,'radio'],['Wishing Well',openWell,ICONS.well],['Save','open-saves',ICONS.save],['Settings','open-settings',ICONS.settings],['Full screen','toggle-fullscreen',ICONS.full]];
+ const ENTRIES=[['Backpack','open-backpack'],['Skills','open-skills'],['Index','open-codex'],['Quest log','open-quests'],['Players','open-players'],['World Atlas',openAtlas,ICONS.atlas,'map'],['Radio',openRadio,ICONS.radio,'radio'],['Wishing Well',openWell,ICONS.well],['Save','open-saves',ICONS.save],['Settings','open-settings',ICONS.settings],['Full screen','toggle-fullscreen',ICONS.full]];
  const grid=sheet.querySelector('.hud-sheet-grid');
  const entries=ENTRIES.map(([label,target,icon,key])=>{
   const button=el('button','hud-sheet-item');const source=typeof target==='string'?$(target):null;
