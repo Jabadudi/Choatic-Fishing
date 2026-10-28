@@ -1,0 +1,12 @@
+vendor/firebase.js bundles parts of the Firebase JavaScript SDK 12.19.0
+(firebase/app, firebase/auth, firebase/firestore/lite), built with esbuild.
+
+Copyright Google LLC
+Licensed under the Apache License, Version 2.0:
+https://www.apache.org/licenses/LICENSE-2.0
+Source: https://github.com/firebase/firebase-js-sdk
+
+Rebuild: npm i firebase@12.19.0 esbuild, then bundle an entry that re-exports
+initializeApp, getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect,
+getRedirectResult, signOut, onAuthStateChanged, getFirestore, doc, getDoc, setDoc
+with: esbuild entry.js --bundle --format=esm --minify --target=es2020 --outfile=firebase.js
