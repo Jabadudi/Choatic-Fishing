@@ -17,6 +17,10 @@ await collectImages('assets');
 const version=releaseFingerprint(files),bundle=`game-${version}`;
 await cp('src',`dist/${bundle}`,{recursive:true});
 const html=(await readFile('index.html','utf8')).replace('src/main.js',`${bundle}/main.js`).replace('href="style.css"',`href="style.css?v=${version}"`).replace('href="mobile.css"',`href="mobile.css?v=${version}"`).replace('href="dialogue.css"',`href="dialogue.css?v=${version}"`).replace('href="landscape.css"',`href="landscape.css?v=${version}"`).replace('href="hud.css"',`href="hud.css?v=${version}"`);
-await writeFile('dist/index.html',html);
+// Every module the game starts with is requested at once, instead of one import level per round trip.
+const startModules=new Set(),pending=['main.js'];
+while(pending.length){const name=pending.pop();if(startModules.has(name))continue;startModules.add(name);for(const [,dep] of (await readFile(`src/${name}`,'utf8')).matchAll(/(?:^|[;\s])import\s*(?:[\w{},*\s]+from\s*)?['"]\.\/([\w-]+\.js)['"]/g))pending.push(dep);}
+const preloads=[...startModules].map(name=>`<link rel="modulepreload" href="${bundle}/${name}">`).join('');
+await writeFile('dist/index.html',html.replace('</head>',`${preloads}</head>`));
 await writeFile('dist/.nojekyll','');
 console.log(`Static game built in dist/ (${version})`);

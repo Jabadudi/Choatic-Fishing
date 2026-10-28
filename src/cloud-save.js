@@ -1,4 +1,5 @@
 import {parseSave} from './save-format.js';
+import {titleArtReady} from './title-art.js';
 // Public web identifiers for the Firebase project; access is enforced by firestore.rules.
 export const FIREBASE_CONFIG={apiKey:'AIzaSyA-yPYfwn-f0Wlh0X0iCRxI-mSEvSQ5t2U',authDomain:'the-wilds-ce2d5.firebaseapp.com',projectId:'the-wilds-ce2d5',storageBucket:'the-wilds-ce2d5.firebasestorage.app',messagingSenderId:'222729712969',appId:'1:222729712969:web:7de395a77e9d83bf381698',databaseURL:'https://the-wilds-ce2d5-default-rtdb.firebaseio.com'};
 export const CLOUD_UPLOAD_INTERVAL=60000;
@@ -27,6 +28,8 @@ export function deviceLabel(nav=globalThis.navigator){
 // The SDK file name carries its contents, so a phone holding an older cached copy fetches the new one.
 export const FIREBASE_SDK='../vendor/firebase-12.19.0-db2.js';
 export async function firebaseBackend(config=FIREBASE_CONFIG){
+ // The SDK is the largest script; the menu art comes first.
+ await titleArtReady;
  const fb=await import(new URL(FIREBASE_SDK,import.meta.url));
  const app=fb.initializeApp(config),auth=fb.getAuth(app),db=fb.getFirestore(app),provider=new fb.GoogleAuthProvider();
  fb.getRedirectResult(auth).catch(()=>{});
