@@ -207,14 +207,16 @@ function staticArea(ctx,left,top,width,height,id){
 
  }
 }
-const chunks=new Map(),CHUNK=512,MAX_CHUNKS=40,AHEAD=CHUNK/2;
+// Each chunk also paints a thin strip of its neighbours, so at fractional zoom or camera offsets the
+// edges overlap instead of leaving a half-covered pixel row where the backdrop shows through as a line.
+const chunks=new Map(),CHUNK=512,SEAM=2,MAX_CHUNKS=40,AHEAD=CHUNK/2;
 export const clearTerrainCache=()=>chunks.clear();
 // Image loads arrive in bursts, so they mark the cache stale and the next frame repaints once instead of once per image.
 let stale=false;const markStale=()=>{stale=true;};
 onPropLoad(markStale);
 export const cachedChunkCount=()=>chunks.size;
 function buildChunk(key,cx,cy,id){
- const canvas=document.createElement('canvas');canvas.width=CHUNK;canvas.height=CHUNK;const c=canvas.getContext('2d');c.translate(-cx*CHUNK,-cy*CHUNK);staticArea(c,cx*CHUNK,cy*CHUNK,CHUNK,CHUNK,id);
+ const canvas=document.createElement('canvas');canvas.width=CHUNK+2*SEAM;canvas.height=CHUNK+2*SEAM;const c=canvas.getContext('2d');c.translate(SEAM-cx*CHUNK,SEAM-cy*CHUNK);staticArea(c,cx*CHUNK-SEAM,cy*CHUNK-SEAM,CHUNK+2*SEAM,CHUNK+2*SEAM,id);
  chunks.set(key,canvas);if(chunks.size>MAX_CHUNKS)chunks.delete(chunks.keys().next().value);return canvas;
 }
 function drawChunks(ctx,view,id){
@@ -223,7 +225,7 @@ function drawChunks(ctx,view,id){
  for(let cy=Math.floor(view.top/CHUNK);cy<=Math.floor(view.bottom/CHUNK);cy++)for(let cx=Math.floor(view.left/CHUNK);cx<=Math.floor(view.right/CHUNK);cx++){
   const key=`${id}:${cx},${cy}`;let canvas=chunks.get(key);
   if(!canvas)canvas=buildChunk(key,cx,cy,id);
-  else{chunks.delete(key);chunks.set(key,canvas);}ctx.drawImage(canvas,cx*CHUNK,cy*CHUNK);
+  else{chunks.delete(key);chunks.set(key,canvas);}ctx.drawImage(canvas,cx*CHUNK-SEAM,cy*CHUNK-SEAM);
  }
  prefetchChunks(view,id);
 }
