@@ -89,7 +89,7 @@ export function mountWell({getWorld,onOpen,onClose}){
  $('.well-buy').onclick=()=>{const world=getWorld();buyWishstone(world);note.textContent=world.message;lastKey='';refresh();};
  function open(){
   const world=getWorld();if(!wellOpen(world)||dialog.open)return;
-  lastKey='';onOpen();loadSummonArt();note.textContent='Eli looks into the well. The water glows the same blue as the Region Core. Choose a pool and drop a stone in.';
+  lastKey='';onOpen();loadSummonArt();note.textContent='Eli looks into the well. The water glows a soft blue. Choose a pool and drop a stone in.';
   refresh();dialog.showModal();
  }
  $('.backpack-close').onclick=()=>dialog.close();

@@ -15,38 +15,39 @@ export const WELL_ODDS=Object.freeze({uncommon:.28,rare:.12,epic:.04,legendary:.
 export const SHARD_COUNTS=Object.freeze({common:1,uncommon:2,rare:5,epic:10,legendary:25});
 // Every 10th draw without a Rare or better is one. After 50 draws without a Legendary its chance climbs 6% a draw, and draw 70 is certain.
 export const PITY=Object.freeze({rare:10,softLegendary:50,legendaryStep:.06,legendary:70});
-export const MAX_DRAWS=10,STONE_PRICE=40,WAKE_GIFT=10,LEGENDARY_REFUND=5,STONES_LIMIT=1e6;
+export const MAX_DRAWS=10,STONE_PRICE=40,LEGENDARY_REFUND=5,STONES_LIMIT=1e6;
+// Every journey starts with this many Wishstones at the well.
+export const STARTING_STONES=38;
 // A creature whose familiar has this many shards has nothing left to gain and leaves the Familiar pool.
 export const SHARD_CAP=100;
-// What Eli earns once the well is awake. Each is counted from world state, so nothing is missed and nothing pays twice.
+// What Eli earns on top of the starting stones. Each is counted from world state, so nothing is missed and nothing pays twice.
 export const EARNINGS=Object.freeze({chapter:5,shiny:3,sideQuest:2,discovery:1});
 export const FOUND_STONE_CHANCE=1/150;
-// The stage that closes each chapter. The well wakes on the last of them.
+// The stage that closes each chapter.
 const CHAPTER_ENDS=['complete','ch2-complete','ch3-complete','ch4-complete','ch5-morning'];
-const WAKE_STAGE=CHAPTER_ENDS.at(-1);
 const WELL=VILLAGE_PROPS.find(p=>p.kind==='well');
 export const wishstonesLabel=n=>`${n} ${n===1?'Wishstone':'Wishstones'}`;
 const freshPity=()=>({rare:0,legendary:0});
 export const createWell=()=>({awake:false,stones:0,credited:0,pity:{artifacts:freshPity(),familiars:freshPity()}});
 const stageIndex=story=>STORY_STAGES.indexOf(story.stage);
-// Journeys without the story have no Region Core to wait for.
-export const wellUnlocked=world=>!!world.adventure&&(!world.story||stageIndex(world.story)>=STORY_STAGES.indexOf(WAKE_STAGE));
+// The well stands apart from the story: it is open on every journey from the first step.
+export const wellUnlocked=world=>!!world.adventure;
 export const nearWell=world=>!!world.well?.awake&&world.areaId==='village'&&Math.hypot(world.player.x-WELL.x,world.player.y-WELL.y)<110;
 export function wellLedger(world){
  const chapters=world.story?CHAPTER_ENDS.filter(stage=>stageIndex(world.story)>=STORY_STAGES.indexOf(stage)).length:0;
  const shinies=Object.values(world.hunting?.shiny?.hunted||{}).reduce((a,b)=>a+b,0);
  const quests=Object.values(world.quests||{}).filter(q=>q?.status==='complete').length;
- return WAKE_GIFT+EARNINGS.chapter*chapters+EARNINGS.shiny*shinies+EARNINGS.sideQuest*quests+EARNINGS.discovery*(world.discovered?.size||0)+EARNINGS.discovery*revealedCount(world);
+ return STARTING_STONES+EARNINGS.chapter*chapters+EARNINGS.shiny*shinies+EARNINGS.sideQuest*quests+EARNINGS.discovery*(world.discovered?.size||0)+EARNINGS.discovery*revealedCount(world);
 }
 const addStones=(well,n)=>{well.stones=Math.min(STONES_LIMIT,well.stones+n);};
-// Wakes the well when its chapter ends, then pays out whatever Eli has earned since the last check.
-// Progress made before the well woke is covered by the welcome gift, so old journeys do not flood with stones.
+// Wakes the well with the starting stones, then pays out whatever Eli has earned since the last check.
+// A saved journey that reached the well later is not paid again for progress made before it woke.
 export function updateWell(world){
  const well=world.well;if(!well||!wellUnlocked(world))return;
  const ledger=wellLedger(world),woke=!well.awake;
  if(woke){
-  well.awake=true;well.credited=ledger-WAKE_GIFT;
-  world.message=`${world.message?`${world.message} · `:''}The old well on Willow Commons is glowing the same blue as the Region Core. ${wishstonesLabel(WAKE_GIFT)} wait at its rim.`;
+  well.awake=true;well.credited=ledger-STARTING_STONES;
+  world.message=`${world.message?`${world.message} · `:''}The old well on Willow Commons glows a soft blue. ${wishstonesLabel(STARTING_STONES)} wait at its rim.`;
  }
  const earned=ledger-well.credited;if(earned<=0)return;
  well.credited=ledger;addStones(well,earned);

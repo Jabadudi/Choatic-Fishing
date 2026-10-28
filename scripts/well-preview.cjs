@@ -1,4 +1,4 @@
-// Local integration preview of the Wishing Well: waking after Chapter 5, both pools, buying a stone and the phone layout.
+// Local integration preview of the Wishing Well: open from the start, both pools, buying a stone and the phone layout.
 const {chromium}=require('playwright');
 const assert=require('node:assert/strict');
 (async()=>{
@@ -14,11 +14,16 @@ const assert=require('node:assert/strict');
  const w=(fn,arg)=>page.evaluate(fn,arg);
  const shot=name=>page.screenshot({path:`${out}/${name}.png`});
  const scene=await w(()=>__qa.world.story.scene);for(let i=0;i<60&&await w(()=>__qa.world.story.scene)===scene;i++){await page.locator('#story-next').click();await page.waitForTimeout(40);}
+ // The well is open from the very start of a new journey, with its starting stones and its HUD button.
+ await page.waitForTimeout(300);
+ assert.equal(await w(()=>__qa.world.well.awake),true);assert.equal(await w(()=>__qa.world.well.stones),38);
+ assert.equal(await page.locator('#hud-well').isVisible(),true);await shot('00a-well-from-start');
  // Jump to the morning after Chapter 5 on Willow Commons, beside the well, having met a deer and an eel.
  await w(async()=>{const {createStoryNpcs}=await import('/src/story.js');const v=__qa.world;v.story.stage='ch5-morning';v.story.scene=null;v.story.lureSeen=v.story.photoSeen=true;v.areaId='village';v.npcs=createStoryNpcs(v.story,v.elapsed);
   v.codex.add('deer');v.codex.add('eel');v.inventory.marks=95;Object.assign(v.player,{x:1000,y:628});});
  await page.waitForTimeout(500);
- assert.equal(await w(()=>__qa.world.well.awake),true);assert.equal(await w(()=>__qa.world.well.stones),10);
+ // Jumping ahead pays for the finished chapters; start the draws from a round ten.
+ assert.ok(await w(()=>__qa.world.well.stones)>38);await w(()=>{__qa.world.well.stones=10;});
  assert.match(await page.locator('#inspect-place').textContent(),/Look into the Wishing Well/);await shot('00-well-prompt');
  await w(()=>__qa.world.inspect());await page.locator('#well-sheet[open]').waitFor();await page.waitForTimeout(300);
  assert.equal(await page.locator('.well-tab[aria-selected="true"]').textContent(),'Artifact pool');await shot('01-well-open');
