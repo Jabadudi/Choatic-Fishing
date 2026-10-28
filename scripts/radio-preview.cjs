@@ -6,6 +6,9 @@ function tone(seconds=6,rate=8000){
  const n=seconds*rate,data=Buffer.alloc(44+n*2);data.write('RIFF',0);data.writeUInt32LE(36+n*2,4);data.write('WAVEfmt ',8);data.writeUInt32LE(16,16);data.writeUInt16LE(1,20);data.writeUInt16LE(1,22);data.writeUInt32LE(rate,24);data.writeUInt32LE(rate*2,28);data.writeUInt16LE(2,32);data.writeUInt16LE(16,34);data.write('data',36);data.writeUInt32LE(n*2,40);
  for(let i=0;i<n;i++)data.writeInt16LE(Math.round(Math.sin(i/rate*2*Math.PI*440)*3000),44+i*2);return data;
 }
+// youtube.com is unreachable here, so a stand-in YouTube player shows where the real video window sits.
+const FAKE_YT=`window.YT={PlayerState:{PLAYING:1,PAUSED:2,ENDED:0},Player:function(host,o){const box=document.createElement('div');box.style.cssText='width:100%;height:100%;display:grid;place-items:center;background:linear-gradient(135deg,#3b2531,#1b2840);color:#fff;font:12px Arial';box.textContent='▶ YouTube video';host.replaceWith(box);let t=0,timer;const self=this;
+ Object.assign(this,{loadVideoById(){t=0;clearInterval(timer);timer=setInterval(()=>t+=.25,250);o.events.onStateChange({data:1});},playVideo(){o.events.onStateChange({data:1});},pauseVideo(){o.events.onStateChange({data:2});},stopVideo(){},setVolume(){},seekTo(){},getCurrentTime:()=>t,getDuration:()=>214,getVideoData:()=>({title:'Stand-in video',author:'YouTube'}),getPlaylist:()=>null,loadPlaylist(){self.loadVideoById();}});setTimeout(()=>o.events.onReady(),0);}};setTimeout(()=>window.onYouTubeIframeAPIReady&&window.onYouTubeIframeAPIReady(),0);`;
 (async()=>{
  process.env.PORT='5192';await import('../server.mjs');
  const out=process.env.OUT||'screenshots';
@@ -13,7 +16,7 @@ function tone(seconds=6,rate=8000){
  const page=await browser.newPage({viewport:{width:1365,height:900}}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
  page.on('response',r=>{if(r.status()>=400&&!/youtube/.test(r.url()))errors.push(`${r.status()} ${r.url()}`);});
- await page.route(/youtube\.com/,route=>route.abort());
+ await page.route(/youtube\.com/,route=>/iframe_api/.test(route.request().url())?route.fulfill({contentType:'text/javascript',body:FAKE_YT}):route.abort());
  await page.route('**/src/main.js',async route=>{const response=await route.fetch();await route.fulfill({response,body:await response.text()+'\nwindow.__qa={get world(){return world;},get radio(){return radioUI;}};'});});
  await page.goto('http://127.0.0.1:5192');await page.locator('#explore-world').click();
  await page.locator('#story-scene[open]').waitFor();
@@ -36,6 +39,15 @@ function tone(seconds=6,rate=8000){
  assert.match(await page.locator('.radio-note').textContent(),/doesn’t look like a YouTube link/);
  await page.locator('.radio-url').fill('https://youtu.be/dQw4w9WgXcQ');await page.locator('.radio-paste button').click();await page.waitForTimeout(400);
  assert.equal(await page.locator('.radio-song').count(),1);await shot('03-radio-youtube-tab');
+ // The YouTube video plays over the radio in the sheet, then sits above the mini player while exploring.
+ await page.locator('.radio-song-play').first().click();await page.waitForTimeout(600);
+ assert.equal(await w(()=>__qa.radio.playing),true);
+ const over=await w(()=>{const v=document.querySelector('.radio-video').getBoundingClientRect(),b=document.querySelector('.radio-boombox').getBoundingClientRect();return v.width>0&&v.left>=b.left-1&&v.right<=b.right+1&&v.top>=b.top-1&&v.bottom<=b.bottom+1;});
+ assert.ok(over,'video sits over the radio');await shot('03b-youtube-over-radio');
+ await page.keyboard.press('Escape');await page.waitForTimeout(400);
+ const above=await w(()=>{const v=document.querySelector('.radio-video').getBoundingClientRect(),c=document.querySelector('.radio-chip').getBoundingClientRect();return !document.querySelector('.radio-video').hidden&&v.bottom<=c.top+1&&Math.abs(v.left-c.left)<2;});
+ await shot('03c-youtube-above-mini-player');assert.ok(above,'video sits above the mini player');
+ await page.locator('.radio-chip-open').click();await page.locator('#radio-sheet[open]').waitFor();await page.locator('.radio-tab[data-kind="file"]').click();await page.locator('.radio-song-play').first().click();await page.waitForTimeout(500);
  await page.locator('.radio-tab[data-kind="file"]').click();
  await page.keyboard.press('Escape');await page.waitForTimeout(300);assert.equal(await w(()=>__qa.radio.open),false);
  assert.equal(await w(()=>__qa.radio.playing),true);assert.equal(await page.locator('.radio-chip').isVisible(),true);
@@ -52,11 +64,11 @@ function tone(seconds=6,rate=8000){
  // The playlist survives a reload.
  await page.reload();await page.locator('#explore-world').waitFor();
  const saved=await page.evaluate(async()=>{const {RadioStore}=await import('/src/radio-store.js');const r=await new RadioStore().load();return r.tracks.map(t=>t.title);});
- assert.deepEqual(saved,['Sine 440','Second Tone','YouTube song']);
+ assert.deepEqual(saved,['Sine 440','Second Tone','Stand-in video']);
 
  // A real phone held sideways: touch layout, with the mini player clear of the other buttons.
  const phone=await (await browser.newContext({viewport:{width:844,height:390},isMobile:true,hasTouch:true,deviceScaleFactor:2,userAgent:'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36'})).newPage();
- phone.on('pageerror',e=>errors.push(e.message));await phone.route(/youtube\.com/,route=>route.abort());
+ phone.on('pageerror',e=>errors.push(e.message));await phone.route(/youtube\.com/,route=>/iframe_api/.test(route.request().url())?route.fulfill({contentType:'text/javascript',body:FAKE_YT}):route.abort());
  await phone.route('**/src/main.js',async route=>{const response=await route.fetch();await route.fulfill({response,body:await response.text()+'\nwindow.__qa={get world(){return world;},get radio(){return radioUI;}};'});});
  await phone.goto('http://127.0.0.1:5192');await phone.locator('#explore-world').click();await phone.locator('#story-scene[open]').waitFor();
  await phone.evaluate(async()=>{const {createStoryNpcs}=await import('/src/story.js');const v=__qa.world;v.story.stage='ch5-morning';v.story.scene=null;v.story.lureSeen=v.story.photoSeen=true;v.areaId='village';v.npcs=createStoryNpcs(v.story,v.elapsed);Object.assign(v.player,{x:900,y:700});});
@@ -64,6 +76,9 @@ function tone(seconds=6,rate=8000){
  const chipBox=await phone.locator('.radio-chip').boundingBox();assert.ok(chipBox);
  for(const other of ['#open-atlas','#open-quests','#open-codex','#touch-settings','#settings-open','.hotbar']){const l=phone.locator(other).first();if(await l.count()&&await l.isVisible()){const b=await l.boundingBox();assert.ok(!(b.x<chipBox.x+chipBox.width&&chipBox.x<b.x+b.width&&b.y<chipBox.y+chipBox.height&&chipBox.y<b.y+b.height),`radio chip overlaps ${other}`);}}
  await phone.locator('.radio-chip-open').tap();await phone.locator('#radio-sheet[open]').waitFor();await phone.waitForTimeout(300);await phone.screenshot({path:`${out}/10-touch-landscape-radio.png`});
+ await phone.locator('.radio-tab[data-kind="youtube"]').tap();await phone.locator('.radio-url').fill('https://youtu.be/dQw4w9WgXcQ');await phone.locator('.radio-paste button').tap();await phone.waitForTimeout(300);
+ await phone.locator('.radio-song-play').first().tap();await phone.waitForTimeout(600);await phone.screenshot({path:`${out}/11-touch-youtube-over-radio.png`});
+ await phone.locator('#radio-sheet .backpack-close').tap();await phone.waitForTimeout(400);await phone.screenshot({path:`${out}/12-touch-youtube-above-mini-player.png`});
  assert.deepEqual(errors,[]);console.log('Radio preview passed.');
  await browser.close();process.exit(0);
 })().catch(e=>{console.error(e);process.exit(1);});

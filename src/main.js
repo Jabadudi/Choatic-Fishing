@@ -56,7 +56,7 @@ addEventListener('keydown',e=>{
   if(settingsUI?.open||storyUI?.open||saveUI?.open||currentScene(world))return;
   if((e.ctrlKey||e.metaKey)&&e.code==='KeyS'&&lobby.world?.adventure){e.preventDefault();saveUI.manager.request('manual',true).catch(()=>{});return;}
   if(tradeUI?.open||wellUI?.open)return;
-  if(radioUI?.open){if(matchesBinding('radio',e.code)&&!e.repeat&&!e.target.closest('input')){e.preventDefault();radioUI.toggle();}return;}
+  if(radioUI?.open){if((e.code==='Escape'||matchesBinding('radio',e.code)&&!e.target.closest('input'))&&!e.repeat){e.preventDefault();radioUI.close();}return;}
   if(backpackUI?.open){if(matchesBinding('backpack',e.code)&&!e.repeat){e.preventDefault();backpackUI.toggle();}return;}
   if(skillsUI?.open){if(matchesBinding('skills',e.code)&&!e.repeat){e.preventDefault();skillsUI.toggle();}return;}
   if(codexUI?.open){if(matchesBinding('codex',e.code)&&!e.repeat){e.preventDefault();codexUI.toggle();}return;}
