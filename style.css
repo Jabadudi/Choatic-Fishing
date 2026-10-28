@@ -345,42 +345,88 @@ body.exploring #side-objective{font:11px/1.5 monospace;color:#f6d27a;margin:6px 
 @keyframes hp-low{50%{filter:brightness(1.45)}}
 @keyframes hp-hurt{0%{box-shadow:0 0 0 2px #ff6b57,0 0 10px #ff6b57}100%{box-shadow:inset 0 1px 2px #000a,0 0 0 1px #c9b98a40}}
 @media(prefers-reduced-motion:reduce){#player-hp-trail,#player-hp-fill{transition:none}#player-hp.low #player-hp-fill,#player-hp.hurt .hp-track{animation:none}}
-/* The Wishing Well: same frame as the stalls, with a pool tab row and rarity-coloured draws. */
+/* The Wishing Well, laid out like a summoning page: pool banners along the top, one big painted banner, and the draw buttons bottom right. */
 .wishstone-icon{display:inline-block;flex:none;border-radius:50%;background:radial-gradient(circle at 40% 35%,#e3f7ff,#6fb6ff 45%,#2d5c7a);box-shadow:0 0 6px #7fd6ff99}
-#well-sheet{--bp-gold:#e6c77f;--bp-gold-dim:#b7995a;--bp-line:#c9a85f99;--bp-ink:#f3e6bf;--bp-muted:#c2cdb6;--r-common:#d9dccf;--r-uncommon:#7fd18b;--r-rare:#6fb6ff;--r-epic:#c58cff;--r-legendary:#ffb347;width:min(1040px,calc(100vw - 24px));max-height:calc(100dvh - 32px);box-sizing:border-box;padding:6px;border:1.5px solid var(--bp-gold-dim);border-radius:12px;background:#0c2119;color:var(--bp-ink);box-shadow:0 24px 80px #000c;overflow:hidden;font-family:Georgia,'Times New Roman',serif}
-#well-sheet[open]{display:flex;flex-direction:column}#well-sheet::backdrop{background:#061410b8;backdrop-filter:blur(3px)}
-.well-purse{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;color:#f5d7a4;font-weight:600}.well-purse>span{display:inline-flex;align-items:center;gap:7px}.well-stones{color:#cdeef6}
-.well-tabs,.radio-tabs{display:flex;gap:6px;padding:0 18px;border-bottom:1px solid var(--bp-line)}
-.well-tab,.radio-tab{min-height:44px;padding:8px 16px;border:1px solid #c9a85f66;border-bottom:0;border-radius:8px 8px 0 0;background:#0c2119;color:var(--bp-muted);font:700 15px Arial,sans-serif;cursor:pointer}
-.well-tab[aria-selected="true"],.radio-tab[aria-selected="true"]{background:linear-gradient(#f6dda5,#e7c486);color:#1d2c22;border-color:transparent}.well-tab:focus-visible,.radio-tab:focus-visible{outline:2px solid #fff0cb;outline-offset:2px}
-.well-body{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr)}
-.well-side{display:flex;flex-direction:column;gap:12px;padding:14px 16px;border-right:1px solid var(--bp-line);overflow-y:auto}
-.well-pool-text{margin:0;font:15px/1.45 Arial,sans-serif;color:#dfe3cf}.well-odds{margin:0;font:12px/1.5 Arial,sans-serif;color:var(--bp-muted)}
-.well-pity{display:flex;flex-direction:column;gap:5px;font:13px Arial,sans-serif;color:var(--bp-muted)}.well-pity-row{display:flex;justify-content:space-between;gap:8px}.well-pity-row b{color:var(--bp-ink);font-variant-numeric:tabular-nums}
-.well-bar{height:7px;border-radius:4px;background:#1b3328;overflow:hidden}.well-bar i{display:block;height:100%;width:0;background:var(--r);transition:width .3s}
-.well-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:auto}.well-buttons .trade-action{display:flex;flex-direction:column;align-items:center;gap:2px}.well-buttons small{font:400 12px Arial,sans-serif}.well-buy{grid-column:1/-1}
-.well-main{min-height:0;overflow-y:auto;padding:14px 16px}
-.well-results{list-style:none;margin:0;padding:8px 0 0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
-.well-card{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border:1.5px solid var(--r);border-radius:9px;background:radial-gradient(circle at 50% 30%,color-mix(in srgb,var(--r) 24%,#11281f),#11281f 75%);text-align:center;min-width:0}
-.well-card-big{box-shadow:0 0 0 2px #0c2119,0 0 0 4px var(--r),0 0 18px color-mix(in srgb,var(--r) 55%,transparent)}
-.well-card-icon{display:grid;place-items:center;width:52px;height:52px;font-size:28px;color:var(--bp-gold)}.well-card-icon img{width:100%;height:100%;object-fit:contain}
+#well-sheet{--bp-gold:#e6c77f;--bp-gold-dim:#b7995a;--bp-line:#c9a85f99;--bp-ink:#f3e6bf;--bp-muted:#c2cdb6;--r-common:#d9dccf;--r-uncommon:#7fd18b;--r-rare:#6fb6ff;--r-epic:#c58cff;--r-legendary:#ffb347;--cream:#ece5d8;width:min(1040px,calc(100vw - 24px));height:min(660px,calc(100dvh - 24px));max-height:none;box-sizing:border-box;padding:0;border:1.5px solid var(--bp-gold-dim);border-radius:14px;color:var(--bp-ink);overflow:hidden;font-family:Georgia,'Times New Roman',serif;box-shadow:0 24px 80px #000c;
+ background:radial-gradient(1.5px 1.5px at 12% 18%,#fff9 50%,transparent),radial-gradient(1px 1px at 33% 72%,#fff7 50%,transparent),radial-gradient(1.5px 1.5px at 58% 12%,#cfefff 50%,transparent),radial-gradient(1px 1px at 81% 40%,#fff8 50%,transparent),radial-gradient(1px 1px at 92% 86%,#fff6 50%,transparent),radial-gradient(1.2px 1.2px at 46% 92%,#cfefff99 50%,transparent),radial-gradient(120% 90% at 50% 110%,#123f52,#0a1f2c 55%,#061219)}
+#well-sheet[open]{display:flex}#well-sheet::backdrop{background:#030b10cc;backdrop-filter:blur(4px)}
+.wish-frame{position:relative;display:flex;flex-direction:column;flex:1 1 auto;min-width:0;min-height:0;gap:10px;padding:12px 16px 12px}
+.wish-top{display:flex;align-items:center;gap:14px;min-width:0}
+.wish-title{display:flex;align-items:center;gap:8px;margin:0;font:600 22px/1 Georgia,serif;color:#f6ebcd;white-space:nowrap}.wish-emblem{display:flex;color:var(--bp-gold)}
+.wish-tabs{display:flex;gap:8px;margin:0 auto;padding:0}
+.well-tab{position:relative;width:132px;height:52px;padding:0 10px 6px;border:1.5px solid #c9a85f55;border-radius:8px;background:#0b1d27 center/cover no-repeat;color:#f6ebcd;font:700 13px/1 Arial,sans-serif;text-shadow:0 1px 3px #000;display:flex;align-items:flex-end;justify-content:center;cursor:pointer;filter:saturate(.55) brightness(.7);transition:transform .15s,filter .15s,box-shadow .15s;overflow:hidden}
+.well-tab::before{content:'';position:absolute;inset:0;background:linear-gradient(transparent 30%,#000a);z-index:0}.well-tab>*{position:relative}
+.well-tab{isolation:isolate}.well-tab span{position:relative;z-index:1}
+.well-tab[data-pool="artifacts"]{background-image:url(assets/well-summon/well-cavern.webp)}.well-tab[data-pool="familiars"]{background-image:url(assets/well-summon/well-scene.webp);background-position:70% 50%}
+.well-tab:hover{filter:saturate(.8) brightness(.9)}
+.well-tab[aria-selected="true"]{filter:none;transform:translateY(-2px);border-color:var(--bp-gold);box-shadow:0 0 0 2px #0a1f2c,0 0 0 3.5px #f6dda5,0 6px 16px #000a}
+.well-tab:focus-visible{outline:2px solid #fff0cb;outline-offset:3px}
+.well-purse{display:flex;align-items:center;gap:8px;margin:0;font:700 14px Arial,sans-serif}
+.wish-pill{display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 12px 0 8px;border-radius:16px;background:#0008;border:1px solid #ffffff22;color:#f5ead0;white-space:nowrap;font-variant-numeric:tabular-nums}.well-stones{color:#cdeef6}
+.wish-close{width:44px!important;height:44px!important;flex:none;border-radius:50%!important;background:#0008!important}
+.wish-stage{position:relative;flex:1 1 auto;min-height:0;display:flex}
+.wish-banner{position:relative;flex:1 1 auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);min-height:0;border:1.5px solid #e6c77fcc;border-radius:12px;overflow:hidden;background:#071820 center/cover no-repeat;box-shadow:inset 0 0 0 4px #0006,0 10px 30px #0009}
+.wish-banner::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,#06141cf2 0%,#06141cd9 34%,#06141c66 58%,transparent 80%),linear-gradient(transparent 70%,#06141caa);pointer-events:none}
+.wish-banner::after{content:'';position:absolute;inset:6px;border:1px solid #f6dda544;border-radius:8px;pointer-events:none}
+.wish-banner[data-pool="artifacts"]{background-image:url(assets/well-summon/well-cavern.webp)}.wish-banner[data-pool="familiars"]{background-image:url(assets/well-summon/well-scene.webp);background-position:62% 50%}
+.wish-banner-text{position:relative;z-index:1;display:flex;flex-direction:column;gap:10px;padding:20px 22px;min-height:0;overflow-y:auto}
+.wish-kicker{align-self:flex-start;margin:0;padding:4px 10px;border-radius:4px;background:linear-gradient(90deg,#e6c77f,#c99a4b);color:#1d2c22;font:700 11px/1 Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase}
+.wish-name{margin:0;font:600 36px/1.05 Georgia,serif;color:#fff6dc;text-shadow:0 2px 0 #0008,0 0 18px #6fb6ff55}
+.well-pool-text{margin:0;max-width:44ch;font:14px/1.45 Arial,sans-serif;color:#dfe8e3}
+.well-odds{display:flex;flex-wrap:wrap;gap:5px;margin:0}
+.wish-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 7px;border:1px solid color-mix(in srgb,var(--r) 60%,transparent);border-radius:10px;background:#0009;color:var(--r);font:700 11px/1.2 Arial,sans-serif;font-variant-numeric:tabular-nums}
+.well-pity{display:flex;flex-direction:column;gap:4px;max-width:300px;font:12px Arial,sans-serif;color:#c9d6cf}.well-pity-row{display:flex;justify-content:space-between;gap:8px}.well-pity-row b{color:var(--bp-ink);font-variant-numeric:tabular-nums}
+.well-bar{height:6px;border-radius:3px;background:#ffffff1c;overflow:hidden}.well-bar i{display:block;height:100%;width:0;background:var(--r);box-shadow:0 0 8px var(--r);transition:width .3s}
+.wish-banner[hidden]{display:none}.wish-featured{position:relative;z-index:1;min-height:0}
+.wish-hero{position:absolute;display:flex;flex-direction:column;align-items:center;gap:2px;transform:translate(-50%,-50%);animation:wish-bob 4s ease-in-out infinite}
+.wish-hero img{width:var(--s,120px);height:var(--s,120px);object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 0 14px var(--glow,#6fb6ffaa)) drop-shadow(0 4px 0 #0006)}
+.wish-hero b{padding:2px 8px;border-radius:9px;background:#000a;color:#fff3d6;font:700 11px/1.3 Arial,sans-serif;white-space:nowrap}
+.wish-hero:nth-child(2){animation-delay:-1.3s}.wish-hero:nth-child(3){animation-delay:-2.6s}
+@keyframes wish-bob{50%{transform:translate(-50%,calc(-50% - 7px))}}
+.wish-bottom{display:flex;align-items:center;gap:8px;min-width:0}.wish-draws{display:flex;gap:10px;flex:none}
+.wish-link{min-height:38px;padding:6px 14px;border:1px solid #f6dda555;border-radius:19px;background:#0009;color:#f1e3c0;font:700 13px Arial,sans-serif;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}.wish-link:hover:not(:disabled){background:#1b3340}.wish-link:disabled{opacity:.5;cursor:not-allowed}.wish-link:focus-visible{outline:2px solid #fff0cb;outline-offset:2px}
+.wish-link small{font:400 12px Arial,sans-serif;color:#c9bfa6;display:inline-flex;align-items:center;gap:3px}.wish-link[hidden]{display:none}
+.well-note{flex:1 1 auto;min-width:0;margin:0;padding:0 6px;border:0;font:13px/1.35 Arial,sans-serif;color:#c9d6cf;text-align:right;min-height:0}
+.well-draw{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:168px;min-height:54px;padding:6px 18px;border:2px solid #d8cdb5;border-radius:28px;background:linear-gradient(#f4eee2,var(--cream));color:#4a5366;font:700 15px/1.1 Arial,sans-serif;cursor:pointer;box-shadow:inset 0 0 0 2px #fff8,0 4px 12px #0008;transition:transform .1s,filter .15s}
+.well-draw small{display:inline-flex;align-items:center;gap:5px;font:700 13px Arial,sans-serif;color:#7a6d55}
+.well-draw:hover:not(:disabled){filter:brightness(1.05);transform:translateY(-1px)}.well-draw:active:not(:disabled){transform:translateY(1px)}
+.well-draw:disabled{background:#3a4650;border-color:#56636c;color:#9aa6ad;box-shadow:none;cursor:not-allowed}.well-draw:disabled small{color:#8a959b}
+.well-draw:focus-visible{outline:2px solid #fff0cb;outline-offset:3px}
+.well-main{position:relative;flex:1 1 auto;min-height:0;overflow-y:auto;padding:14px 18px;border:1.5px solid #e6c77f88;border-radius:12px;background:#06141ce6}.well-main[hidden]{display:none}
+.wish-results-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}.wish-results-head .trade-column-title{margin:0;padding:0;border:0}
+.well-results{list-style:none;margin:0;padding:10px 0 4px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.well-card{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;min-height:150px;padding:12px 6px 10px;border:1.5px solid var(--r);border-radius:10px 10px 30px 30px/10px 10px 14px 14px;background:linear-gradient(transparent 55%,#0009),radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--r) 45%,#0c2230),#0c2230 70%);text-align:center;min-width:0;box-shadow:0 0 14px color-mix(in srgb,var(--r) 35%,transparent)}
+.well-card-big{box-shadow:0 0 0 2px #06141c,0 0 0 4px var(--r),0 0 24px color-mix(in srgb,var(--r) 70%,transparent)}
+.well-card-icon{display:grid;place-items:center;width:58px;height:58px;margin-bottom:auto;font-size:30px;color:var(--bp-gold);filter:drop-shadow(0 0 8px color-mix(in srgb,var(--r) 70%,transparent))}.well-card-icon img{width:100%;height:100%;object-fit:contain}
 .well-card-name{font:600 14px/1.15 Georgia,serif;color:#f6ebcd;overflow-wrap:anywhere}.well-card-rarity{font:700 10px/1 Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--r)}.well-card-extra{font:12px/1.3 Arial,sans-serif;color:var(--bp-muted)}
+.well-card-stars{color:#ffd76a;font-size:11px;letter-spacing:1px;text-shadow:0 0 4px #000}
 .well-card-new{position:absolute;top:-8px;left:50%;transform:translateX(-50%);padding:3px 5px;border-radius:4px;background:#e6c77f;color:#1d2c22;font:700 9px/1 Arial,sans-serif}
-.well-splash .well-card{animation:well-rise .45s ease-out both}.well-splash .well-card:nth-child(n+2){animation-delay:.05s}
-@keyframes well-rise{from{transform:translateY(10px) scale(.94);opacity:.3}to{transform:none;opacity:1}}
-@media(prefers-reduced-motion:reduce){.well-splash .well-card{animation:none}}
-@media(max-width:760px){#well-sheet{overflow-y:auto}#well-sheet[open]{display:block}.well-body{display:flex;flex-direction:column}.well-side{border-right:0;border-bottom:1px solid var(--bp-line)}.well-results{grid-template-columns:repeat(3,minmax(0,1fr))}.well-tabs{padding:0 10px}}
-@media(max-height:500px) and (orientation:landscape){#well-sheet{overflow-y:auto}#well-sheet[open]{display:block}.well-results{grid-template-columns:repeat(5,minmax(0,1fr))}}
+.well-splash .well-card{animation:well-rise .5s cubic-bezier(.2,.9,.3,1.2) both}
+.well-splash .well-card:nth-child(2){animation-delay:.05s}.well-splash .well-card:nth-child(3){animation-delay:.1s}.well-splash .well-card:nth-child(4){animation-delay:.15s}.well-splash .well-card:nth-child(5){animation-delay:.2s}.well-splash .well-card:nth-child(6){animation-delay:.25s}.well-splash .well-card:nth-child(7){animation-delay:.3s}.well-splash .well-card:nth-child(8){animation-delay:.35s}.well-splash .well-card:nth-child(9){animation-delay:.4s}.well-splash .well-card:nth-child(10){animation-delay:.45s}
+@keyframes well-rise{from{transform:translateY(14px) scale(.9);opacity:0}to{transform:none;opacity:1}}
+@media(prefers-reduced-motion:reduce){.well-splash .well-card,.wish-hero{animation:none}}
 .well-results .trade-empty{grid-column:1/-1}
-.well-details-toggle{min-height:40px;padding:8px 12px;border:1px solid var(--bp-line);border-radius:8px;background:#0c2119;color:var(--bp-gold);font:700 14px Arial,sans-serif;cursor:pointer;text-align:left}.well-details-toggle:hover{background:#12322a}.well-details-toggle:focus-visible{outline:2px solid var(--bp-gold);outline-offset:2px}
 .well-details{display:flex;flex-direction:column;gap:10px}.well-details[hidden]{display:none}.well-details>*{flex-shrink:0}.well-details .trade-column-title{margin:6px 0 0}
 .well-details-note{margin:0;font:13px/1.45 Arial,sans-serif;color:var(--bp-muted)}
 .well-table-wrap{overflow-x:auto;border:1px solid #c9a85f44;border-radius:8px}
-.well-table{width:100%;border-collapse:collapse;font:14px Arial,sans-serif;color:var(--bp-ink)}.well-table th{padding:8px 10px;background:#0c2119;color:var(--bp-gold);font:700 11px Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;text-align:right;white-space:nowrap}.well-table th:first-child{text-align:left}
+.well-table{width:100%;border-collapse:collapse;font:14px Arial,sans-serif;color:var(--bp-ink)}.well-table th{padding:8px 10px;background:#0a1f2c;color:var(--bp-gold);font:700 11px Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;text-align:right;white-space:nowrap}.well-table th:first-child{text-align:left}
 .well-table td{padding:8px 10px;border-top:1px solid #c9a85f2b;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}.well-table td:first-child{text-align:left}
 .well-rarity{font-weight:700;color:var(--r)}.well-chance{color:color-mix(in srgb,var(--r) 70%,#f3e6bf)}
 .well-prize{white-space:normal!important;min-width:160px}.well-prize strong{display:block;font:600 14px Georgia,serif;color:#f6ebcd}.well-prize small{display:block;margin-top:2px;font:12px/1.35 Arial,sans-serif;color:var(--bp-muted)}
 .well-rules{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font:14px/1.45 Arial,sans-serif;color:#dfe3cf}
+/* Narrow screens: the banner stacks over its featured art and the buttons share the bottom row. */
+@media(max-width:860px){.wish-title{display:none}.wish-tabs{margin:0}.well-tab{width:112px;height:46px}.wish-name{font-size:28px}.well-draw{min-width:130px;padding:6px 12px}}
+@media(max-width:600px){#well-sheet{height:calc(100dvh - 16px);width:calc(100vw - 16px)}.wish-frame{padding:10px;gap:8px}.wish-top{flex-wrap:wrap;gap:8px}.wish-tabs{order:3;flex-basis:100%}.well-tab{flex:1;width:auto}.well-purse{margin-right:auto}
+ .wish-banner{grid-template-columns:1fr;grid-template-rows:minmax(150px,1fr) auto}.wish-banner::before{background:linear-gradient(transparent 25%,#06141cf2 55%)}.wish-featured{order:-1}.wish-banner-text{padding:0 16px 16px;overflow:visible}.wish-name{font-size:26px}
+ .wish-bottom{flex-wrap:wrap}.well-note{order:-1;flex-basis:100%;text-align:center}.wish-draws{display:flex;gap:8px;flex-basis:100%}.well-draw{flex:1;min-width:0}.well-results{grid-template-columns:repeat(3,minmax(0,1fr))}.well-card{min-height:130px}}
+/* Short landscape phones: one tight row on top, the banner text trimmed to the essentials. */
+@media(max-height:500px) and (orientation:landscape){#well-sheet{height:calc(100dvh - 16px)}.wish-frame{padding:8px 12px;gap:7px}.wish-title{display:none}.wish-tabs{margin:0}.well-tab{width:104px;height:38px;font-size:12px;padding-bottom:5px}.wish-pill{height:28px;font-size:12px}.well-purse{margin-left:auto}.wish-close{width:36px!important;height:36px!important}.wish-close svg{width:18px;height:18px}
+ .wish-banner-text{padding:12px 16px;gap:7px}.wish-name{font-size:24px}.well-pool-text{display:none}.wish-chip{font-size:10px;padding:2px 6px}.well-pity{font-size:11px}
+ .well-draw{min-width:118px;min-height:44px;padding:4px 12px;font-size:13px}.well-draw small{font-size:11px}.wish-link{min-height:34px;padding:4px 11px;font-size:12px}.well-note{font-size:12px}
+ .well-results{grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}.well-card{min-height:104px;padding:8px 4px}.well-card-icon{width:38px;height:38px}.well-card-name{font-size:12px}.well-main{padding:10px 12px}}
+.radio-tabs{display:flex;gap:6px;padding:0 18px;border-bottom:1px solid var(--bp-line)}
+.radio-tab{min-height:44px;padding:8px 16px;border:1px solid #c9a85f66;border-bottom:0;border-radius:8px 8px 0 0;background:#0c2119;color:var(--bp-muted);font:700 15px Arial,sans-serif;cursor:pointer}
+.radio-tab[aria-selected="true"]{background:linear-gradient(#f6dda5,#e7c486);color:#1d2c22;border-color:transparent}.radio-tab:focus-visible{outline:2px solid #fff0cb;outline-offset:2px}
 #radio-sheet{--bp-gold:#e6c77f;--bp-gold-dim:#b7995a;--bp-line:#c9a85f99;--bp-ink:#f3e6bf;--bp-muted:#c2cdb6;--lcd:#9fe08a;position:fixed;inset:0;z-index:40;margin:auto;width:min(1000px,calc(100vw - 24px));max-height:calc(100dvh - 32px);height:fit-content;box-sizing:border-box;padding:6px;border:1.5px solid var(--bp-gold-dim);border-radius:12px;background:#0c2119;color:var(--bp-ink);box-shadow:0 24px 80px #000c;overflow:hidden;font-family:Georgia,'Times New Roman',serif}
 #radio-sheet[open]{display:flex;flex-direction:column}.radio-backdrop{position:fixed;inset:0;z-index:39;background:#061410b8;backdrop-filter:blur(3px)}
 .radio-icon,.radio-front,.radio-chip canvas{image-rendering:pixelated;image-rendering:crisp-edges}.radio-icon{width:44px;height:33px}
