@@ -1,4 +1,4 @@
-// The Wishing Well on Willow Commons. It wakes for Eli once Chapter 5 is over, and each Wishstone he drops in
+// The Wishing Well on Willow Commons. It is open from the start of every journey, and each Wishstone Eli drops in
 // draws from one of two pools: artifacts at a random rarity, or familiar shards for a creature in his index.
 // Gameplay only. The window is drawn by well-ui.js.
 import {STORY_STAGES} from './story.js';
@@ -105,8 +105,20 @@ export function drawWell(world,pool,count=1,random=world.random){
   results.push(result);
  }
  const best=results.reduce((a,b)=>RARITIES.indexOf(b.rarity)>RARITIES.indexOf(a.rarity)?b:a,results[0]);
- world.message=`The well answers the Region Core. ${count>1?`Best of ${results.length}: `:''}${resultLabel(best)}`;
+ world.message=`The well answers. ${count>1?`Best of ${results.length}: `:''}${resultLabel(best)}`;
  return {ok:true,reason:world.message,results};
+}
+// What a pool can bring up and how likely each prize is on a draw before pity, for the window's details page.
+// Every prize in a pool is equally likely, so one prize at one rarity is that rarity's chance split between them.
+export const rarityChance=rarity=>rarity==='common'?1-Object.values(WELL_ODDS).reduce((a,b)=>a+b,0):WELL_ODDS[rarity];
+export function poolRates(world,pool){
+ const rarities=RARITIES.map(rarity=>({rarity,chance:rarityChance(rarity),shards:pool==='familiars'?SHARD_COUNTS[rarity]:null}));
+ if(pool==='artifacts')return {rarities,prizes:ARTIFACT_IDS.map(id=>({id,name:ARTIFACTS[id].name,inPool:true,chances:Object.fromEntries(RARITIES.map(r=>[r,rarityChance(r)/ARTIFACT_IDS.length]))}))};
+ const open=familiarPool(world);
+ return {rarities,prizes:Object.keys(FAMILIARS).map(id=>{
+  const inPool=open.includes(id),why=inPool?null:codexRevealed(world,id)?'Full: this familiar has every shard it can use':'Not met yet: find this creature in the wild to add it';
+  return {id,name:FAMILIARS[id].name,inPool,why,chances:Object.fromEntries(RARITIES.map(r=>[r,inPool?rarityChance(r)/open.length:0]))};
+ })};
 }
 export function resultLabel(result){
  if(result.kind==='shards')return `${result.name} ×${result.count} (${RARITY_NAMES[result.rarity]})`;

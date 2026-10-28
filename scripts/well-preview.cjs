@@ -27,6 +27,12 @@ const assert=require('node:assert/strict');
  assert.match(await page.locator('#inspect-place').textContent(),/Look into the Wishing Well/);await shot('00-well-prompt');
  await w(()=>__qa.world.inspect());await page.locator('#well-sheet[open]').waitFor();await page.waitForTimeout(300);
  assert.equal(await page.locator('.well-tab[aria-selected="true"]').textContent(),'Artifact pool');await shot('01-well-open');
+ // The details page: odds per rarity, every prize with its own chance, and the pity rules, for each pool.
+ await page.locator('.well-details-toggle').click();await page.locator('.well-details:not([hidden])').waitFor();
+ assert.equal(await page.locator('.well-details tbody tr').count(),10);assert.match(await page.locator('.well-details').textContent(),/0\.2%.*draw 70 is always Legendary/s);
+ await shot('01a-well-rates-artifacts');
+ await page.locator('.well-tab[data-pool="familiars"]').click();await page.waitForTimeout(150);assert.match(await page.locator('.well-details').textContent(),/Not met yet/);await shot('01b-well-rates-familiars');
+ await page.locator('.well-tab[data-pool="artifacts"]').click();await page.locator('.well-details-toggle').click();assert.equal(await page.locator('.well-details').isHidden(),true);
  await page.locator('.well-draw[data-count="10"]').click();
  // The summon plays first: Eli at the well, then the cavern with fish, and the cards only after it ends or is skipped.
  await page.locator('.well-summon:not([hidden])').waitFor();assert.equal(await page.locator('.well-card').count(),0);
@@ -51,6 +57,7 @@ const assert=require('node:assert/strict');
  await w(()=>{__qa.world.well.stones=10;});
  await page.setViewportSize({width:390,height:844});await page.waitForTimeout(300);
  await w(()=>__qa.world.inspect());await page.locator('#well-sheet[open]').waitFor();await page.locator('.well-draw[data-count="10"]').click();await page.waitForTimeout(6000);await shot('04a-summon-mobile');await page.locator('.well-skip').click();await page.waitForTimeout(700);await shot('04-well-mobile');
+ await page.locator('.well-details-toggle').click();await page.waitForTimeout(150);await page.locator('.well-details h3').nth(2).scrollIntoViewIfNeeded();await shot('04b-well-rates-mobile');
  await page.keyboard.press('Escape');await page.waitForTimeout(200);
  await page.setViewportSize({width:844,height:390});await page.waitForTimeout(300);
  await w(()=>{__qa.world.well.stones=1;__qa.world.inspect();});await page.locator('#well-sheet[open]').waitFor();await page.waitForTimeout(300);await shot('05-well-phone-landscape');
