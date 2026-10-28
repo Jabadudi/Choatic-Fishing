@@ -32,7 +32,7 @@ export const createWell=()=>({awake:false,stones:0,credited:0,pity:{artifacts:fr
 const stageIndex=story=>STORY_STAGES.indexOf(story.stage);
 // The well stands apart from the story: it is open on every journey from the first step.
 export const wellUnlocked=world=>!!world.adventure;
-export const nearWell=world=>!!world.well?.awake&&world.areaId==='village'&&Math.hypot(world.player.x-WELL.x,world.player.y-WELL.y)<110;
+export const nearWell=world=>!!world.well?.awake&&world.areaId==='village'&&Math.hypot(world.player.x-WELL.x,world.player.y-WELL.y)<75;
 export function wellLedger(world){
  const chapters=world.story?CHAPTER_ENDS.filter(stage=>stageIndex(world.story)>=STORY_STAGES.indexOf(stage)).length:0;
  const shinies=Object.values(world.hunting?.shiny?.hunted||{}).reduce((a,b)=>a+b,0);

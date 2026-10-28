@@ -3,13 +3,13 @@ import {nearbyDrop} from './drops.js';
 import {itemLabel} from './artifacts.js';
 import {questObjective} from './quests.js';
 import {sideObjective,questFor} from './side-quests.js';
-import {placesFor,nearestLandmark} from './wilds.js';
+import {placesFor,examinableLandmark} from './wilds.js';
 import {nearbyNpc} from './npcs.js';
 import {MERCHANTS} from './trade.js';
 import {nearWell} from './wishing-well.js';
 // What the exploration HUD shows, derived from world state so it can be tested without a DOM.
 export function explorationHud(world,exploringSeconds){
- const id=world.areaId,place=nearestLandmark(world.player.x,world.player.y,id),npc=nearbyNpc(world),work=npc&&questFor(world,npc.id);
+ const id=world.areaId,place=examinableLandmark(world.player.x,world.player.y,id),npc=nearbyNpc(world),work=npc&&questFor(world,npc.id);
  return {
   hintVisible:exploringSeconds<10,
   quest:storyObjective(world)||questObjective(world),

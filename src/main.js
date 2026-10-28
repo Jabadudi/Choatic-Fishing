@@ -30,7 +30,7 @@ import {preloadProps} from './sprites.js';
 import {titleArtReady} from './title-art.js';
 import './music.js';
 import {Lobby} from './lobby.js';
-import {areaFor,placesFor,regionAt,nearestLandmark,paintAtlas,INTERIOR_AREAS} from './wilds.js';
+import {areaFor,placesFor,regionAt,nearestLandmark,examinableLandmark,paintAtlas,INTERIOR_AREAS} from './wilds.js';
 import {explorationHud} from './hud.js';
 import {mountHudShell} from './hud-shell.js';
 import {mountHub} from './hub-ui.js';
@@ -143,7 +143,7 @@ function updateUI(){
  setText($('close-atlas'),touchMode?'Close':`Close · ${bindingLabel('map')} / Esc`);
  setText($('cancel'),touchMode?'Abandon':`Abandon · ${bindingLabel('fish')} / Esc`);
  touchUI?.update(world,!touchMode||!lobby.world||atlasOpen||saveUI?.open||settingsUI?.open||storyUI?.open||world.player.health<=0);
- if(touchMode){const npc=nearbyNpc(world);$('touch-examine').disabled=!world.adventure||(!storyPrompt(world)&&!npc&&!nearbyDrop(world)&&!nearWell(world)&&!nearestLandmark(world.player.x,world.player.y,world.areaId));setText($('touch-examine').querySelector('strong'),nearbyDrop(world)?'Pick up':npc?'Talk':'Examine');$('touch-examine').setAttribute('aria-label',nearbyDrop(world)?`Pick up ${itemLabel(nearbyDrop(world).item)}`:npc?`Talk to ${npc.name}`:'Examine nearby landmark');}
+ if(touchMode){const npc=nearbyNpc(world);$('touch-examine').disabled=!world.adventure||(!storyPrompt(world)&&!npc&&!nearbyDrop(world)&&!nearWell(world)&&!examinableLandmark(world.player.x,world.player.y,world.areaId));setText($('touch-examine').querySelector('strong'),nearbyDrop(world)?'Pick up':npc?'Talk':'Examine');$('touch-examine').setAttribute('aria-label',nearbyDrop(world)?`Pick up ${itemLabel(nearbyDrop(world).item)}`:npc?`Talk to ${npc.name}`:'Examine nearby landmark');}
  const f=world.fishing,active=f.state==='reeling',busy=f.state!=='idle',inventory=world.inventory;
  $('line-panel').hidden=!active;
  setText($('health-text'),`${Math.ceil(world.player.health)} / ${world.progression.maxHealth} HP`);
