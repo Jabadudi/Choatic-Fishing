@@ -81,3 +81,10 @@ body.exploring #open-settings{top:214px;}#music-icon,.music-hud{display:none!imp
 .dialogue-box[data-voice="thought"] .dialogue-text:before{content:'(';}.dialogue-box[data-voice="thought"] .dialogue-text:after{content:')';}
 .dialogue-box[data-voice="voice"] .dialogue-text{font-style:italic;letter-spacing:.04em;color:var(--voice,#2a6f9a);}
 [data-dialogue-theme="lantern-night"] .dialogue-box,[data-dialogue-theme="quiet-hud"] .dialogue-box{--voice:#8fd3f0;}
+/* Custom cursor: one style everywhere the mouse goes, text fields keep their caret. */
+html[data-cursor],html[data-cursor] body,html[data-cursor] body *:not(input[type=text]):not(input[type=search]):not(textarea):not([contenteditable]){cursor:var(--game-cursor)!important;}
+.cursor-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;}.cursor-options button{text-align:left;min-height:110px!important;display:flex;flex-direction:column;gap:6px;}.cursor-options button[aria-pressed="true"]{outline:2px solid #c8dca0;background:#365d47!important;}.cursor-options strong{font:13px monospace;}.cursor-options span{font:12px/1.5 Arial;color:#d5dccb;}
+.cursor-icon{display:grid;place-items:center;width:44px;height:44px;border:1px solid #8c9c7b66;border-radius:4px;background:#0f201c;}.cursor-icon img{width:32px;height:32px;image-rendering:pixelated;}.cursor-icon i{width:0;height:0;border-left:7px solid #eee8d2;border-top:7px solid transparent;border-bottom:7px solid transparent;transform:rotate(-45deg) translate(2px,-2px);}
+#settings-menu .cursor-options button:hover{border-color:#c8dca0;}
+@media(max-width:700px){.cursor-options{grid-template-columns:repeat(2,minmax(0,1fr));}}
+#settings-menu [data-cursor-style],#settings-menu [data-cursor-style] *{cursor:var(--game-cursor)!important;}
