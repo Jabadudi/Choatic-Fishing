@@ -122,7 +122,7 @@ export class World {
    if(MERCHANTS[npc.id])this.tradeRequest=MERCHANTS[npc.id];else this.dialogue={npcId:npc.id,text,remaining:12};return true;}
   // Once awake, the well opens its window instead of the commons description. The interface opens it on its next frame.
   if(nearWell(this)){this.wellRequest=true;this.message='Eli looks into the well. The water glows blue.';return true;}
-  const place=Wilds.nearestLandmark(this.player.x,this.player.y,this.areaId);
+  const place=Wilds.examinableLandmark(this.player.x,this.player.y,this.areaId);
   if(!place)return false;
   this.discovered.add(place.id);this.message=place.text;return true;
  }

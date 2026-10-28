@@ -2,6 +2,7 @@ import {storyAction,updateStoryAction} from './story-action.js';
 import {matchesBinding,bindingLabel} from './keybinds.js';
 import {preferences} from './preferences.js';
 import {mountSettings} from './settings-ui.js';
+import {mountControlsHelp} from './controls-help.js';
 import {observeGameSounds,playSfx} from './sfx.js';
 import {mountStory} from './story-ui.js';
 import {currentScene,storyPrompt,cabinDamaged,rodReady} from './story.js';
@@ -30,7 +31,7 @@ import {preloadProps} from './sprites.js';
 import {titleArtReady} from './title-art.js';
 import './music.js';
 import {Lobby} from './lobby.js';
-import {areaFor,placesFor,regionAt,nearestLandmark,paintAtlas,INTERIOR_AREAS} from './wilds.js';
+import {areaFor,placesFor,regionAt,nearestLandmark,examinableLandmark,paintAtlas,INTERIOR_AREAS} from './wilds.js';
 import {explorationHud} from './hud.js';
 import {mountHudShell} from './hud-shell.js';
 import {mountHub} from './hub-ui.js';
@@ -38,7 +39,7 @@ import {mountChat} from './chat-ui.js';
 let world=new World(Math.random,{botCount:0});
 const canvas=document.querySelector('#arena'),ctx=canvas.getContext('2d',{alpha:false});
 const touchState=new TouchInput(),touchMedia=matchMedia('(any-pointer: coarse), (max-width: 700px)');
-let hudUI=null,radioUI=null,tradeUI=null,wellUI=null,questUI=null,backpackUI=null,skillsUI=null,codexUI=null,saveUI=null,storyUI=null,settingsUI=null,hubUI=null,chatUI=null;
+let hudUI=null,radioUI=null,tradeUI=null,wellUI=null,questUI=null,backpackUI=null,skillsUI=null,codexUI=null,saveUI=null,storyUI=null,settingsUI=null,hubUI=null,chatUI=null,helpUI=null;
 let touchMode=touchMedia.matches,touchUI=null;document.body.classList.toggle('touch-mode',touchMode);
 // Keep the explorer readable on a narrow portrait viewport.
 let view={scale:1,x:0,y:0,width:960,height:720,dpr:1};
@@ -53,10 +54,10 @@ new ResizeObserver(resize).observe(canvas);resize();
 const elements=new Map();
 const $=id=>{if(!elements.has(id))elements.set(id,document.getElementById(id));return elements.get(id);};const keys=new Set();let mouseHeld=false,spaceHeld=false,aim={x:480,y:0};
 const currentInput=()=>{camera();if(touchMode&&touchState.enabled){pointer=null;aim=touchState.aim(world.player);}const stick=touchMode&&touchState.movePointer!==null;return ({left:keys.has(preferences.value.keybinds.left)||(stick&&touchState.x<-.1),right:keys.has(preferences.value.keybinds.right)||(stick&&touchState.x>.1),up:keys.has(preferences.value.keybinds.up)||(stick&&touchState.y<-.1),down:keys.has(preferences.value.keybinds.down)||(stick&&touchState.y>.1),...(stick?{moveX:touchState.x,moveY:touchState.y}:{}),aim,held:mouseHeld||spaceHeld||touchState.held});};
-const act=action=>{if(!currentScene(world)&&!hudUI?.open&&!settingsUI?.open&&!storyUI?.open&&!backpackUI?.open&&!tradeUI?.open&&!wellUI?.open&&!radioUI?.open&&!skillsUI?.open&&!codexUI?.open&&!questUI?.open&&!saveUI?.open&&!hubUI?.open&&!chatUI?.open)lobby.action(action,currentInput());};
+const act=action=>{if(!currentScene(world)&&!hudUI?.open&&!settingsUI?.open&&!helpUI?.open&&!storyUI?.open&&!backpackUI?.open&&!tradeUI?.open&&!wellUI?.open&&!radioUI?.open&&!skillsUI?.open&&!codexUI?.open&&!questUI?.open&&!saveUI?.open&&!hubUI?.open&&!chatUI?.open)lobby.action(action,currentInput());};
 const equip=slot=>act(`slot-${slot}`);
 addEventListener('keydown',e=>{
-  if(settingsUI?.open||storyUI?.open||saveUI?.open||hubUI?.open||chatUI?.open||currentScene(world))return;
+  if(settingsUI?.open||helpUI?.open||storyUI?.open||saveUI?.open||hubUI?.open||chatUI?.open||currentScene(world))return;
   if((e.ctrlKey||e.metaKey)&&e.code==='KeyS'&&lobby.world?.adventure){e.preventDefault();saveUI.manager.request('manual',true).catch(()=>{});return;}
   if(tradeUI?.open||wellUI?.open)return;
   if(radioUI?.open){if((e.code==='Escape'||matchesBinding('radio',e.code)&&!e.target.closest('input'))&&!e.repeat){e.preventDefault();radioUI.close();}return;}
@@ -64,6 +65,7 @@ addEventListener('keydown',e=>{
   if(skillsUI?.open){if(matchesBinding('skills',e.code)&&!e.repeat){e.preventDefault();skillsUI.toggle();}return;}
   if(codexUI?.open){if(matchesBinding('codex',e.code)&&!e.repeat){e.preventDefault();codexUI.toggle();}return;}
   if(questUI?.open){if(matchesBinding('quests',e.code)&&!e.repeat){e.preventDefault();questUI.toggle();}return;}
+  if(matchesBinding('help',e.code)&&lobby.world&&!e.repeat){e.preventDefault();helpUI.toggle();return;}
   if(matchesBinding('skills',e.code)&&lobby.world?.adventure&&!e.repeat){e.preventDefault();skillsUI.toggle();return;}
   if(matchesBinding('codex',e.code)&&lobby.world?.adventure&&!e.repeat){e.preventDefault();codexUI.toggle();return;}
   if(matchesBinding('quests',e.code)&&lobby.world?.adventure&&!e.repeat){e.preventDefault();questUI.toggle();return;}
@@ -75,9 +77,10 @@ addEventListener('keydown',e=>{
   if((e.code==='Enter'||e.code==='Slash'&&!Object.values(preferences.value.keybinds).includes('Slash'))&&lobby.world?.adventure&&chatUI?.available&&!e.repeat&&!e.target.closest('input,textarea')){e.preventDefault();release();chatUI.show(e.code==='Slash'?'/':'');return;}
   if(e.target.closest('.music-hud, #lobby-screen')||!lobby.world)return;
   if(Object.values(preferences.value.keybinds).includes(e.code))e.preventDefault();
-  keys.add(e.code);if(matchesBinding('reel',e.code))spaceHeld=true;
+  keys.add(e.code);if(matchesBinding('inspect',e.code))spaceHeld=true;
   if(!e.repeat){
-    if(matchesBinding('inspect',e.code)&&world.adventure)world.inspect();
+    // The interact key also reels, so it only talks or examines while the line is out of the water.
+    if(matchesBinding('inspect',e.code)&&world.adventure&&world.fishing.state==='idle')world.inspect();
     if(matchesBinding('dash',e.code))act('dash');
     if(matchesBinding('fish',e.code)){
       act('toggle');
@@ -90,7 +93,7 @@ addEventListener('keydown',e=>{
     if((e.code==='Escape'||matchesBinding('cancel',e.code)))act('cancel');
   }
 });
-addEventListener('keyup',e=>{keys.delete(e.code);if(matchesBinding('reel',e.code))spaceHeld=false;});
+addEventListener('keyup',e=>{keys.delete(e.code);if(matchesBinding('inspect',e.code))spaceHeld=false;});
 let pointer=null;
 function camera(player=world.player){view.x=view.width/2-player.x*view.scale;view.y=view.height/2-player.y*view.scale;if(world.adventure){const a=areaFor(world.areaId);view.x=a.width*view.scale<view.width?(view.width-a.width*view.scale)/2:Math.max(view.width-a.width*view.scale,Math.min(0,view.x));view.y=a.height*view.scale<view.height?(view.height-a.height*view.scale)/2:Math.max(view.height-a.height*view.scale,Math.min(0,view.y));}if(pointer)aim={x:(pointer.x-view.x)/view.scale,y:(pointer.y-view.y)/view.scale};}
 function point(e){const r=canvas.getBoundingClientRect();if(e.pointerType==='touch'){pointer=null;camera();touchState.manualAim={x:(e.clientX-r.left-view.x)/view.scale,y:(e.clientY-r.top-view.y)/view.scale};aim=touchState.manualAim;return;}pointer={x:e.clientX-r.left,y:e.clientY-r.top};camera();world.player.angle=Math.atan2(aim.y-world.player.y,aim.x-world.player.x);}
@@ -143,7 +146,7 @@ function updateUI(){
  setText($('close-atlas'),touchMode?'Close':`Close · ${bindingLabel('map')} / Esc`);
  setText($('cancel'),touchMode?'Abandon':`Abandon · ${bindingLabel('fish')} / Esc`);
  touchUI?.update(world,!touchMode||!lobby.world||atlasOpen||saveUI?.open||settingsUI?.open||storyUI?.open||world.player.health<=0);
- if(touchMode){const npc=nearbyNpc(world);$('touch-examine').disabled=!world.adventure||(!storyPrompt(world)&&!npc&&!nearbyDrop(world)&&!nearWell(world)&&!nearestLandmark(world.player.x,world.player.y,world.areaId));setText($('touch-examine').querySelector('strong'),nearbyDrop(world)?'Pick up':npc?'Talk':'Examine');$('touch-examine').setAttribute('aria-label',nearbyDrop(world)?`Pick up ${itemLabel(nearbyDrop(world).item)}`:npc?`Talk to ${npc.name}`:'Examine nearby landmark');}
+ if(touchMode){const npc=nearbyNpc(world);$('touch-examine').disabled=!world.adventure||(!storyPrompt(world)&&!npc&&!nearbyDrop(world)&&!nearWell(world)&&!examinableLandmark(world.player.x,world.player.y,world.areaId));setText($('touch-examine').querySelector('strong'),nearbyDrop(world)?'Pick up':npc?'Talk':'Examine');$('touch-examine').setAttribute('aria-label',nearbyDrop(world)?`Pick up ${itemLabel(nearbyDrop(world).item)}`:npc?`Talk to ${npc.name}`:'Examine nearby landmark');}
  const f=world.fishing,active=f.state==='reeling',busy=f.state!=='idle',inventory=world.inventory;
  $('line-panel').hidden=!active;
  setText($('health-text'),`${Math.ceil(world.player.health)} / ${world.progression.maxHealth} HP`);
@@ -163,10 +166,10 @@ function updateUI(){
  for(const kind of ['tidal','whirlpool'])$('fire-'+kind).disabled=busy||world.player.cooldown>0||world.progression.specials[kind]===0||world.matchState!=='playing';
  setText($('world-state'),world.matchState==='countdown'?'GET READY':active?'REELING':busy?'WAITING FOR A BITE':'EXPLORING');
  setBottom($('catch-bar'),`${(f.bar||0)*100}%`);setBottom($('target'),`${(f.target||0)*100}%`);setHeight($('progress-fill'),active?`${f.progress*100}%`:'0%');setText($('percent'),active?`${Math.floor(f.progress*100)}%`:'0%');
- for(let slot=3;slot<=7;slot++){const button=$(`slot-${slot}`),item=inventory.slots[slot-2];setItemIcon(button.querySelector('.slot-icon'),item?.name);setText(button.querySelector('strong'),item?.name||'Empty');setText(button.querySelector('small'),item?(touchMode?amountLabel(item):`${amountLabel(item)} · ${bindingLabel('use')}`):'Assign from backpack');button.setAttribute('aria-label',`Slot ${slot}: ${item?.name||'empty'}${item?', '+amountLabel(item):''}`);button.classList.toggle('selected',inventory.selected===slot);button.setAttribute('aria-pressed',inventory.selected===slot);button.title=item?.description||'Open backpack to assign an item';}
+ for(let slot=3;slot<=7;slot++){const button=$(`slot-${slot}`),item=inventory.slots[slot-2];setItemIcon(button.querySelector('.slot-icon'),item?.name);setText(button.querySelector('strong'),item?.name||'Empty');setText(button.querySelector('small'),item?(touchMode?amountLabel(item):`${amountLabel(item)} · Click`):'Assign from backpack');button.setAttribute('aria-label',`Slot ${slot}: ${item?.name||'empty'}${item?', '+amountLabel(item):''}`);button.classList.toggle('selected',inventory.selected===slot);button.setAttribute('aria-pressed',inventory.selected===slot);button.title=item?.description||'Open backpack to assign an item';}
  for(const slot of [1,2]){const button=$(slot===1?'slot-rod':'slot-item');button.classList.toggle('selected',inventory.selected===slot);button.setAttribute('aria-pressed',inventory.selected===slot);}
- setText($('item-name'),inventory.slots[0]?.name||'Empty slot');setItemIcon($('item-icon'),inventory.slots[0]?.name);setText($('slot-rod').querySelector('small'),rodReady(world.story)?'Permanent':'On the rack');setText($('item-uses'),inventory.slots[0]?(touchMode?amountLabel(inventory.slots[0]):`${amountLabel(inventory.slots[0])} · Click or ${bindingLabel('use')}`):'Assign from backpack');
- let status=active?`Move along shore · Hold ${bindingLabel('reel')} / mouse to reel · ${bindingLabel('fish')} to abandon.`:busy?`Waiting for a bite… ${bindingLabel('fish')} / Esc to abandon.`:world.message||`Walk to shore, aim into water, press ${bindingLabel('fish')}.`;
+ setText($('item-name'),inventory.slots[0]?.name||'Empty slot');setItemIcon($('item-icon'),inventory.slots[0]?.name);setText($('slot-rod').querySelector('small'),rodReady(world.story)?'Permanent':'On the rack');setText($('item-uses'),inventory.slots[0]?(touchMode?amountLabel(inventory.slots[0]):`${amountLabel(inventory.slots[0])} · Click`):'Assign from backpack');
+ let status=active?`Move along shore · Hold ${bindingLabel('inspect')} / mouse to reel · ${bindingLabel('fish')} to abandon.`:busy?`Waiting for a bite… ${bindingLabel('fish')} / Esc to abandon.`:world.message||`Walk to shore, aim into water, press ${bindingLabel('fish')}.`;
  if(touchMode){status=status.replace('M opens the area map.','Tap the map to explore.');if(active)status='Hold Reel to raise the bar · Release to lower it';else if(busy)status='Waiting for a bite… Tap Cancel to abandon.';else if(!world.message)status='Drag the left stick to move · Tap water to aim · Use to cast';}
  setText($('status'),status);
  if(world.adventure){
@@ -202,19 +205,17 @@ document.title='The Wilds · Reedwater Landing';
 document.querySelector('.lobby-eyebrow').textContent='THE WILDS';
 document.querySelector('.lobby-card h1').textContent='Grandpa left you a map.';
 $('lobby-screen').classList.add('title-screen');document.querySelector('.lobby-card h1').insertAdjacentHTML('beforebegin','<img class="title-logo" src="assets/title/logo.webp" alt="The Wilds" width="1185" height="660">');
-document.querySelector('.lobby-note').textContent='WASD explore · Mouse aim · E fish · G examine · M atlas';
 document.querySelector('header h1').textContent='THE WILDS';
-document.querySelector('.controls').textContent='WASD MOVE · E FISH · G EXAMINE · M ATLAS · L-SHIFT DASH';
 document.querySelector('.lobby-actions').insertAdjacentHTML('afterbegin','<button id="explore-world">Enter the Wilds</button>');
-document.querySelector('.playfield').insertAdjacentHTML('beforeend',`<section id="exploration-hud" hidden><span class="exploration-kicker" id="area-kicker">YOUR JOURNEY</span><h2 id="region-name">Reedwater Delta</h2><div id="player-hp" role="progressbar" aria-label="Health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><div class="hp-row"><span class="hp-label">HP</span><span id="player-hp-text">100 / 100</span></div><div class="hp-track"><i id="player-hp-trail"></i><i id="player-hp-fill"></i></div></div><p id="discovery-count">0 / 10 places found</p><div class="discovery-dots" id="discovery-dots"></div><p id="purse-hud" title="Reed marks">${markIcon(14)}<span></span></p></section><button id="inspect-place" hidden>G · Examine</button><div id="explore-hint" hidden><kbd>WASD</kbd> walk · <kbd>E</kbd> fish · <kbd>G</kbd> examine · <kbd>M</kbd> map · <kbd>Shift</kbd> dash</div><button id="music-icon" aria-label="Music settings" aria-expanded="false">♪</button><button id="open-atlas" hidden aria-label="Open world atlas"><canvas id="mini-atlas" width="176" height="176"></canvas><span>M · WORLD ATLAS</span></button><section id="world-atlas" hidden role="dialog" aria-modal="true" aria-label="World atlas"><div class="atlas-card"><div class="atlas-heading"><div><small>THE WILDS</small><h2>World Atlas</h2></div><button id="close-atlas">Close · M / Esc</button></div><canvas id="atlas-canvas" width="800" height="600"></canvas><p>Follow the old trails and bridges. Gold marks the places you have found. Your position is the bright marker.</p></div></section>`);
-touchUI=mountMobileControls({state:touchState,active:()=>touchMode&&!!lobby.world&&!atlasOpen&&!hubUI?.open&&!chatUI?.open&&!hudUI?.open&&!saveUI?.open&&!backpackUI?.open&&!tradeUI?.open&&!wellUI?.open&&!radioUI?.open&&!skillsUI?.open&&!codexUI?.open&&!questUI?.open&&!settingsUI?.open&&!storyUI?.open&&!currentScene(world),action:()=>{pointer=null;const f=world.fishing;if(f.state==='waiting')act('cancel');else if(f.state==='idle')act('click');},examine:()=>{world.inspect();canvas.focus();}});
+document.querySelector('.playfield').insertAdjacentHTML('beforeend',`<section id="exploration-hud" hidden><span class="exploration-kicker" id="area-kicker">YOUR JOURNEY</span><h2 id="region-name">Reedwater Delta</h2><div id="player-hp" role="progressbar" aria-label="Health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><div class="hp-row"><span class="hp-label">HP</span><span id="player-hp-text">100 / 100</span></div><div class="hp-track"><i id="player-hp-trail"></i><i id="player-hp-fill"></i></div></div><p id="discovery-count">0 / 10 places found</p><div class="discovery-dots" id="discovery-dots"></div><p id="purse-hud" title="Reed marks">${markIcon(14)}<span></span></p></section><button id="inspect-place" hidden>G · Examine</button><div id="explore-hint" hidden></div><button id="music-icon" aria-label="Music settings" aria-expanded="false">♪</button><button id="open-atlas" hidden aria-label="Open world atlas"><canvas id="mini-atlas" width="176" height="176"></canvas><span>M · WORLD ATLAS</span></button><section id="world-atlas" hidden role="dialog" aria-modal="true" aria-label="World atlas"><div class="atlas-card"><div class="atlas-heading"><div><small>THE WILDS</small><h2>World Atlas</h2></div><button id="close-atlas">Close · M / Esc</button></div><canvas id="atlas-canvas" width="800" height="600"></canvas><p>Follow the old trails and bridges. Gold marks the places you have found. Your position is the bright marker.</p></div></section>`);
+touchUI=mountMobileControls({state:touchState,active:()=>touchMode&&!!lobby.world&&!atlasOpen&&!hubUI?.open&&!chatUI?.open&&!hudUI?.open&&!saveUI?.open&&!backpackUI?.open&&!tradeUI?.open&&!wellUI?.open&&!radioUI?.open&&!skillsUI?.open&&!codexUI?.open&&!questUI?.open&&!settingsUI?.open&&!helpUI?.open&&!storyUI?.open&&!currentScene(world),action:()=>{pointer=null;const f=world.fishing;if(f.state==='waiting')act('cancel');else if(f.state==='idle')act('click');},examine:()=>{world.inspect();canvas.focus();}});
 let atlasOpen=false,exploreStart=performance.now(),lastMessage='',messageSince=0,dotsKey='',hpShown='',hpFraction=1;
 $('upgrade-timer').insertAdjacentHTML('afterend','<div id="upgrade-bar"><i id="upgrade-fill"></i></div><p id="quest-objective" hidden aria-live="polite"></p><p id="side-objective" hidden aria-live="polite"></p>');
 document.querySelector('.hotbar').insertAdjacentHTML('beforeend','<div class="dash-mini"><div id="dash-pips"></div><span>DASH</span></div>');
 $('music-icon').onclick=()=>{const open=document.querySelector('.music-hud').classList.toggle('open');$('music-icon').setAttribute('aria-expanded',open);canvas.focus();};
 $('open-atlas').setAttribute('aria-label','Open area map');$('open-atlas').querySelector('span').textContent='M · AREA MAP';
 $('world-atlas').setAttribute('aria-label','Area map');document.querySelector('.atlas-card p').textContent='Walk through the marked map edge to reach the connecting path. Gold marks places you have found; the bright marker shows your position.';
-canvas.setAttribute('aria-label','Reedwater exploration. WASD move, E fish, G examine, M area map, Left Shift dash.');
+canvas.setAttribute('aria-label','Reedwater exploration. WASD move, Space talk or examine, left click use item, B backpack, H controls.');
 const atlasImages=new Map();
 function drawMap(target){
  const area=areaFor(world.areaId),key=`${area.id}:${target.width}:${target.height}`;let base=atlasImages.get(key);
@@ -266,7 +267,7 @@ function updateLobby(){
  document.body.classList.toggle('exploring',!!lobby.world?.adventure);
  $('exploration-hud').hidden=!lobby.world?.adventure;$('open-atlas').hidden=!lobby.world?.adventure;
  if(!lobby.world)toggleAtlas(false);
- document.querySelector('.lobby-note').textContent=touchMode?'Drag the left stick to move · Tap water to aim · Use · Examine':'WASD explore · Mouse aim · E fish · G examine · M atlas';
+ document.querySelector('.lobby-note').textContent=touchMode?'Drag the left stick to move · Tap water to aim · Use · Examine':document.querySelector('.controls').textContent;
  $('lobby-screen').hidden=!!lobby.world;if(touchUI)touchUI.update(world,!touchMode||!lobby.world);
  $('leave-lobby').hidden=lobby.mode==='menu';
  $('lobby-status').textContent=lobby.mode==='menu'?'Chapter 1 · The Old Fishing Hut. Follow Eli from the dock to a night that changes everything.':lobby.status;
@@ -292,7 +293,7 @@ const invitation=new URL(location.href).searchParams.get('room');if(invitation)$
 preferences.subscribe(()=>{release();progressionKey='';refreshKeyHints();});
 function refreshKeyHints(){
  const move=['up','left','down','right'].map(bindingLabel).join('/');
- document.querySelector('.controls').textContent=move+' MOVE · '+bindingLabel('fish')+' FISH · '+bindingLabel('inspect')+' EXAMINE · '+bindingLabel('map')+' ATLAS · '+bindingLabel('dash')+' DASH';
+ document.querySelector('.controls').textContent=move+' MOVE · '+bindingLabel('inspect')+' TALK / EXAMINE · CLICK USE ITEM · '+bindingLabel('backpack')+' BACKPACK · '+bindingLabel('help')+' CONTROLS';
  document.querySelector('.lobby-note').textContent=document.querySelector('.controls').textContent;
  $('explore-hint').textContent=document.querySelector('.controls').textContent;
  $('open-atlas').querySelector('span').textContent=bindingLabel('map')+' · WORLD ATLAS';
@@ -300,13 +301,14 @@ function refreshKeyHints(){
 }
 refreshKeyHints();
 mountScreenControls({onChange:()=>release()});
+helpUI=mountControlsHelp({isTouch:()=>touchMode,onOpen:()=>{release();backpackUI?.close();skillsUI?.close();codexUI?.close();questUI?.close();toggleAtlas(false);},onClose:()=>{release();canvas.focus();}});
 settingsUI=mountSettings({onOpen:()=>{release();backpackUI?.close();skillsUI?.close();codexUI?.close();questUI?.close();toggleAtlas(false);},onClose:()=>{release();if(!storyUI?.open)canvas.focus();}});
-hudUI=mountHudShell({act,examine:()=>{world.inspect();canvas.focus();},openAtlas:()=>toggleAtlas(true),openQuests:()=>questUI.show(),openWell:()=>wellUI.show(),openRadio:()=>radioUI.show(),isTouch:()=>touchMode});
+hudUI=mountHudShell({act,openHelp:()=>helpUI.show(),examine:()=>{world.inspect();canvas.focus();},openAtlas:()=>toggleAtlas(true),openQuests:()=>questUI.show(),openWell:()=>wellUI.show(),openRadio:()=>radioUI.show(),isTouch:()=>touchMode});
 storyUI=mountStory({getWorld:()=>lobby.world,onAdvance:()=>{release();lastAtlasDraw=0;canvas.focus();},onSettings:()=>settingsUI.show(),isSettingsOpen:()=>settingsUI.open});
 document.addEventListener('click',e=>{if(e.target.closest('button')&&!e.target.closest('#story-scene,#settings-sfx-test'))playSfx('ui');});
 updateLobby();
 let accumulator=0,last=performance.now(),lastUI=0,lastRender=0,titleArtIn=false;
-function frame(now){accumulator+=Math.min((now-last)/1000,.1);last=now;while(accumulator>=1/120){if(!hudUI?.open&&!hubUI?.open&&!backpackUI?.open&&!tradeUI?.open&&!wellUI?.open&&!radioUI?.open&&!skillsUI?.open&&!codexUI?.open&&!questUI?.open&&!saveUI?.open&&!settingsUI?.open&&!document.hidden){if(storyAction(lobby.world))updateStoryAction(lobby.world,1/120);else if(!storyUI?.open){lobby.tick(1/120,currentInput());observeGameSounds(lobby.world);}}accumulator-=1/120;}
+function frame(now){accumulator+=Math.min((now-last)/1000,.1);last=now;while(accumulator>=1/120){if(!hudUI?.open&&!hubUI?.open&&!backpackUI?.open&&!tradeUI?.open&&!wellUI?.open&&!radioUI?.open&&!skillsUI?.open&&!codexUI?.open&&!questUI?.open&&!saveUI?.open&&!settingsUI?.open&&!helpUI?.open&&!document.hidden){if(storyAction(lobby.world))updateStoryAction(lobby.world,1/120);else if(!storyUI?.open){lobby.tick(1/120,currentInput());observeGameSounds(lobby.world);}}accumulator-=1/120;}
  if(lobby.world)world=lobby.world;
  if(now-lastRender<1000/60){requestAnimationFrame(frame);return;}lastRender=now-((now-lastRender)%(1000/60));
  // A full-screen video cutscene hides the world, so only the UI keeps ticking until it ends.

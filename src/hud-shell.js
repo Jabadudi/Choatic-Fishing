@@ -15,6 +15,7 @@ const ICONS={
  radio:'<rect x="3" y="8" width="18" height="12" rx="2"/><circle cx="8" cy="14" r="2.5"/><path d="M14 12h4M14 16h4M7 8l9-5"/>',
  save:'<path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/>',
  settings:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>',
+ help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7M12 17v.5"/>',
  full:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
  talk:'<path d="M4 5h16v10H9l-5 4z"/>',
  dash:'<path d="M5 12h9M9 7l5 5-5 5M17 6v12"/>',
@@ -26,7 +27,7 @@ export function splitObjective(text,fallback){
  const at=text.indexOf(' · ');
  return at>0&&at<40?{title:text.slice(0,at),body:text.slice(at+3)}:{title:fallback,body:text};
 }
-export function mountHudShell({act,examine,openAtlas,openQuests,openWell,openRadio,isTouch}){
+export function mountHudShell({act,openHelp,examine,openAtlas,openQuests,openWell,openRadio,isTouch}){
  const playfield=document.querySelector('.playfield'),$=id=>document.getElementById(id);
  const shell=el('section');shell.id='hud-shell';shell.hidden=true;shell.setAttribute('aria-label','Exploration HUD');
  shell.innerHTML=`<button id="hud-menu" aria-label="Menu" aria-haspopup="dialog"><span class="hud-portrait" aria-hidden="true"></span></button>
@@ -62,7 +63,7 @@ export function mountHudShell({act,examine,openAtlas,openQuests,openWell,openRad
  const draw=()=>{hotbar.classList.toggle('page-2',page===2);pager.textContent=page===1?'1–4 ▾':'5–7 ▴';pager.setAttribute('aria-label',page===1?'Show hotbar slots 5 to 7':'Show hotbar slots 1 to 4');};
  draw();
  // The menu launches every screen. Buttons that live elsewhere are clicked, so their own rules still apply.
- const ENTRIES=[['Backpack','open-backpack'],['Skills','open-skills'],['Index','open-codex'],['Quest log','open-quests'],['Friends','open-players'],['Chat','open-chat'],['World Atlas',openAtlas,ICONS.atlas,'map'],['Radio',openRadio,ICONS.radio,'radio'],['Wishing Well',openWell,ICONS.well],['Save','open-saves',ICONS.save],['Settings','open-settings',ICONS.settings],['Full screen','toggle-fullscreen',ICONS.full]];
+ const ENTRIES=[['Backpack','open-backpack'],['Skills','open-skills'],['Index','open-codex'],['Quest log','open-quests'],['Friends','open-players'],['Chat','open-chat'],['World Atlas',openAtlas,ICONS.atlas,'map'],['Radio',openRadio,ICONS.radio,'radio'],['Wishing Well',openWell,ICONS.well],['Save','open-saves',ICONS.save],['Controls',openHelp,ICONS.help,'help'],['Settings','open-settings',ICONS.settings],['Full screen','toggle-fullscreen',ICONS.full]];
  const grid=sheet.querySelector('.hud-sheet-grid');
  const entries=ENTRIES.map(([label,target,icon,key])=>{
   const button=el('button','hud-sheet-item');const source=typeof target==='string'?$(target):null;
@@ -123,7 +124,7 @@ export function mountHudShell({act,examine,openAtlas,openQuests,openWell,openRad
    const touchSymbol=document.querySelector('#touch-use .touch-symbol');if(touchSymbol)setItemIcon(touchSymbol,rod?'Fishing Rod':item?.name);
    for(const kind of ['tidal','whirlpool']){const b=actions.querySelector('.'+kind),n=p.specials[kind];setText(b.querySelector('.hud-charges'),String(n));b.disabled=n===0||world.fishing.state!=='idle';}
    const keys={whirlpool:'whirlpool',tidal:'tidal',talk:'inspect',use:rod?'fish':'use',dash:'dash'};
-   for(const b of actions.querySelectorAll('[data-act]'))setText(b.querySelector('kbd'),touch?'':bindingLabel(keys[b.dataset.act]).replace(/^(Left|Right) /,''));
+   for(const b of actions.querySelectorAll('[data-act]'))setText(b.querySelector('kbd'),touch?'':b.dataset.act==='use'?'Click':bindingLabel(keys[b.dataset.act]).replace(/^(Left|Right) /,''));
    // Pickups and first finds.
    const seen=notePickups(world,carried);carried=seen.carried;
    for(const g of seen.gained)pushFeed(g);queue.push(...seen.firsts);

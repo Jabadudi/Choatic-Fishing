@@ -1,16 +1,28 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {DEFAULT_BINDINGS,normalizeBindings,rebind,validBinding} from '../src/input-bindings.js';
 import {createPreferenceStore} from '../src/preferences.js';
+import {controlRows} from '../src/controls-help.js';
 import {World} from '../src/world.js';import {SCENES,cabinDamaged} from '../src/story.js';
 import {storyAction,updateStoryAction} from '../src/story-action.js';
 import {captureSave,restoreSave} from '../src/save-format.js';
 import {walkable} from '../src/wilds.js';
 test('rebinding an occupied key swaps actions and survives storage normalization',()=>{
- const swapped=rebind(DEFAULT_BINDINGS,'inspect','KeyE');assert.equal(swapped.inspect,'KeyE');assert.equal(swapped.fish,'KeyG');
+ const swapped=rebind(DEFAULT_BINDINGS,'inspect','KeyE');assert.equal(swapped.inspect,'KeyE');assert.equal(swapped.fish,'Space');
  assert.deepEqual(normalizeBindings(swapped),swapped);assert.equal(new Set(Object.values(swapped)).size,Object.keys(swapped).length);
  assert.equal(validBinding('Escape'),false);assert.equal(validBinding('F10'),false);assert.equal(validBinding('ControlLeft'),false);
  assert.deepEqual(normalizeBindings({inspect:'Invalid',left:'Escape'}),DEFAULT_BINDINGS);
  const data=new Map(),storage={getItem:k=>data.get(k),setItem:(k,v)=>data.set(k,v)},store=createPreferenceStore(storage);store.set({keybinds:swapped});assert.deepEqual(createPreferenceStore(storage).value.keybinds,swapped);
+});
+test('Space interacts by default and older saved keys move from G to Space',()=>{
+ assert.equal(DEFAULT_BINDINGS.inspect,'Space');assert.equal(DEFAULT_BINDINGS.backpack,'KeyB');assert.equal(DEFAULT_BINDINGS.help,'KeyH');assert.equal(Object.hasOwn(DEFAULT_BINDINGS,'reel'),false);
+ const old={...DEFAULT_BINDINGS,inspect:'KeyG',reel:'Space'};delete old.help;
+ assert.deepEqual(normalizeBindings(old),DEFAULT_BINDINGS);
+ const custom=normalizeBindings({...old,inspect:'KeyX'});assert.equal(custom.inspect,'KeyX');assert.equal(new Set(Object.values(custom)).size,Object.keys(custom).length);
+});
+test('the Controls card follows the current keys',()=>{
+ const rows=controlRows(DEFAULT_BINDINGS).flatMap(([,list])=>list),find=text=>rows.find(([,t])=>t.startsWith(text))?.[0];
+ assert.equal(find('Talk, examine'),'Space');assert.equal(find('Use the equipped item'),'Left click');assert.equal(find('Backpack'),'B');assert.equal(find('This list'),'H');
+ assert.equal(controlRows(rebind(DEFAULT_BINDINGS,'inspect','KeyE')).flatMap(([,list])=>list).find(([,t])=>t.startsWith('Talk'))[0],'E');
 });
 test('cooking has no photograph illustration',()=>assert.equal(SCENES.dinner[0].art,null));
 test('scripted escape stays on land, exits cabin, finishes rescue and grants lure once',()=>{

@@ -96,10 +96,10 @@ These are the default keys. All of them can be rebound in Settings.
 | --- | --- |
 | W A S D | Move |
 | Mouse | Aim |
-| G | Talk / examine / enter a door / pick up |
+| Space | Talk / examine / enter a door / pick up, when Eli is right next to it |
+| Hold Space or left click | Reel (raise the catch bar) |
+| Left click / F | Use the equipped item (cast the rod, shoot the bow, eat, attack) |
 | E | Cast the rod, or abandon a cast |
-| Space or hold left click | Reel (raise the catch bar) |
-| Left click / F | Use the equipped item (shoot the bow, eat, attack) |
 | 1 | Fishing rod |
 | 2 to 7 | Hotbar shortcuts |
 | Left Shift | Dash |
@@ -109,6 +109,7 @@ These are the default keys. All of them can be rebound in Settings.
 | J | Quest log |
 | M | Area map |
 | Q / Escape | Cancel the current action or close a menu |
+| H | Controls card listing every key |
 | F10 | Settings |
 
 In dialogue, Space, Enter or the arrow keys turn pages. On touch screens, the

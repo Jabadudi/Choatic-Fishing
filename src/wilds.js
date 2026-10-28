@@ -125,6 +125,9 @@ export function transitionAt(x,y,id='landing'){
  return exit?{areaId:exit.target,...exit.entry}:null;
 }
 export function nearestLandmark(x,y,id='landing'){return placesFor(id).find(p=>Math.hypot(x-p.x,y-p.y)<135)||null;}
+// Discovery and the region label use the wide circle above; examining needs Eli right beside the spot.
+export const EXAMINE_RANGE=60;
+export function examinableLandmark(x,y,id='landing'){let best=null,bestD=Infinity;for(const p of placesFor(id)){const d=Math.hypot(x-p.x,y-p.y);if(d<=(p.reach||EXAMINE_RANGE)&&d<bestD){best=p;bestD=d;}}return best;}
 
 const tree=leafyTree,rock=meadowRock;
 // Water deepens in bands away from the shore; the sea sits one band darker than the lakes.

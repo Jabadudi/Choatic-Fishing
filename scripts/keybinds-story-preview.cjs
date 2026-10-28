@@ -4,7 +4,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
  const page=await browser.newPage({viewport:{width:1365,height:900}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/src/main.js',async route=>{const response=await route.fetch();await route.fulfill({response,body:await response.text()+'\nwindow.__storyQA={get world(){return world;}};'});});
  await page.goto('http://127.0.0.1:5186');await page.locator('#open-settings').click();await page.locator('#settings-keybinds-tab').click();
- await page.locator('[data-binding="inspect"]').click();await page.keyboard.press('KeyE');assert.equal(await page.locator('[data-binding="fish"]').innerText(),'G');assert.equal(await page.locator('[data-binding="inspect"]').innerText(),'E');
+ await page.locator('[data-binding="inspect"]').click();await page.keyboard.press('KeyE');assert.equal(await page.locator('[data-binding="fish"]').innerText(),'Space');assert.equal(await page.locator('[data-binding="inspect"]').innerText(),'E');
  await page.locator('[data-binding="right"]').click();await page.keyboard.press('ArrowRight');
  await page.locator('[data-binding="left"]').click();await page.keyboard.press('Escape');assert.equal(await page.locator('#settings-menu').isVisible(),true);assert.equal(await page.locator('[data-binding="left"]').innerText(),'A');
  await page.screenshot({path:'screenshots/settings-keybinds.png'});await page.reload();await page.keyboard.press('F10');await page.locator('#settings-keybinds-tab').click();assert.equal(await page.locator('[data-binding="inspect"]').innerText(),'E');await page.locator('#close-settings').click();

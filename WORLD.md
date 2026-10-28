@@ -28,8 +28,8 @@ changes; there is no teleport menu or interaction key. The camera keeps its zoom
 and clamps to each area's bounds. Area maps, geography, scenery caches and
 discovery counts switch with the active area; prior discoveries remain in memory.
 
-WASD moves, mouse aims, E casts or abandons fishing, Space reels, Left Shift dashes,
-G examines landmarks, and M opens/closes the area map. Fishing, inventory,
+WASD moves, mouse aims, left click uses the equipped item, E casts or abandons fishing,
+Space examines landmarks and reels, Left Shift dashes, and M opens/closes the area map. Fishing, inventory,
 regeneration and timed upgrades remain available. The dock can be walked on.
 
 Scenery and explorer artwork are original; rabbits use the user-supplied sprite

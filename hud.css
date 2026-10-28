@@ -196,3 +196,16 @@
  :root body.exploring #inspect-place{left:50%;top:auto;bottom:calc(250px + var(--hud-b));transform:translateX(-50%);max-width:calc(100vw - 24px)}
 }
 @media(prefers-reduced-motion:reduce){.hud-got,#hud-banner.show,.hud-found-card{animation-duration:.01s}}
+/* Controls card: every key in plain words, opened with H or from the menu. */
+#controls-help{width:min(640px,calc(100vw - 24px));max-height:92dvh;overflow:auto;padding:22px;border:2px solid #9ca67f;border-radius:8px;background:#1b302c;color:#eee8d2;box-shadow:0 12px 60px #0009;font:14px/1.45 Arial,sans-serif}
+#controls-help::backdrop{background:#071719b8}
+.controls-help-heading{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:10px}
+.controls-help-heading h2{display:block;font:26px Georgia;color:#f7e9c8;margin:3px 0}.controls-help-heading small{font:10px monospace;letter-spacing:.2em;color:#c0c9a1}
+#controls-help button{font:12px monospace;padding:9px 12px;min-height:40px;border:1px solid #8c9c7b;background:#29483e;color:#eee8d2;border-radius:4px}
+.controls-help-body{display:grid;gap:14px}
+.controls-help-body h3{margin:0 0 6px;font:11px monospace;letter-spacing:.18em;text-transform:uppercase;color:#c6dc94}
+.controls-help-body dl{display:grid;grid-template-columns:max-content 1fr;gap:6px 14px;margin:0;align-items:center}
+.controls-help-body dt{text-align:right}.controls-help-body dd{margin:0}
+.controls-help-body kbd{display:inline-block;min-width:22px;padding:3px 7px;border:1px solid #c9b98a99;border-bottom-width:3px;border-radius:4px;background:#0d1d22;color:#f1e3bd;font:12px monospace;text-align:center}
+.controls-help-note{margin:14px 0 0;font-size:12px;color:#c0c9a1}
+@media(max-height:500px){#controls-help{padding:14px}.controls-help-body{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}}
