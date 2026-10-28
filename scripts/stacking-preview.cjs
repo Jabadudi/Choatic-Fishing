@@ -19,11 +19,11 @@ const assert=require('node:assert/strict');
  await page.locator('#open-backpack:not([hidden])').waitFor();await page.locator('#open-backpack').click();await page.locator('#backpack[open]').waitFor();await page.waitForTimeout(300);
  // 48 items fit in 11 slots: a full stack of 20 sardines plus 3, and one slot per other kind.
  assert.equal(await page.locator('.backpack-item').count(),11);
- assert.match(await page.locator('#backpack .backpack-capacity').textContent(),/48 items in 11 slots/);
- await page.locator('.backpack-item[title="Sardine"]').first().click();
+ assert.match(await page.locator('#backpack .backpack-capacity').textContent(),/48 items · 11 slots/);
+ await page.locator('.backpack-item[title="Sardine"]').last().click();
  assert.equal(await page.locator('.backpack-uses').innerText(),'20 in this stack');
  await page.locator('.backpack-action-row button',{hasText:'Add to hotbar'}).click();await page.locator('.backpack-slot-choices button').nth(1).click();await page.waitForTimeout(200);
- await page.locator('.backpack-item[title="Sardine"]').first().click();await page.waitForTimeout(200);
+ await page.locator('.backpack-item[title="Sardine"]').last().click();await page.waitForTimeout(200);
  assert.ok(await page.locator('.backpack-action-row button',{hasText:'Discard all 20'}).count());
  await page.screenshot({path:'screenshots/stacking-backpack.png'});
  await page.locator('.backpack-filters button',{hasText:'Consumables'}).click();await page.waitForTimeout(200);
