@@ -62,6 +62,10 @@ The tour and the night are saved checkpoints (`ch5-tour`, `ch5-night`, `ch5-slee
 
 `src/chapter5.js` supplies the dialogue and objectives. `src/guest-lodge.js` owns the room’s geometry, collision and drawing; its light changes with the story (evening, moonlight, sunrise). Video pages are declared with `video:` on a beat and resolved through `STORY_VIDEO` in `src/sprite-definitions.js`.
 
+### Adding a video cutscene
+
+Any chapter can add one: put the MP4 (H.264/AAC, fast start, 720p is plenty) under `assets/story/`, add it to `STORY_VIDEO`, and give the beat a `video:` key plus readable lines as the fallback. `src/cutscene-video.js` plays every clip. It builds the `<video>` element only when the page opens and removes it when the page turns, so no decoder, buffered frames or listeners stay behind, and while the video covers the screen the game stops drawing the world underneath it.
+
 `src/chapter4.js` supplies the dialogue and objectives. `src/chief-house.js` owns the interior’s geometry, collision and drawing. Mara’s saved guide position is fixed inside the house for the whole chapter.
 
 `src/chapter3.js` supplies dialogue and routes. `src/village-life.js` owns friendly village residents and their simulation updates; their appearance is configured in the sprite registry. Creature art has no effect on collisions, health or rewards. The tamed Rimejaw and Flitlynx are inspectable NPCs, separate from huntable wildlife and combat AI.

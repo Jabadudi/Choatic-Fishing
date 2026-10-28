@@ -1,20 +1,19 @@
 import {currentScene,SCENES,chapterHeading} from './story.js';
 import {STORY_ART,STORY_VIDEO} from './sprite-definitions.js';
+import {createCutscenePlayer} from './cutscene-video.js';
 import {spriteAssetUrl,drawEntitySprite} from './sprites.js';
 import {dialogueMarkup,setDialogueText,drawDialoguePortrait} from './dialogue-view.js';
 import {cutscenePresentation} from './cutscene-presentation.js';
 import {NARRATOR,VOICE} from './scene-script.js';
 import {playSfx} from './sfx.js';
-import {holdMusic} from './music.js';
-import {preferences} from './preferences.js';
 import {storyActionElapsed,NIGHT_ATTACK} from './story-action.js';
 // Eli learns the chief's name at the end of Chapter 4; every title shares her portrait.
 const EMILIA_NAMES=['The old woman','The chief','Emilia'];
 export function mountStory({getWorld,onAdvance=()=>{},onSettings=()=>{},isSettingsOpen=()=>false}){
  const dialog=document.createElement('dialog');dialog.id='story-scene';dialog.setAttribute('aria-labelledby','story-title');
- dialog.innerHTML=`<div class="cutscene-picture" hidden><img id="story-image" alt=""><canvas id="story-creature" width="1000" height="500" hidden></canvas></div><div class="cutscene-veil"></div>${dialogueMarkup('story')}<div class="scene-toolbar"><button id="story-skip" hidden>Show dialogue</button><button id="story-admire" hidden>Admire art</button><button id="story-settings">⚙ Settings</button></div><span class="scene-loading" hidden>Loading artwork…</span><div class="cutscene-video" hidden><video id="story-video" playsinline preload="auto"></video><button id="story-video-skip">Skip video ›</button></div>`;
- document.body.append(dialog);const q=id=>dialog.querySelector('#'+id),picture=dialog.querySelector('.cutscene-picture'),veil=dialog.querySelector('.cutscene-veil'),box=dialog.querySelector('.dialogue-box'),img=q('story-image'),canvas=q('story-creature'),videoLayer=dialog.querySelector('.cutscene-video'),video=q('story-video');
- let key='',artId='',lastWorld=null,videoKey='',videoFailed=false,videoHeld=false,lastDialogue=null,historyPage=null,visualKey='',elapsed=0,ready=true,failed=false,loadingAt=0,lastTick=performance.now(),generation=0,canAdvance=true;
+ dialog.innerHTML=`<div class="cutscene-picture" hidden><img id="story-image" alt=""><canvas id="story-creature" width="1000" height="500" hidden></canvas></div><div class="cutscene-veil"></div>${dialogueMarkup('story')}<div class="scene-toolbar"><button id="story-skip" hidden>Show dialogue</button><button id="story-admire" hidden>Admire art</button><button id="story-settings">⚙ Settings</button></div><span class="scene-loading" hidden>Loading artwork…</span><div class="cutscene-video" hidden><button id="story-video-skip">Skip video ›</button></div>`;
+ document.body.append(dialog);const q=id=>dialog.querySelector('#'+id),picture=dialog.querySelector('.cutscene-picture'),veil=dialog.querySelector('.cutscene-veil'),box=dialog.querySelector('.dialogue-box'),img=q('story-image'),canvas=q('story-creature');
+ let key='',artId='',lastWorld=null,lastDialogue=null,historyPage=null,visualKey='',elapsed=0,ready=true,failed=false,loadingAt=0,lastTick=performance.now(),generation=0,canAdvance=true;
  // Each artwork plays as a cutscene the first time only; later pages open straight on the dialogue, and Admire art brings it back.
  const seenArt=new WeakMap(),seenFor=w=>{let s=seenArt.get(w);if(!s)seenArt.set(w,s=new Set());return s;};
  function model(){
@@ -37,8 +36,8 @@ export function mountStory({getWorld,onAdvance=()=>{},onSettings=()=>{},isSettin
  function previous(){const m=model();if(!m||!m.story||m.page===0||!canAdvance)return;historyPage=m.page-1;playSfx('page');update();}
  q('story-next').onclick=next;q('story-previous').onclick=previous;q('story-close').onclick=q('story-end').onclick=closeConversation;
  // A video page turns itself when the video ends; Skip does the same at once. A video that cannot play falls back to its text page.
- video.addEventListener('ended',()=>next(true));q('story-video-skip').onclick=()=>next(true);
- video.addEventListener('error',()=>{if(!videoKey)return;videoFailed=true;stopVideo(false);update();});
+ const cutscene=createCutscenePlayer(dialog.querySelector('.cutscene-video'),{onEnd:()=>next(true),onFail:()=>update()});
+ q('story-video-skip').onclick=()=>next(true);
  q('story-settings').onclick=onSettings;q('story-skip').onclick=()=>{elapsed=1e6;update();};
  q('story-admire').onclick=()=>{const m=model();if(!m||!artId)return;visualKey='';setupVisual(m,true);update();};
  dialog.addEventListener('cancel',e=>{e.preventDefault();closeConversation();});
@@ -57,24 +56,10 @@ export function mountStory({getWorld,onAdvance=()=>{},onSettings=()=>{},isSettin
   if(art&&show){img.alt=art.alt;img.src=spriteAssetUrl(art.asset);img.decode().then(()=>{if(token===generation)ready=true;}).catch(()=>{if(token===generation){ready=true;failed=true;}});}
   else img.removeAttribute('src');
  }
- function stopVideo(clear=true){video.pause();videoLayer.hidden=true;videoHeld=false;holdMusic(false);if(clear){videoKey='';videoFailed=false;video.removeAttribute('src');video.load();}}
- function playVideo(m){
-  const clip=STORY_VIDEO[m.scene.video],id=`${m.w.story.scene}:${m.page}`;
-  if(!clip||videoFailed&&videoKey===id)return false;
-  if(videoKey!==id){
-   videoKey=id;videoFailed=false;video.setAttribute('aria-label',clip.label);const p=preferences.value;video.muted=p.musicMuted&&p.sfxMuted;
-   video.src=spriteAssetUrl(clip.asset);video.currentTime=0;videoLayer.hidden=false;holdMusic(true);
-   // Browsers can refuse sound without a recent click or key press; show the controls so the player can start it.
-   video.play().catch(()=>{video.controls=true;});
-  }
-  // Settings pauses the video the way it pauses the artwork clock.
-  if(isSettingsOpen()||document.hidden){if(!video.paused){video.pause();videoHeld=true;}}
-  else if(videoHeld){videoHeld=false;video.play().catch(()=>{video.controls=true;});}
-  return true;
- }
+ const videoId=m=>`${m.w.story.scene}:${m.page}`;
  function update(){
   const now=performance.now(),dt=Math.min(100,Math.max(0,now-lastTick));lastTick=now;
-  let m=model();if(videoKey&&!(m?.scene.video&&videoKey===`${m.w.story.scene}:${m.page}`))stopVideo();
+  let m=model();if(cutscene.id&&!(m?.scene.video&&cutscene.id===videoId(m)))cutscene.stop();
   if(m?.scene.action&&!(m.scene.action==='rescue'&&storyActionElapsed(m.w)>=NIGHT_ATTACK.fight)){if(dialog.open)dialog.close();key='';visualKey='';historyPage=null;generation++;return;}if(!m){if(dialog.open)dialog.close();key='';visualKey='';historyPage=null;lastWorld=null;lastDialogue=null;generation++;return;}
   if(m.w!==lastWorld||(!m.story&&m.w.dialogue!==lastDialogue)){historyPage=null;m=model();}
   const nextKey=m.story?`${m.w.story.scene}:${m.page}`:`npc:${m.w.dialogue.npcId}:${m.w.dialogue.text}`;
@@ -85,7 +70,7 @@ export function mountStory({getWorld,onAdvance=()=>{},onSettings=()=>{},isSettin
    q('story-page').textContent=`${m.page+1} / ${m.count}`;q('story-previous').disabled=!m.story||m.page===0;
    q('story-next').firstChild.textContent=m.story?'Next › ':'Done ';if(!dialog.open)dialog.showModal();q('story-next').focus();
   }
-  if(m.scene.video&&playVideo(m)){
+  if(m.scene.video&&cutscene.play(videoId(m),STORY_VIDEO[m.scene.video],isSettingsOpen()||document.hidden)){
    canAdvance=false;dialog.dataset.phase='video';picture.style.opacity='0';veil.style.opacity='0';box.style.visibility='hidden';q('story-skip').hidden=q('story-admire').hidden=true;dialog.querySelector('.scene-loading').hidden=true;return;
   }
   if(m.scene.creature&&visualKey){
@@ -101,7 +86,8 @@ export function mountStory({getWorld,onAdvance=()=>{},onSettings=()=>{},isSettin
   q('story-admire').hidden=!!m.scene.action||!artId||!ready||!p.ready;
   drawDialoguePortrait(q('story-portrait'),m.speaker);
  }
- return {update,get open(){return dialog.open;}};
+ // While a video fills the screen the world underneath is hidden, so the game can skip drawing it.
+ return {update,get open(){return dialog.open;},get covering(){return dialog.open&&cutscene.playing;}};
 }
 
 

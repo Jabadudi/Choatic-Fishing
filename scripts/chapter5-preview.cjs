@@ -41,6 +41,8 @@ const assert=require('node:assert/strict');
  await page.evaluate(()=>{const v=document.querySelector('#story-video');v.currentTime=v.duration-.5;});
  await page.locator('#story-title').filter({hasText:'Bang. Bang. Bang.'}).waitFor({timeout:10000});
  assert.equal(await page.locator('.cutscene-video').isHidden(),true);
+ // The video element is removed with the cutscene, so nothing keeps decoding or holding frames afterwards.
+ assert.equal(await page.locator('#story-video').count(),0);
  await until('Bang. Bang. Bang.');while(!(await page.locator('#story-text').innerText()).includes('Wake up'))await next();
  await page.screenshot({path:'screenshots/chapter5-knock.png'});
  while(await stage()==='ch5-sleep')await next();
