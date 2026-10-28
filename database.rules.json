@@ -3,8 +3,8 @@
     ".read": false,
     ".write": false,
     "presence": {
-      ".read": "auth != null",
       "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('friends').child($uid).child(auth.uid).val() === true)",
         ".write": "auth != null && auth.uid === $uid",
         ".validate": "newData.hasChildren(['n', 'a'])",
         "n": { ".validate": "newData.isString() && newData.val() === newData.parent().parent().parent().child('profiles').child($uid).child('nick').val()" },
@@ -15,15 +15,36 @@
       }
     },
     "pos": {
-      "$area": {
-        ".read": "auth != null",
-        "$uid": {
-          ".write": "auth != null && auth.uid === $uid && $area.matches(/^[a-z-]{1,24}$/)",
-          ".validate": "newData.hasChildren(['x', 'y', 'f'])",
-          "x": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 5000" },
-          "y": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 5000" },
-          "f": { ".validate": "newData.isString() && newData.val().matches(/^[udlr]$/)" },
-          "w": { ".validate": "newData.isBoolean()" },
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('friends').child($uid).child(auth.uid).val() === true)",
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.hasChildren(['a', 'x', 'y', 'f'])",
+        "a": { ".validate": "newData.isString() && newData.val().matches(/^[a-z-]{1,24}$/)" },
+        "x": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 5000" },
+        "y": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 5000" },
+        "f": { ".validate": "newData.isString() && newData.val().matches(/^[udlr]$/)" },
+        "w": { ".validate": "newData.isBoolean()" },
+        "$other": { ".validate": false }
+      }
+    },
+    "friends": {
+      "$owner": {
+        ".read": "auth != null && auth.uid === $owner",
+        "$other": {
+          ".write": "auth != null && $owner !== $other && ((auth.uid === $owner && (!newData.exists() || root.child('requests').child($owner).child($other).exists())) || (auth.uid === $other && (!newData.exists() || root.child('requests').child($other).child($owner).exists())))",
+          ".validate": "newData.val() === true"
+        }
+      }
+    },
+    "requests": {
+      "$to": {
+        ".read": "auth != null && auth.uid === $to",
+        "$from": {
+          ".read": "auth != null && auth.uid === $from",
+          ".write": "auth != null && $to !== $from && (auth.uid === $from || (auth.uid === $to && !newData.exists()))",
+          ".validate": "newData.hasChildren(['n', 't']) && root.child('friends').child($to).child($from).val() !== true",
+          "n": { ".validate": "newData.isString() && newData.val() === root.child('profiles').child($from).child('nick').val()" },
+          "t": { ".validate": "newData.val() === now" },
           "$other": { ".validate": false }
         }
       }

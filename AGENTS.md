@@ -30,6 +30,7 @@ See `docs/ENTITY-BEHAVIORS.md` for current assignments and hunting rules.
 # Shared world
 
 - `src/hub.js` owns multiplayer presence; `src/hub-backend.js` is the only file that knows Realtime Database paths, and `database.rules.json` must allow exactly what it writes.
+- The shared world is friends only: presence and position are readable by mutual friends and nobody else, enforced in the rules, not just the client.
 - Share presence only (nickname, area, AFK, position). Story, animals, drops, quests and saves stay local until a referee server exists; never trust another player's data for rewards.
 - Read other players' entries through `readPresence`/`readPosition`, which drop unknown areas and bad values. Show only nicknames, never Google names or emails.
-- Run `scripts/hub-preview.cjs` against the database emulator after changing the hub or its rules.
+- After changing the hub or its rules, run `scripts/database-rules-check.mjs` and `scripts/hub-preview.cjs` against the database emulator.
