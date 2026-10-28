@@ -306,7 +306,7 @@ $('ready-up').onclick=()=>lobby.toggleReady();$('start-match').onclick=()=>{if(l
 $('leave-lobby').onclick=()=>lobby.leave();
 $('copy-invite').onclick=async()=>{const url=new URL(location.href);url.search='';url.searchParams.set('room',lobby.code);try{await navigator.clipboard.writeText(url.href);lobby.status='Invite link copied. Send it to your friends.';}catch{lobby.status='Copy this room code and share the game URL.';$('room-code').select();}updateLobby();};
 const invitation=new URL(location.href).searchParams.get('room');if(invitation)$('join-code').value=invitation;
-preferences.subscribe(()=>{release();progressionKey='';refreshKeyHints();});
+preferences.subscribe(()=>{release();progressionKey='';promptFrame=null;refreshKeyHints();});
 function refreshKeyHints(){
  const move=['up','left','down','right'].map(bindingLabel).join('/');
  document.querySelector('.controls').textContent=move+' MOVE · '+bindingLabel('inspect')+' TALK / EXAMINE · CLICK USE ITEM · '+bindingLabel('backpack')+' BACKPACK · '+bindingLabel('help')+' CONTROLS';

@@ -37,3 +37,13 @@ test('cursor choice is kept, unknown styles fall back to the system pointer',asy
   assert.match(cursorValue(c.id),new RegExp(`^url\\("assets/cursors/${c.id}\\.png"\\) ${x} ${y}, url\\("data:image/svg\\+xml,[^"]+"\\) ${x} ${y}, auto$`));
  }
 });
+test('UI size is clamped to the slider range in 5% steps and kept across reloads',()=>{
+ assert.equal(DEFAULT_PREFERENCES.uiScale,1);
+ assert.equal(normalizePreferences({uiScale:9}).uiScale,1.5);
+ assert.equal(normalizePreferences({uiScale:.1}).uiScale,.7);
+ assert.equal(normalizePreferences({uiScale:1.13}).uiScale,1.15);
+ assert.equal(normalizePreferences({uiScale:'big'}).uiScale,1);
+ assert.equal(normalizePreferences({uiScale:NaN}).uiScale,1);
+ const data=new Map(),storage={getItem:k=>data.get(k),setItem:(k,v)=>data.set(k,v)};
+ createPreferenceStore(storage).set({uiScale:1.25});assert.equal(createPreferenceStore(storage).value.uiScale,1.25);
+});

@@ -88,3 +88,4 @@ html[data-cursor],html[data-cursor] body,html[data-cursor] body *:not(input[type
 #settings-menu .cursor-options button:hover{border-color:#c8dca0;}
 @media(max-width:700px){.cursor-options{grid-template-columns:repeat(2,minmax(0,1fr));}}
 #settings-menu [data-cursor-style],#settings-menu [data-cursor-style] *{cursor:var(--game-cursor)!important;}
+.settings-scale-steps{display:flex;gap:8px;margin-top:9px}.settings-scale-steps button{min-width:52px}.settings-scale-steps button:disabled{opacity:.45}
