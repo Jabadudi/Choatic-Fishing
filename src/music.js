@@ -1,4 +1,5 @@
 import {preferences} from './preferences.js';
+import {titleArtReady} from './title-art.js';
 // One audio instance and a repeating playlist; match restarts never reset playback.
 const tracks=[
  {file:'battle-music.mp3',title:'Battle Music — Paulyudin'},
@@ -7,7 +8,8 @@ const tracks=[
 let trackIndex=0;
 const audio=new Audio(new URL('../assets/'+tracks[trackIndex].file,import.meta.url));
 audio.loop=false;
-audio.preload='metadata';
+// The track's first bytes wait for the title art; playing still starts it at once.
+audio.preload='none';titleArtReady.then(()=>{audio.preload='metadata';});
 audio.volume=preferences.value.musicVolume;audio.muted=preferences.value.musicMuted;
 const mute=document.getElementById('music-toggle');
 const volume=document.getElementById('music-volume');

@@ -27,6 +27,7 @@ import {nearbyNpc} from './npcs.js';
 import {World} from './world.js';
 import {render} from './renderer.js';
 import {preloadProps} from './sprites.js';
+import {titleArtReady} from './title-art.js';
 import './music.js';
 import {Lobby} from './lobby.js';
 import {areaFor,placesFor,regionAt,nearestLandmark,paintAtlas,INTERIOR_AREAS} from './wilds.js';
@@ -304,12 +305,14 @@ hudUI=mountHudShell({act,examine:()=>{world.inspect();canvas.focus();},openAtlas
 storyUI=mountStory({getWorld:()=>lobby.world,onAdvance:()=>{release();lastAtlasDraw=0;canvas.focus();},onSettings:()=>settingsUI.show(),isSettingsOpen:()=>settingsUI.open});
 document.addEventListener('click',e=>{if(e.target.closest('button')&&!e.target.closest('#story-scene,#settings-sfx-test'))playSfx('ui');});
 updateLobby();
-let accumulator=0,last=performance.now(),lastUI=0,lastRender=0;
+let accumulator=0,last=performance.now(),lastUI=0,lastRender=0,titleArtIn=false;
 function frame(now){accumulator+=Math.min((now-last)/1000,.1);last=now;while(accumulator>=1/120){if(!hudUI?.open&&!hubUI?.open&&!backpackUI?.open&&!tradeUI?.open&&!wellUI?.open&&!radioUI?.open&&!skillsUI?.open&&!codexUI?.open&&!questUI?.open&&!saveUI?.open&&!settingsUI?.open&&!document.hidden){if(storyAction(lobby.world))updateStoryAction(lobby.world,1/120);else if(!storyUI?.open){lobby.tick(1/120,currentInput());observeGameSounds(lobby.world);}}accumulator-=1/120;}
  if(lobby.world)world=lobby.world;
  if(now-lastRender<1000/60){requestAnimationFrame(frame);return;}lastRender=now-((now-lastRender)%(1000/60));
  // A full-screen video cutscene hides the world, so only the UI keeps ticking until it ends.
  if(storyUI?.covering){if(now-lastUI>=1000/30){lastUI=now;updateUI();}requestAnimationFrame(frame);return;}
+ // Drawing the world behind the opaque title screen would fetch Eli's sheet and the scenery before the menu art.
+ if(!titleArtIn&&!lobby.world){if(now-lastUI>=1000/30){lastUI=now;updateUI();}requestAnimationFrame(frame);return;}
  hubUI?.sync(lobby.world);
  const display=lobby.presentation();camera(display?.player||world.player);const dpr=view.dpr;
  ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle=INTERIOR_AREAS.includes(world.areaId)?'#101d20':'#1c4754';ctx.fillRect(0,0,canvas.width,canvas.height);
@@ -317,4 +320,4 @@ function frame(now){accumulator+=Math.min((now-last)/1000,.1);last=now;while(acc
  render(ctx,display||world,{left:-view.x/view.scale,top:-view.y/view.scale,right:(view.width-view.x)/view.scale,bottom:(view.height-view.y)/view.scale},{others:hubUI?.others(world)||[]});drawStoryWeather(ctx,world,{left:-view.x/view.scale,top:-view.y/view.scale,right:(view.width-view.x)/view.scale,bottom:(view.height-view.y)/view.scale},now/1000);if(touchMode&&touchState.manualAim&&lobby.world&&!atlasOpen){const a=touchState.manualAim;ctx.strokeStyle='#fff1bc';ctx.lineWidth=1.5/view.scale;ctx.beginPath();ctx.arc(a.x,a.y,9/view.scale,0,Math.PI*2);ctx.moveTo(a.x-14/view.scale,a.y);ctx.lineTo(a.x+14/view.scale,a.y);ctx.moveTo(a.x,a.y-14/view.scale);ctx.lineTo(a.x,a.y+14/view.scale);ctx.stroke();}if(lobby.world&&now-lastUI>=1000/30){lastUI=now;updateProgression();updateUI();}requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
-(window.requestIdleCallback||setTimeout)(()=>preloadProps());
+titleArtReady.then(()=>{titleArtIn=true;(window.requestIdleCallback||setTimeout)(()=>preloadProps());});

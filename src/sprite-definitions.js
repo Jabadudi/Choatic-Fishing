@@ -21,7 +21,7 @@ export const SPRITES={
  'villager-child-one':{asset:null,fallback:{coat:'#b26b58',hair:'#392b24',skin:'#d4a27a',visualScale:.7}},
  'villager-child-two':{asset:null,fallback:{coat:'#69849e',hair:'#503f2b',skin:'#e4c4a1',visualScale:.7}},
  // A portrait crop, not a gameplay actor or hitbox.
- 'mara-portrait':{asset:'story/mara.png',frames:[[850,130,500,620]],scale:.12,anchor:[.5,0],offset:[0,0]},
+ 'mara-portrait':{asset:'story/mara.webp',frames:[[850,130,500,620]],scale:.12,anchor:[.5,0],offset:[0,0]},
  'emilia-portrait':{asset:'story/emilia.png',frames:[[930,60,500,620]],scale:.12,anchor:[.5,0],offset:[0,0]},
  // Made by scripts/prepare-eli-sprites.py from art/sprites/characters/eli/. Rows: walk right, left, toward the camera, away, then the throw.
  // This 4-direction, 8-frame walk is the standard layout for every moving entity.
@@ -76,7 +76,7 @@ export const STORY_ART={
  lure:{asset:'story/lure.png',alt:'A luminous blue lure inside a small wooden box in the cabin.'},
  rescue:{asset:'story/rescue.png',alt:'A gray Moonfang wolf tackles the shadowy attacker beside the cabin during the storm.'},
  campfire:{asset:'story/campfire.png',alt:'Eli’s rescuer cooks fish beside a campfire with the ruined cabin behind her.'},
- mara:{asset:'story/mara.png',alt:'Mara, with dark hair, a leather vest, and a scratch across her cheek.'},
+ mara:{asset:'story/mara.webp',alt:'Mara, with dark hair, a leather vest, and a scratch across her cheek.'},
  blacksmith:{asset:'story/blacksmith.png',alt:'A frost-scaled Rimejaw guards the blacksmith’s doorway while a winged Flitlynx licks its paw on the roof and the smith hammers at his anvil.'},
  hearth:{asset:'story/emilia-hearth.png',alt:'Emilia pours tea at the hearth of the red house while a scarred swordsman sits by the round table.'}
 };
