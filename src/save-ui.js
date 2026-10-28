@@ -10,7 +10,7 @@ export function mountSaveUI({getWorld,onLoad,onNew,onTitle,onOpen,onClose}){
  const q=id=>dialog.querySelector('#'+id),store=new IndexedSaveStore();let records=null,busy=false,confirmAction=null,status=null;
  const manager=new SaveManager(store,value=>{status=value;badge.textContent=value.text;badge.classList.toggle('save-error',value.kind==='error');badge.hidden=!getWorld()?.adventure;q('save-message').textContent=value.kind==='saved'?`Saved ${new Date(value.at).toLocaleTimeString()}`:value.text;});
  const continueButton=document.createElement('button');continueButton.id='continue-journey';continueButton.textContent='Continue';continueButton.disabled=true;
- const titleSaves=document.createElement('button');titleSaves.id='title-saves';titleSaves.textContent='Saves / Import';document.querySelector('.lobby-actions').prepend(continueButton);document.querySelector('.lobby-actions').append(titleSaves);
+ document.querySelector('.lobby-actions').prepend(continueButton);
  async function refresh(){
   try{records=await store.read();continueButton.disabled=!findUsableSave(records);}
   catch(error){continueButton.disabled=true;q('save-message').textContent=`Could not read saved progress: ${error.message}`;}
@@ -32,7 +32,7 @@ export function mountSaveUI({getWorld,onLoad,onNew,onTitle,onOpen,onClose}){
    list.append(row);
   }
  }
- button.onclick=show;titleSaves.onclick=show;q('close-saves').onclick=close;
+ button.onclick=show;q('close-saves').onclick=close;
  dialog.addEventListener('close',()=>{onClose();});
  q('cancel-save-action').onclick=()=>{q('save-confirm').hidden=true;confirmAction=null;};
  q('confirm-save-action').onclick=()=>{const action=confirmAction;confirmAction=null;q('save-confirm').hidden=true;if(action)run(action);};
