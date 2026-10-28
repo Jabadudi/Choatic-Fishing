@@ -126,7 +126,7 @@ export function mountCodex({getWorld,onOpen,onClose,onFamiliar=()=>false}){
   if(status.active)act('Dismiss','dismiss').classList.add('secondary');
   else if(status.bonded)act('Summon','summon');
   else act(status.canCombine?`Combine ${FAMILIAR_TIERS[0]} shards`:`Collect ${FAMILIAR_TIERS[0]-status.shards} more ${FAMILIAR_TIERS[0]-status.shards===1?'shard':'shards'}`,'combine',!status.canCombine);
-  actionsRow.append(el('p','codex-note',`Each ${familiar.name.toLowerCase()} you hunt has a ${chanceLabel(familiar.chance)} chance to drop a shard, ${chanceLabel(familiar.shinyChance)} for a shiny one. Hunt a shiny and your familiar turns gold. One familiar follows you at a time.`));
+  actionsRow.append(el('p','codex-note',familiar.wellOnly?`Guardians are never hunted, so ${familiar.name} shards come only from the Familiar pool at the Wishing Well on Willow Commons. One familiar follows you at a time.`:`Each ${familiar.name.toLowerCase()} you hunt has a ${chanceLabel(familiar.chance)} chance to drop a shard, ${chanceLabel(familiar.shinyChance)} for a shiny one. Hunt a shiny and your familiar turns gold. One familiar follows you at a time.`));
   panel.append(actionsRow);
   return panel;
  }

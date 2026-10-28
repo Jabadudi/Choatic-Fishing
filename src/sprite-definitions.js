@@ -9,8 +9,9 @@ export const RABBIT_FRAMES=[
  [23,373,25,65],[78,373,25,65],[133,373,25,65]
 ];
 export const SPRITES={
- rimejaw:{asset:'story/rimejaw-sheet.png',chromaKey:'green',frames:[[45,35,410,270],[475,35,410,270],[900,35,410,270],[1320,35,440,270]],scale:.27,anchor:[.5,1],offset:[0,12],animations:{idle:{frames:[0,1,2,3],fps:2}}},
- flitlynx:{asset:'story/flitlynx-sheet.png',chromaKey:'green',frames:[[70,25,330,300],[420,25,330,300],[765,25,330,300],[1110,25,330,300]],scale:.22,anchor:[.5,1],offset:[0,3],animations:{idle:{frames:[0,1,2,3],fps:3}}},
+ // The second rows are runs, used by the guardian familiars. Both sheets face right; the village creatures stay on idle.
+ rimejaw:{asset:'story/rimejaw-sheet.png',chromaKey:'green',frames:[[45,35,410,270],[475,35,410,270],[900,35,410,270],[1320,35,440,270],[10,330,292,225],[302,330,292,225],[598,330,292,225],[886,330,292,225],[1174,330,292,225],[1468,330,292,225]],scale:.27,anchor:[.5,1],offset:[0,12],mirror:'right',animations:{idle:{frames:[0,1,2,3],fps:2},walk:{frames:[4,5,6,7,8,9],fps:9}}},
+ flitlynx:{asset:'story/flitlynx-sheet.png',chromaKey:'green',frames:[[70,25,330,300],[420,25,330,300],[765,25,330,300],[1110,25,330,300],...[0,1,2,3,4,5].map(i=>[i*256,340,256,290])],scale:.22,anchor:[.5,1],offset:[0,3],mirror:'right',animations:{idle:{frames:[0,1,2,3],fps:3},walk:{frames:[4,5,6,7,8,9],fps:10}}},
  'rimejaw-illustration':{asset:'story/rimejaw-pose.png',chromaKey:'green',frames:[[0,180,1254,900]],scale:.45,anchor:[.5,1]},
  'flitlynx-illustration':{asset:'story/flitlynx-pose.png',chromaKey:'green',scale:.42,anchor:[.5,1]},
  'villager-net':{asset:null,fallback:{coat:'#527a84',hair:'#33251f',skin:'#ae7855'}},
@@ -83,4 +84,4 @@ export const STORY_ART={
 // Each scene keeps its drawn shape as the fallback, and collision never depends on this artwork.
 export const PROPS=Object.fromEntries(['cook-stove','lure-box-shelf','photo-side-table','dining-table','chair','bed-green','fishing-rod-rack','oil-lamp','door-mat','rain-barrel','firewood-stack','bed-straw-violet','stool-waterskin','chest-brass','chamber-pot','rug-rust-red','stone-hearth','pot-herb-shelf','carved-post','window-evening','rug-red-blue','round-table','fur-stool','wall-bench','chief-cabinet','tea-set','barrel','lantern-post','well','produce-stall','fish-stall','plank-bench','bench-backrest','net-rack','rope-coils','rowing-boat','rest-shelter','fire-ring-cold','apple-crate','fishing-seat','fish-trap','flower-box','campfire',...['cabin','chief','lodge'].flatMap(room=>['floor','wall','wall-top','wall-side'].map(part=>`${room}-${part}`))].map(id=>[id,`props/${id}.webp`]));
 // Familiar shards on the ground reuse their inventory icons.
-for(const id of ['rabbit','deer','turtle','eel','shadow-walker'])PROPS[`shard-${id}`]=`items/shard-${id}.webp`;
+for(const id of ['rabbit','deer','turtle','eel','shadow-walker','moonfang','rimejaw','flitlynx'])PROPS[`shard-${id}`]=`items/shard-${id}.webp`;

@@ -20,7 +20,7 @@ export const LOOT_ITEMS=Object.freeze({
  // Artifacts drop at a rolled rarity (see artifacts.js).
  ...Object.fromEntries(Object.entries(ARTIFACTS).map(([id,a])=>[a.name,{name:a.name,category:'artifacts',artifact:id,description:a.description}])),
  // Familiar shards are absorbed on pickup instead of filling the backpack (see familiars.js).
- ...Object.fromEntries(Object.entries(FAMILIARS).map(([id,f])=>[f.shard,{name:f.shard,category:'trophies',familiar:id,description:`A warm fragment of a ${f.name.toLowerCase()}’s spirit. Five of them fuse into a familiar.`}]))
+ ...Object.fromEntries(Object.entries(FAMILIARS).map(([id,f])=>[f.shard,{name:f.shard,category:'trophies',familiar:id,description:`A warm fragment of a ${f.name.toLowerCase()}’s spirit. Five of them fuse into a familiar.${f.wellOnly?' Only the Wishing Well brings these up.':''}`}]))
 });
 // Each kind of creature drops its own familiar shard. Luck raises these chances like any other rare drop.
 export const SHARD_CHANCES=Object.freeze({rabbit:.08,deer:.1,turtle:.1,eel:.08,'shadow-walker':.06});

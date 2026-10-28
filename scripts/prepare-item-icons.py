@@ -12,6 +12,7 @@ SHEETS=[
  ('02-food-wares.png',4,3,False,['sardine','deer-meat','rabbit-meat','turtle-meat','eel-fillet','wild-herbs','willow-apples','healing-salve','grappling-squid','iron-fishhooks','whetstone','woven-fish-trap']),
  ('03-materials-trophies.png',4,3,False,['deer-hide','rabbit-pelt','turtle-shell','eel-skin','eel-oil','shadow-ichor','rusted-axe-head','deer-antlers','rabbits-foot','river-pearl','black-light-shard','old-boot']),
  ('04-shards-quest.png',4,2,True,['shard-rabbit','shard-deer','shard-turtle','shard-eel','shard-shadow-walker','region-core','treasure-key','reed-mark']),
+ ('05-guardian-shards.png',3,1,True,['shard-moonfang','shard-rimejaw','shard-flitlynx']),
 ]
 def key(a):
     r,g,b=[a[...,i].astype(int) for i in range(3)]

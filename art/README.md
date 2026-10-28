@@ -11,7 +11,7 @@ Generated concept art, references, cutscenes and sprite sheets for Volume 1. The
 | `sprites/characters/` | Playable and NPC character sprites: Eli (walk and throw sheets, the style and walk layout every moving entity follows) and Drayfus. |
 | `sprites/props/sheets/` | Five furniture and prop sheets (cabin and lodge, chief's house and shared pieces, village, training yard and blacksmith, inn and homes), 20 pieces each on a green background. |
 | `sprites/wishing-well/` | The Wishing Well summon: Eli's single and ten-stone throws, the well and the cavern under it, the five rarity fish, Eli's jump shot for Epic-or-better draws, and the stone, splash and sparkle effects. |
-| `sprites/items/sheets/` | Four item icon sheets (tools and weapons, food and wares, materials and trophies, shards and quest items) on a green background. |
+| `sprites/items/sheets/` | Five item icon sheets (tools and weapons, food and wares, materials and trophies, shards and quest items, guardian shards) on a green background. |
 | `references/` | World and area maps used for the region layouts. |
 
 Video cutscenes are not kept here: the Chapter 5 vision ships directly as `assets/story/eli-vision.mp4`, so the repository holds one copy.
@@ -35,7 +35,7 @@ Sheet rows are idle, walk or fly, run where present, attack, then extras (howl, 
 
 ## Item icons
 
-`scripts/prepare-item-icons.py` cuts the four item sheets into square 128 px WebP icons in `assets/items/`. `ITEM_ART` in `src/item-icons.js` maps each item name to its icon; an item without one falls back to its text symbol. The familiar shard icons also draw the shards lying on the ground, and `reed-mark.webp` is the coin shown beside every price and purse.
+`scripts/prepare-item-icons.py` cuts the five item sheets into square 128 px WebP icons in `assets/items/`. `ITEM_ART` in `src/item-icons.js` maps each item name to its icon; an item without one falls back to its text symbol. The familiar shard icons also draw the shards lying on the ground, and `reed-mark.webp` is the coin shown beside every price and purse.
 
 ## Wishing Well summon
 

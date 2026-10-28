@@ -2,8 +2,11 @@ import {drawEntitySprite,drawProp} from './sprites.js';
 import {drawWildlife} from './wildlife-art.js';
 import {drawRabbit} from './rabbits.js';
 import {FAMILIARS} from './familiars.js';
+import {drawVillageCreature} from './village-creature-art.js';
 // Familiars reuse their species' artwork, drawn smaller over a spirit glow. Nothing here moves the follower.
-const GLOW={rabbit:'#cfe6ff',deer:'#ffe3a0',turtle:'#a8f0c8',eel:'#9ee6ff','shadow-walker':'#b9a0ff'};
+const GLOW={rabbit:'#cfe6ff',deer:'#ffe3a0',turtle:'#a8f0c8',eel:'#9ee6ff','shadow-walker':'#b9a0ff',moonfang:'#dde3ff',rimejaw:'#a6e4ff',flitlynx:'#ffbf8a'};
+// Guardians run on their sheets' run rows. Stand-ins until each has the standard 4-direction walk set.
+const GUARDIAN_RUN={moonfang:'run',rimejaw:'walk',flitlynx:'walk'};
 export function drawFamiliar(c,companion,time){
  const f=FAMILIARS[companion.id];if(!f)return;
  const glow=companion.shiny?'#ffd36a':GLOW[companion.id],bob=Math.sin(time*3.2)*2.5,appear=1-companion.summonRemaining/.8;
@@ -19,6 +22,11 @@ export function drawFamiliar(c,companion,time){
  else if(companion.id==='shadow-walker'){
   if(!drawEntitySprite(c,'nightwalker',{x:0,y:0,state:companion.state==='walk'?'walk':'idle',time:companion.time,facingX:companion.direction.x})){
    c.fillStyle='#1c1820';c.beginPath();c.moveTo(-13,15);c.lineTo(-8,-30);c.lineTo(0,-40);c.lineTo(8,-30);c.lineTo(13,15);c.closePath();c.fill();
+  }
+ }else if(GUARDIAN_RUN[companion.id]){
+  if(!drawEntitySprite(c,f.spriteId,{x:0,y:0,state:companion.state==='walk'?GUARDIAN_RUN[companion.id]:'idle',time:companion.time,facingX:companion.direction.x})){
+   if(companion.id!=='moonfang')drawVillageCreature(c,{x:0,y:0,spriteId:f.spriteId},time);
+   else{c.fillStyle='#b8bcc4';c.fillRect(-34,-40,56,26);c.fillRect(14,-56,24,24);c.fillStyle='#8d929c';for(const x of [-30,-16,4,14])c.fillRect(x,-14,8,14);c.fillStyle='#e8ebf2';c.fillRect(-44,-40,12,8);}
   }
  }else if(companion.id==='eel'&&!drawEntitySprite(c,'eel',{x:0,y:0,state:'idle',time})){
   // No eel sheet yet: a ribbon of light swimming through the air at chest height.

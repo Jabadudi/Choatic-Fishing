@@ -107,5 +107,9 @@ export function codexLoot(entry){
 // A shiny multiplies every uncertain drop, still capped at certainty.
 export const shinyChance=chance=>chance>=1?1:Math.min(1,chance*SHINY.loot);
 export const chanceLabel=chance=>chance>=1?'Always':`${Math.round(chance*100)}%`;
-// Creatures with a familiar share its id with their loot table.
-export const codexFamiliar=entry=>entry.loot&&FAMILIARS[entry.loot]?{id:entry.loot,chance:SHARD_CHANCES[entry.loot],shinyChance:shinyChance(SHARD_CHANCES[entry.loot]),...FAMILIARS[entry.loot]}:null;
+// Hunted creatures share their familiar's id with their loot table; guardians, never hunted, with their own entry and have no drop chance.
+export function codexFamiliar(entry){
+ const id=entry.loot&&FAMILIARS[entry.loot]?entry.loot:FAMILIARS[entry.id]?.wellOnly?entry.id:null;if(!id)return null;
+ const chance=SHARD_CHANCES[id]??null;
+ return {id,chance,shinyChance:chance===null?null:shinyChance(chance),...FAMILIARS[id]};
+}
