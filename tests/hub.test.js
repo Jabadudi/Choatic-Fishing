@@ -1,13 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Hub,nicknameProblem,readPresence,readPosition,AFK_AFTER,HUB_SEND_INTERVAL,HUB_SMOOTHING} from '../src/hub.js';
+import {Hub,nicknameProblem,readPresence,readPosition,clean,AFK_AFTER,HUB_SEND_INTERVAL,HUB_SMOOTHING,MESSAGE_GAP} from '../src/hub.js';
+import {runChat} from '../src/chat.js';
 import {render} from '../src/renderer.js';
 import {World} from '../src/world.js';
 
 // An in-memory stand-in for the Realtime Database paths in hub-backend.js, shared by several players.
 // Like the real rules, a player can only read a friend's presence and position.
 class FakeRealtime{
- constructor(){this.data={presence:{},pos:{},friends:{},requests:{},profiles:{},nicknames:{}};this.listeners=new Set();this.writes=0;}
+ constructor(){this.data={presence:{},pos:{},friends:{},requests:{},profiles:{},nicknames:{},chat:{},dm:{}};this.ids=0;this.listeners=new Set();this.writes=0;}
  get(path){return path.split('/').reduce((node,key)=>node?.[key],this.data)??null;}
  put(path,value){const keys=path.split('/'),last=keys.pop();let node=this.data;for(const k of keys)node=node[k]??={};if(value===null)delete node[last];else node[last]=structuredClone(value);for(const l of [...this.listeners])l();}
  watch(reader,callback){let last;const check=()=>{const next=JSON.stringify(reader());if(next!==last){last=next;callback(JSON.parse(next));}};this.listeners.add(check);check();return ()=>this.listeners.delete(check);}
@@ -26,7 +27,12 @@ class FakeRealtime{
   watchPosition(id,cb){return db.watch(()=>friendOf(id)?db.get(`pos/${id}`):null,cb);},
   async request(from,to,nick){if(db.get(`friends/${to}/${from}`))throw Object.assign(Error('permission_denied'),{code:'PERMISSION_DENIED'});db.put(`requests/${to}/${from}`,{n:nick});},
   async answer(me,from,accept){if(accept){db.put(`friends/${me}/${from}`,true);db.put(`friends/${from}/${me}`,true);}db.put(`requests/${me}/${from}`,null);},
-  async unfriend(me,other){db.put(`friends/${me}/${other}`,null);db.put(`friends/${other}/${me}`,null);}
+  async unfriend(me,other){db.put(`friends/${me}/${other}`,null);db.put(`friends/${other}/${me}`,null);},
+  async say(id,nick,text){db.put(`chat/${id}/m${++db.ids}`,{n:nick,m:text,t:Date.now()});},
+  async whisper(from,to,nick,text){if(db.get(`friends/${to}/${from}`)!==true)throw Object.assign(Error('permission_denied'),{code:'PERMISSION_DENIED'});db.put(`dm/${to}/d${++db.ids}`,{f:from,n:nick,m:text,t:Date.now()});},
+  watchChat(id,since,cb){return db.children(`chat/${id}`,(k,v)=>{if(v&&friendOf(id)&&v.t>=since)cb(k,v);});},
+  watchInbox(id,cb){return db.children(`dm/${id}`,(k,v)=>{if(v)cb(k,v);});},
+  async clearInbox(id,key){db.put(`dm/${id}/${key}`,null);}
  };}
 }
 const settle=()=>new Promise(resolve=>setTimeout(resolve,0));
@@ -175,4 +181,64 @@ test('friends are drawn with the scenery and wear a name tag',()=>{
  const texts=[],ctx=new Proxy({fillText(text){texts.push(text);},measureText:text=>({width:text.length*6})},{get:(target,key)=>key in target?target[key]:()=>{},set:(target,key,value)=>{target[key]=value;return true;}});
  render(ctx,world,undefined,{others:[{remote:true,spriteId:'eli',name:'Kestrel',x:540,y:500,facing:'left',angle:0},{remote:true,spriteId:'eli',name:'Wren',afk:true,x:460,y:520,facing:'down',angle:0}]});
  assert.ok(texts.includes('Kestrel'));assert.ok(texts.includes('Wren · away'));
+});
+
+const lines=hub=>hub.log.map(l=>l.kind==='note'||l.kind==='error'?`${l.kind}: ${l.text}`:`${l.kind} ${l.nick}: ${l.text}`);
+async function pair(){
+ const {db,make,tick}=setup(),a=make('ua'),b=make('ub'),c=make('uc');
+ await named(a,'ua','Reedling');await named(b,'ub','Kestrel');await named(c,'uc','Stranger');await befriend(a,b);
+ for(const hub of [a,b,c])await hub.goOnline();
+ return {db,a,b,c,tick};
+}
+
+test('chat reaches online friends only, and is cleaned first',async()=>{
+ const {a,b,c,tick}=await pair();
+ await runChat(a,'  hello   there  ');await settle();
+ assert.deepEqual(lines(a),['chat Reedling: hello there']);
+ assert.deepEqual(lines(b),['chat Reedling: hello there']);
+ assert.deepEqual(lines(c),[],'a stranger hears nothing');
+ tick(MESSAGE_GAP);await runChat(b,'you are a retard');await settle();
+ assert.equal(a.log.at(-1).text,'you are a ******');
+ assert.equal(clean('x'.repeat(500)).length,200);
+ assert.equal(clean('line\nbreak\u0007'),'line break');
+ await assert.rejects(runChat(b,'again'),/Slow down/);
+});
+
+test('private messages, replies and offline delivery',async()=>{
+ const {db,a,b,c,tick}=await pair();
+ await runChat(a,'/msg kestrel meet at the well');await settle();
+ assert.deepEqual(lines(b),['from Reedling: meet at the well']);
+ assert.deepEqual(db.get('dm/ub')??{},{},'shown messages leave the inbox');
+ tick(1);await runChat(b,'/r on my way');await settle();
+ assert.deepEqual(lines(a).slice(-1),['from Kestrel: on my way']);
+ await assert.rejects(runChat(a,'/msg Stranger hi'),/not on your friends list/);
+ await assert.rejects(runChat(c,'/msg Reedling hi'),/not on your friends list/);
+ // Kestrel signs out; the message waits and arrives when they are back.
+ await b.setUser(null);tick(1);await runChat(a,'/w Kestrel are you there?');await settle();
+ assert.equal(Object.keys(db.get('dm/ub')).length,1,'waiting in the inbox');
+ await b.setUser({uid:'ub'});await settle();
+ assert.equal(b.log.at(-1).text,'are you there?');
+});
+
+test('chat commands manage friends, names, AFK and muting',async()=>{
+ const {a,b,c,tick}=await pair();
+ await runChat(a,'/list');assert.match(a.log.at(-1).text,/1 friend online: Kestrel \(/);
+ await runChat(c,'/friend add Reedling');await settle();
+ assert.match(c.log.at(-1).text,/Friend request sent to Reedling/);
+ await runChat(a,'/friend accept stranger');await settle();
+ assert.equal(a.friends.has('uc'),true);
+ await runChat(a,'/friend list');assert.match(a.log.at(-1).text,/Friends: .*Kestrel.*Stranger/);
+ await runChat(a,'/friend remove Stranger');await settle();assert.equal(c.friends.size,0);
+ await runChat(a,'/afk');assert.equal(a.afk,true);await runChat(a,'/afk');assert.equal(a.afk,false);
+ let saved=null;await runChat(a,'/mute Kestrel',{setMuted:list=>{saved=list;}});
+ assert.deepEqual(saved,['ub']);
+ await runChat(b,'can you hear me');await settle();
+ assert.equal(a.log.some(l=>l.text==='can you hear me'),false,'muted friend is hidden');
+ await runChat(a,'/unmute Kestrel');tick(1);await runChat(b,'now?');await settle();
+ assert.equal(a.log.at(-1).text,'now?');
+ tick(1);await runChat(a,'/nick Reed_2');assert.equal(a.nick,'Reed_2');
+ await assert.rejects(runChat(a,'/dance'),/Unknown command \/dance/);
+ await assert.rejects(runChat(a,'/msg Kestrel'),/Usage/);
+ await runChat(a,'/offline');assert.equal(a.state,'offline');
+ await assert.rejects(runChat(a,'anyone?'),/Go online/);
 });

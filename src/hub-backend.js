@@ -3,9 +3,13 @@
 // pos/{uid}              area and position while in an outdoor area; same readers
 // friends/{uid}/{other}  true once both have agreed; each side's list is private to its owner
 // requests/{to}/{from}   a pending friend request carrying the sender's nickname
+// chat/{uid}/{id}        what a player says to all their friends; friends read it, the sender keeps the newest few
+// dm/{to}/{id}           private messages waiting for one friend; the recipient deletes each once shown
+// rate/{uid}             time of the player's last message, so the rules allow at most one every 0.7 seconds
 // profiles/{uid}         the chosen nickname
 // nicknames/{lower}      which account owns a nickname, so names stay unique and friends can be found by name
 // The server removes presence and position when the player disconnects.
+const KEEP_CHAT=30;
 export function realtimeBackend(fb,app,url){
  const db=fb.getDatabase(app,url),at=path=>path?fb.ref(db,path):fb.ref(db);
  const watchChildren=(path,callback,onError)=>{
@@ -46,6 +50,21 @@ export function realtimeBackend(fb,app,url){
    if(accept)Object.assign(patch,{[`friends/${me}/${from}`]:true,[`friends/${from}/${me}`]:true});
    return fb.update(at(),patch);
   },
+  async say(uid,nick,text){
+   const id=fb.push(at(`chat/${uid}`)).key,t=fb.serverTimestamp();
+   await fb.update(at(),{[`chat/${uid}/${id}`]:{n:nick,m:text,t},[`rate/${uid}`]:t});
+   // Only the newest messages are kept; friends who were away miss older chatter, as in a room.
+   const feed=(await fb.get(at(`chat/${uid}`))).val()||{},old=Object.keys(feed).sort().slice(0,-KEEP_CHAT);
+   if(old.length)await fb.update(at(),Object.fromEntries(old.map(key=>[`chat/${uid}/${key}`,null])));
+  },
+  whisper(from,to,nick,text){
+   const id=fb.push(at(`dm/${to}`)).key,t=fb.serverTimestamp();
+   return fb.update(at(),{[`dm/${to}/${id}`]:{f:from,n:nick,m:text,t},[`rate/${from}`]:t});
+  },
+  // Chat said since a moment ago; older lines are not replayed.
+  watchChat(uid,since,callback){return fb.onChildAdded(fb.query(at(`chat/${uid}`),fb.orderByChild('t'),fb.startAt(since)),s=>callback(s.key,s.val()),()=>{});},
+  watchInbox(uid,callback){return fb.onChildAdded(at(`dm/${uid}`),s=>callback(s.key,s.val()),()=>{});},
+  clearInbox(uid,id){return fb.remove(at(`dm/${uid}/${id}`));},
   unfriend(me,other){return fb.update(at(),{[`friends/${me}/${other}`]:null,[`friends/${other}/${me}`]:null});}
  };
 }

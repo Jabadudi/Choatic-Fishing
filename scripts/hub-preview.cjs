@@ -70,6 +70,23 @@ const fs=require('node:fs');
  await phone.page.waitForFunction(()=>__qa.hub.friends.size===1);await phone.page.waitForTimeout(300);await phone.shot('09-phone-friends');
  await phone.page.locator('#players-sheet .backpack-close').click();
  await phone.page.waitForFunction(()=>__qa.hub.others(__qa.world).length===1);await phone.page.waitForTimeout(400);await phone.shot('10-phone-world');
+ // Chat: Enter opens the box; plain text reaches every online friend, /msg one friend, and strangers hear nothing.
+ await a.page.locator('canvas#arena').focus();await a.page.keyboard.press('Enter');await a.page.locator('#chat-input').waitFor({state:'visible'});
+ await a.page.keyboard.type('Anyone up for fishing at the landing?');await a.page.keyboard.press('Enter');
+ await b.page.waitForFunction(()=>__qa.hub.log.some(l=>l.text==='Anyone up for fishing at the landing?'));
+ await phone.page.waitForFunction(()=>__qa.hub.log.some(l=>l.text==='Anyone up for fishing at the landing?'));
+ assert.equal(await c.w(()=>__qa.hub.log.length),0,'the stranger hears nothing');
+ await b.page.waitForTimeout(900);await b.page.locator('canvas#arena').focus();await b.page.keyboard.press('Slash');await b.page.locator('#chat-input').waitFor({state:'visible'});
+ assert.equal(await b.page.locator('#chat-input').inputValue(),'/');
+ await b.page.keyboard.type('msg Reedling give me a minute, finishing a quest');await b.page.keyboard.press('Enter');
+ await a.page.waitForFunction(()=>__qa.hub.log.some(l=>l.kind==='from'));
+ await a.page.waitForTimeout(900);await a.page.keyboard.type('/list');await a.page.keyboard.press('Enter');await a.page.waitForTimeout(300);
+ await a.shot('11-chat-open');
+ await a.page.keyboard.press('Escape');await a.page.waitForTimeout(300);await a.shot('12-chat-closed');
+ await phone.page.waitForTimeout(900);await phone.page.locator('#open-chat').tap();await phone.page.locator('#chat-input').waitFor({state:'visible'});
+ await phone.page.locator('#chat-input').fill('on my way!');await phone.page.locator('.chat-send').tap();
+ await a.page.waitForFunction(()=>__qa.hub.log.some(l=>l.text==='on my way!'));await phone.page.waitForTimeout(300);await phone.shot('13-phone-chat');
+ await phone.page.locator('#chat-input').press('Escape');
  // Going offline removes the player for friends straight away.
  await openSheet(a);await a.page.locator('.players-online').click();await a.page.waitForFunction(()=>__qa.hub.state==='offline');
  await phone.page.waitForFunction(()=>__qa.hub.others(__qa.world).length===0);

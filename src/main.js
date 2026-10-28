@@ -33,10 +33,11 @@ import {areaFor,placesFor,regionAt,nearestLandmark,paintAtlas,INTERIOR_AREAS} fr
 import {explorationHud} from './hud.js';
 import {mountHudShell} from './hud-shell.js';
 import {mountHub} from './hub-ui.js';
+import {mountChat} from './chat-ui.js';
 let world=new World(Math.random,{botCount:0});
 const canvas=document.querySelector('#arena'),ctx=canvas.getContext('2d',{alpha:false});
 const touchState=new TouchInput(),touchMedia=matchMedia('(any-pointer: coarse), (max-width: 700px)');
-let hudUI=null,radioUI=null,tradeUI=null,wellUI=null,questUI=null,backpackUI=null,skillsUI=null,codexUI=null,saveUI=null,storyUI=null,settingsUI=null,hubUI=null;
+let hudUI=null,radioUI=null,tradeUI=null,wellUI=null,questUI=null,backpackUI=null,skillsUI=null,codexUI=null,saveUI=null,storyUI=null,settingsUI=null,hubUI=null,chatUI=null;
 let touchMode=touchMedia.matches,touchUI=null;document.body.classList.toggle('touch-mode',touchMode);
 // Keep the explorer readable on a narrow portrait viewport.
 let view={scale:1,x:0,y:0,width:960,height:720,dpr:1};
@@ -51,10 +52,10 @@ new ResizeObserver(resize).observe(canvas);resize();
 const elements=new Map();
 const $=id=>{if(!elements.has(id))elements.set(id,document.getElementById(id));return elements.get(id);};const keys=new Set();let mouseHeld=false,spaceHeld=false,aim={x:480,y:0};
 const currentInput=()=>{camera();if(touchMode&&touchState.enabled){pointer=null;aim=touchState.aim(world.player);}const stick=touchMode&&touchState.movePointer!==null;return ({left:keys.has(preferences.value.keybinds.left)||(stick&&touchState.x<-.1),right:keys.has(preferences.value.keybinds.right)||(stick&&touchState.x>.1),up:keys.has(preferences.value.keybinds.up)||(stick&&touchState.y<-.1),down:keys.has(preferences.value.keybinds.down)||(stick&&touchState.y>.1),...(stick?{moveX:touchState.x,moveY:touchState.y}:{}),aim,held:mouseHeld||spaceHeld||touchState.held});};
-const act=action=>{if(!currentScene(world)&&!hudUI?.open&&!settingsUI?.open&&!storyUI?.open&&!backpackUI?.open&&!tradeUI?.open&&!wellUI?.open&&!radioUI?.open&&!skillsUI?.open&&!codexUI?.open&&!questUI?.open&&!saveUI?.open&&!hubUI?.open)lobby.action(action,currentInput());};
+const act=action=>{if(!currentScene(world)&&!hudUI?.open&&!settingsUI?.open&&!storyUI?.open&&!backpackUI?.open&&!tradeUI?.open&&!wellUI?.open&&!radioUI?.open&&!skillsUI?.open&&!codexUI?.open&&!questUI?.open&&!saveUI?.open&&!hubUI?.open&&!chatUI?.open)lobby.action(action,currentInput());};
 const equip=slot=>act(`slot-${slot}`);
 addEventListener('keydown',e=>{
-  if(settingsUI?.open||storyUI?.open||saveUI?.open||hubUI?.open||currentScene(world))return;
+  if(settingsUI?.open||storyUI?.open||saveUI?.open||hubUI?.open||chatUI?.open||currentScene(world))return;
   if((e.ctrlKey||e.metaKey)&&e.code==='KeyS'&&lobby.world?.adventure){e.preventDefault();saveUI.manager.request('manual',true).catch(()=>{});return;}
   if(tradeUI?.open||wellUI?.open)return;
   if(radioUI?.open){if((e.code==='Escape'||matchesBinding('radio',e.code)&&!e.target.closest('input'))&&!e.repeat){e.preventDefault();radioUI.close();}return;}
@@ -69,6 +70,8 @@ addEventListener('keydown',e=>{
   if(matchesBinding('map',e.code)&&lobby.world?.adventure&&!e.repeat){e.preventDefault();toggleAtlas();return;}
   if(matchesBinding('radio',e.code)&&lobby.world?.adventure&&!e.repeat){e.preventDefault();radioUI.toggle();return;}
   if(atlasOpen){if(e.code==='Escape'){e.preventDefault();toggleAtlas(false);}return;}
+  // Enter opens chat; / opens it ready for a command unless the player bound / to something else.
+  if((e.code==='Enter'||e.code==='Slash'&&!Object.values(preferences.value.keybinds).includes('Slash'))&&lobby.world?.adventure&&chatUI?.available&&!e.repeat&&!e.target.closest('input,textarea')){e.preventDefault();release();chatUI.show(e.code==='Slash'?'/':'');return;}
   if(e.target.closest('.music-hud, #lobby-screen')||!lobby.world)return;
   if(Object.values(preferences.value.keybinds).includes(e.code))e.preventDefault();
   keys.add(e.code);if(matchesBinding('reel',e.code))spaceHeld=true;
@@ -135,6 +138,7 @@ function updateUI(){
  codexUI?.update(!!lobby.world?.adventure&&!atlasOpen&&world.player.health>0);
  questUI?.update(!!lobby.world?.adventure&&!atlasOpen&&world.player.health>0);
  hubUI?.update(!!lobby.world?.adventure&&!atlasOpen);
+ chatUI?.update(!!lobby.world?.adventure&&!atlasOpen&&!currentScene(world)&&!storyUI?.open);
  setText($('close-atlas'),touchMode?'Close':`Close · ${bindingLabel('map')} / Esc`);
  setText($('cancel'),touchMode?'Abandon':`Abandon · ${bindingLabel('fish')} / Esc`);
  touchUI?.update(world,!touchMode||!lobby.world||atlasOpen||saveUI?.open||settingsUI?.open||storyUI?.open||world.player.health<=0);
@@ -202,7 +206,7 @@ document.querySelector('header h1').textContent='THE WILDS';
 document.querySelector('.controls').textContent='WASD MOVE · E FISH · G EXAMINE · M ATLAS · L-SHIFT DASH';
 document.querySelector('.lobby-actions').insertAdjacentHTML('afterbegin','<button id="explore-world">Enter the Wilds</button>');
 document.querySelector('.playfield').insertAdjacentHTML('beforeend',`<section id="exploration-hud" hidden><span class="exploration-kicker" id="area-kicker">YOUR JOURNEY</span><h2 id="region-name">Reedwater Delta</h2><div id="player-hp" role="progressbar" aria-label="Health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><div class="hp-row"><span class="hp-label">HP</span><span id="player-hp-text">100 / 100</span></div><div class="hp-track"><i id="player-hp-trail"></i><i id="player-hp-fill"></i></div></div><p id="discovery-count">0 / 10 places found</p><div class="discovery-dots" id="discovery-dots"></div><p id="purse-hud" title="Reed marks">${markIcon(14)}<span></span></p></section><button id="inspect-place" hidden>G · Examine</button><div id="explore-hint" hidden><kbd>WASD</kbd> walk · <kbd>E</kbd> fish · <kbd>G</kbd> examine · <kbd>M</kbd> map · <kbd>Shift</kbd> dash</div><button id="music-icon" aria-label="Music settings" aria-expanded="false">♪</button><button id="open-atlas" hidden aria-label="Open world atlas"><canvas id="mini-atlas" width="176" height="176"></canvas><span>M · WORLD ATLAS</span></button><section id="world-atlas" hidden role="dialog" aria-modal="true" aria-label="World atlas"><div class="atlas-card"><div class="atlas-heading"><div><small>THE WILDS</small><h2>World Atlas</h2></div><button id="close-atlas">Close · M / Esc</button></div><canvas id="atlas-canvas" width="800" height="600"></canvas><p>Follow the old trails and bridges. Gold marks the places you have found. Your position is the bright marker.</p></div></section>`);
-touchUI=mountMobileControls({state:touchState,active:()=>touchMode&&!!lobby.world&&!atlasOpen&&!hubUI?.open&&!hudUI?.open&&!saveUI?.open&&!backpackUI?.open&&!tradeUI?.open&&!wellUI?.open&&!radioUI?.open&&!skillsUI?.open&&!codexUI?.open&&!questUI?.open&&!settingsUI?.open&&!storyUI?.open&&!currentScene(world),action:()=>{pointer=null;const f=world.fishing;if(f.state==='waiting')act('cancel');else if(f.state==='idle')act('click');},examine:()=>{world.inspect();canvas.focus();}});
+touchUI=mountMobileControls({state:touchState,active:()=>touchMode&&!!lobby.world&&!atlasOpen&&!hubUI?.open&&!chatUI?.open&&!hudUI?.open&&!saveUI?.open&&!backpackUI?.open&&!tradeUI?.open&&!wellUI?.open&&!radioUI?.open&&!skillsUI?.open&&!codexUI?.open&&!questUI?.open&&!settingsUI?.open&&!storyUI?.open&&!currentScene(world),action:()=>{pointer=null;const f=world.fishing;if(f.state==='waiting')act('cancel');else if(f.state==='idle')act('click');},examine:()=>{world.inspect();canvas.focus();}});
 let atlasOpen=false,exploreStart=performance.now(),lastMessage='',messageSince=0,dotsKey='',hpShown='',hpFraction=1;
 $('upgrade-timer').insertAdjacentHTML('afterend','<div id="upgrade-bar"><i id="upgrade-fill"></i></div><p id="quest-objective" hidden aria-live="polite"></p><p id="side-objective" hidden aria-live="polite"></p>');
 document.querySelector('.hotbar').insertAdjacentHTML('beforeend','<div class="dash-mini"><div id="dash-pips"></div><span>DASH</span></div>');
@@ -252,6 +256,7 @@ saveUI=mountSaveUI({getWorld:()=>lobby.world,
  onTitle:()=>{lobby.stop();lobby.notify();},onOpen:()=>{backpackUI?.close();skillsUI?.close();codexUI?.close();questUI?.close();toggleAtlas(false);release();},onClose:()=>{release();canvas.focus();}
 });
 hubUI=mountHub({cloud:saveUI.cloud,onOpen:()=>{backpackUI?.close();skillsUI?.close();codexUI?.close();questUI?.close();toggleAtlas(false);release();},onClose:()=>{release();canvas.focus();}});
+chatUI=mountChat({hub:hubUI.hub,onOpen:()=>release(),onClose:()=>{release();canvas.focus();}});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveUI.flush();});
 addEventListener('pagehide',()=>saveUI.flush());
 function updateLobby(){

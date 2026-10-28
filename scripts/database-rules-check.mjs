@@ -46,6 +46,24 @@ await no('no request between friends',set(ref(b,'requests/alice/bob'),{n:'Bobby'
 await ok('carol asks alice',set(ref(c,'requests/alice/carol'),{n:'Carol',t:T()}));
 await ok('alice declines',remove(ref(a,'requests/alice/carol')));
 await ok('carol asks again and withdraws',set(ref(c,'requests/alice/carol'),{n:'Carol',t:T()}).then(()=>remove(ref(c,'requests/alice/carol'))));
+// Chat and private messages: friends only, signed with the sender's own name, rate limited.
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+await ok('alice says something',update(ref(a),{'chat/alice/m1':{n:'Alice',m:'hello',t:T()},'rate/alice':T()}));
+await ok('friend bob reads alice chat',get(ref(b,'chat/alice')));
+await no('stranger carol cannot read alice chat',get(ref(c,'chat/alice')));
+await no('chat without the rate stamp',set(ref(a,'chat/alice/m2'),{n:'Alice',m:'hi',t:T()}));
+await no('chat too soon after the last',update(ref(a),{'chat/alice/m3':{n:'Alice',m:'spam',t:T()},'rate/alice':T()}));
+await wait(800);
+await no('chat under another name',update(ref(a),{'chat/alice/m4':{n:'Bobby',m:'hi',t:T()},'rate/alice':T()}));
+await no('chat too long',update(ref(a),{'chat/alice/m5':{n:'Alice',m:'x'.repeat(201),t:T()},'rate/alice':T()}));
+await no('bob cannot write in alice chat',update(ref(b),{'chat/alice/m6':{n:'Bobby',m:'hi',t:T()},'rate/bob':T()}));
+await ok('bob whispers to friend alice',update(ref(b),{'dm/alice/d1':{f:'bob',n:'Bobby',m:'psst',t:T()},'rate/bob':T()}));
+await wait(800);
+await no('carol cannot whisper to alice',update(ref(c),{'dm/alice/d2':{f:'carol',n:'Carol',m:'psst',t:T()},'rate/carol':T()}));
+await no('bob cannot sign a whisper as carol',update(ref(b),{'dm/alice/d3':{f:'carol',n:'Bobby',m:'psst',t:T()},'rate/bob':T()}));
+await no('bob cannot read alice inbox',get(ref(b,'dm/alice')));
+await ok('alice reads and clears her inbox',get(ref(a,'dm/alice')).then(()=>remove(ref(a,'dm/alice/d1'))));
+await ok('alice clears her old chat',remove(ref(a,'chat/alice/m1')));
 await ok('rename while online in one write',update(ref(a),{'nicknames/alicia':'alice','nicknames/alice':null,'profiles/alice/nick':'Alicia','presence/alice/n':'Alicia'}));
 await ok('bob unfriends alice (both sides)',update(ref(b),{'friends/bob/alice':null,'friends/alice/bob':null}));
 await no('bob can no longer read alice',get(ref(b,'pos/alice')));
