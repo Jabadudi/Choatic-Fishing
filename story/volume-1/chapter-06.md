@@ -522,11 +522,13 @@ I thought that was a strange thing to say.
 
 By trip thirty, I understood it.
 
+I finished all forty. The last six I did with both hands on the bucket handles and my eyes on my own feet, because looking any further ahead made the well seem to move away. When I tipped the final bucket into the trough, Drayfus nodded once, said nothing, and walked off. It was the nicest thing he'd done all day.
+
 ⸻
 
 The sun was gone when they let me go.
 
-I don't remember the walk back to the guest lodge. I remember the door, and then I remember the bed, and in between there was a blank where a person's memories are supposed to be.
+I don't remember much of the walk back to the guest lodge. Mara steered me by the elbow as far as the door, told me to drink the waterskin, and left before I could thank her. I remember the door, and then I remember the bed, and in between there was a blank where a person's memories are supposed to be.
 
 Every part of me hurt. I'd expected that. Bruised knee, bruised ribs, a shoulder that had met the dirt nine times. Ordinary, honest, gym-class pain.
 
