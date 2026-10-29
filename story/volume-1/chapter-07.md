@@ -20,7 +20,7 @@ The window was black. Not dawn-black, not even pre-dawn-black. The kind of black
 
 "How will you know?"
 
-"Because I'll be on the wall," said Drayfus, "watching your shoulders."
+"Because I'll be up in the watchtower," said Drayfus, "watching your shoulders."
 
 He left. He left the door open, which I took personally.
 
@@ -80,7 +80,7 @@ I started jogging.
 
 I would like to describe my form, but I think it's kindest not to.
 
-The wall around Willowback was less a wall and more a long, uneven barrier of stacked stone and sharpened logs, with a walkway along the top. Every so often there was a guard on it, wrapped in a cloak, leaning on a spear. They watched me go by with the carefully blank faces of people who had been told not to laugh.
+The path around Willowback ran along the outer edge of the village, past back fences and kitchen gardens and the rear walls of houses, with a tall wooden watchtower standing over it at the southern end. Every so often there was a guard posted along the way, wrapped in a cloak, leaning on a spear. They watched me go by with the carefully blank faces of people who had been told not to laugh.
 
 Somewhere around the first corner, I passed a guy asleep on his feet. He opened one eye as I went by, looked at me, closed it again, and said, "Morning, Oscar's boy."
 
@@ -96,7 +96,7 @@ By the docks, I was breathing like a broken bellows, and the wind off the water 
 
 By the east gardens, I couldn't have told you my own name.
 
-And then, on the walkway above me, the sky behind the wall turned the faintest, palest gray, and I saw a shape standing against it. Tall. Arms folded. Not moving.
+And then the sky behind the watchtower turned the faintest, palest gray, and I saw a shape on its platform, standing against it. Tall. Arms folded. Not moving.
 
 Watching my shoulders.
 
@@ -118,7 +118,7 @@ I hated it.
 
 "It was until you stopped counting."
 
-I looked up. He was crouched on the wall with one boot on the edge, looking down at me. In the new light, the scar across his jaw looked paler than it had yesterday, and there was something almost like tiredness in his face. I realized he'd probably been awake the whole night.
+I looked up. He was crouched on the edge of the watchtower platform with one boot on the rail, looking down at me. In the new light, the scar across his jaw looked paler than it had yesterday, and there was something almost like tiredness in his face. I realized he'd probably been awake the whole night.
 
 "Water," he said, and tossed me a waterskin.
 
@@ -128,7 +128,7 @@ I drank half of it before I realized I'd stopped breathing to do it.
 
 "I wanted to."
 
-"That wasn't the question." He jumped down off the wall. He landed lightly for a man his size, and the gravel barely made a sound. "Mara has been running that wall since she was nine."
+"That wasn't the question." He came down the ladder in three quick steps and landed lightly for a man his size, and the gravel barely made a sound. "Mara has been running that path since she was nine."
 
 "Is that why she's so fast?"
 
@@ -258,7 +258,7 @@ I almost fell over.
 
 The squat held. Barely. My legs were screaming, but the world had gone completely still.
 
-"The summer he trained me," Drayfus said, "he used to sit on the wall at night. Talking to no one. I thought he'd gone soft in the head." He looked away, at the dummies by the fence. "I was a boy. I was an idiot."
+"The summer he trained me," Drayfus said, "he used to sit up in that tower at night. Talking to no one. I thought he'd gone soft in the head." He looked away, at the dummies by the fence. "I was a boy. I was an idiot."
 
 "What did it say?" I asked. "To him. The thing he was talking to."
 
