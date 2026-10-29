@@ -258,7 +258,7 @@ I almost fell over.
 
 The squat held. Barely. My legs were screaming, but the world had gone completely still.
 
-"The first week he was here," Drayfus said, "he used to sit on the wall at night. Talking to no one. I thought he'd gone soft in the head." He looked away, at the dummies by the fence. "I was a boy. I was an idiot."
+"The summer he trained me," Drayfus said, "he used to sit on the wall at night. Talking to no one. I thought he'd gone soft in the head." He looked away, at the dummies by the fence. "I was a boy. I was an idiot."
 
 "What did it say?" I asked. "To him. The thing he was talking to."
 
