@@ -503,3 +503,115 @@ Then he straightened up, and his face closed again like a door.
 "Again," said Drayfus.
 
 And somewhere warm, low in my stomach, I could have sworn I heard a cat laughing.
+
+⸻
+
+I did not get to cast again.
+
+I would like that on the record, too, because for about an hour afterward I was very smug about it.
+
+Drayfus took the rod off me and leaned it against the fence, and then he put a bucket in each of my hands and pointed at the well.
+
+"Forty trips," he said.
+
+"Why?"
+
+"Because the next time you cast that thing, I want you to be standing up when it's over."
+
+I thought that was a strange thing to say.
+
+By trip thirty, I understood it.
+
+⸻
+
+The sun was gone when they let me go.
+
+I don't remember the walk back to the guest lodge. I remember the door, and then I remember the bed, and in between there was a blank where a person's memories are supposed to be.
+
+Every part of me hurt. I'd expected that. Bruised knee, bruised ribs, a shoulder that had met the dirt nine times. Ordinary, honest, gym-class pain.
+
+This was something else.
+
+It sat behind my breastbone, heavy and hollow at the same time, like someone had scooped out the inside of me with a spoon and left the shell. My hands were shaking. I couldn't have lifted my arm to scratch my nose if my life depended on it.
+
+I lay on top of the blanket and stared at the ceiling.
+
+> **Reedwater's Call** — *Resting.*
+>
+> Reserves depleted.
+
+"Reserves," I said to the ceiling. "Right."
+
+"Mana," said the ocelot.
+
+It was sitting on the stool, tail wrapped around its paws, as if it had been there all evening and found me boring.
+
+"One cast," it went on. "One. And you are lying there like a man who has been dragged behind a cart."
+
+"I did forty trips to the well!"
+
+"The well did not make you feel like this. The well made you tired." It tilted its head. "This is the other thing."
+
+I groaned. "Is it going to be like this every time?"
+
+"That depends," said the ocelot, "on whether you are as stupid as you look."
+
+"Wow."
+
+"Think of a heavy box."
+
+I closed my eyes. "I don't want to think about a box."
+
+"A heavy box," it repeated, patient and merciless, "on the floor. You need to lift it. A man with strong legs squats, takes the weight in his thighs, and stands. It is tiring. It is not ruinous." Its tail flicked. "A man with weak legs bends from the waist and hauls it up with his back and his arms and his teeth. He lifts the same box. But he feels it for a week, and one day something tears."
+
+I opened one eye.
+
+"The core is the lifting," the ocelot said. "Your body is the legs. When you cast today, the power was real, but your body was not strong enough to carry any of it. So the load went somewhere else. Into the one place you had to spare."
+
+"My magic."
+
+"Your magic. All of it, in one go, because nothing else was holding any." It looked at me almost kindly. "Strength is not the opposite of power, boy. It is the thing that lets you afford it."
+
+I lay there.
+
+It was annoying how much sense that made.
+
+"So Drayfus knew," I said slowly. "The buckets. He wasn't just being mean."
+
+"He was being mean," said the ocelot. "He was also being right. Those are not mutually exclusive, and he is better at both than you are."
+
+> **[Still Water]** has activated.
+
+The cool feeling slid through me, and for once it didn't just calm me down. It settled into the hollow behind my breastbone and stayed there, like a hand over a wound.
+
+I felt the dread of the last few days loosen, just slightly.
+
+"Legs," I said. "I have to build legs."
+
+"Yes."
+
+"And then I can cast more."
+
+"And then," the ocelot agreed, "you can do more than embarrass a man with a very large sword."
+
+I thought about Drayfus's face when the line came off the blade. *Oscar.* Just the name.
+
+"Hey," I said, to the dark. "Why did everyone know him? Grandpa. I mean really know him. Drayfus said I owe him. Emilia cried. Everyone looks at me like I'm a house they used to live in."
+
+The ocelot didn't answer for a while.
+
+When it did, the boredom had gone out of its voice.
+
+"Sleep," it said. "Tomorrow, Drayfus will wake you before the sun. Ask him then."
+
+"Will he tell me?"
+
+"No," said the ocelot. "But you should watch his face when you do."
+
+I rolled over. Through the warped glass of the window, a sliver of moon sat on the rooftops of Willowback, white and quiet.
+
+I fell asleep before I could decide whether I wanted to dream.
+
+I didn't.
+
+That, somehow, was worse.
