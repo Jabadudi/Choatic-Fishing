@@ -326,7 +326,7 @@ Mara stopped swinging her legs.
 
 "People think about it for months," Emilia said.
 
-She'd set her tea down on the bench. She got up, slowly, and came across the training circle, and crouched in front of me, which her knees had clear opinions about. She looked into my face. Into my eyes, specifically, like she was looking for something in there.
+She'd set her tea down on the bench. She got up, slowly, and walked across the training circle until she was standing over me. She looked down into my face. Into my eyes, specifically, like she was looking for something in there.
 
 "What did you see?" she asked quietly. "After."
 
