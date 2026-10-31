@@ -210,7 +210,7 @@ I looked up.
 
 He was standing at the gate in his cloak, bareheaded, with one hand resting on the hilt of the great sword across his back. I don't know how long he'd been there. The lantern in the watchtower had gone out. Behind him, two guards stood frozen in the lane with their spears half raised, staring at the wolf like it was a very large, very beautiful problem.
 
-"Not in thirty years," said Drayfus. "I have been guard captain for twenty. They come to the edge of the fields. They stand and watch. They go." His eyes didn't leave the wolf. "They don't come in."
+"Not in thirty years," said Drayfus. "I have been guard captain for twenty. When shadow walkers come, they fight beside us at the edge of the fields. The rest of the time they stand and watch, and they go." His eyes didn't leave the wolf. "They don't come in."
 
 The wolf lifted its head and looked at him.
 
@@ -270,7 +270,7 @@ Mara made a small, startled sound, half laugh, half hiccup.
 
 "After that, they were inseparable," said Emilia. "Oscar went out with the Moonfang on their night rounds. They taught him the shoreline. He taught them whatever it is that a man from another world has to teach a wolf. I never asked." Her smile faded. "And then, one summer, he stopped coming."
 
-"His knees," I said. "He told me. He told, uh. Sort of."
+"His knees," I said. "He stopped going out to the island when his knees gave out."
 
 "Yes." She turned the cup. "He stopped coming. And Brume waited."
 
@@ -366,7 +366,7 @@ I closed it again.
 
 Above me, the sky was a deep, cloudless blue. A thin line of smoke rose from the chief's chimney. Somewhere in the village, a small child was shrieking with laughter, and I heard Mara's voice, close by, calling out something about breakfast.
 
-I lay there with a hand resting on a wolf's warm flank, and I thought about a man who had waited for me for fifty winters.
+I lay there with a hand resting on a wolf's warm flank, and I thought about a wolf who had waited on a shore for years, for a man who couldn't come back.
 
 *I'm here,* I thought. *I'm sorry it took so long.*
 
