@@ -258,7 +258,7 @@ He nodded slowly.
 
 It was morning, and the kitchen was warm, and Mara was staring at me over a bowl of porridge with her mouth very slightly open. News had spread through the village before the sun was fully up. A *Moonfang inside the fence.* A *Moonfang asleep in the training circle, with its head on the boy's foot.* Half the village had come to look. The other half had pretended they hadn't.
 
-The wolf was still out there. I could see it through the window, a long gray shape in the pale light, lying calmly beside the weapon rack while a small boy gradually, bravely, crept closer to pat its tail.
+The wolf was gone. He had slipped out of the village at first light, and all that was left in the training circle was a ring of flattened grass where he had lain. I could see it through the window, and a small boy crouched beside it, solemnly measuring it with his arms.
 
 "He has guarded the Reedwater shore for longer than I have been alive," Emilia went on. She was sitting across from me with a cup of tea she wasn't drinking. "Longer than my mother. The Moonfang do not take names from us. We gave him ours, and he tolerated it."
 
@@ -282,7 +282,7 @@ The kitchen was very quiet.
 
 "It was a shadow walker I was chasing," Mara said. Her voice was very small. "It broke away from the fight and went straight for the cabin, and I couldn't catch it. I was too slow. By the time I got there, you were on the ground, and it was almost on top of you." She swallowed. "And then something came out of the dark and hit it. I didn't know it was Brume."
 
-I stared out the window at the great gray shape lying in the morning light, and thought about a man on a dock, years ago, waiting for somebody who was late.
+I stared out the window at the ring of flattened grass in the morning light, and thought about a man on a dock, years ago, waiting for somebody who was late.
 
 And a wolf on a shore, waiting for the same man.
 
@@ -290,15 +290,15 @@ And a wolf on a shore, waiting for the same man.
 
 I looked at the ocelot, in the corner, which no one else could see.
 
-It was looking out the window at the wolf. It didn't say anything. But I thought its tail, curled neatly around its paws, was trembling very slightly.
+It was looking out the window at the empty circle. It didn't say anything. But I thought its tail, curled neatly around its paws, was trembling very slightly.
 
 "Eli," said Emilia.
 
 I turned.
 
-"The Moonfang chooses once," she said. "He has chosen you. He will not leave your side now, not for long, and I don't think you could make him if you tried." Her eyes were bright and wet and very kind. "I hope you will forgive an old woman for saying that it is a great gift. And a great weight."
+"The Moonfang choose once," she said. "And they choose slowly. He came to look at you. Whether he chooses you is for him to decide, and I don't think he will decide it quickly." Her eyes were bright and wet and very kind. "If he does, it will be a great gift. And a great weight."
 
-"I'll take it," I said, and meant it.
+"I'll wait," I said, and meant it.
 
 She nodded. She looked like she wanted to say something else. She didn't.
 
@@ -308,9 +308,9 @@ Instead, she reached across the table and put her hand over mine, briefly, just 
 
 I ran double that day.
 
-Brume ran with me.
+Brume watched.
 
-He kept pace at my left shoulder, a long silver shadow, loping easily while I wheezed and stumbled and cursed and held on. The guards on the perimeter path watched us go by in total silence, and then one of them, an older man with a gray mustache, put a fist over his heart.
+He was sitting at the far edge of the fields, a long silver shape against the green, ears forward, perfectly still. Every time I came around the south corner of the path, he was there. He never moved closer. He never looked away. The guards along the perimeter watched me go by in total silence, and then one of them, an older man with a gray mustache, looked out at the wolf and put a fist over his heart.
 
 I didn't know what that meant. I didn't have time to ask.
 
@@ -320,17 +320,17 @@ On the eleventh lap, Mara fell in on my right.
 
 "I'm not."
 
-"You are. You've got a *Moonfang.*"
+"You are. You've got a *Moonfang* watching you."
 
-"He's not mine. He's, uh. He's not a pet. He chose."
+"He's not mine. He's, uh. He's not a pet. He hasn't chosen anything."
 
-"He chose *you,* Eli. In thirty years, no one has been chosen." She was grinning, out of breath, her eyes very bright. "I can't *believe* I have to train with you."
+"He came *inside the fence* for you, Eli. In thirty years, no one has had that." She was grinning, out of breath, her eyes very bright. "I can't *believe* I have to train with you."
 
 I laughed.
 
 I couldn't help it. It came up from somewhere deep, a big, helpless, breathless laugh, and I was still laughing when I crossed the finish line at the foot of the watchtower and went down face-first in the grass.
 
-Brume lay down next to me.
+Out at the edge of the field, Brume lay down in the grass, chin on his paws, and went on watching.
 
 I stared up at the sky.
 
@@ -342,7 +342,7 @@ I stared up at the sky.
 
 I turned my head.
 
-It was sitting in the grass beside the wolf, its blue eyes steady and its coat bright in the sun, and it looked very small next to Brume's enormous gray bulk. They weren't looking at each other. They didn't need to.
+It was sitting in the grass beside me, its blue eyes steady and its coat bright in the sun, facing out across the field toward the long gray shape at the edge of it. They weren't looking at each other. They didn't need to.
 
 "He recognized you," I said. "The wolf."
 
@@ -362,7 +362,7 @@ I closed it again.
 
 Above me, the sky was a deep, cloudless blue. A thin line of smoke rose from the chief's chimney. Somewhere in the village, a small child was shrieking with laughter, and I heard Mara's voice, close by, calling out something about breakfast.
 
-I lay there with a hand resting on a wolf's warm flank, and I thought about a wolf who had waited on a shore for years, for a man who couldn't come back.
+I lay there with my hand open on the warm grass, and I thought about a wolf who had waited on a shore for years, for a man who couldn't come back.
 
 *I'm here,* I thought. *I'm sorry it took so long.*
 
