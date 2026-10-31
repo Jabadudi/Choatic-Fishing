@@ -206,9 +206,41 @@ Emilia was quiet for a very long time.
 
 "What people?"
 
-"Another night," said Emilia.
+I expected *another night.* I had a whole shelf for *another night.*
 
-And that was all I got.
+Instead, she told me.
+
+"Your grandfather came to Willowback one night in the middle of a storm," she said. "Long before you were born. He came up from this dock soaked to the skin, and he had a little boy in his arms. Two years old, maybe. Wrapped in his coat, asleep." She was looking at the water, not at me. "The boy had his face, Eli. His exact face. You couldn't have mistaken it."
+
+I didn't say anything. I don't think I could have.
+
+"I asked him whose child it was. He said it was his. A bastard of his, from one of his travels." Her mouth moved, very slightly. "That was all he would say. Not where. Not who the mother was. I asked him three times, and three times he told me I was better off not knowing, and the third time he looked so tired that I stopped asking."
+
+"How long did they stay?"
+
+"A season. The boy learned to walk on this dock." She almost smiled. "Then one night Oscar took him and left, and when he came back, years later, he came back alone. He never spoke of the child again, and I never asked."
+
+The lake lapped at the posts.
+
+I thought about my dad. About his laugh, which I mostly remember from photos now, and his hands, which I remember better. About the way Grandpa used to look at him sometimes, across the dinner table, like he was checking that he was still there.
+
+"You think that boy was my dad," I said.
+
+"I think he had Oscar's face," said Emilia. "And so do you."
+
+"And the mother?"
+
+"I don't know." She pulled the shawl tighter. "But whoever she was, Eli, I don't think she agreed to him leaving with her son. Men don't run through storms carrying children unless something is chasing them."
+
+*You smell of her,* said a voice in my memory. Many voices.
+
+I didn't say it out loud.
+
+I didn't have to. I saw her think it too.
+
+"That's all I know," said Emilia. "I've told you all of it. I'm sorry it isn't more."
+
+And for once, I believed her.
 
 ⸻
 

@@ -31,7 +31,8 @@ Warm and maternal, with quiet authority. Her expression carries "the careful kin
 
 ## Chapters 13–14 (draft)
 - A powerful water mage (decided). In the raid she pulls water from the trough, well and rain barrels, freezes ranks of shadow walkers into ice walls, and throws ice spears. Her magic is clean winter cold, unlike the shadow walkers' dead cold.
-- Before she steps out, she tells Eli privately that Oscar once came to the village at night with a little boy in his arms who had his exact face, most likely Eli's father, and that "whatever she wants from you, it started that night."
+- Ch13, on the dock: tells Eli that Oscar once came up from the dock in a storm carrying a boy of about two with his exact face. Oscar said it was "a bastard of his, from one of his travels" and refused to name the mother. They stayed a season; then Oscar left with the boy and came back years later alone. She believes the boy was Eli's father and suspects the mother didn't agree to him leaving.
+- Ch14, before she steps out: "Remember what I told you on the dock... Whatever she wants from you, it started that night."
 - Death: overwhelmed, she starts a final attack that pulls on the whole lake and would kill her. A shadow walker comes up behind her and kills her before she can release it. Her holding the lane gets every boat away.
 
 ## Open questions / not yet established

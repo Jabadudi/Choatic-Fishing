@@ -166,7 +166,7 @@ The shield wall opened for her without anyone telling it to.
 
 She stopped beside me. Just for a moment. She leaned in close, so close I could smell the herbs on her shawl, and she spoke very fast and very low, for me and nobody else.
 
-"Listen. Your grandfather came to this village once, a long time ago, in the middle of the night. He had a little boy in his arms. Wrapped in a blanket. The boy had his face, Eli. His exact face." Her hand found mine and squeezed it, hard. "I think that boy was your father. Whatever she wants from you, it started that night. Remember that."
+"Remember what I told you on the dock." Her hand found mine and squeezed it, hard. "Whatever she wants from you, it started that night. Don't let anyone tell you otherwise."
 
 "Emilia, what—"
 
