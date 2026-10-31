@@ -34,6 +34,10 @@ Blunt, economical, unimpressed, and secretly kind. Measures people. Rarely expla
 - Mara says he is afraid of what happens when he does tell (Ch7).
 - He fought his first shadow walker younger than Mara is now (Ch6).
 
+## Chapter 14 (draft)
+- Calls the water from the watchtower, jumps twenty feet down, and runs to hold the end of the docks with the blacksmith's Rimejaw until the last boat pushes off.
+- Then cuts across the burning village toward Eli and Mara, shouting "NORTH! Don't you dare stop!" (He joins the escape in chapter 15, carried by the Rimejaw.)
+
 ## Open questions / not yet established
 - His eyes, skin tone and exact hair length.
 - Whether he has a beard. The first reference sheet shows one, but the text never says so.

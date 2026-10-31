@@ -44,3 +44,8 @@
 
 ## Visual reference notes
 Massive silver-gray wolf, pony-sized, head at an adult's hip, pale gray eyes, soft silver fur. Calm, protective expression. The existing Moonfang sprite sheet shows run, leap, land and howl. For the named wolf, keep the same look and add a small, old notch in the left ear so he can be told apart (placeholder).
+
+## Chapter 14 (draft)
+- More than twenty Moonfang come out of the forest to fight on the north side of Willowback, led by Brume.
+- During the run north, six to eight form a moving wall around Eli and Mara. A young wolf is killed by an infected boar.
+- Brume runs right at Eli's side.

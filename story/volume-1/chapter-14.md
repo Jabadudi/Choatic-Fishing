@@ -122,7 +122,7 @@ I turned my head. I shouldn't have, but I did. Over the rooftops, on the north s
 
 And then I saw the wolves.
 
-Gray shapes, a dozen of them, maybe more, pouring out of the forest and throwing themselves at the things coming through the trees. In the middle of them, bigger than the rest, a silver line along his back: Brume.
+Gray shapes. I tried to count them and lost track somewhere past twenty. They came pouring out of the forest and throwing themselves at the things coming through the trees. In the middle of them, bigger than the rest, a silver line along his back: Brume.
 
 He'd come.
 
@@ -224,6 +224,12 @@ Then he called it.
 
 "*THE WATER! EVERYONE TO THE WATER!*"
 
+And then he jumped.
+
+Not down the ladder. Off the platform. Twenty feet, in full leather, with that ridiculous sword on his back, and he landed in the lane in a crouch like it was a step off a porch. He didn't look at Emilia. I think he couldn't. He drew the sword and ran for the docks, and as he passed the blacksmith's forge he shouted something, and the blacksmith's Rimejaw came off the doorstep in a spray of frost and ran with him.
+
+He was going to hold the end of the docks. I understood that later. Someone had to be the last one off the shore, and Drayfus had decided a long time ago that it was going to be him.
+
 ⸻
 
 The line broke.
@@ -269,6 +275,14 @@ I went.
 ⸻
 
 We ran north. Up the lane, past the lodge, toward the burning roofs and the howling and the trees, with the fire on every side and the cold behind us, and Mara's hand in mine.
+
+The wolves found us before we'd gone fifty paces.
+
+They came out of the smoke on both sides, gray and silver and huge, and fell in around us without breaking stride, like they'd been waiting for us. Six of them. Eight. A moving wall of fur and teeth. When a shadow walker lurched out of a burning doorway, two of them hit it at once and it was gone. When an infected boar came crashing through a garden fence, three of them peeled off and went at it, and the pack closed up behind them so smoothly I didn't realize they'd gone until I heard the fighting behind us.
+
+One of them didn't come back. A young one, smaller than the rest. I saw it go down under the boar's tusks. I didn't see it get up.
+
+Brume was at my side. Not ahead. Not behind. Right beside me, so close his shoulder kept bumping my hip, his pale eyes on the dark ahead, and every time I stumbled, he was there.
 
 I kept my promise.
 
@@ -335,6 +349,14 @@ It didn't matter. Every minute she'd held that lane, another boat had pulled awa
 She'd bought them the water.
 
 She'd bought them all the water.
+
+Down at the docks, the last boat pushed off. And at the end of the dock, standing in the water up to his knees with his sword in both hands, Drayfus turned around.
+
+He saw us. Across the whole burning village, somehow, he saw us.
+
+Then he was running. Up from the water, through the gardens, the Rimejaw beside him with frost streaming off its scales, cutting a straight line toward us through everything in between. Whatever got in his way, he went through it. He didn't stop. He didn't slow down.
+
+"*NORTH!*" he roared. "*Don't you dare stop!*"
 
 Behind us, Willowback was burning. Dark red fire, the wrong kind, crawling from roof to roof. Ash was falling, gray and soft, like snow. It caught in Mara's hair. It caught in mine.
 
