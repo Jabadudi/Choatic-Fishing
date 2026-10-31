@@ -34,7 +34,7 @@ export const SPRITES={
  }},
  'emilia-story':{asset:null,scale:1,anchor:[.5,1],offset:[0,14],fallback:{coat:'#3d5a8a',hair:'#d8d4cc',skin:'#c08a63'}},
  'mara-story':{asset:null,scale:1,anchor:[.5,1],offset:[0,14],fallback:{hair:'#3d2b24',coat:'#6b4b35'}},
- // Drawn placeholders until the walk sheets from art/sprite-prompts/chapter6-walk-sets.md arrive.
+ // Drawn placeholders until the walk sheets from art/sprite-prompts/chapter6-art.md arrive.
  'drayfus-story':{asset:null,scale:1,anchor:[.5,1],offset:[0,14],fallback:{coat:'#3b3430',hair:'#5d5650',skin:'#b5805e',sword:true}},
  ocelot:{asset:null,scale:1,anchor:[.5,1],offset:[0,0]},
  // Original Drive sheet has a green matte. The shared loader removes it once.

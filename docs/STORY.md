@@ -72,7 +72,7 @@ Continue from the end of Chapter 5, in Eli's room. Every finished scene is a sav
 7. **Forty trips**: fill the buckets at the yard well and empty them into the trough. Full buckets slow Eli down, more as the trips add up. The count is saved.
 8. After the fortieth bucket, Eli wakes in his room that night. The ocelot on the stool explains reserves with the heavy-box lesson. Chapter 6 ends there, and pays the chapter Wishstones.
 
-Drayfus and the ocelot use drawn placeholders until their walk sheets arrive (prompts in the project's `art/sprite-prompts/chapter6-walk-sets.md`). Drayfus's dialogue portrait is a crop of his index portrait.
+Drayfus and the ocelot use drawn placeholders until their walk sheets arrive (prompts in the project's `art/sprite-prompts/chapter6-art.md`). Drayfus's dialogue portrait is a crop of his index portrait.
 
 The tour and the night are saved checkpoints (`ch5-tour`, `ch5-night`, `ch5-sleep`, `ch5-morning`). Mara stands at a fixed place in each: in Eli’s room for the tour, in the chief’s house overnight, and outside the lodge door at sunrise. A save made during the video reopens on the video page.
 
