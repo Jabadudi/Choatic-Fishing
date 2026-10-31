@@ -226,7 +226,7 @@ Then he called it.
 
 And then he jumped.
 
-Not down the ladder. Off the platform. Twenty feet, in full leather, with that ridiculous sword on his back, and he landed in the lane in a crouch like it was a step off a porch. He didn't look at Emilia. I think he couldn't. He drew the sword and ran for the docks, and as he passed the blacksmith's forge he shouted something, and the blacksmith's Rimejaw came off the doorstep in a spray of frost and ran with him.
+Not down the ladder. Off the platform. Twenty feet, in full leather, with that ridiculous sword on his back, and he landed in the lane in a crouch like it was a step off a porch. He didn't look at Emilia. I think he couldn't. He drew the sword and ran for the docks, and as he passed the blacksmith's forge he shouted something, and the blacksmith's Rimejaw came off the doorstep in a spray of frost and ran with him. The blacksmith himself went the other way, toward the boats, with the Flitlynx clinging to his shoulder, and he didn't look back either.
 
 He was going to hold the end of the docks. I understood that later. Someone had to be the last one off the shore, and Drayfus had decided a long time ago that it was going to be him.
 
