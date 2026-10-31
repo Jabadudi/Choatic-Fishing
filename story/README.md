@@ -2,7 +2,7 @@
 
 The narrative behind The Wilds. Nothing here is loaded by the game.
 
-- `volume-1/` — chapters 1–5, the current canon text, and drafts of chapters 6–7 (not yet in the game).
+- `volume-1/` — chapters 1–5, the current canon text, and drafts of chapters 6–8 (not yet in the game).
 - `characters/` — one sheet per character, written strictly from the chapters. Details the story has not established are listed under each sheet's open questions.
 
 Decided since the sheets were written: the swordsman at Emilia's house in chapter 4 is Drayfus. `swordsman.md` and `drayfus.md` are still separate sheets.
