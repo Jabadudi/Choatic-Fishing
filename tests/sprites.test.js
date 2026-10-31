@@ -86,8 +86,8 @@ test('Eli walks in four directions from one sheet and borrows the right-facing s
  assert.deepEqual(draw('idle','right'),{flipped:false,crop:frameRect(d,37,w,h).slice(0,2)});
  assert.deepEqual(draw('throw','left'),{flipped:true,crop:frameRect(d,32,w,h).slice(0,2)});
 },[eliPng.readUInt32BE(16),eliPng.readUInt32BE(20)]));
-test('Chapter 6 and Brume walk sheets fill their grids, and every clip frame fits',()=>{
- for(const [id,rows] of [['mara-story',4],['emilia-story',4],['drayfus-story',5],['ocelot',5],['brume',6]]){
+test('Chapter 6, Brume and Corvane walk sheets fill their grids, and every clip frame fits',()=>{
+ for(const [id,rows] of [['mara-story',4],['emilia-story',4],['drayfus-story',5],['ocelot',5],['brume',6],['corvane',6]]){
   const d=SPRITES[id],png=readFileSync(new URL(`../assets/${d.asset}`,import.meta.url)),w=png.readUInt32BE(16),h=png.readUInt32BE(20);
   assert.deepEqual([w,h],[d.frameSize[0]*8,d.frameSize[1]*rows],id);
   for(const dir of ['right','left','down','up'])assert.ok(d.animations[`walk:${dir}`],`${id} walk:${dir}`);
@@ -112,4 +112,10 @@ test('column-layout walk sheets read each direction down its own column',()=>{
  const clips=walkClips(8,1,{layout:'columns'});
  assert.deepEqual(clips['walk:right'].frames,[0,4,8,12,16,20,24,28]);assert.deepEqual(clips['walk:up'].frames,[3,7,11,15,19,23,27,31]);
  assert.deepEqual(walkClips(8,1)['walk:down'].frames,[16,17,18,19,20,21,22,23]);
+});
+test('Corvane’s entrance and block play once and hold their last frame',()=>{
+ const d=SPRITES.corvane;
+ assert.equal(frameIndex(d,'shadowsPart',0),32);assert.equal(frameIndex(d,'shadowsPart',99),39);
+ assert.equal(frameIndex(d,'block',0),40);assert.equal(frameIndex(d,'block',99),47);
+ assert.equal(frameIndex(d,'walk:up',0),24);assert.equal(frameIndex(d,'idle:down',5),16);
 });

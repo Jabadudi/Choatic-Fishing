@@ -76,6 +76,16 @@ export const SPRITES={
  }},
  // Brume, the Moonfang wolf. Cut by scripts/prepare-chapter6-sprites.py from his column-layout walk, bow and sleep sheets in
  // art/sprites/creatures/moonfang/. Rows 0-3 walk; row 4 a slow bow; row 5 circling and lying down, ending in a breathing sleep. Both face right.
+ // Corvane, general of Croshelda's shadow army (Chapter 14). Rows 0-3 walk; row 4 the shadows-part entrance, facing
+ // the camera (he lifts a hand and the shadow walkers step aside); row 5 blocking Emilia's ice, facing right, with the
+ // frost cracks staying on his armor afterwards ('blocked').
+ corvane:{asset:'story/corvane-sheet.png',frameSize:[194,144],columns:8,scale:.5,anchor:[.5,1],offset:[0,15],fallback:{coat:'#141416',hair:'#1c1a1c',skin:'#d9d2cc',sword:true},animations:{
+  idle:{frames:[16]},'idle:down':{frames:[16]},'idle:up':{frames:[24]},'idle:right':{frames:[0]},'idle:left':{frames:[8]},
+  ...walkClips(8,1.3),
+  shadowsPart:{frames:[32,33,34,35,36,37,38,39],cycle:2.4,loop:false},
+  block:{frames:[40,41,42,43,44,45,46,47],cycle:1.4,loop:false},
+  blocked:{frames:[47]}
+ }},
  brume:{asset:'story/brume-sheet.png',frameSize:[246,146],columns:8,scale:.5,anchor:[.5,1],offset:[0,15],animations:{
   idle:{frames:[0]},'idle:right':{frames:[0]},'idle:left':{frames:[8]},'idle:down':{frames:[16]},'idle:up':{frames:[24]},
   ...walkClips(8,1),
