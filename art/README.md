@@ -31,7 +31,7 @@ Sheet rows are idle, walk or fly, run where present, attack, then extras (howl, 
 
 ## Chapter 6 characters
 
-`scripts/prepare-chapter6-sprites.py` cuts the walk sheets for Mara, Emilia, Drayfus and the talking ocelot into `assets/story/<name>-sheet.png`, in the same layout as Eli's. Drayfus's sheet adds his beckon strip as a fifth row (he waits with his arms folded and waves Eli over), and the ocelot's adds its dissolve strip (its first frame is how it sits). The ocelot's side rows have 7 frames.
+`scripts/prepare-chapter6-sprites.py` cuts the walk sheets for Mara, Emilia, Drayfus and the talking ocelot into `assets/story/<name>-sheet.png`, in the same layout as Eli's. Drayfus's sheet adds his beckon strip as a fifth row (he waits with his arms folded and waves Eli over), and the ocelot's adds its dissolve strip (its first frame is how it sits). The ocelot's side rows have 7 frames. It also cuts Brume's walk sheet (`sprites/creatures/moonfang/brume_walk_sheet.png`, the first sheet drawn in the column layout every new walk set uses) into `assets/story/brume-sheet.png`; the Moonfang familiar walks on it. `brume_walk_sheet_rows-old.png` is the earlier row version, kept for reference.
 
 ## Furniture and props
 

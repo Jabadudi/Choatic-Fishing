@@ -9,11 +9,14 @@ export const RABBIT_FRAMES=[
  [23,373,25,65],[78,373,25,65],[133,373,25,65]
 ];
 // Walk clips for a sheet in the house layout: rows right, left, toward the camera, away, 8 columns wide.
-// frames is how many frames each row holds (Eli has 8; everyone else is drawn with 6). cycle is the seconds per stride
-// loop, so the pace stays the same whatever the frame count. A side row can hold fewer frames than the others.
-export function walkClips(frames,cycle){
- const rows=Array.isArray(frames)?frames:[frames,frames,frames,frames];
- return Object.fromEntries(['right','left','down','up'].map((dir,r)=>[`walk:${dir}`,{frames:Array.from({length:rows[r]},(_,i)=>r*8+i),cycle}]));
+// frames is how many frames each direction holds (8 for every walker), and a side can hold fewer than the others.
+// cycle is the seconds per stride loop, so the pace stays the same whatever the frame count.
+// layout 'columns' reads a sheet used as drawn from now on: 4 columns wide, one direction per column, frames top to bottom.
+// The prep scripts turn column sheets into the row layout, so cut sheets keep the default.
+export function walkClips(frames,cycle,{layout='rows'}={}){
+ const counts=Array.isArray(frames)?frames:[frames,frames,frames,frames];
+ const at=(d,i)=>layout==='columns'?i*4+d:d*8+i;
+ return Object.fromEntries(['right','left','down','up'].map((dir,d)=>[`walk:${dir}`,{frames:Array.from({length:counts[d]},(_,i)=>at(d,i)),cycle}]));
 }
 export const SPRITES={
  // The second rows are runs, used by the guardian familiars. Both sheets face right; the village creatures stay on idle.
@@ -59,6 +62,11 @@ export const SPRITES={
   idle:{frames:[32]},'idle:down':{frames:[32]},'idle:up':{frames:[24]},'idle:right':{frames:[0]},'idle:left':{frames:[8]},
   vanish:{frames:[32,33,34,35,36,37,38,39],fps:6,loop:false},
   ...walkClips([7,7,8,8],.8)
+ }},
+ // Brume, the Moonfang wolf. Cut by scripts/prepare-chapter6-sprites.py from his column-layout walk sheet in art/sprites/creatures/moonfang/.
+ brume:{asset:'story/brume-sheet.png',frameSize:[198,147],columns:8,scale:.5,anchor:[.5,1],offset:[0,15],animations:{
+  idle:{frames:[0]},'idle:right':{frames:[0]},'idle:left':{frames:[8]},'idle:down':{frames:[16]},'idle:up':{frames:[24]},
+  ...walkClips(8,1)
  }},
  // Original Drive sheet has a green matte. The shared loader removes it once.
  moonfang:{asset:'story/moonfang.png',chromaKey:'green',frames:[[145,10,320,250],[450,10,310,250],[750,10,310,250],[1060,10,330,250],[5,290,255,190],[260,290,255,190],[515,290,255,190],[770,290,255,190],[1020,290,255,190],[1270,290,265,190]],scale:.36,anchor:[.5,1],offset:[0,0],mirror:'right',animations:{idle:{frames:[0,1,2,3],fps:3},run:{frames:[4,5,6,7,8,9],fps:9}}},

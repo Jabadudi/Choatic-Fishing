@@ -86,8 +86,8 @@ test('Eli walks in four directions from one sheet and borrows the right-facing s
  assert.deepEqual(draw('idle','right'),{flipped:false,crop:frameRect(d,37,w,h).slice(0,2)});
  assert.deepEqual(draw('throw','left'),{flipped:true,crop:frameRect(d,32,w,h).slice(0,2)});
 },[eliPng.readUInt32BE(16),eliPng.readUInt32BE(20)]));
-test('Chapter 6 walk sheets fill their grids, and every clip frame fits',()=>{
- for(const [id,rows] of [['mara-story',4],['emilia-story',4],['drayfus-story',5],['ocelot',5]]){
+test('Chapter 6 and Brume walk sheets fill their grids, and every clip frame fits',()=>{
+ for(const [id,rows] of [['mara-story',4],['emilia-story',4],['drayfus-story',5],['ocelot',5],['brume',4]]){
   const d=SPRITES[id],png=readFileSync(new URL(`../assets/${d.asset}`,import.meta.url)),w=png.readUInt32BE(16),h=png.readUInt32BE(20);
   assert.deepEqual([w,h],[d.frameSize[0]*8,d.frameSize[1]*rows],id);
   for(const dir of ['right','left','down','up'])assert.ok(d.animations[`walk:${dir}`],`${id} walk:${dir}`);
@@ -107,4 +107,9 @@ test('a 6-frame walk keeps the same stride pace as an 8-frame one',()=>{
  assert.equal(frameIndex(six,'walk',.4,{direction:'right'}),3);assert.equal(frameIndex(eight,'walk',.4,{direction:'right'}),4);
  assert.equal(frameIndex(six,'walk',.8,{direction:'right'}),0);assert.equal(frameIndex(eight,'walk',.8,{direction:'right'}),0);
  assert.deepEqual(walkClips([7,7,8,8],.8)['walk:left'].frames,[8,9,10,11,12,13,14]);
+});
+test('column-layout walk sheets read each direction down its own column',()=>{
+ const clips=walkClips(8,1,{layout:'columns'});
+ assert.deepEqual(clips['walk:right'].frames,[0,4,8,12,16,20,24,28]);assert.deepEqual(clips['walk:up'].frames,[3,7,11,15,19,23,27,31]);
+ assert.deepEqual(walkClips(8,1)['walk:down'].frames,[16,17,18,19,20,21,22,23]);
 });

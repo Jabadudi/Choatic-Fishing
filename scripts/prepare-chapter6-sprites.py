@@ -14,6 +14,8 @@ on a shared baseline and its head and torso centred, at twice the size the game 
   ocelot-sheet.png   rows 0-3 walk (the side rows have 7 frames; the 8th cell repeats the 1st),
                      row 4 the dissolve strip (sitting, then breaking into blue motes), kept in place frame to frame.
 
+  brume-sheet.png    rows 0-3 walk, cut from Brume's column-layout sheet (the Moonfang wolf).
+
 Run from the repository root: python3 scripts/prepare-chapter6-sprites.py
 Requires Pillow and NumPy.
 """
@@ -24,6 +26,7 @@ CH='art/sprites/characters/'
 # Frames per row (right, left, toward the camera, away). New non-Eli sheets have 6. Change a row when its art is redrawn.
 WALK_FRAMES={'mara':(8,8,8,8),'emilia':(8,8,8,8),'drayfus':(8,8,8,8),'ocelot':(7,7,8,8)}
 CR='art/sprites/creatures/talking-ocelot/'
+MF='art/sprites/creatures/moonfang/'
 OUT='assets/story/'
 
 def load(path):
@@ -42,10 +45,10 @@ def runs(prof,gap,thr):
   if start is not None:out.append([start,last+1])
   return out
 
-def frame_slices(mask,y0,y1,count):
-  """Column ranges of the figures in one row, split where frames touch."""
-  prof=mask[y0:y1].sum(0)
-  spans=[s for s in runs(prof,4,1) if mask[y0:y1,s[0]:s[1]].sum()>200]
+def frame_slices(band,count):
+  """Ranges along axis 1 of the figures in one strip of frames, split where frames touch."""
+  prof=band.sum(0)
+  spans=[s for s in runs(prof,4,1) if band[:,s[0]:s[1]].sum()>200]
   while len(spans)<count:
     widths=[b-a for a,b in spans];i=int(np.argmax(widths));a,b=spans[i]
     single=np.median(sorted(widths)[:max(1,len(widths)-1)]) if len(widths)>1 else (b-a)/2
@@ -53,31 +56,37 @@ def frame_slices(mask,y0,y1,count):
     c=cut-q+int(np.argmin(prof[cut-q:cut+q]))
     spans[i:i+1]=[[a,c],[c,b]]
   # Frame boundaries sit halfway across each gap, so stray motes go to the nearest figure.
-  edges=[0]+[(spans[i][1]+spans[i+1][0])//2 for i in range(len(spans)-1)]+[mask.shape[1]]
+  edges=[0]+[(spans[i][1]+spans[i+1][0])//2 for i in range(len(spans)-1)]+[band.shape[1]]
   return list(zip(edges[:-1],edges[1:]))
 
 def body_rows(m):
   rows=np.nonzero(m.sum(1)>=4)[0]
   return rows.min(),rows.max()+1
 
-def cut(im,mask,y0,y1,x0,x1):
-  """One frame as (RGBA image, anchor x, baseline y)."""
+def cut(im,mask,y0,y1,x0,x1,anchor='head'):
+  """One frame as (RGBA image, anchor x, baseline y). anchor 'body' centres four-legged walkers on their whole body."""
   m=mask[y0:y1,x0:x1];ys,xs=np.nonzero(m)
   ty,by=ys.min(),ys.max()+1;lx,rx=xs.min(),xs.max()+1
   rgb=im[y0:y1,x0:x1][ty:by,lx:rx].copy();m=m[ty:by,lx:rx]
   g=rgb[...,1];lim=np.maximum(rgb[...,0],rgb[...,2]);rgb[...,1]=np.where(g>lim*1.1,lim*1.1,g).astype(int)
   img=Image.fromarray(np.dstack([rgb.clip(0,255).astype(np.uint8),(m*255).astype(np.uint8)]),'RGBA')
   top,bottom=body_rows(m)
-  head=m[top:top+max(1,int((bottom-top)*.45))];cx=np.nonzero(head)[1].mean()
+  head=m[top:top+max(1,int((bottom-top)*.45))] if anchor=='head' else m[top:bottom];cx=np.nonzero(head)[1].mean()
   return img,cx,bottom
 
-def walk(path,counts=(8,8,8,8)):
-  im,mask=load(path);rows=runs(mask.sum(1),8,2)
-  edges=[0]+[(rows[i][1]+rows[i+1][0])//2 for i in range(len(rows)-1)]+[mask.shape[0]]
+def walk(path,counts=(8,8,8,8),layout='rows',anchor='head'):
+  """layout 'rows': one direction per row, frames left to right (the older sheets).
+  layout 'columns': one direction per column, frames top to bottom (sheets drawn from now on).
+  Either way the frames come back in the house order: right, left, toward the camera, away, 8 slots each."""
+  im,mask=load(path);axis=1 if layout=='rows' else 0
+  bands=runs(mask.sum(axis),8,2)
+  size=mask.shape[0] if layout=='rows' else mask.shape[1]
+  edges=[0]+[(bands[i][1]+bands[i+1][0])//2 for i in range(len(bands)-1)]+[size]
   frames=[]
   for r,count in enumerate(counts):
-    y0,y1=edges[r],edges[r+1]
-    row=[cut(im,mask,y0,y1,a,b) for a,b in frame_slices(mask,y0,y1,count)]
+    a0,a1=edges[r],edges[r+1]
+    if layout=='rows':row=[cut(im,mask,a0,a1,x0,x1,anchor) for x0,x1 in frame_slices(mask[a0:a1],count)]
+    else:row=[cut(im,mask,y0,y1,a0,a1,anchor) for y0,y1 in frame_slices(mask[:,a0:a1].T,count)]
     frames+=row+[None]*(8-len(row))
   return frames
 
@@ -134,3 +143,5 @@ if __name__=='__main__':
   frames=walk(CR+'talking-ocelot_walk_sheet.png',WALK_FRAMES['ocelot']);k=28*2/height(frames[:7])
   sit=strip(CR+'talking-ocelot_dissolve_strip.png',True)
   pack('ocelot-sheet.png',[(frames,k),(sit,36*2/height(sit[:1]))])
+  # Brume, the Moonfang wolf: pony-sized, about 64 px tall side-on.
+  frames=walk(MF+'brume_walk_sheet.png',(8,8,8,8),'columns','body');pack('brume-sheet.png',[(frames,64*2/height(frames[:8]))])

@@ -7,6 +7,9 @@ import {drawVillageCreature} from './village-creature-art.js';
 const GLOW={rabbit:'#cfe6ff',deer:'#ffe3a0',turtle:'#a8f0c8',eel:'#9ee6ff','shadow-walker':'#b9a0ff',moonfang:'#dde3ff',rimejaw:'#a6e4ff',flitlynx:'#ffbf8a'};
 // Guardians run on their sheets' run rows. Stand-ins until each has the standard 4-direction walk set.
 const GUARDIAN_RUN={moonfang:'run',rimejaw:'walk',flitlynx:'walk'};
+// Guardians that have it walk on the 4-direction set instead: the Moonfang is drawn as Brume.
+const GUARDIAN_WALK={moonfang:'brume'};
+const heading=({x=0,y=0}={})=>Math.abs(x)>=Math.abs(y)?(x<0?'left':'right'):(y<0?'up':'down');
 export function drawFamiliar(c,companion,time){
  const f=FAMILIARS[companion.id];if(!f)return;
  const glow=companion.shiny?'#ffd36a':GLOW[companion.id],bob=Math.sin(time*3.2)*2.5,appear=1-companion.summonRemaining/.8;
@@ -23,6 +26,7 @@ export function drawFamiliar(c,companion,time){
   if(!drawEntitySprite(c,'nightwalker',{x:0,y:0,state:companion.state==='walk'?'walk':'idle',time:companion.time,facingX:companion.direction.x})){
    c.fillStyle='#1c1820';c.beginPath();c.moveTo(-13,15);c.lineTo(-8,-30);c.lineTo(0,-40);c.lineTo(8,-30);c.lineTo(13,15);c.closePath();c.fill();
   }
+ }else if(GUARDIAN_WALK[companion.id]&&drawEntitySprite(c,GUARDIAN_WALK[companion.id],{x:0,y:0,state:companion.state==='walk'?'walk':'idle',time:companion.time,direction:heading(companion.direction)})){
  }else if(GUARDIAN_RUN[companion.id]){
   if(!drawEntitySprite(c,f.spriteId,{x:0,y:0,state:companion.state==='walk'?GUARDIAN_RUN[companion.id]:'idle',time:companion.time,facingX:companion.direction.x})){
    if(companion.id!=='moonfang')drawVillageCreature(c,{x:0,y:0,spriteId:f.spriteId},time);
