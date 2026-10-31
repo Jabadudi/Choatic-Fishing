@@ -62,15 +62,13 @@ export function mountBackpack({getWorld,onOpen,onClose,onAction}){
   const collection=document.createElement('p');collection.className='backpack-artifact-heading';collection.innerHTML='<span>Collection</span>';
   panel.append(heading,row,hint,collection);return panel;
  }
- // What an artifact does now, what each rarity would do, and how close the stack is to combining.
+ // What an artifact does now and how close the stack is to combining.
  function artifactDetails(inventory,item){
   const box=document.createElement('div');box.className='backpack-artifact-details';
   const effect=document.createElement('p');effect.className='backpack-artifact-effect';effect.textContent=artifactEffect(item.artifact,item.rarity)+'.';
-  const tiers=document.createElement('div');tiers.className='backpack-artifact-tiers';
-  for(const rarity of RARITIES){const tier=document.createElement('span');tier.dataset.rarity=rarity;tier.classList.toggle('current',rarity===item.rarity);tier.title=`${RARITY_NAMES[rarity]}: ${artifactEffect(item.artifact,rarity)}`;tier.textContent=RARITY_NAMES[rarity];tiers.append(tier);}
   const next=nextRarity(item.rarity),copies=copiesOf(inventory,artifactKey(item)),progress=document.createElement('p');progress.className='backpack-artifact-progress';
   progress.textContent=next?`${Math.min(copies,COMBINE_COUNT)} / ${COMBINE_COUNT} to combine into ${RARITY_NAMES[next]}`:'Legendary is the highest rarity.';
-  box.append(effect,tiers,progress);return box;
+  box.append(effect,progress);return box;
  }
  function refresh(){
   const world=getWorld(),inventory=world.inventory,entries=sortBackpackItems(backpackItems(inventory,category),sort,reverse);
