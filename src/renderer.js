@@ -2,7 +2,7 @@ import {drawDrop} from './drops.js';
 import {cabinDamaged,pendingScene} from './story.js';
 import {visibleWildlife} from './wildlife.js';
 import {drawWildlife,drawAnimalStatus} from './wildlife-art.js';
-import {drawEntitySprite} from './sprites.js';
+import {drawEntitySprite,drawProp} from './sprites.js';
 import {facingFor} from './entities.js';
 import {drawTerrain} from './terrain.js';
 import {drawWilds,drawWildsLabels,drawDepthSorted,drawExplorer,INTERIOR_AREAS,areaFor} from './wilds.js';
@@ -89,7 +89,11 @@ function drawPlayer(ctx,world){
  // Eli stays down in the mud from the collapse until the blackout, and after a monster brings him down.
  const fallen=!!world.defeat||world.story?.scene==='storm'&&['collapse','rescue'].includes(pendingScene(world)?.action);
  if(fallen){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(Math.PI/2);drawExplorer(ctx,{...p,x:0,y:0,steppedAt:undefined},world.elapsed||0);ctx.restore();}
+ // Holding Drayfus's squat: lower at the knees, and shaking once the legs start to go.
+ else if(world.story?.stage==='ch7-hold'&&!world.story.scene){const h=world.story.hold||0,shake=h>7?Math.round(Math.sin((world.elapsed||0)*47)*Math.min(1.5,(h-7)/6)):0;ctx.save();ctx.translate(p.x+shake,p.y+14);ctx.scale(1,.84);ctx.translate(-p.x,-(p.y+14));drawExplorer(ctx,p,world.elapsed||0);ctx.restore();}
  else drawExplorer(ctx,p,world.elapsed||0);
+ // Drayfus's buckets, one in each hand, while Eli carries water to the trough.
+ if(world.story?.stage==='ch6-buckets'&&world.story.carrying)for(const side of [-1,1]){const x=Math.round(p.x+side*15),y=Math.round(p.y+2+Math.sin((p.walkTime||world.elapsed||0)*6+side)*1);if(drawProp(ctx,'water-bucket-full',{x,y:y+10,w:16,h:16}))continue;ctx.fillStyle='#5c3b22';ctx.fillRect(x-5,y-2,10,11);ctx.fillStyle='#8a6038';ctx.fillRect(x-5,y-2,10,2);ctx.fillStyle='#3f7f95';ctx.fillRect(x-4,y,8,2);ctx.strokeStyle='#3a2414';ctx.lineWidth=1;ctx.beginPath();ctx.arc(x,y-2,5,Math.PI,0);ctx.stroke();}
 }
 // Another player: Eli's sprite with their nickname above, in a gold-edged tag so players stand apart from villagers. Away players are faded.
 function drawOtherPlayer(ctx,o,t){

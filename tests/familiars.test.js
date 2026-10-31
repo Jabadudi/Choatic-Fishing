@@ -143,3 +143,9 @@ test('the index shows a familiar for every hunted creature and guardian, and lab
  for(const id of ['mara','blacksmith','croshelda','elk-spirit','ocelot'])assert.equal(codexFamiliar(codexEntry(id)),null);
  assert.equal(codexLoot(codexEntry('deer')).rows.at(-1).familiar,'deer');
 });
+test('a newly summoned familiar greets Eli first, then the greeting runs out',()=>{
+ const w=fresh();give(w,'deer',5);w.familiarAction('deer','combine');
+ const c=w.companion;assert.ok(c.greet>1);
+ for(let i=0;i<40;i++)updateFamiliar(w,.05);
+ assert.equal(w.companion.greet,0);
+});

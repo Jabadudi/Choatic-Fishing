@@ -1,5 +1,6 @@
 import {VILLAGE_BUILDINGS,VILLAGE_PROPS} from './village.js';
 import {drawProp} from './sprites.js';
+import {SHEEP_PEN,millStream} from './village-districts.js';
 const r=(c,color,x,y,w,h)=>{c.fillStyle=color;c.fillRect(Math.round(x),Math.round(y),w,h);};
 function ellipse(c,x,y,rx,ry,color){c.fillStyle=color;c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fill();}
 function post(c,x,y){r(c,'#53442e',x-4,y-30,8,40);r(c,'#ba9960',x-3,y-30,3,38);r(c,'#dcc18b',x-5,y-32,10,3);}
@@ -37,8 +38,20 @@ export function drawVillageGround(c){
  boat(c,625,1210);boat(c,838,1370,-1);boat(c,980,1280);boat(c,415,1150,-1);
 }
 function window(c,x,y){r(c,'#5d4932',x-16,y-20,32,29);r(c,'#edc67b',x-12,y-16,24,21);r(c,'#fff0b3',x-11,y-15,9,13);r(c,'#715537',x-1,y-18,3,24);r(c,'#715537',x-13,y-7,26,3);r(c,'#b18b52',x-18,y+8,36,5);}
+// A tall timber watchtower: four legs, a ladder, a railed platform and a plank roof.
+function watchtower(c,x,y){
+ ellipse(c,x+8,y+4,38,10,'#18392c44');
+ for(const dx of [-24,18])r(c,'#5c4128',x+dx,y-92,7,96);for(const dx of [-16,10])r(c,'#4a331f',x+dx,y-88,6,90);
+ for(const yy of [y-30,y-62]){r(c,'#6f5134',x-24,yy,49,4);}
+ r(c,'#7d5c38',x-4,y-86,3,88);r(c,'#7d5c38',x+5,y-86,3,88);for(let yy=y-80;yy<y;yy+=10)r(c,'#a07a4a',x-4,yy,12,2);
+ r(c,'#6f5134',x-34,y-100,68,10);r(c,'#b19058',x-34,y-100,68,3);
+ for(const dx of [-33,-12,9,29])r(c,'#5c4128',x+dx,y-122,4,22);r(c,'#8a6640',x-34,y-124,68,4);
+ r(c,'#5b3e2a',x-40,y-150,80,8);r(c,'#7b5636',x-36,y-158,72,9);r(c,'#946a42',x-30,y-165,60,8);
+ for(const dx of [-33,29])r(c,'#4a331f',x+dx,y-150,4,28);
+}
 export function drawVillageObject(c,b,time=0){
  const {x,y}=b;
+ if(b.kind==='watchtower'){watchtower(c,x,y);return;}
  if(b.kind==='well'){
   if(drawProp(c,'well',{x,y:y+18,w:92,h:126}))return;
   ellipse(c,x+9,y+8,40,17,'#1a392c44');ellipse(c,x,y,30,17,'#647a70');ellipse(c,x,y-8,30,17,'#b4b69a');ellipse(c,x,y-10,21,10,'#314f4b');r(c,'#658e88',x-13,y-11,24,3);
@@ -71,3 +84,54 @@ export function drawVillageObject(c,b,time=0){
 }
 export const villageObjects=[...VILLAGE_BUILDINGS,...VILLAGE_PROPS];
 export function paintVillageBuildings(c,sx,sy){for(const b of VILLAGE_BUILDINGS){r(c,b.roof,(b.x-b.w/2)*sx,(b.y-b.h)*sy,b.w*sx,b.h*sy);}}
+export function paintBuildings(c,buildings,sx,sy){for(const b of buildings)r(c,b.roof,(b.x-b.w/2)*sx,(b.y-b.h)*sy,b.w*sx,b.h*sy);}
+// Ground dressing for the Upper Lanes and Millside: everything here is flat, so it is painted once into the cached ground.
+function paving(c,cx,cy,rx,ry){
+ ellipse(c,cx,cy,rx+8,ry+6,'#b9ae78');
+ for(let y=cy-ry;y<cy+ry;y+=14)for(let x=cx-rx;x<cx+rx;x+=22){if(((x-cx)/rx)**2+((y-cy)/ry)**2>1)continue;const o=y%28?8:0;r(c,(x+y)%3?'#bfb58a':'#a9a17b',x+o,y,20,12);r(c,'#d4c79c',x+o,y,19,2);}
+}
+function bench(c,x,y){if(drawProp(c,'plank-bench',{x,y:y+21,w:80,h:40}))return;r(c,'#594831',x-31,y,5,19);r(c,'#594831',x+26,y,5,19);r(c,'#b5945d',x-37,y-4,74,10);r(c,'#d3b77f',x-37,y-4,74,2);}
+function plot(c,x,y,w,h,seed=0){
+ r(c,'#756342',x,y,w,h);
+ for(let row=0;row*20+12<h;row++)for(let col=0;col*22+10<w;col++){const px=x+12+col*22,py=y+10+row*20,k=(row+col+seed)%3;r(c,'#5a4a34',px-6,py+1,15,9);ellipse(c,px,py,7,4,k?'#78a44c':'#487849');r(c,k===1?'#c6be62':'#8bb362',px-4,py-5,5,6);if(k===2)r(c,'#d8974d',px-1,py,3,8);}
+}
+function washing(c,x,y,length,seed=0){
+ const colours=['#d7d2c0','#b86b4c','#6c8fb0','#e2c56f','#8fae74','#c99aa8'];
+ for(const dx of [0,length]){r(c,'#5c4128',x+dx-2,y-34,4,36);}
+ c.strokeStyle='#e8dcb8';c.lineWidth=1;c.beginPath();c.moveTo(x,y-32);c.quadraticCurveTo(x+length/2,y-26,x+length,y-32);c.stroke();
+ for(let i=0;i<Math.floor(length/22);i++){const k=(i+seed)%colours.length;r(c,colours[k],x+8+i*22,y-30+Math.sin(i)*1.5,14,i%2?16:12);r(c,'#00000018',x+8+i*22,y-18+Math.sin(i)*1.5,14,2);}
+}
+function firewood(c,x,y){if(drawProp(c,'firewood-stack',{x,y:y+12,w:54,h:40}))return;for(let i=0;i<3;i++)for(let j=0;j<4-i;j++){ellipse(c,x-18+j*12+i*6,y-i*9,6,5,'#8a6640');ellipse(c,x-18+j*12+i*6,y-i*9,3,3,'#c6a26a');}}
+function hay(c,x,y){if(drawProp(c,'hay-bale',{x,y:y+10,w:44,h:44}))return;r(c,'#c9a54f',x-18,y-20,36,26);r(c,'#e0c070',x-18,y-20,36,4);r(c,'#9c7c3a',x-18,y-8,36,2);}
+function sheep(c,x,y,f=1){ellipse(c,x+3,y+6,14,4,'#18392c33');r(c,'#3e3a36',x-8,y+1,3,6);r(c,'#3e3a36',x+5,y+1,3,6);ellipse(c,x,y-4,14,9,'#ece6d6');ellipse(c,x-3,y-7,8,5,'#fbf7ec');r(c,'#3e3a36',x+f*11-3,y-9,7,8);r(c,'#fbf7ec',x+f*11-4,y-11,9,3);}
+function scarecrow(c,x,y){r(c,'#5c4128',x-2,y-44,4,46);r(c,'#5c4128',x-18,y-34,36,4);r(c,'#7a6a9a',x-10,y-34,20,18);r(c,'#d9b36a',x-7,y-48,14,12);r(c,'#8a6640',x-11,y-52,22,5);r(c,'#e7c875',x-20,y-32,4,8);r(c,'#e7c875',x+16,y-32,4,8);}
+function strips(c,x,y,w,h){for(let yy=y;yy<y+h;yy+=12){r(c,(yy/12)%2?'#d6b75c':'#b99a46',x,yy,w,10);for(let xx=x+4;xx<x+w;xx+=9)r(c,(yy/12)%2?'#ecd282':'#c9ab55',xx,yy+1,2,5);}}
+function upperLanes(c){
+ paving(c,800,700,215,118);
+ for(const [x,y] of [[300,598],[560,598],[1040,598],[1300,598],[560,938],[1040,938],[740,250],[860,250],[300,190],[1300,190]])lantern(c,x,y);
+ for(const [x,y] of [[700,800],[900,800]])bench(c,x,y);
+ plot(c,112,672,170,84,0);plot(c,320,672,160,84,1);plot(c,1110,672,170,84,2);plot(c,1320,672,160,84,0);
+ fence(c,112,672,170);fence(c,320,672,160);fence(c,1110,672,170);fence(c,1320,672,160);
+ washing(c,140,388,120,0);washing(c,330,388,120,2);washing(c,1130,388,120,4);washing(c,1330,388,120,1);
+ for(const [x,y] of [[300,775],[1300,775],[1060,1150],[540,1150]])firewood(c,x,y);
+ for(const [x,y] of [[715,360],[530,900],[1300,900],[1500,900],[1250,1120],[640,1120]])barrel(c,x,y);
+}
+function millside(c){
+ strips(c,112,160,250,170);strips(c,440,160,520,170);fence(c,112,345,250);fence(c,440,345,520);
+ for(const [x,y] of [[240,260],[700,250]])scarecrow(c,x,y);
+ for(const [x,y] of [[860,580],[890,600],[700,460],[340,980],[372,996]])hay(c,x,y);
+ for(const [x,y] of [[660,560],[840,450],[1300,560],[560,980]])barrel(c,x,y);
+ // The pen: split rails all round, and the sheep inside.
+ const {x:px,y:py,w:pw,h:ph}=SHEEP_PEN;fence(c,px,py,pw);fence(c,px,py+ph,pw);for(let yy=py;yy<=py+ph;yy+=24){post(c,px,yy);post(c,px+pw,yy);}
+ for(const [x,y,f] of [[900,1030,1],[950,1060,-1],[1010,1025,1],[1050,1085,-1],[930,1100,1],[990,1110,1]])sheep(c,x,y,f);
+ // The bridge over the mill stream.
+ r(c,'#4e4935',1096,592,134,56);for(let x=1100;x<1228;x+=11){r(c,x%22?'#9c7c50':'#ae8c5b',x,596,9,48);r(c,'#c5a56d',x,596,9,1);}
+ for(const yy of [594,646]){r(c,'#6f5134',1096,yy-8,134,5);for(const x of [1098,1162,1224])post(c,x,yy);}
+ // The mill wheel, half in the water beside the mill.
+ const wx=1118,wy=472;ellipse(c,wx+6,wy+44,30,6,'#123d5344');c.save();c.translate(wx,wy);
+ for(let i=0;i<12;i++){c.rotate(Math.PI/6);r(c,'#6f5134',-2,-44,4,44);r(c,'#8a6640',-7,-46,14,6);}
+ c.restore();ellipse(c,wx,wy,9,9,'#4a331f');c.strokeStyle='#5c4128';c.lineWidth=4;c.beginPath();c.arc(wx,wy,40,0,Math.PI*2);c.stroke();
+ for(const [x,y] of [[1360,650],[1480,650]])lantern(c,x,y);
+ plot(c,1300,700,100,80,1);fence(c,1300,700,100);
+}
+export function drawDistrictGround(c,id){if(id==='village-north')upperLanes(c);else if(id==='village-mill')millside(c);}

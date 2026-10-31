@@ -39,6 +39,8 @@ const assert=require('node:assert/strict');
   if(id!=='rimejaw')await w(id=>__qa.world.familiarAction(id,'combine'),id);
   await w(()=>Object.assign(__qa.world.player,{x:1000,y:700}));await page.waitForTimeout(900);await shot(`04-${id}-idle`);
   await page.keyboard.down('KeyD');await page.waitForTimeout(700);await shot(`05-${id}-running`);await page.keyboard.up('KeyD');
+  // Left standing still, Brume lies down and sleeps.
+  if(id==='moonfang'){await page.waitForTimeout(400);await w(()=>{__qa.world.companion.time=20;});await page.waitForTimeout(300);await shot('06-moonfang-asleep');}
   const gap=await w(()=>Math.hypot(__qa.world.companion.x-__qa.world.player.x,__qa.world.companion.y-__qa.world.player.y));
   assert.ok(gap<120,`${id} keeps up (${gap})`);assert.equal(await w(()=>__qa.world.companion.id),id);
  }

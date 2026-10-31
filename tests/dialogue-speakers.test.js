@@ -3,8 +3,9 @@ import assert from 'node:assert/strict';
 import {World} from '../src/world.js';
 import {SCENES,currentScene} from '../src/story.js';
 import {NARRATOR,VOICE} from '../src/scene-script.js';
+import {CORE,OCELOT} from '../src/chapter6.js';
 import {captureSave,restoreSave} from '../src/save-format.js';
-const SPEAKERS=new Set(['Eli','The girl','Mara','The old woman','The chief','Emilia',NARRATOR,VOICE]);
+const SPEAKERS=new Set(['Eli','The girl','Mara','The old woman','The chief','Emilia','Drayfus',OCELOT,CORE,NARRATOR,VOICE]);
 test('every story page has one known speaker and no quoted dialogue inside a character’s line',()=>{
  for(const [scene,pages] of Object.entries(SCENES))pages.forEach((page,i)=>{
   assert.ok(SPEAKERS.has(page.speaker),`${scene}:${i} speaker ${page.speaker}`);

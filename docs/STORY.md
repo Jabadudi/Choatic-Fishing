@@ -55,8 +55,39 @@ Continue from a completed Chapter 4 checkpoint. Mara waits by the table in the c
 2. The room is now dark. Examine the waterskin, the window and the chamber pot if you like. Leave through the south door to walk the village at night, and press G at the lodge door to come back in.
 3. Examine the bed and choose **Go to sleep**. Eli lies awake thinking about Shylee and Grandpa, counts sheep and falls asleep.
 4. **Eli’s vision** plays as a full-screen video (`assets/story/eli-vision.mp4`): the whisper, the glowing lure, the girl with white hair and purple eyes, and the scream of Croshelda’s name. Music pauses while it plays and resumes after. **Skip video** moves on at once, Settings pauses it, and the page turns by itself when the video ends. If the video cannot play, the page falls back to a written version of the vision.
-5. Sunlight. Eli wakes on the floor, and Mara pounds on the door: “Hey!! Eli! Wake up!!”
-6. Chapter 5 ends with Eli in his room the next morning. Walk outside and Mara is waiting by the lodge door; talking to her is where Chapter 6 picks up. The Region Core stays in the backpack. No XP or catch powers change.
+5. Still dark. Eli wakes on the floor, the voice says “Save her,” and he swallows the Region Core like a shot of tequila. Writing blooms in the air, an ocelot in the corner talks, and he passes out. When this scene finishes, the Region Core leaves the backpack and `story.coreIngested` becomes true, which unlocks Still Water on the attack wheel.
+6. Sunlight. Mara pounds on the door: “Hey!! Eli! Wake up!!”
+7. Chapter 5 ends with Eli in his room the next morning, the blue writing floating in front of him and the ocelot in the corner. Saves made at this point before the ingest scene existed lose the core and gain the flag when they load.
+
+## Chapter 6 — Resonance
+
+Continue from the end of Chapter 5, in Eli's room. Every finished scene is a saved checkpoint.
+
+1. **Read the floating writing** (press Space anywhere in the room). The Region Core's writing speaks in a blue panel: Reedwater has accepted Eli, Still Water is awakened, Reedwater's Call is dormant and two slots are locked. The ocelot talks, refuses to give its name, and Still Water activates for the first time.
+2. Mara now stands in the doorway. **Answer the door**: she cannot see the ocelot, which dissolves into blue motes and settles in Eli's stomach.
+3. Go to the village and up the path north out of the village, past the back of the chief's house, to the **Training Ground** gate. Walk off the top of the map or press Space at the gate. The training ground is a fenced yard with a weapon rack, straw dummies, a yard well and a trough. Drayfus stands in the circle, Emilia sits on her bench and Mara sits on the fence.
+4. **Meet Drayfus**, then **Spar with Drayfus**: ten knockdowns, Still Water, and Eli's confession that he ate the core. Emilia remembers Oscar reading writing nobody else could see; the ocelot warns Eli to keep Croshelda's name to himself.
+5. **Choose a weapon** at the rack. Eli picks Grandpa's rod, and Reedwater's Call awakens (`story.callAwakened` becomes true).
+6. Stand at the south edge of the circle and **Cast at the sword**. The line bends and disarms Drayfus. Eli earns Fishing XP, and Drayfus whispers “Oscar.”
+7. **Forty trips**: fill the buckets at the yard well and empty them into the trough. Full buckets slow Eli down, more as the trips add up. The count is saved.
+8. After the fortieth bucket, Eli wakes in his room that night. The ocelot on the stool explains reserves with the heavy-box lesson. Chapter 6 ends there, and pays the chapter Wishstones.
+
+Drayfus, Mara, Emilia and the ocelot walk on their own sheets (see `art/README.md`). Drayfus's dialogue portrait is a crop of his index portrait.
+
+## Chapter 7 — Legs
+
+Continue from the end of Chapter 6, in Eli's room. Every finished scene is a saved checkpoint, and so is each guard post passed and each second of the squat.
+
+1. **Go to sleep** in the bed. Drayfus comes in with a lantern before dawn: “Up.” The Region Core reports reserves recovering, and the ocelot notices Eli did not dream.
+2. **The dawn run.** Eli starts outside the lodge in the dark. He runs the path round Willowback past eight posts in order: seven guards (“Morning, Oscar's boy.”) down the west side, along the river and up the east side to the watchtower just outside the village gate, where Drayfus watches from the platform. The sky greys as the posts go by; standing still too long draws a warning from the tower.
+3. **Sunrise** at the watchtower: eleven laps, the waterskin, and Mara asking whether he threw up.
+4. **Have breakfast with Mara** in the chief's kitchen. Emilia is out.
+5. **Report to Drayfus** in the training circle, then **hold the squat**: stand still in front of him for 20 seconds. Moving or stepping off the spot starts the count again. Eli crouches and starts to shake as it goes on.
+6. Drayfus asks about the cat and talks about Oscar, and freezes when Eli asks about his grandmother: “Eleven laps. Now.”
+7. **The second run** past the same posts. Eli's legs are gone, so he moves more slowly with every post.
+8. **Lie down on the grass** beside the guest lodge. Mara brings bread, warns him not to ask Drayfus again, and Eli works out the woman in the photograph was Emilia. Still Water activates, and it feels like holding his breath. Chapter 7 ends there and pays the chapter Wishstones.
+
+`src/chapter7.js` supplies the dialogue, the posts (`PERIMETER`), the watchtower and the objectives. The watchtower is a village prop with collision. `tests/chapter7.test.js` and `scripts/chapter7-preview.cjs` cover the chapter.
 
 The tour and the night are saved checkpoints (`ch5-tour`, `ch5-night`, `ch5-sleep`, `ch5-morning`). Mara stands at a fixed place in each: in Eli’s room for the tour, in the chief’s house overnight, and outside the lodge door at sunrise. A save made during the video reopens on the video page.
 

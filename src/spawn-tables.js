@@ -24,7 +24,7 @@ export const SPAWN_AREAS=Object.freeze({
    ['marsh-pool-north','water',400,500],['marsh-reeds','water',700,1400],['marsh-channel','water',1300,1100],['marsh-pool-east','water',1600,500],['marsh-lagoon','water',1600,1600],['marsh-shallows','water',900,1900]]}
 });
 // Interiors belong to the area outside their door, so stepping indoors and back out is not a new visit.
-export const SPAWN_PARENT=Object.freeze({cabin:'landing','chief-house':'village','guest-lodge':'village'});
+export const SPAWN_PARENT=Object.freeze({cabin:'landing','chief-house':'village','guest-lodge':'village','training-ground':'village'});
 // An area only rolls on entry once Eli has been away this long, so walking back and forth cannot farm rolls.
 export const AWAY_SECONDS=30;
 // New creatures never appear within this distance of the player.

@@ -8,6 +8,25 @@ export const RABBIT_FRAMES=[
  [14,335,34,32],[70,310,33,54],[126,306,32,58],[183,303,30,61],
  [23,373,25,65],[78,373,25,65],[133,373,25,65]
 ];
+// Walk clips for a sheet in the house layout: rows right, left, toward the camera, away, 8 columns wide.
+// frames is how many frames each direction holds (8 for every walker), and a side can hold fewer than the others.
+// cycle is the seconds per stride loop, so the pace stays the same whatever the frame count.
+// layout 'columns' reads a sheet used as drawn from now on: 4 columns wide, one direction per column, frames top to bottom.
+// The prep scripts turn column sheets into the row layout, so cut sheets keep the default.
+export function walkClips(frames,cycle,{layout='rows'}={}){
+ const counts=Array.isArray(frames)?frames:[frames,frames,frames,frames];
+ const at=(d,i)=>layout==='columns'?i*4+d:d*8+i;
+ return Object.fromEntries(['right','left','down','up'].map((dir,d)=>[`walk:${dir}`,{frames:Array.from({length:counts[d]},(_,i)=>at(d,i)),cycle}]));
+}
+// How long Brume's bow and lying down take, in seconds. The familiar times them from these.
+export const BRUME_TIMING=Object.freeze({bow:1.6,lieDown:2.4,restBeforeSleep:6});
+export const VILLAGER_LOOKS=[
+ ['baker','#c9b48a','#6a4a2c','#e3b48c'],['weaver','#5c6f8a','#2b2522','#9c6a4a'],['herbalist','#557a3e','#a8a090','#d9b08a'],['carpenter','#8a6640','#3a2a20','#c08a62'],
+ ['miller','#d8d0b8','#7a6a58','#e6c29c'],['farmer','#7a8a4a','#4a3020','#b07850'],['shepherd','#a89a7a','#202020','#8a5a3a'],['tanner','#6f5134','#5a3a28','#d0a07a'],
+ ['washer','#6c8fb0','#9a3a2a','#f0c8a0'],['lamplighter','#4a4a5a','#c8c0b0','#c89878'],['potter','#b86b4c','#2a2a2a','#7a4a30'],['cooper','#734a39','#8a7a5a','#e0b890'],
+ ['elder','#7a6a9a','#e8e4dc','#d8b090'],['elder-two','#5a7a6a','#d0ccc4','#a87050'],['guard','#5a5a4a','#3a2a20','#c89070'],['trader','#a45543','#4a3a2a','#e8c0a0'],
+ ['child-three','#d8a040','#6a4a2c','#c8906a',.7],['child-four','#8fae74','#2a2020','#8a5a3a',.7],['child-five','#c99aa8','#a06030','#f0d0b0',.7]
+];
 export const SPRITES={
  // The second rows are runs, used by the guardian familiars. Both sheets face right; the village creatures stay on idle.
  rimejaw:{asset:'story/rimejaw-sheet.png',chromaKey:'green',frames:[[45,35,410,270],[475,35,410,270],[900,35,410,270],[1320,35,440,270],[10,330,292,225],[302,330,292,225],[598,330,292,225],[886,330,292,225],[1174,330,292,225],[1468,330,292,225]],scale:.27,anchor:[.5,1],offset:[0,12],mirror:'right',animations:{idle:{frames:[0,1,2,3],fps:2},walk:{frames:[4,5,6,7,8,9],fps:9}}},
@@ -20,9 +39,12 @@ export const SPRITES={
  'villager-fisher':{asset:null,fallback:{coat:'#747d51',hair:'#b3afa0',skin:'#ddaa80'}},
  'villager-child-one':{asset:null,fallback:{coat:'#b26b58',hair:'#392b24',skin:'#d4a27a',visualScale:.7}},
  'villager-child-two':{asset:null,fallback:{coat:'#69849e',hair:'#503f2b',skin:'#e4c4a1',visualScale:.7}},
+ // The rest of Willowback: drawn villagers in a spread of coats, hair and skin, so a crowd doesn't look like one family.
+ ...Object.fromEntries(VILLAGER_LOOKS.map(([id,coat,hair,skin,visualScale])=>[`villager-${id}`,{asset:null,fallback:{coat,hair,skin,...(visualScale?{visualScale}:{})}}])),
  // A portrait crop, not a gameplay actor or hitbox.
  'mara-portrait':{asset:'story/mara.webp',frames:[[850,130,500,620]],scale:.12,anchor:[.5,0],offset:[0,0]},
  'emilia-portrait':{asset:'story/emilia.png',frames:[[930,60,500,620]],scale:.12,anchor:[.5,0],offset:[0,0]},
+ 'drayfus-portrait':{asset:'codex/drayfus.png',frames:[[88,18,100,124]],scale:1,anchor:[.5,0],offset:[0,0]},
  // Made by scripts/prepare-eli-sprites.py from art/sprites/characters/eli/. Rows: walk right, left, toward the camera, away, then the throw.
  // This 4-direction, 8-frame walk is the standard layout for every moving entity.
  eli:{asset:'story/eli-sheet.png',frameSize:[126,120],columns:8,scale:.5,anchor:[.5,1],offset:[0,15],mirror:'right',mirrorDirections:{left:'right'},fallback:{hat:false,hair:'#49382d',shirt:'#b6ad8f'},animations:{
@@ -31,8 +53,35 @@ export const SPRITES={
   'walk:down':{frames:[16,17,18,19,20,21,22,23],fps:10},'walk:up':{frames:[24,25,26,27,28,29,30,31],fps:10},
   throw:{frames:[32,33,34,35,36,37],fps:8,loop:false}
  }},
- 'emilia-story':{asset:null,scale:1,anchor:[.5,1],offset:[0,14],fallback:{coat:'#3d5a8a',hair:'#d8d4cc',skin:'#c08a63'}},
- 'mara-story':{asset:null,scale:1,anchor:[.5,1],offset:[0,14],fallback:{hair:'#3d2b24',coat:'#6b4b35'}},
+ // Made by scripts/prepare-chapter6-sprites.py from art/sprites/. Rows 0-3: walk right, left, toward the camera, away (the house layout).
+ 'emilia-story':{asset:'story/emilia-sheet.png',frameSize:[72,109],columns:8,scale:.5,anchor:[.5,1],offset:[0,15],fallback:{coat:'#3d5a8a',hair:'#d8d4cc',skin:'#c08a63'},animations:{
+  idle:{frames:[16]},'idle:down':{frames:[16]},'idle:up':{frames:[24]},'idle:right':{frames:[0]},'idle:left':{frames:[8]},
+  ...walkClips(8,1.1)
+ }},
+ 'mara-story':{asset:'story/mara-sheet.png',frameSize:[88,113],columns:8,scale:.5,anchor:[.5,1],offset:[0,15],fallback:{hair:'#3d2b24',coat:'#6b4b35'},animations:{
+  idle:{frames:[16]},'idle:down':{frames:[16]},'idle:up':{frames:[24]},'idle:right':{frames:[0]},'idle:left':{frames:[8]},
+  ...walkClips(8,.8)
+ }},
+ // Row 4 is the beckon strip: arms at his sides (32), folded (34-36), then a come-here wave (37-39). He waits with his arms folded.
+ 'drayfus-story':{asset:'story/drayfus-sheet.png',frameSize:[114,132],columns:8,scale:.5,anchor:[.5,1],offset:[0,16],fallback:{coat:'#3b3430',hair:'#5d5650',skin:'#b5805e',sword:true},animations:{
+  idle:{frames:[35]},'idle:down':{frames:[35]},'idle:up':{frames:[24]},'idle:right':{frames:[0]},'idle:left':{frames:[8]},
+  beckon:{frames:[35,36,37,38,39,38,39,38,37,36,35,35,35,35,35,35],fps:6},
+  ...walkClips(8,1)
+ }},
+ // The side rows have 7 frames. Row 4 is the dissolve: sitting with its tail round its paws (32), then breaking into blue motes.
+ ocelot:{asset:'story/ocelot-sheet.png',frameSize:[142,77],columns:8,scale:.5,anchor:[.5,1],offset:[0,2],animations:{
+  idle:{frames:[32]},'idle:down':{frames:[32]},'idle:up':{frames:[24]},'idle:right':{frames:[0]},'idle:left':{frames:[8]},
+  vanish:{frames:[32,33,34,35,36,37,38,39],fps:6,loop:false},
+  ...walkClips([7,7,8,8],.8)
+ }},
+ // Brume, the Moonfang wolf. Cut by scripts/prepare-chapter6-sprites.py from his column-layout walk, bow and sleep sheets in
+ // art/sprites/creatures/moonfang/. Rows 0-3 walk; row 4 a slow bow; row 5 circling and lying down, ending in a breathing sleep. Both face right.
+ brume:{asset:'story/brume-sheet.png',frameSize:[246,146],columns:8,scale:.5,anchor:[.5,1],offset:[0,15],animations:{
+  idle:{frames:[0]},'idle:right':{frames:[0]},'idle:left':{frames:[8]},'idle:down':{frames:[16]},'idle:up':{frames:[24]},
+  ...walkClips(8,1),
+  bow:{frames:[32,33,34,35,36,37,38,39],cycle:BRUME_TIMING.bow,loop:false},
+  sleep:{frames:[40,41,42,43,44,45,46,47],cycle:BRUME_TIMING.lieDown,loop:false},sleeping:{frames:[46,47],fps:.8}
+ }},
  // Original Drive sheet has a green matte. The shared loader removes it once.
  moonfang:{asset:'story/moonfang.png',chromaKey:'green',frames:[[145,10,320,250],[450,10,310,250],[750,10,310,250],[1060,10,330,250],[5,290,255,190],[260,290,255,190],[515,290,255,190],[770,290,255,190],[1020,290,255,190],[1270,290,265,190]],scale:.36,anchor:[.5,1],offset:[0,0],mirror:'right',animations:{idle:{frames:[0,1,2,3],fps:3},run:{frames:[4,5,6,7,8,9],fps:9}}},
  // Night cutscene artwork. Processed from art/sprites/ by scripts/prepare-cutscene-sprites.py: matte removed, feet on a shared baseline.
@@ -82,6 +131,6 @@ export const STORY_ART={
 };
 // Furniture and props, cut from the AI sheets in art/sprites/props/ by scripts/prepare-prop-sprites.py.
 // Each scene keeps its drawn shape as the fallback, and collision never depends on this artwork.
-export const PROPS=Object.fromEntries(['cook-stove','lure-box-shelf','photo-side-table','dining-table','chair','bed-green','fishing-rod-rack','oil-lamp','door-mat','rain-barrel','firewood-stack','bed-straw-violet','stool-waterskin','chest-brass','chamber-pot','rug-rust-red','stone-hearth','pot-herb-shelf','carved-post','window-evening','rug-red-blue','round-table','fur-stool','wall-bench','chief-cabinet','tea-set','barrel','lantern-post','well','produce-stall','fish-stall','plank-bench','bench-backrest','net-rack','rope-coils','rowing-boat','rest-shelter','fire-ring-cold','apple-crate','fishing-seat','fish-trap','flower-box','campfire',...['cabin','chief','lodge'].flatMap(room=>['floor','wall','wall-top','wall-side'].map(part=>`${room}-${part}`))].map(id=>[id,`props/${id}.webp`]));
+export const PROPS=Object.fromEntries(['cook-stove','lure-box-shelf','photo-side-table','dining-table','chair','bed-green','fishing-rod-rack','oil-lamp','door-mat','rain-barrel','firewood-stack','bed-straw-violet','stool-waterskin','chest-brass','chamber-pot','rug-rust-red','stone-hearth','pot-herb-shelf','carved-post','window-evening','rug-red-blue','round-table','fur-stool','wall-bench','chief-cabinet','tea-set','barrel','lantern-post','well','produce-stall','fish-stall','plank-bench','bench-backrest','net-rack','rope-coils','rowing-boat','rest-shelter','fire-ring-cold','apple-crate','fishing-seat','fish-trap','flower-box','campfire','training-dummy','training-dummy-worn','archery-target','weapon-rack','weapon-barrel','water-trough','water-bucket','hay-bale','spear-crate','willow-tree','log-fence','log-fence-side','training-gate-posts','fence-corner-post','training-wall','dirt-ground','glowing-sword','water-bucket-full','training-gate-arch',...['cabin','chief','lodge'].flatMap(room=>['floor','wall','wall-top','wall-side'].map(part=>`${room}-${part}`))].map(id=>[id,`props/${id}.webp`]));
 // Familiar shards on the ground reuse their inventory icons.
 for(const id of ['rabbit','deer','turtle','eel','shadow-walker','moonfang','rimejaw','flitlynx'])PROPS[`shard-${id}`]=`items/shard-${id}.webp`;

@@ -12,11 +12,13 @@ export function updateDialogue(world,dt){
  const n=(world.npcs||[]).find(n=>n.id===d.npcId);
  if(d.remaining<=0||!n||n.areaId!==world.areaId||Math.hypot(n.x-world.player.x,n.y-world.player.y)>150)world.dialogue=null;
 }
+// Sheets with a row per direction need one. A walker that only records facingX walks left or right.
+export const npcDirection=n=>n.direction||(n.animationState==='walk'&&n.facingX?(n.facingX<0?'left':'right'):undefined);
 export function drawNpc(c,n,t=0){
  const art=SPRITES[n.spriteId]?.fallback||{};
  const x=Math.round(n.x),y=Math.round(n.y),bob=Math.sin(t*1.8)*.6;
  if(n.creature){drawVillageCreature(c,n,t);return;}
- if(!drawEntitySprite(c,n.spriteId||'mara',{x:n.x,y:n.y,state:n.animationState||'idle',time:t,facingX:n.facingX})){
+ if(!drawEntitySprite(c,n.spriteId||'mara',{x:n.x,y:n.y,state:n.animationState||'idle',time:t,direction:npcDirection(n),facingX:n.facingX})){
  c.save();c.translate(n.x,n.y);c.scale(art.visualScale||1,art.visualScale||1);c.translate(-n.x,-n.y);
  c.fillStyle='#20352c55';c.beginPath();c.ellipse(x+2,y+14,15,5,0,0,Math.PI*2);c.fill();
  const r=(color,dx,dy,w,h)=>{c.fillStyle=color;c.fillRect(x+dx,Math.round(y+dy+bob),w,h);};
@@ -28,8 +30,9 @@ export function drawNpc(c,n,t=0){
  r(art.hair||'#c4c1a3',-10,-28,20,7);r(art.hair||'#e0d9bc',-10,-26,6,5);r(art.hair||'#c4c1a3',-10,-23,4,12);r(art.hair||'#b5ae94',7,-22,4,12);
  r('#473d34',-3,-18,2,2);r('#473d34',4,-18,2,2);r('#a66e55',0,-12,4,1);
  r(art.skin||'#dbbb95',-14,-3,4,11);r(art.skin||'#dbbb95',11,-2,4,10);
- // A little fishing basket beside the coat.
- r('#765338',13,2,13,12);r('#b88e57',13,2,13,3);r('#d1ae75',16,6,2,6);
+ // A very large sword across the back, or a little fishing basket beside the coat.
+ if(art.sword){c.save();c.translate(x,Math.round(y+bob));c.rotate(-.55);c.fillStyle='#5c3b22';c.fillRect(-3,-4,6,12);c.fillStyle='#8a6a3a';c.fillRect(-9,-6,18,4);c.fillStyle='#c9ced4';c.fillRect(-3,-46,6,40);c.fillStyle='#8f969e';c.fillRect(1,-46,2,40);c.restore();}
+ else{r('#765338',13,2,13,12);r('#b88e57',13,2,13,3);r('#d1ae75',16,6,2,6);}
  c.restore();
  }
  const labelWidth=Math.max(46,n.name.length*6+12);c.textAlign='center';c.font='bold 10px monospace';c.fillStyle='#183c35';c.fillRect(x-labelWidth/2,y+21,labelWidth,15);c.fillStyle='#f2e4bf';c.fillText(n.name,x,y+32);

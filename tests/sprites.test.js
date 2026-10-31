@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {SPRITES,PROPS} from '../src/sprite-definitions.js';
+import {SPRITES,PROPS,walkClips} from '../src/sprite-definitions.js';
 import {existsSync} from 'node:fs';
 import {drawSprite,drawEntitySprite,drawProp,frameIndex,frameRect,clearSpriteCache} from '../src/sprites.js';
 import {createNpcs,drawNpc} from '../src/npcs.js';
@@ -86,3 +86,30 @@ test('Eli walks in four directions from one sheet and borrows the right-facing s
  assert.deepEqual(draw('idle','right'),{flipped:false,crop:frameRect(d,37,w,h).slice(0,2)});
  assert.deepEqual(draw('throw','left'),{flipped:true,crop:frameRect(d,32,w,h).slice(0,2)});
 },[eliPng.readUInt32BE(16),eliPng.readUInt32BE(20)]));
+test('Chapter 6 and Brume walk sheets fill their grids, and every clip frame fits',()=>{
+ for(const [id,rows] of [['mara-story',4],['emilia-story',4],['drayfus-story',5],['ocelot',5],['brume',6]]){
+  const d=SPRITES[id],png=readFileSync(new URL(`../assets/${d.asset}`,import.meta.url)),w=png.readUInt32BE(16),h=png.readUInt32BE(20);
+  assert.deepEqual([w,h],[d.frameSize[0]*8,d.frameSize[1]*rows],id);
+  for(const dir of ['right','left','down','up'])assert.ok(d.animations[`walk:${dir}`],`${id} walk:${dir}`);
+  for(const clip of Object.values(d.animations))for(const i of clip.frames){const [x,y,fw,fh]=frameRect(d,i,w,h);assert.ok(x+fw<=w&&y+fh<=h,`${id} frame ${i}`);}
+ }
+});
+test('story NPCs walk with the sheet row for the way they are heading',()=>withImages(()=>{
+ const d=SPRITES['mara-story'],crop=n=>{const c=fakeCanvas();drawNpc(c.ctx,{spriteId:'mara-story',name:'Mara',x:0,y:0,...n},0);return c.ops.find(o=>o[0]==='image').slice(2,4);};
+ assert.deepEqual(crop({animationState:'walk',direction:'up'}),frameRect(d,24,704,452).slice(0,2));
+ assert.deepEqual(crop({animationState:'walk',facingX:-3}),frameRect(d,8,704,452).slice(0,2));
+ assert.deepEqual(crop({}),frameRect(d,16,704,452).slice(0,2));
+},[704,452]));
+test('a 6-frame walk keeps the same stride pace as an 8-frame one',()=>{
+ const six={animations:walkClips(6,.8)},eight={animations:walkClips(8,.8)};
+ assert.deepEqual(six.animations['walk:left'].frames,[8,9,10,11,12,13]);assert.deepEqual(eight.animations['walk:up'].frames,[24,25,26,27,28,29,30,31]);
+ // Halfway through the loop each sheet shows its halfway frame, and both loop back at the same moment.
+ assert.equal(frameIndex(six,'walk',.4,{direction:'right'}),3);assert.equal(frameIndex(eight,'walk',.4,{direction:'right'}),4);
+ assert.equal(frameIndex(six,'walk',.8,{direction:'right'}),0);assert.equal(frameIndex(eight,'walk',.8,{direction:'right'}),0);
+ assert.deepEqual(walkClips([7,7,8,8],.8)['walk:left'].frames,[8,9,10,11,12,13,14]);
+});
+test('column-layout walk sheets read each direction down its own column',()=>{
+ const clips=walkClips(8,1,{layout:'columns'});
+ assert.deepEqual(clips['walk:right'].frames,[0,4,8,12,16,20,24,28]);assert.deepEqual(clips['walk:up'].frames,[3,7,11,15,19,23,27,31]);
+ assert.deepEqual(walkClips(8,1)['walk:down'].frames,[16,17,18,19,20,21,22,23]);
+});

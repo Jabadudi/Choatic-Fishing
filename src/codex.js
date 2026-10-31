@@ -25,7 +25,7 @@ export const AREA_BOUNDS=Object.freeze({
  landing:[.18,.6,.34,.21],windchime:[.38,.49,.07,.11],crossroads:[.36,.41,.12,.08],village:[.17,.35,.18,.15],marsh:[.48,.27,.25,.31]
 });
 // Interiors are drawn at their front door.
-const DOORS={cabin:['landing',1660,1440],'chief-house':['village',900,410],'guest-lodge':['village',500,380]};
+const DOORS={cabin:['landing',1660,1440],'chief-house':['village',900,410],'guest-lodge':['village',500,380],'training-ground':['village',740,60],'village-north':['village',1560,40],'village-mill':['village',1880,60]};
 // Landmarks beyond the playable areas, as fractions of each atlas image.
 const ATLAS_POINTS={'listening-tree':['delta',.21,.12,'The Listening Tree']};
 export function atlasPoint(areaId,x,y){
@@ -59,7 +59,7 @@ export const CODEX_ENTRIES=Object.freeze([
   description:'The village girl who pulled Eli out of the storm. Sarcastic, fearless about monsters and very easy to annoy. Chief Emilia’s granddaughter. She guides you between the landing and Willowback.',lootNote:'Talk to her for directions. She does not trade.'},
  {id:'emilia',category:'villagers',name:'Chief Emilia',title:'Village chief',portrait:'codex/emilia.png',firstSeen:'Chapter 4',status:'Mentor',places:[['chief-house',0,0]],
   description:'Willowback’s chief and Mara’s grandmother. She knew Grandpa Oscar and keeps his secrets. She told Eli about the Ember Volcano stones and arranged his training.',lootNote:'She gives counsel and quests, not goods.'},
- {id:'drayfus',category:'villagers',name:'Drayfus',title:'Trainer',portrait:'codex/drayfus.png',firstSeen:'Chapter 4 (named)',status:'Training at sunrise',places:[['village',1500,900]],
+ {id:'drayfus',category:'villagers',name:'Drayfus',title:'Trainer',portrait:'codex/drayfus.png',firstSeen:'Chapter 4 (named)',status:'Training at sunrise',places:[['training-ground',0,0]],
   description:'The fighter Emilia picked to train Eli and Mara. He may be the scarred swordsman who measured Eli by the hearth and did not look impressed.',lootNote:'Teaches combat. Training starts in Chapter 6.'},
  {id:'blacksmith',category:'villagers',name:'Blacksmith',title:'Merchant · Smithy',glyph:'⚒',firstSeen:'Chapter 3',status:'Merchant',npc:'village-smith',wares:'blacksmith',
   description:'Works the forge with a Rimejaw sprawled across the doorway. Turns hides, antlers and shell into blades and gear.'},

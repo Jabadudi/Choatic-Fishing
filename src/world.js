@@ -1,6 +1,6 @@
 import {practise} from './skills.js';
 import {PERMANENT_ITEMS} from './inventory.js';
-import {rodReady,createStory,currentScene,inspectStory,advanceStory,skipStory,storyObjective,updateStory,inlandUnlocked,storyTransitionAllowed,onStoryAreaChange} from './story.js';
+import {storySpeed,rodReady,createStory,currentScene,inspectStory,advanceStory,skipStory,storyObjective,updateStory,inlandUnlocked,storyTransitionAllowed,onStoryAreaChange} from './story.js';
 import {nearbyDrop,dropItem} from './drops.js';
 import {createQuests,maraQuestDialogue} from './quests.js';
 import {questFor} from './side-quests.js';
@@ -170,7 +170,7 @@ export class World {
    for(let i=0;i<steps;i++){if(Wilds.walkable(p.x+sx,p.y,this.areaId)&&(!shoreOnly||Wilds.nearWater(p.x+sx,p.y,this.areaId)))p.x+=sx;if(Wilds.walkable(p.x,p.y+sy,this.areaId)&&(!shoreOnly||Wilds.nearWater(p.x,p.y+sy,this.areaId)))p.y+=sy;}
    let next=Wilds.transitionAt(p.x,p.y,this.areaId);
    if(next&&this.story&&!inlandUnlocked(this.story)&&this.areaId==='landing'){next=null;p.y=Math.max(25,p.y);this.message=storyObjective(this);}
-   if(next&&!storyTransitionAllowed(this,next)){next=null;const a=Wilds.areaFor(this.areaId);p.x=Math.max(25,Math.min(a.width-25,p.x));p.y=Math.max(25,Math.min(a.height-25,p.y));this.message='Your guide is still on the trail. Stay with her before moving on.';}
+   if(next&&!storyTransitionAllowed(this,next)){const training=next.areaId==='training-ground';next=null;const a=Wilds.areaFor(this.areaId);p.x=Math.max(25,Math.min(a.width-25,p.x));p.y=Math.max(25,Math.min(a.height-25,p.y));this.message=training?'The path north leads to the guard’s training ground. Nobody is expecting you there yet.':'Your guide is still on the trail. Stay with her before moving on.';}
    if(next){const previous=this.areaId;this.projectiles=[];this.effects=[];this.dialogue=null;this.areaId=next.areaId;p.x=next.x;p.y=next.y;p.vx=0;p.vy=0;this.cancel();this.message=this.areaId==='crossroads'?'Willowbank Crossroads · West: Willowback Village · East: Shellback Marsh · South: Windchime Path.':`${Wilds.areaFor(this.areaId).name} · Follow the trail; walk back through the edge to return.`;onStoryAreaChange(this,previous);}
    p.walkTime=(p.walkTime||0)+Math.hypot(dx,dy)*.14;return;
   }
@@ -252,7 +252,7 @@ export class World {
    while(this.dashCooldown<=1e-9&&this.player.dashCharges<this.progression.maxDashes){this.player.dashCharges++;if(this.player.dashCharges<this.progression.maxDashes)this.dashCooldown+=2;else this.dashCooldown=0;}
   }
   const p=this.player;p.angle=Math.atan2(input.aim.y-p.y,input.aim.x-p.x);
-  if(!dashing&&p.health>0&&(this.fishing.state==='idle'||this.fishing.state==='reeling')){const analog=Number.isFinite(input.moveX)&&Number.isFinite(input.moveY),x=analog?input.moveX:Number(input.right)-Number(input.left),y=analog?input.moveY:Number(input.down)-Number(input.up),len=Math.max(1,Math.hypot(x,y)),speed=195*this.progression.speedMultiplier;if(x||y){p.facing=facingFor(x,y);p.steppedAt=this.elapsed;}this.move(x/len*speed*dt,y/len*speed*dt,this.fishing.state==='reeling');}
+  if(!dashing&&p.health>0&&(this.fishing.state==='idle'||this.fishing.state==='reeling')){const analog=Number.isFinite(input.moveX)&&Number.isFinite(input.moveY),x=analog?input.moveX:Number(input.right)-Number(input.left),y=analog?input.moveY:Number(input.down)-Number(input.up),len=Math.max(1,Math.hypot(x,y)),speed=195*this.progression.speedMultiplier*storySpeed(this);if(x||y){p.facing=facingFor(x,y);p.steppedAt=this.elapsed;}this.move(x/len*speed*dt,y/len*speed*dt,this.fishing.state==='reeling');}
   if(p.health>0)this.advanceFishing(p,dt,input.held);
  }
 }

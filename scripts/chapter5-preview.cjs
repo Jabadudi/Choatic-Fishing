@@ -20,11 +20,11 @@ const assert=require('node:assert/strict');
  const until=async(text,max=40)=>{for(let i=0;i<max;i++){await page.locator('#story-next:not([disabled])').waitFor();if((await page.locator('#story-title').innerText()).includes(text))return page.waitForTimeout(300);await next();}throw Error('Never reached '+text);};
  const stand=(x,y)=>page.evaluate(([x,y])=>Object.assign(window.__storyQA.world.player,{x,y}),[x,y]);
  await resume();await page.waitForTimeout(400);
- await page.keyboard.press('KeyG');await until('The guest lodge');assert.match(await page.locator('#story-chapter').innerText(),/CHAPTER 5/);
+ await page.keyboard.press('Space');await until('The guest lodge');assert.match(await page.locator('#story-chapter').innerText(),/CHAPTER 5/);
  await until('Bed. Window.');assert.equal(await page.locator('#story-name').innerText(),'Mara');await page.screenshot({path:'screenshots/chapter5-tour.png'});
  while(await stage()==='ch5-tour')await next();
  await page.waitForTimeout(400);await page.screenshot({path:'screenshots/chapter5-room-night.png'});
- await stand(172,235);await page.waitForTimeout(200);await page.keyboard.press('KeyG');
+ await stand(172,235);await page.waitForTimeout(200);await page.keyboard.press('Space');
  await until('Counting sheep');await page.screenshot({path:'screenshots/chapter5-sheep.png'});
  for(let i=0;i<30&&!(await page.locator('.cutscene-video:not([hidden])').count());i++)await next();
  // The vision plays full screen with the dialogue hidden, and the music steps aside.
@@ -39,7 +39,7 @@ const assert=require('node:assert/strict');
  await page.keyboard.press('Escape');await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>document.querySelector('#story-video').paused),false);
  // The page turns by itself when the video ends.
  await page.evaluate(()=>{const v=document.querySelector('#story-video');v.currentTime=v.duration-.5;});
- await page.locator('#story-title').filter({hasText:'Bang. Bang. Bang.'}).waitFor({timeout:10000});
+ await page.locator('#story-title').filter({hasText:'Still dark'}).waitFor({timeout:10000});
  assert.equal(await page.locator('.cutscene-video').isHidden(),true);
  // The video element is removed with the cutscene, so nothing keeps decoding or holding frames afterwards.
  assert.equal(await page.locator('#story-video').count(),0);
@@ -51,8 +51,8 @@ const assert=require('node:assert/strict');
  await resume();assert.equal(await stage(),'ch5-morning');
  await stand(280,380);await page.keyboard.down('KeyS');await page.waitForFunction(()=>window.__storyQA.world.areaId==='village',null,{timeout:5000});await page.keyboard.up('KeyS');
  const mara=await page.evaluate(()=>{const n=window.__storyQA.world.npcs.find(n=>n.id==='mara');return {x:n.x,y:n.y,area:n.areaId};});assert.equal(mara.area,'village');
- await stand(mara.x-30,mara.y+20);await page.waitForTimeout(300);await page.keyboard.press('KeyG');await page.waitForTimeout(500);
- assert.match(await page.locator('#story-text').innerText(),/sleepyhead/);await page.screenshot({path:'screenshots/chapter5-mara-outside.png'});
+ await stand(mara.x-30,mara.y+20);await page.waitForTimeout(300);await page.keyboard.press('Space');await page.waitForTimeout(500);
+ assert.match(await page.locator('#story-text').innerText(),/Sunrise/);await page.screenshot({path:'screenshots/chapter5-mara-outside.png'});
  assert.deepEqual(errors,[]);console.log('Chapter 5 browser preview passed: lodge tour, night room, sleep, full-screen vision video (settings pause, auto-advance), Mara knocking, morning resume and Mara outside.');
  await browser.close();process.exit(0);
 })().catch(e=>{console.error(e);process.exit(1);});

@@ -1,4 +1,4 @@
-import {restoreStory,createStoryNpcs,pageForBeat} from './story.js';
+import {restoreStory,createStoryNpcs,pageForBeat,LURE,REGION_CORE} from './story.js';
 import {World} from './world.js';
 import {AREAS,walkable} from './wilds.js';
 import {animalGround} from './wildlife.js';
@@ -109,6 +109,8 @@ export function restoreSave(input){
  w.inventory.artifactSlots=inv.artifacts?[...inv.artifacts]:Array(ARTIFACT_SLOT_COUNT).fill(null);
  // Reed marks arrived with save version 7's stacks; saves without them start with an empty purse.
  if(inv.marks!==undefined&&(!Number.isSafeInteger(inv.marks)||!number(inv.marks,0,MARKS_LIMIT)))fail('Invalid purse data.');w.inventory.marks=inv.marks??0;
+ // Eli swallows the Region Core at the end of Chapter 5. Saves from before that scene was written still carry it.
+ if(w.story?.coreIngested)for(const item of [...w.inventory.allItems])if([LURE,REGION_CORE].includes(item.name))w.inventory.removeId(item.id,Infinity);
  w.inventory.nextId=Math.max(inv.nextId,...inv.items.map(item=>/^item-\d+$/.test(item.id)?Number(item.id.slice(5))+1:1));
  const p=s.player;if(!p||!number(p.x,0,AREAS[s.areaId].width)||!number(p.y,0,AREAS[s.areaId].height)||!number(p.health,0,w.progression.maxHealth)||!number(p.angle,-100,100))fail('Invalid player data.');
  Object.assign(w.player,{x:p.x,y:p.y,angle:p.angle,health:p.health});
