@@ -86,3 +86,17 @@ test('Eli walks in four directions from one sheet and borrows the right-facing s
  assert.deepEqual(draw('idle','right'),{flipped:false,crop:frameRect(d,37,w,h).slice(0,2)});
  assert.deepEqual(draw('throw','left'),{flipped:true,crop:frameRect(d,32,w,h).slice(0,2)});
 },[eliPng.readUInt32BE(16),eliPng.readUInt32BE(20)]));
+test('Chapter 6 walk sheets fill their grids, and every clip frame fits',()=>{
+ for(const [id,rows] of [['mara-story',4],['emilia-story',4],['drayfus-story',5],['ocelot',5]]){
+  const d=SPRITES[id],png=readFileSync(new URL(`../assets/${d.asset}`,import.meta.url)),w=png.readUInt32BE(16),h=png.readUInt32BE(20);
+  assert.deepEqual([w,h],[d.frameSize[0]*8,d.frameSize[1]*rows],id);
+  for(const dir of ['right','left','down','up'])assert.ok(d.animations[`walk:${dir}`],`${id} walk:${dir}`);
+  for(const clip of Object.values(d.animations))for(const i of clip.frames){const [x,y,fw,fh]=frameRect(d,i,w,h);assert.ok(x+fw<=w&&y+fh<=h,`${id} frame ${i}`);}
+ }
+});
+test('story NPCs walk with the sheet row for the way they are heading',()=>withImages(()=>{
+ const d=SPRITES['mara-story'],crop=n=>{const c=fakeCanvas();drawNpc(c.ctx,{spriteId:'mara-story',name:'Mara',x:0,y:0,...n},0);return c.ops.find(o=>o[0]==='image').slice(2,4);};
+ assert.deepEqual(crop({animationState:'walk',direction:'up'}),frameRect(d,24,704,452).slice(0,2));
+ assert.deepEqual(crop({animationState:'walk',facingX:-3}),frameRect(d,8,704,452).slice(0,2));
+ assert.deepEqual(crop({}),frameRect(d,16,704,452).slice(0,2));
+},[704,452]));

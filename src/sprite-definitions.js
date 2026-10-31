@@ -32,11 +32,27 @@ export const SPRITES={
   'walk:down':{frames:[16,17,18,19,20,21,22,23],fps:10},'walk:up':{frames:[24,25,26,27,28,29,30,31],fps:10},
   throw:{frames:[32,33,34,35,36,37],fps:8,loop:false}
  }},
- 'emilia-story':{asset:null,scale:1,anchor:[.5,1],offset:[0,14],fallback:{coat:'#3d5a8a',hair:'#d8d4cc',skin:'#c08a63'}},
- 'mara-story':{asset:null,scale:1,anchor:[.5,1],offset:[0,14],fallback:{hair:'#3d2b24',coat:'#6b4b35'}},
- // Drawn placeholders until the walk sheets from art/sprite-prompts/chapter6-art.md arrive.
- 'drayfus-story':{asset:null,scale:1,anchor:[.5,1],offset:[0,14],fallback:{coat:'#3b3430',hair:'#5d5650',skin:'#b5805e',sword:true}},
- ocelot:{asset:null,scale:1,anchor:[.5,1],offset:[0,0]},
+ // Made by scripts/prepare-chapter6-sprites.py from art/sprites/. Rows 0-3: walk right, left, toward the camera, away (the house layout).
+ 'emilia-story':{asset:'story/emilia-sheet.png',frameSize:[72,109],columns:8,scale:.5,anchor:[.5,1],offset:[0,15],fallback:{coat:'#3d5a8a',hair:'#d8d4cc',skin:'#c08a63'},animations:{
+  idle:{frames:[16]},'idle:down':{frames:[16]},'idle:up':{frames:[24]},'idle:right':{frames:[0]},'idle:left':{frames:[8]},
+  'walk:right':{frames:[0,1,2,3,4,5,6,7],fps:7},'walk:left':{frames:[8,9,10,11,12,13,14,15],fps:7},'walk:down':{frames:[16,17,18,19,20,21,22,23],fps:7},'walk:up':{frames:[24,25,26,27,28,29,30,31],fps:7}
+ }},
+ 'mara-story':{asset:'story/mara-sheet.png',frameSize:[88,113],columns:8,scale:.5,anchor:[.5,1],offset:[0,15],fallback:{hair:'#3d2b24',coat:'#6b4b35'},animations:{
+  idle:{frames:[16]},'idle:down':{frames:[16]},'idle:up':{frames:[24]},'idle:right':{frames:[0]},'idle:left':{frames:[8]},
+  'walk:right':{frames:[0,1,2,3,4,5,6,7],fps:10},'walk:left':{frames:[8,9,10,11,12,13,14,15],fps:10},'walk:down':{frames:[16,17,18,19,20,21,22,23],fps:10},'walk:up':{frames:[24,25,26,27,28,29,30,31],fps:10}
+ }},
+ // Row 4 is the beckon strip: arms at his sides (32), folded (34-36), then a come-here wave (37-39). He waits with his arms folded.
+ 'drayfus-story':{asset:'story/drayfus-sheet.png',frameSize:[114,132],columns:8,scale:.5,anchor:[.5,1],offset:[0,16],fallback:{coat:'#3b3430',hair:'#5d5650',skin:'#b5805e',sword:true},animations:{
+  idle:{frames:[35]},'idle:down':{frames:[35]},'idle:up':{frames:[24]},'idle:right':{frames:[0]},'idle:left':{frames:[8]},
+  beckon:{frames:[35,36,37,38,39,38,39,38,37,36,35,35,35,35,35,35],fps:6},
+  'walk:right':{frames:[0,1,2,3,4,5,6,7],fps:8},'walk:left':{frames:[8,9,10,11,12,13,14,15],fps:8},'walk:down':{frames:[16,17,18,19,20,21,22,23],fps:8},'walk:up':{frames:[24,25,26,27,28,29,30,31],fps:8}
+ }},
+ // The side rows have 7 frames. Row 4 is the dissolve: sitting with its tail round its paws (32), then breaking into blue motes.
+ ocelot:{asset:'story/ocelot-sheet.png',frameSize:[142,77],columns:8,scale:.5,anchor:[.5,1],offset:[0,2],animations:{
+  idle:{frames:[32]},'idle:down':{frames:[32]},'idle:up':{frames:[24]},'idle:right':{frames:[0]},'idle:left':{frames:[8]},
+  vanish:{frames:[32,33,34,35,36,37,38,39],fps:6,loop:false},
+  'walk:right':{frames:[0,1,2,3,4,5,6],fps:9},'walk:left':{frames:[8,9,10,11,12,13,14],fps:9},'walk:down':{frames:[16,17,18,19,20,21,22,23],fps:9},'walk:up':{frames:[24,25,26,27,28,29,30,31],fps:9}
+ }},
  // Original Drive sheet has a green matte. The shared loader removes it once.
  moonfang:{asset:'story/moonfang.png',chromaKey:'green',frames:[[145,10,320,250],[450,10,310,250],[750,10,310,250],[1060,10,330,250],[5,290,255,190],[260,290,255,190],[515,290,255,190],[770,290,255,190],[1020,290,255,190],[1270,290,265,190]],scale:.36,anchor:[.5,1],offset:[0,0],mirror:'right',animations:{idle:{frames:[0,1,2,3],fps:3},run:{frames:[4,5,6,7,8,9],fps:9}}},
  // Night cutscene artwork. Processed from art/sprites/ by scripts/prepare-cutscene-sprites.py: matte removed, feet on a shared baseline.
@@ -86,6 +102,6 @@ export const STORY_ART={
 };
 // Furniture and props, cut from the AI sheets in art/sprites/props/ by scripts/prepare-prop-sprites.py.
 // Each scene keeps its drawn shape as the fallback, and collision never depends on this artwork.
-export const PROPS=Object.fromEntries(['cook-stove','lure-box-shelf','photo-side-table','dining-table','chair','bed-green','fishing-rod-rack','oil-lamp','door-mat','rain-barrel','firewood-stack','bed-straw-violet','stool-waterskin','chest-brass','chamber-pot','rug-rust-red','stone-hearth','pot-herb-shelf','carved-post','window-evening','rug-red-blue','round-table','fur-stool','wall-bench','chief-cabinet','tea-set','barrel','lantern-post','well','produce-stall','fish-stall','plank-bench','bench-backrest','net-rack','rope-coils','rowing-boat','rest-shelter','fire-ring-cold','apple-crate','fishing-seat','fish-trap','flower-box','campfire','training-dummy','training-dummy-worn','archery-target','weapon-rack','weapon-barrel','water-trough','water-bucket','hay-bale','spear-crate',...['cabin','chief','lodge'].flatMap(room=>['floor','wall','wall-top','wall-side'].map(part=>`${room}-${part}`))].map(id=>[id,`props/${id}.webp`]));
+export const PROPS=Object.fromEntries(['cook-stove','lure-box-shelf','photo-side-table','dining-table','chair','bed-green','fishing-rod-rack','oil-lamp','door-mat','rain-barrel','firewood-stack','bed-straw-violet','stool-waterskin','chest-brass','chamber-pot','rug-rust-red','stone-hearth','pot-herb-shelf','carved-post','window-evening','rug-red-blue','round-table','fur-stool','wall-bench','chief-cabinet','tea-set','barrel','lantern-post','well','produce-stall','fish-stall','plank-bench','bench-backrest','net-rack','rope-coils','rowing-boat','rest-shelter','fire-ring-cold','apple-crate','fishing-seat','fish-trap','flower-box','campfire','training-dummy','training-dummy-worn','archery-target','weapon-rack','weapon-barrel','water-trough','water-bucket','hay-bale','spear-crate','willow-tree','log-fence','log-fence-side','training-gate-posts','fence-corner-post','training-wall','dirt-ground','glowing-sword','water-bucket-full','training-gate-arch',...['cabin','chief','lodge'].flatMap(room=>['floor','wall','wall-top','wall-side'].map(part=>`${room}-${part}`))].map(id=>[id,`props/${id}.webp`]));
 // Familiar shards on the ground reuse their inventory icons.
 for(const id of ['rabbit','deer','turtle','eel','shadow-walker','moonfang','rimejaw','flitlynx'])PROPS[`shard-${id}`]=`items/shard-${id}.webp`;

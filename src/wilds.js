@@ -8,7 +8,7 @@ import {MARSH,MARSH_ROADS,MARSH_PLACES,MARSH_OBJECTS,marshWaterDistance,onMarshD
 import {drawMarshGround,drawMarshObject} from './marsh-art.js';
 import {VILLAGE,VILLAGE_ROADS,VILLAGE_PLACES,villageWaterDistance,onVillageDeck,villageBlocked,villageClear} from './village.js';
 import {drawVillageGround,drawVillageObject,villageObjects,paintVillageBuildings} from './village-art.js';
-import {drawEntitySprite,onPropLoad} from './sprites.js';
+import {drawEntitySprite,drawProp,onPropLoad} from './sprites.js';
 import {CROSSROADS,CROSSROADS_ROADS,CROSSROADS_PLACES,crossroadsWaterDistance,crossroadsBlocked,onCrossroadsDeck,drawCrossroads,drawCrossroadsLabels} from './crossroads.js';
 import {leafyTree,meadowRock,meadowBush,grassDetail,wildflower} from './plains-art.js';
 import {drawGrassBase} from './grass-texture.js';
@@ -350,7 +350,7 @@ function drawLandmark(ctx,p,t=0){
  if(kind==='tree')tree(ctx,x,y,true,crownSprite(true)?'trunk':'all');
  else if(kind==='landing'||kind==='chimes')chimes(ctx,x,y,t);
  else if(kind==='sign'){ctx.fillStyle='#7d6244';ctx.fillRect(x-4,y-10,8,33);ctx.fillStyle='#c2a878';ctx.fillRect(x-40,y-23,80,23);}
- else if(kind==='training-gate'){ctx.fillStyle='#4a301c';ctx.fillRect(x-30,y-40,7,44);ctx.fillRect(x+23,y-40,7,44);ctx.fillStyle='#8a6038';ctx.fillRect(x-34,y-44,68,7);for(const dy of [-26,-12])ctx.fillRect(x-23,y+dy,46,5);ctx.fillStyle='#5c3b22';ctx.fillRect(x-23,y-24,46,1);ctx.fillRect(x-23,y-10,46,1);}
+ else if(kind==='training-gate'){if(drawProp(ctx,'training-gate-arch',{x,y:y+6,w:100,h:66}))return;ctx.fillStyle='#4a301c';ctx.fillRect(x-30,y-40,7,44);ctx.fillRect(x+23,y-40,7,44);ctx.fillStyle='#8a6038';ctx.fillRect(x-34,y-44,68,7);for(const dy of [-26,-12])ctx.fillRect(x-23,y+dy,46,5);ctx.fillStyle='#5c3b22';ctx.fillRect(x-23,y-24,46,1);ctx.fillRect(x-23,y-10,46,1);}
  else if(kind==='spring'){
   ctx.fillStyle='#466e58';ctx.fillRect(x-26,y-7,52,18);ctx.fillStyle='#9eb683';for(let i=0;i<5;i++)ctx.fillRect(x-25+i*11,y-27+i%2*6,3,36);
   for(let i=0;i<4;i++){const k=(t/2+i/4)%1;ctx.fillStyle=`rgba(225,250,240,${.8*(1-k)})`;ctx.fillRect(Math.round(x-15+i*10+Math.sin(t*3+i)*2),Math.round(y+4-k*22),3,3);}

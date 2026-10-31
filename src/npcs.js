@@ -12,11 +12,13 @@ export function updateDialogue(world,dt){
  const n=(world.npcs||[]).find(n=>n.id===d.npcId);
  if(d.remaining<=0||!n||n.areaId!==world.areaId||Math.hypot(n.x-world.player.x,n.y-world.player.y)>150)world.dialogue=null;
 }
+// Sheets with a row per direction need one. A walker that only records facingX walks left or right.
+export const npcDirection=n=>n.direction||(n.animationState==='walk'&&n.facingX?(n.facingX<0?'left':'right'):undefined);
 export function drawNpc(c,n,t=0){
  const art=SPRITES[n.spriteId]?.fallback||{};
  const x=Math.round(n.x),y=Math.round(n.y),bob=Math.sin(t*1.8)*.6;
  if(n.creature){drawVillageCreature(c,n,t);return;}
- if(!drawEntitySprite(c,n.spriteId||'mara',{x:n.x,y:n.y,state:n.animationState||'idle',time:t,facingX:n.facingX})){
+ if(!drawEntitySprite(c,n.spriteId||'mara',{x:n.x,y:n.y,state:n.animationState||'idle',time:t,direction:npcDirection(n),facingX:n.facingX})){
  c.save();c.translate(n.x,n.y);c.scale(art.visualScale||1,art.visualScale||1);c.translate(-n.x,-n.y);
  c.fillStyle='#20352c55';c.beginPath();c.ellipse(x+2,y+14,15,5,0,0,Math.PI*2);c.fill();
  const r=(color,dx,dy,w,h)=>{c.fillStyle=color;c.fillRect(x+dx,Math.round(y+dy+bob),w,h);};

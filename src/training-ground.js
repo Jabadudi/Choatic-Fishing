@@ -1,6 +1,6 @@
 // The village guard's training ground behind the chief's house. Geometry, collision and artwork only; story.js decides who stands here.
 import {drawGrassBase} from './grass-texture.js';
-import {drawProp} from './sprites.js';
+import {drawProp,drawTiles} from './sprites.js';
 // The gate in Willowback, on the west side of the chief's house.
 export const TRAINING_GATE={x:580,y:290};
 export const TRAINING_GROUND={id:'training-ground',name:'The Training Ground',width:720,height:560,seed:7361,spawn:{x:360,y:480},exits:[{edge:'south',from:310,to:410,target:'village',entry:{x:TRAINING_GATE.x,y:TRAINING_GATE.y+40},label:'Willowback Village'}]};
@@ -74,6 +74,7 @@ function bench(c){
 }
 function willow(c,t){
  c.fillStyle='rgba(20,40,20,.22)';c.beginPath();c.ellipse(116,236,110,70,0,0,Math.PI*2);c.fill();
+ if(drawProp(c,'willow-tree',{x:70,y:218,w:220,h:200}))return;
  c.fillStyle='#5a3d22';c.fillRect(54,96,16,110);
  for(let i=0;i<14;i++){const sway=Math.sin(t*.8+i)*2;c.fillStyle=i%2?'#6f9a3e':'#86ad48';c.fillRect(20+i*9+sway,90+(i%3)*6,4,80+(i%4)*14);}
  c.fillStyle='#5f8a37';c.beginPath();c.ellipse(64,92,64,36,0,0,Math.PI*2);c.fill();c.fillStyle='#78a544';c.beginPath();c.ellipse(52,82,40,22,0,0,Math.PI*2);c.fill();
@@ -82,22 +83,31 @@ function willow(c,t){
 export function drawTrainingGround(c,{t=0,evening=false,sword=false}={}){
  if(!drawGrassBase(c,0,0,720,560,()=>{})){c.fillStyle='#86ad48';c.fillRect(0,0,720,560);}
  // Packed dirt circle.
+ c.save();c.beginPath();c.ellipse(CIRCLE.x,CIRCLE.y,CIRCLE.rx,CIRCLE.ry,0,0,Math.PI*2);c.rect(330,420,60,140);c.clip();
+ const dirt=drawTiles(c,'dirt-ground',{x:0,y:0,w:720,h:560,tw:96});c.restore();
+ if(!dirt){
  c.fillStyle='#b99662';c.beginPath();c.ellipse(CIRCLE.x,CIRCLE.y,CIRCLE.rx,CIRCLE.ry,0,0,Math.PI*2);c.fill();
  c.fillStyle='#a8844f';c.beginPath();c.ellipse(CIRCLE.x,CIRCLE.y,CIRCLE.rx-20,CIRCLE.ry-16,0,0,Math.PI*2);c.fill();
  c.fillStyle='#c8a872';for(let i=0;i<40;i++){const a=i*2.4,r=(i*37)%150;c.fillRect(CIRCLE.x+Math.cos(a)*r,CIRCLE.y+Math.sin(a)*r*.72,3,2);}
  // Path from the gate.
  c.fillStyle='#c9ad74';c.fillRect(330,440,60,120);
+ }
  // The back wall of the chief's house: red plaster and white timber.
+ if(!drawTiles(c,'training-wall',{x:0,y:0,w:720,h:WALL-8,th:WALL-8})){
  c.fillStyle='#8e3b33';c.fillRect(0,0,720,WALL-8);c.fillStyle='#e4d8bb';for(let x=40;x<720;x+=120)c.fillRect(x,0,8,WALL-8);c.fillRect(0,WALL-16,720,6);
  c.fillStyle='#5f3a26';c.fillRect(0,WALL-10,720,4);c.fillStyle='#3a2a20';c.fillRect(220,14,46,40);c.fillStyle='#f0d690';c.fillRect(224,18,38,32);c.fillStyle='#3a2a20';c.fillRect(242,18,2,32);
+ }
  willow(c,t);bench(c);rack(c);well(c,t);trough(c);
  for(const d of DUMMIES)dummy(c,d,t,d.x>400);
  for(const [id,x,y,w,h] of EXTRAS)drawProp(c,id,{x,y,w,h});
  // Split-log fence on three sides, with a gap at the south gate.
- for(let y=WALL;y<560;y+=26){log(c,6,y,26,8);log(c,688,y,26,8);}
- for(let x=6;x<714;x+=34)if(x<318||x>398){log(c,x,534,34,8);log(c,x,548,34,8);}
- c.fillStyle='#4a301c';for(const x of [312,404])c.fillRect(x,520,8,40);
+ if(!drawTiles(c,'log-fence-side',{x:8,y:WALL-6,w:22,h:560-WALL,tw:22})||!drawTiles(c,'log-fence-side',{x:690,y:WALL-6,w:22,h:560-WALL,tw:22}))
+  for(let y=WALL;y<560;y+=26){log(c,6,y,26,8);log(c,688,y,26,8);}
+ if(!drawTiles(c,'log-fence',{x:0,y:528,w:318,h:30,th:30})||!drawTiles(c,'log-fence',{x:402,y:528,w:318,h:30,th:30}))
+  for(let x=6;x<714;x+=34)if(x<318||x>398){log(c,x,534,34,8);log(c,x,548,34,8);}
+ for(const x of [19,701])drawProp(c,'fence-corner-post',{x,y:560,w:40,h:40});
+ if(!drawProp(c,'training-gate-posts',{x:360,y:562,w:100,h:92})){c.fillStyle='#4a301c';for(const x of [312,404])c.fillRect(x,520,8,40);}
  // Drayfus's practice sword in the dirt after the disarm.
- if(sword){c.save();c.translate(CAST_SPOT.x+28,CAST_SPOT.y+6);c.rotate(-.5);c.fillStyle='#9b7444';c.fillRect(-2,-24,5,30);c.fillStyle='#5c3b22';c.fillRect(-7,4,15,4);c.fillRect(-1,8,3,8);c.restore();}
+ if(sword&&!drawProp(c,'glowing-sword',{x:CAST_SPOT.x+28,y:CAST_SPOT.y+14,w:40,h:40})){c.save();c.translate(CAST_SPOT.x+28,CAST_SPOT.y+6);c.rotate(-.5);c.fillStyle='#9b7444';c.fillRect(-2,-24,5,30);c.fillStyle='#5c3b22';c.fillRect(-7,4,15,4);c.fillRect(-1,8,3,8);c.restore();}
  if(evening){c.fillStyle='rgba(120,50,30,.28)';c.fillRect(0,0,720,560);}
 }

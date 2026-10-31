@@ -125,3 +125,10 @@ test('a closed conversation in Chapter 6 can be picked up again',()=>{
  assert.equal(w.story.scene,'ch6-confession');w.story.scene=null;w.story.page=0;
  const d=npc(w,'drayfus');stand(w,d.x,d.y+50);assert.equal(storyPrompt(w),'Continue the conversation');w.inspect();assert.equal(currentScene(w).title,'You what?');
 });
+test('the ocelot breaks into motes after the door scene, and Drayfus waves Eli over',()=>{
+ const w=playTo('ch6-circle');assert.equal(w.areaId,GUEST_LODGE.id);
+ const fading=npc(w,'ocelot-vanish');assert.equal(fading.animationState,'vanish');assert.equal(fading.areaId,GUEST_LODGE.id);
+ w.elapsed+=2;w.update(.05,neutralInput());assert.equal(npc(w,'ocelot-vanish'),undefined);
+ assert.equal(npc(w,'drayfus').animationState,'beckon');
+ assert.equal(npc(playTo('ch6-rack'),'drayfus').animationState,'idle');
+});

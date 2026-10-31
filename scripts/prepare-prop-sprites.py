@@ -3,7 +3,8 @@ from PIL import Image
 # Cuts each furniture sheet in art/sprites/props/sheets into single sprites with the green removed.
 # Usage: python3 scripts/prepare-prop-sprites.py OUT_DIR. Sprites are found by the empty gaps between them.
 U='art/sprites/props/sheets/'
-SHEETS=[(n,n+'.png') for n in ['01-cabin-lodge','02-chief-house-shared','03-village-outdoor','04-training-blacksmith','05-inn-workshop-homes']]
+# The first five sheets are 4 rows of 5; the training ground sheet is 2 rows of 5.
+SHEETS=[(n,n+'.png',4) for n in ['01-cabin-lodge','02-chief-house-shared','03-village-outdoor','04-training-blacksmith','05-inn-workshop-homes']]+[('06-training-ground','06-training-ground.png',2)]
 OUT=sys.argv[1] if len(sys.argv)>1 else 'out'
 def key(a):
     r,g,b=[a[...,i].astype(int) for i in range(3)]
@@ -23,10 +24,10 @@ def bands(prof,minlen,thr):
     if s is not None and len(on)-s>=minlen:res.append([s,len(on)])
     return res
 os.makedirs(OUT,exist_ok=True)
-for name,f in SHEETS:
+for name,f,nrows in SHEETS:
     a=np.array(Image.open(U+f).convert('RGB')); rgba=key(a); m=rgba[...,3]>0
     rows=bands(m.sum(1),40,2)
-    while len(rows)<4:
+    while len(rows)<nrows:
         i=max(range(len(rows)),key=lambda j:rows[j][1]-rows[j][0]);y0,y1=rows[i];p=m[y0:y1].sum(1);q=len(p)//4;c=y0+q+int(np.argmin(p[q:-q]))
         rows[i:i+1]=[[y0,c],[c,y1]]
     k=0

@@ -1,7 +1,11 @@
 import {drawEntitySprite} from './sprites.js';
 // Friendly village creatures are scenery NPCs, with drawn loading/missing-art fallbacks.
 export function drawVillageCreature(c,n,t){
- if(drawEntitySprite(c,n.spriteId,{x:n.x,y:n.y,state:'idle',time:t}))return;
+ // A one-off clip such as the ocelot's dissolve plays from animationStart.
+ const state=n.animationState||'idle',clock=n.animationStart==null?t:t-n.animationStart;
+ if(drawEntitySprite(c,n.spriteId,{x:n.x,y:n.y,state,time:clock,direction:n.direction}))return;
+ // Without the sheet, the drawn creature fades out instead.
+ if(state==='vanish'){if(clock<1.2){c.save();c.globalAlpha=1-clock/1.2;drawVillageCreature(c,{...n,animationState:'idle',animationStart:null},t);c.restore();}return;}
  c.save();c.translate(n.x,n.y);
  if(n.spriteId==='ocelot'){
   // Golden-brown, dark rosettes, cheek stripes and core-blue eyes. Sits with its tail around its paws.

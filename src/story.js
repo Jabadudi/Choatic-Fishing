@@ -31,6 +31,8 @@ const chapterSixGuide=stage=>({...CHAPTER6_GUIDE[stage],waypoint:0});
 // The training day: Drayfus, Emilia and Mara are out in the yard from Eli's arrival to the last bucket.
 const TRAINING_DAY=['ch6-circle','ch6-spar','ch6-confession','ch6-rack','ch6-cast','ch6-buckets'];
 // Where the ocelot sits: the corner by the stool in the morning, on the stool at night.
+// The ocelot's dissolve takes 8 frames at 6 a second.
+const VANISH_TIME=1.4;
 export const OCELOT_CORNER={x:340,y:170},OCELOT_STOOL={x:196,y:146};
 export const inlandUnlocked=story=>!story||(story.stage==='ch2-complete'||villageStory(story));
 export const SCENES={...CHAPTER1_SCENES,...CHAPTER2_SCENES,...CHAPTER3_SCENES,...CHAPTER4_SCENES,...CHAPTER5_SCENES,...CHAPTER6_SCENES};
@@ -248,7 +250,8 @@ export function advanceStory(w){
  // Chapter 6. Each finished scene is a checkpoint.
  const sixth=stage=>{s.stage=stage;s.guide=chapterSixGuide(stage);w.npcs=createStoryNpcs(s,w.elapsed);};
  if(scene==='ch6-wake'&&s.stage==='ch5-morning')sixth('ch6-door');
- if(scene==='ch6-door'&&s.stage==='ch6-door')sixth('ch6-circle');
+ // The ocelot steps into the sunlight and breaks apart into blue motes.
+ if(scene==='ch6-door'&&s.stage==='ch6-door'){sixth('ch6-circle');if(w.areaId===GUEST_LODGE.id)w.npcs.push({id:'ocelot-vanish',name:'',areaId:GUEST_LODGE.id,...OCELOT_CORNER,npc:true,creature:true,spriteId:'ocelot',animationState:'vanish',animationStart:w.elapsed,talkRange:-1,vanishing:true});}
  if(scene==='ch6-drayfus'&&s.stage==='ch6-circle')sixth('ch6-spar');
  if(scene==='ch6-spar'&&s.stage==='ch6-spar'){sixth('ch6-confession');show(w,'ch6-confession');}
  if(scene==='ch6-confession'&&s.stage==='ch6-confession')sixth('ch6-rack');
@@ -276,7 +279,7 @@ export function createStoryNpcs(story,elapsed=0){
  const training=TRAINING_DAY.includes(story.stage);
  if(chapterFour(story)||chapterFive(story)||chapterSix(story))list.push({id:'emilia',name:story.stage==='ch4-house'?'The old woman':story.stage==='ch4-complete'||chapterFive(story)||chapterSix(story)?'Emilia':'The chief',...(training?{areaId:TRAINING_GROUND.id,...TRAINING_EMILIA_SPOT}:{areaId:CHIEF_HOUSE.id,...EMILIA_SPOT}),...NPC_TYPES.villager,npc:true,spriteId:'emilia-story',talkRange:95,
   greeting:training?'Go on, Eli. I’ll be right here with my tea.':chapterSix(story)?'Drayfus says you finished all forty. Rest, Eli. You’ve earned it.':['ch5-morning','ch6-door'].includes(story.stage)?'Good morning, Eli. Drayfus will be waiting for you both.':'Rest well, Eli. Sunrise comes early.'});
- if(chapterSix(story)&&story.stage!=='ch6-door')list.push({id:'drayfus',name:'Drayfus',areaId:TRAINING_GROUND.id,...DRAYFUS_SPOT,...NPC_TYPES.villager,npc:true,spriteId:'drayfus-story',talkRange:95,greeting:DRAYFUS_CH6[story.stage]||'Before the sun. Don’t be late again.'});
+ if(chapterSix(story)&&story.stage!=='ch6-door')list.push({id:'drayfus',name:'Drayfus',areaId:TRAINING_GROUND.id,...DRAYFUS_SPOT,...NPC_TYPES.villager,npc:true,spriteId:'drayfus-story',talkRange:95,animationState:['ch6-circle','ch6-spar'].includes(story.stage)?'beckon':'idle',greeting:DRAYFUS_CH6[story.stage]||'Before the sun. Don’t be late again.'});
  // Only Eli can see the ocelot. It sits in his room in the morning, then lives in his stomach until night.
  if(['ch5-morning','ch6-door','ch6-night','ch6-complete'].includes(story.stage))list.push({id:'ocelot',name:'The ocelot',areaId:GUEST_LODGE.id,...(story.stage.startsWith('ch5')||story.stage==='ch6-door'?OCELOT_CORNER:OCELOT_STOOL),...NPC_TYPES.flitlynx,npc:true,creature:true,spriteId:'ocelot',talkRange:80,
   greeting:story.stage==='ch5-morning'?'The ocelot watches you with core-blue eyes, and waits for you to read.':story.stage==='ch6-door'?'It flicks its tail toward the door. Somebody is about to break it down.':'Sleep. Drayfus will wake you before the sun.'});
@@ -285,6 +288,8 @@ export function createStoryNpcs(story,elapsed=0){
 }
 const MARA_CH6={'ch6-door':'Come on, sleepyhead.','ch6-circle':'Drayfus is in the middle. Try not to die.','ch6-spar':'Go on. He won’t bite. Much.','ch6-confession':'You ate it. You actually ate it.','ch6-rack':'Pick something, Eli. Anything but an axe.','ch6-cast':'Go on. Show him.','ch6-buckets':'Forty. I counted my first time too.'};
 const DRAYFUS_CH6={'ch6-circle':'Sunrise was some time ago.','ch6-spar':'Pick up a sword.','ch6-confession':'Up.','ch6-rack':'Choose.','ch6-cast':'Well? I’m waiting.','ch6-buckets':'The trough is not full yet.','ch6-night':'Go to bed.'};
+// The sheet row a walker uses: whichever way it is mostly heading.
+const walkDirection=(dx,dy)=>Math.abs(dx)>=Math.abs(dy)?(dx<0?'left':'right'):(dy<0?'up':'down');
 function updateChapterTwo(w,dt,walkable){
  const s=w.story;if(s?.stage!=='ch2-follow'||pendingScene(w)||w.areaId!=='landing'||w.player.health<=0)return;
  const n=w.npcs.find(n=>n.id==='mara'),g=s.guide;if(!n||!g)return;
@@ -301,7 +306,7 @@ function updateChapterTwo(w,dt,walkable){
   if(walkable(n.x,n.y+sy,'landing'))n.y+=sy;
  }
  const moved=Math.hypot(n.x-before.x,n.y-before.y);
- if(moved>0){n.animationState='walk';n.facingX=dx;n.walkTime=(n.walkTime||0)+moved*.14;}
+ if(moved>0){n.animationState='walk';n.facingX=dx;n.direction=walkDirection(dx,dy);n.walkTime=(n.walkTime||0)+moved*.14;}
  g.x=n.x;g.y=n.y;
  if(Math.hypot(n.x-goal.x,n.y-goal.y)<1)g.waypoint++;
 }
@@ -319,6 +324,7 @@ export function onStoryAreaChange(w,previous){
 }
 export function updateStory(w,dt,walkable){
  updateVillageResidents(w.npcs,w.elapsed);
+ if(w.npcs?.some(n=>n.vanishing&&w.elapsed-n.animationStart>VANISH_TIME))w.npcs=w.npcs.filter(n=>!n.vanishing||w.elapsed-n.animationStart<=VANISH_TIME);
  const s=w.story;if(!villageStory(s)){updateChapterTwo(w,dt,walkable);return;}
  if(pendingScene(w)||['ch3-lore','ch3-complete'].includes(s.stage)||chapterFour(s)||chapterFive(s)||chapterSix(s)||w.player.health<=0)return;
  const n=w.npcs.find(n=>n.id==='mara'),g=s.guide;if(!n||!g)return;
@@ -336,7 +342,7 @@ export function updateStory(w,dt,walkable){
  const steps=Math.max(1,Math.ceil(travel/4)),sx=dx/length*travel/steps,sy=dy/length*travel/steps,before={x:n.x,y:n.y};
  for(let i=0;i<steps;i++){if(walkable(n.x+sx,n.y,g.areaId))n.x+=sx;if(walkable(n.x,n.y+sy,g.areaId))n.y+=sy;}
  const moved=Math.hypot(n.x-before.x,n.y-before.y);
- if(moved>0){n.animationState='walk';n.facingX=dx;n.walkTime=(n.walkTime||0)+moved*.14;}
+ if(moved>0){n.animationState='walk';n.facingX=dx;n.direction=walkDirection(dx,dy);n.walkTime=(n.walkTime||0)+moved*.14;}
  g.x=n.x;g.y=n.y;if(Math.hypot(n.x-goal.x,n.y-goal.y)<1)g.waypoint++;
 }
 // Every story stage in the order Eli reaches them.

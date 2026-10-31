@@ -6,10 +6,10 @@ Generated concept art, references, cutscenes and sprite sheets for Volume 1. The
 | --- | --- |
 | `cutscenes/vol1/` | Story panels by chapter, numbered in the order they play (`ch01_01_…`). `_alts/` keeps earlier takes. |
 | `characters/` | Reference sheets (front, side, face) for Mara, Emilia, Eli, Drayfus and Croshelda. |
-| `sprites/creatures/` | Rimejaw, Flitlynx and Moonfang: a single pose and an animation sheet each. |
+| `sprites/creatures/` | Rimejaw, Flitlynx and Moonfang: a single pose and an animation sheet each. The talking ocelot: a 4-direction walk sheet and a dissolve strip. |
 | `sprites/mobs/` | Nightwalker (shadow walker) enemy: reference sheet, pose and animation sheet. |
-| `sprites/characters/` | Playable and NPC character sprites: Eli (walk and throw sheets, the style and walk layout every moving entity follows) and Drayfus. |
-| `sprites/props/sheets/` | Five furniture and prop sheets (cabin and lodge, chief's house and shared pieces, village, training yard and blacksmith, inn and homes), 20 pieces each on a green background. |
+| `sprites/characters/` | Playable and NPC character sprites: Eli (walk and throw sheets, the style and walk layout every moving entity follows), 4-direction walk sheets for Mara, Emilia and Drayfus, Drayfus's beckon strip, and his older side-view action sheet. |
+| `sprites/props/sheets/` | Six furniture and prop sheets (cabin and lodge, chief's house and shared pieces, village, training yard and blacksmith, inn and homes at 20 pieces each, and the training ground's tree, fences, gates, wall and dirt tiles, glowing sword and buckets at 10) on a green background. |
 | `sprites/wishing-well/` | The Wishing Well summon: Eli's single and ten-stone throws, the well and the cavern under it, the five rarity fish, Eli's jump shot for Epic-or-better draws, and the stone, splash and sparkle effects. |
 | `sprites/items/sheets/` | Five item icon sheets (tools and weapons, food and wares, materials and trophies, shards and quest items, guardian shards) on a green background. |
 | `references/` | World and area maps used for the region layouts. |
@@ -29,9 +29,13 @@ Sheet rows are idle, walk or fly, run where present, attack, then extras (howl, 
 
 `scripts/prepare-eli-sprites.py` cuts Eli's walk sheet (4 directions × 8 frames) and throw sheet (6 frames) into `assets/story/eli-sheet.png`. See [docs/ENTITY-SPRITES.md](../docs/ENTITY-SPRITES.md) for the layout new entities should follow.
 
+## Chapter 6 characters
+
+`scripts/prepare-chapter6-sprites.py` cuts the walk sheets for Mara, Emilia, Drayfus and the talking ocelot into `assets/story/<name>-sheet.png`, in the same layout as Eli's. Drayfus's sheet adds his beckon strip as a fifth row (he waits with his arms folded and waves Eli over), and the ocelot's adds its dissolve strip (its first frame is how it sits). The ocelot's side rows have 7 frames.
+
 ## Furniture and props
 
-`scripts/prepare-prop-sprites.py OUT_DIR` cuts the five prop sheets into single sprites with the green removed. The pieces the game uses are resized to at most 320 px, saved as WebP in `assets/props/` and listed in `PROPS` in `src/sprite-definitions.js`. Scenes call `drawProp(ctx,id,{x,y,w,h})`, which fits the image inside the box with its bottom centre at `x,y`. Until an image loads, or if it is missing, the scene draws its original shapes, and collision never depends on the artwork. The training yard, blacksmith, inn and home pieces are cut and approved but not used yet.
+`scripts/prepare-prop-sprites.py OUT_DIR` cuts the six prop sheets into single sprites with the green removed. The pieces the game uses are resized to at most 320 px, saved as WebP in `assets/props/` and listed in `PROPS` in `src/sprite-definitions.js`. Scenes call `drawProp(ctx,id,{x,y,w,h})`, which fits the image inside the box with its bottom centre at `x,y`. Until an image loads, or if it is missing, the scene draws its original shapes, and collision never depends on the artwork. The training yard, blacksmith, inn and home pieces are cut and approved but not used yet.
 
 ## Item icons
 
