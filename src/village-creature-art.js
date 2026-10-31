@@ -13,6 +13,8 @@ export function drawVillageCreature(c,n,t){
   c.fillStyle='#3a2616';for(const [dx,dy] of [[-10,-18],[-4,-14],[4,-20],[-8,-8],[5,-8],[-12,-24],[2,-26]])c.fillRect(dx,dy,3,3);
   c.fillRect(-9,-34,1,4);c.fillRect(-7,-33,1,4);c.fillRect(5,-34,1,4);c.fillRect(7,-33,1,4);
   c.fillStyle=`rgba(143,227,255,${glow})`;c.fillRect(-7,-37,3,2);c.fillRect(2,-37,3,2);
+  // Axolotl gill fronds behind the ears, coral pink with glowing blue tips.
+  for(const d of [-1,1])for(let i=0;i<3;i++){const gx=d<0?-12-i*3:8+i*3,gy=-42+i*4,sway=Math.round(Math.sin(t*2+i)*1);c.fillStyle='#e58f9a';c.fillRect(gx+d*sway,gy,3,2);c.fillStyle=`rgba(143,227,255,${glow})`;c.fillRect(gx+d*(3+sway),gy-1,2,2);}
   c.fillStyle='#b9853f';c.fillRect(-14,-2,26,4);c.fillStyle='#3a2616';c.fillRect(-14,-2,3,4);c.fillRect(-6,-2,3,4);
   c.restore();return;
  }
