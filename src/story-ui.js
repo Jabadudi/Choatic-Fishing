@@ -5,6 +5,7 @@ import {spriteAssetUrl,drawEntitySprite} from './sprites.js';
 import {dialogueMarkup,setDialogueText,drawDialoguePortrait} from './dialogue-view.js';
 import {cutscenePresentation} from './cutscene-presentation.js';
 import {NARRATOR,VOICE} from './scene-script.js';
+import {CORE,OCELOT} from './chapter6.js';
 import {playSfx} from './sfx.js';
 import {storyActionElapsed,NIGHT_ATTACK} from './story-action.js';
 // Eli learns the chief's name at the end of Chapter 4; every title shares her portrait.
@@ -20,7 +21,7 @@ export function mountStory({getWorld,onAdvance=()=>{},onSettings=()=>{},isSettin
   const w=getWorld();if(!w)return null;
   if(currentScene(w)){
    const page=historyPage??w.story.page,scene=SCENES[w.story.scene][page],name=scene.speaker||'Eli';
-   const speaker=['The girl','Mara'].includes(name)?w.npcs.find(n=>n.id==='mara')||{id:'mara',name}:EMILIA_NAMES.includes(name)?{id:'emilia',name}:name===NARRATOR?{id:'narrator',name}:name===VOICE?{id:'voice',name}:w.player;
+   const speaker=['The girl','Mara'].includes(name)?w.npcs.find(n=>n.id==='mara')||{id:'mara',name}:EMILIA_NAMES.includes(name)?{id:'emilia',name}:name===NARRATOR?{id:'narrator',name}:name===VOICE?{id:'voice',name}:name===CORE?{id:'core',name}:name==='Drayfus'?w.npcs.find(n=>n.id==='drayfus')||{id:'drayfus',name,npc:true,spriteId:'drayfus-story'}:name===OCELOT?{id:'ocelot',name,npc:true,creature:true,spriteId:'ocelot'}:w.player;
    return {w,scene,speaker:{...speaker,name},page,count:SCENES[w.story.scene].length,story:true};
   }
   if(w.dialogue){const speaker=w.npcs.find(n=>n.id===w.dialogue.npcId);if(speaker)return {w,scene:{title:`A conversation with ${speaker.name}`,text:w.dialogue.text},speaker:{...speaker,npc:true},page:0,count:1,story:false};}
@@ -72,7 +73,7 @@ export function mountStory({getWorld,onAdvance=()=>{},onSettings=()=>{},isSettin
   if(nextKey!==key||m.w!==lastWorld||m.w.dialogue!==lastDialogue){
    key=nextKey;lastWorld=m.w;lastDialogue=m.w.dialogue;setupVisual(m);
    q('story-name').textContent=m.speaker.name;q('story-title').textContent=m.scene.title;
-   q('story-chapter').textContent=m.story?chapterHeading(m.w.story.scene):'THE WILDS';setDialogueText(q('story-text'),m.scene.text);box.dataset.voice=m.speaker.id==='narrator'?'narration':m.scene.thought?'thought':m.speaker.id==='voice'?'voice':'speech';
+   q('story-chapter').textContent=m.story?chapterHeading(m.w.story.scene):'THE WILDS';setDialogueText(q('story-text'),m.scene.text);box.dataset.voice=m.speaker.id==='narrator'?'narration':m.scene.thought?'thought':m.speaker.id==='voice'?'voice':m.speaker.id==='core'?'core':'speech';
    q('story-page').textContent=`${m.page+1} / ${m.count}`;q('story-previous').disabled=!m.story||m.page===0;
    q('story-next').firstChild.textContent=m.story?'Next › ':'Done ';if(!dialog.open)dialog.showModal();q('story-next').focus();
   }

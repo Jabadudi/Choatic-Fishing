@@ -23,6 +23,7 @@ export const SPRITES={
  // A portrait crop, not a gameplay actor or hitbox.
  'mara-portrait':{asset:'story/mara.webp',frames:[[850,130,500,620]],scale:.12,anchor:[.5,0],offset:[0,0]},
  'emilia-portrait':{asset:'story/emilia.png',frames:[[930,60,500,620]],scale:.12,anchor:[.5,0],offset:[0,0]},
+ 'drayfus-portrait':{asset:'codex/drayfus.png',frames:[[88,18,100,124]],scale:1,anchor:[.5,0],offset:[0,0]},
  // Made by scripts/prepare-eli-sprites.py from art/sprites/characters/eli/. Rows: walk right, left, toward the camera, away, then the throw.
  // This 4-direction, 8-frame walk is the standard layout for every moving entity.
  eli:{asset:'story/eli-sheet.png',frameSize:[126,120],columns:8,scale:.5,anchor:[.5,1],offset:[0,15],mirror:'right',mirrorDirections:{left:'right'},fallback:{hat:false,hair:'#49382d',shirt:'#b6ad8f'},animations:{
@@ -33,6 +34,9 @@ export const SPRITES={
  }},
  'emilia-story':{asset:null,scale:1,anchor:[.5,1],offset:[0,14],fallback:{coat:'#3d5a8a',hair:'#d8d4cc',skin:'#c08a63'}},
  'mara-story':{asset:null,scale:1,anchor:[.5,1],offset:[0,14],fallback:{hair:'#3d2b24',coat:'#6b4b35'}},
+ // Drawn placeholders until the walk sheets from art/sprite-prompts/chapter6-walk-sets.md arrive.
+ 'drayfus-story':{asset:null,scale:1,anchor:[.5,1],offset:[0,14],fallback:{coat:'#3b3430',hair:'#5d5650',skin:'#b5805e',sword:true}},
+ ocelot:{asset:null,scale:1,anchor:[.5,1],offset:[0,0]},
  // Original Drive sheet has a green matte. The shared loader removes it once.
  moonfang:{asset:'story/moonfang.png',chromaKey:'green',frames:[[145,10,320,250],[450,10,310,250],[750,10,310,250],[1060,10,330,250],[5,290,255,190],[260,290,255,190],[515,290,255,190],[770,290,255,190],[1020,290,255,190],[1270,290,265,190]],scale:.36,anchor:[.5,1],offset:[0,0],mirror:'right',animations:{idle:{frames:[0,1,2,3],fps:3},run:{frames:[4,5,6,7,8,9],fps:9}}},
  // Night cutscene artwork. Processed from art/sprites/ by scripts/prepare-cutscene-sprites.py: matte removed, feet on a shared baseline.

@@ -24,7 +24,7 @@ export const SHARD_CAP=100;
 export const EARNINGS=Object.freeze({chapter:5,shiny:3,sideQuest:2,discovery:1});
 export const FOUND_STONE_CHANCE=1/150;
 // The stage that closes each chapter.
-const CHAPTER_ENDS=['complete','ch2-complete','ch3-complete','ch4-complete','ch5-morning'];
+const CHAPTER_ENDS=['complete','ch2-complete','ch3-complete','ch4-complete','ch5-morning','ch6-complete'];
 const WELL=VILLAGE_PROPS.find(p=>p.kind==='well');
 export const wishstonesLabel=n=>`${n} ${n===1?'Wishstone':'Wishstones'}`;
 const freshPity=()=>({rare:0,legendary:0});

@@ -26,6 +26,7 @@ export const VILLAGE_PLACES=[
  {id:'village-inn',name:'The Willow Hearth',x:1000,y:555,kind:'village-inn',text:'Warm light spills from the Willow Hearth. Bundles of firewood and a painted fish sign welcome travellers. The door is closed for now.'},
  {id:'village-docks',name:'Willow Docks',x:730,y:1190,kind:'village-dock',text:'Fishing boats rock beside the timber jetty. Cast into the open river from the dock, or follow the quay back toward the commons.'},
  {id:'village-gardens',name:'Kitchen Gardens',x:1370,y:1010,kind:'village-garden',text:'Cabbages, carrots and climbing beans grow behind low woven fences. Watering cans wait beside rain barrels. These gardens feed the village.'},
+ {id:'training-gate',name:'Training Ground',x:580,y:290,kind:'training-gate',text:'A gate in a split-log fence beside the chief’s house. Behind it, the village guard trains at sunrise.'},
  {id:'village-netmaker',name:"Netmaker's Yard",x:1460,y:865,kind:'village-workshop',text:'Nets dry outside a small workshop. Floats, rope coils and repaired crab pots cover the yard. The workshop has not opened for trading yet.'}
 ];
 export const villageShore=x=>1145+Math.sin(x*.004)*28+Math.sin(x*.011)*10;

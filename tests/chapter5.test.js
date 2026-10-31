@@ -45,8 +45,11 @@ test('the room can be explored, and sleeping plays the vision and wakes Eli at s
  const pos={x:w.player.x,y:w.player.y};w.update(1,neutralInput());assert.deepEqual({x:w.player.x,y:w.player.y},pos);
  finish(w);
  assert.equal(w.story.stage,'ch5-morning');assert.equal(w.story.scene,null);assert.equal(w.areaId,GUEST_LODGE.id);assert.ok(walkable(w.player.x,w.player.y,w.areaId));
- assert.match(storyObjective(w),/Mara is waiting outside/);
- assert.equal(w.inventory.allItems[0].name,'Region Core');assert.equal(w.progression.totalXp,0);
+ assert.match(storyObjective(w),/Blue writing hangs in the air/);
+ // Eli swallowed the Region Core in the night: it is gone from the backpack and its abilities can wake.
+ assert.ok(pages.some(p=>/drops it in/.test(p.text)),'Eli ingests the core after the vision');
+ assert.ok(pages.findIndex(p=>/drops it in/.test(p.text))>video&&pages.findIndex(p=>/drops it in/.test(p.text))<pages.findIndex(p=>/Sunlight/.test(p.text)));
+ assert.equal(w.inventory.countOf('Region Core'),0);assert.equal(w.story.coreIngested,true);assert.ok(!w.story.callAwakened);assert.equal(w.progression.totalXp,0);
 });
 test('Eli walks out of the lodge and Mara waits outside with the Chapter 6 hook',()=>{
  const w=afterMeeting();w.inspect();finish(w);stand(w,LODGE_BED.x+76,LODGE_BED.y+30);w.inspect();finish(w);

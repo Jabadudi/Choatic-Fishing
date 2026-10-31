@@ -23,7 +23,9 @@ export function drawDialoguePortrait(canvas,speaker={name:'Eli',spriteId:'eli'})
  const c=canvas.getContext('2d');c.clearRect(0,0,256,256);canvas.setAttribute('aria-label',`${speaker.name||'Eli'} portrait`);
  if(speaker.id==='mara'||speaker.name==='The girl'){
   if(drawSprite(c,{...SPRITES['mara-portrait'],scale:.51},{x:128,y:15}))return;
- }else if(speaker.id==='narrator'||speaker.id==='voice'){drawVoiceEmblem(c,speaker.id);return;
+ }else if(speaker.id==='narrator'||speaker.id==='voice'||speaker.id==='core'){drawVoiceEmblem(c,speaker.id==='core'?'voice':speaker.id);return;
+ }else if(speaker.id==='drayfus'){
+  if(drawSprite(c,{...SPRITES['drayfus-portrait'],scale:2.55},{x:128,y:15}))return;
  }else if(speaker.id==='emilia'){
   if(drawSprite(c,{...SPRITES['emilia-portrait'],scale:.51},{x:128,y:15}))return;
  }else if(speaker.creature){if(drawEntitySprite(c,speaker.spriteId,{x:128,y:210,time:0}))return;}

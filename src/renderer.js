@@ -87,6 +87,8 @@ function drawPlayer(ctx,world){
  const fallen=!!world.defeat||world.story?.scene==='storm'&&['collapse','rescue'].includes(pendingScene(world)?.action);
  if(fallen){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(Math.PI/2);drawExplorer(ctx,{...p,x:0,y:0,steppedAt:undefined},world.elapsed||0);ctx.restore();}
  else drawExplorer(ctx,p,world.elapsed||0);
+ // Drayfus's buckets, one in each hand, while Eli carries water to the trough.
+ if(world.story?.stage==='ch6-buckets'&&world.story.carrying)for(const side of [-1,1]){const x=Math.round(p.x+side*15),y=Math.round(p.y+2+Math.sin((p.walkTime||world.elapsed||0)*6+side)*1);ctx.fillStyle='#5c3b22';ctx.fillRect(x-5,y-2,10,11);ctx.fillStyle='#8a6038';ctx.fillRect(x-5,y-2,10,2);ctx.fillStyle='#3f7f95';ctx.fillRect(x-4,y,8,2);ctx.strokeStyle='#3a2414';ctx.lineWidth=1;ctx.beginPath();ctx.arc(x,y-2,5,Math.PI,0);ctx.stroke();}
 }
 // Another player: Eli's sprite with their nickname above, in a gold-edged tag so players stand apart from villagers. Away players are faded.
 function drawOtherPlayer(ctx,o,t){

@@ -39,9 +39,11 @@ test('story scenes reveal what they mention, while playing and from then on',()=
  for(const id of ['shadow-walker','moonfang','mara','rimejaw','flitlynx','croshelda'])assert.equal(codexRevealed(w,id),true,id);
  for(const id of ['emilia','elk-spirit','drayfus','ocelot','blacksmith'])assert.equal(codexRevealed(w,id),false,id);
  w.story.stage='ch5-morning';
+ w.story.stage='ch5-sleep';
  for(const id of ['emilia','elk-spirit','drayfus'])assert.equal(codexRevealed(w,id),true,id);
- // The talking ocelot only appears in a later chapter of the book, so it stays hidden.
+ // The talking ocelot appears once Eli swallows the Region Core at the end of Chapter 5.
  assert.equal(codexRevealed(w,'ocelot'),false);
+ w.story.stage='ch5-morning';assert.equal(codexRevealed(w,'ocelot'),true);
 });
 
 test('encounters are saved, and older saves without them still load',async()=>{

@@ -3,6 +3,19 @@ import {drawEntitySprite} from './sprites.js';
 export function drawVillageCreature(c,n,t){
  if(drawEntitySprite(c,n.spriteId,{x:n.x,y:n.y,state:'idle',time:t}))return;
  c.save();c.translate(n.x,n.y);
+ if(n.spriteId==='ocelot'){
+  // Golden-brown, dark rosettes, cheek stripes and core-blue eyes. Sits with its tail around its paws.
+  const glow=.6+.4*Math.sin(t*2.2);
+  c.fillStyle='#20352c55';c.beginPath();c.ellipse(0,1,18,5,0,0,Math.PI*2);c.fill();
+  c.fillStyle='#b9853f';c.fillRect(-12,-22,22,22);c.fillRect(-9,-30,16,10);c.fillStyle='#d8a75a';c.fillRect(-6,-18,10,16);
+  c.fillStyle='#b9853f';c.fillRect(-10,-40,18,14);c.fillRect(-10,-44,5,5);c.fillRect(3,-44,5,5);c.fillStyle='#2c1f16';c.fillRect(-9,-43,3,2);c.fillRect(4,-43,3,2);
+  c.fillStyle='#e8d0a0';c.fillRect(-5,-32,8,5);c.fillStyle='#2c1f16';c.fillRect(-2,-31,2,2);
+  c.fillStyle='#3a2616';for(const [dx,dy] of [[-10,-18],[-4,-14],[4,-20],[-8,-8],[5,-8],[-12,-24],[2,-26]])c.fillRect(dx,dy,3,3);
+  c.fillRect(-9,-34,1,4);c.fillRect(-7,-33,1,4);c.fillRect(5,-34,1,4);c.fillRect(7,-33,1,4);
+  c.fillStyle=`rgba(143,227,255,${glow})`;c.fillRect(-7,-37,3,2);c.fillRect(2,-37,3,2);
+  c.fillStyle='#b9853f';c.fillRect(-14,-2,26,4);c.fillStyle='#3a2616';c.fillRect(-14,-2,3,4);c.fillRect(-6,-2,3,4);
+  c.restore();return;
+ }
  if(n.spriteId==='rimejaw'){
   c.fillStyle='#536a79';c.fillRect(-43,-39,73,32);c.fillStyle='#344756';c.fillRect(19,-53,29,39);
   c.fillStyle='#bdd8df';for(let i=0;i<5;i++){c.beginPath();c.moveTo(-38+i*12,-41);c.lineTo(-27+i*12,-32);c.lineTo(-38+i*12,-25);c.fill();}

@@ -13,7 +13,7 @@ test('crossroads west and village east form reversible walking transitions witho
  assert.equal(w.inventory.allItems[0].name,'Sardine');assert.equal(w.quests['mara-sardine'].status,'active');
  assert.equal(transitionAt(-1,250,'crossroads'),null);assert.equal(transitionAt(1921,300,'village'),null);
 });
-test('village lanes are continuous, buildings are solid, and all six landmarks are connected to the entrance',()=>{
+test('village lanes are continuous, buildings are solid, and all seven landmarks are connected to the entrance',()=>{
  for(const road of VILLAGE_ROADS)for(let i=1;i<road.length;i++)for(let j=0;j<=100;j++){
   const t=j/100,x=road[i-1][0]+(road[i][0]-road[i-1][0])*t,y=road[i-1][1]+(road[i][1]-road[i-1][1])*t;
   assert.ok(walkable(x,y,'village'),`blocked lane: ${x},${y}`);
@@ -24,7 +24,7 @@ test('village lanes are continuous, buildings are solid, and all six landmarks a
   const [x,y]=queue[at];for(const place of VILLAGE_PLACES)if(Math.hypot(x-place.x,y-place.y)<60)reached.add(place.id);
   for(const [dx,dy]of [[20,0],[-20,0],[0,20],[0,-20]]){const nx=x+dx,ny=y+dy,key=`${nx},${ny}`;if(nx<20||nx>1900||ny<20||ny>1560||seen.has(key)||!walkable(nx,ny,'village'))continue;seen.add(key);queue.push([nx,ny]);}
  }
- assert.equal(reached.size,6);
+ assert.equal(reached.size,7);
 });
 test('river blocks walking, docks permit real casts and shore foam avoids the timber deck',()=>{
  assert.equal(isWater(950,1450,'village'),true);assert.equal(walkable(950,1450,'village'),false);

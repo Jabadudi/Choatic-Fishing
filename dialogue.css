@@ -80,6 +80,8 @@ body.exploring #open-settings{top:214px;}#music-icon,.music-hud{display:none!imp
 .dialogue-box[data-voice="narration"] .dialogue-text,.dialogue-box[data-voice="thought"] .dialogue-text{font-style:italic;}
 .dialogue-box[data-voice="thought"] .dialogue-text:before{content:'(';}.dialogue-box[data-voice="thought"] .dialogue-text:after{content:')';}
 .dialogue-box[data-voice="voice"] .dialogue-text{font-style:italic;letter-spacing:.04em;color:var(--voice,#2a6f9a);}
+/* The Region Core's writing: a floating blue panel. */
+.dialogue-box[data-voice="core"] .dialogue-text{font-family:monospace;letter-spacing:.02em;color:#d9f6ff;background:linear-gradient(#1b4f78e6,#123a5ce6);border:1px solid #8fe3ff;box-shadow:0 0 12px #5ec8f066;padding:10px 12px;border-radius:3px;}
 [data-dialogue-theme="lantern-night"] .dialogue-box,[data-dialogue-theme="quiet-hud"] .dialogue-box{--voice:#8fd3f0;}
 /* Custom cursor: one style everywhere the mouse goes, text fields keep their caret. */
 html[data-cursor],html[data-cursor] body,html[data-cursor] body *:not(input[type=text]):not(input[type=search]):not(textarea):not([contenteditable]){cursor:var(--game-cursor)!important;}

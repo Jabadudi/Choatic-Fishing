@@ -1,0 +1,67 @@
+const {chromium}=require('playwright');
+const assert=require('node:assert/strict');
+const out=process.env.SHOTS||'screenshots';
+(async()=>{
+ process.env.PORT='5187';await import('../server.mjs');
+ const browser=await chromium.launch({headless:true,...(process.env.CHROME_PATH?{executablePath:process.env.CHROME_PATH}:{})});
+ const page=await browser.newPage({viewport:{width:1365,height:900}}),errors=[];
+ page.on('pageerror',e=>{errors.push(e.message);console.error('PAGEERROR',e.message,e.stack);});
+ await page.route('**/src/main.js',async route=>{const response=await route.fetch();await route.fulfill({response,body:await response.text()+'\nwindow.__storyQA={get world(){return world;}};'});});
+ await page.goto('http://127.0.0.1:5187');
+ // A journey at the end of Chapter 5 that still carries the core, as saves made before the ingest scene do.
+ await page.evaluate(async()=>{
+  const {World}=await import('/src/world.js'),{captureSave}=await import('/src/save-format.js'),{createStoryNpcs}=await import('/src/story.js'),{GUEST_LODGE,LODGE_MORNING_SPOT,LODGE_WAKE_SPOT}=await import('/src/guest-lodge.js'),{IndexedSaveStore}=await import('/src/save-store.js');
+  const w=new World(()=>.2,{adventure:true,story:true});w.journeyId='chapter6-browser';w.areaId=GUEST_LODGE.id;
+  w.story={stage:'ch5-morning',lureSeen:true,photoSeen:true,scene:null,page:0,rod:true,bow:true,guide:{...LODGE_MORNING_SPOT,waypoint:0,areaId:'village'}};
+  w.npcs=createStoryNpcs(w.story,w.elapsed);Object.assign(w.player,LODGE_WAKE_SPOT);w.inventory.receive({name:'Region Core',category:'quest-items'});
+  const save=captureSave(w);delete save.state.story.coreIngested;
+  await new IndexedSaveStore().update(()=>({journeyId:w.journeyId,current:save,writerId:null,manual:null,backups:[]}));
+ });
+ const resume=async()=>{await page.reload();await page.locator('#continue-journey:not([disabled])').waitFor();await page.locator('#continue-journey').click();await page.waitForFunction(()=>window.__storyQA.world.journeyId==='chapter6-browser');};
+ const q=fn=>page.evaluate(fn);
+ const stage=()=>q(()=>window.__storyQA.world.story.stage);
+ const next=async()=>{await page.locator('#story-next:not([disabled])').waitFor();await page.locator('#story-next').click();await page.waitForTimeout(60);};
+ const until=async(test,max=60)=>{for(let i=0;i<max;i++){await page.locator('#story-next:not([disabled])').waitFor();const t=(await page.locator('#story-title').innerText())+' | '+(await page.locator('#story-text').innerText());if(test.test(t))return page.waitForTimeout(250);await next();}throw Error('Never reached '+test);};
+ const finishScene=async()=>{const s=await q(()=>window.__storyQA.world.story.scene);while(await q(()=>window.__storyQA.world.story.scene)===s)await next();await page.waitForTimeout(300);};
+ const stand=(x,y)=>q(`Object.assign(window.__storyQA.world.player,{x:${x},y:${y}})`);
+ await resume();await page.waitForTimeout(500);
+ assert.equal(await q(()=>window.__storyQA.world.inventory.countOf('Region Core')),0,'the swallowed core leaves old saves');
+ assert.equal(await q(()=>window.__storyQA.world.story.coreIngested),true);
+ await page.screenshot({path:`${out}/01-floating-writing.png`});
+ await page.keyboard.press('Space');await until(/\| Bound abilities\./);
+ assert.equal(await page.locator('#story-name').innerText(),'Region Core');await page.screenshot({path:`${out}/02-core-writing.png`});
+ await until(/considerable improvement/);assert.equal(await page.locator('#story-name').innerText(),'The ocelot');await page.screenshot({path:`${out}/03-ocelot-speaks.png`});
+ await finishScene();assert.equal(await stage(),'ch6-door');
+ await page.keyboard.press('Escape');
+ const mara=await q(()=>{const n=window.__storyQA.world.npcs.find(n=>n.id==='mara');return {x:n.x,y:n.y};});
+ await stand(mara.x,mara.y-30);await page.waitForTimeout(300);await page.screenshot({path:`${out}/04-mara-at-door.png`});
+ await page.keyboard.press('Space');await until(/What cat\?/);await page.screenshot({path:`${out}/05-what-cat.png`});
+ await finishScene();assert.equal(await stage(),'ch6-circle');
+ // Out to the village, through the gate beside the chief's house.
+ await q(async()=>{const w=window.__storyQA.world,{TRAINING_GATE}=await import('/src/training-ground.js');w.areaId='village';Object.assign(w.player,{x:TRAINING_GATE.x,y:TRAINING_GATE.y+30});});
+ await page.waitForTimeout(500);await page.screenshot({path:`${out}/06-training-gate.png`});
+ await page.keyboard.press('Space');await page.waitForTimeout(500);
+ assert.equal(await q(()=>window.__storyQA.world.areaId),'training-ground');
+ await stand(360,400);await page.waitForTimeout(400);await page.screenshot({path:`${out}/07-training-ground.png`});
+ await stand(360,345);await page.waitForTimeout(200);await page.keyboard.press('Space');
+ await until(/Sunrise was some time ago \|/);assert.equal(await page.locator('#story-name').innerText(),'Drayfus');await page.screenshot({path:`${out}/08-drayfus.png`});
+ await finishScene();await stand(360,345);await page.waitForTimeout(200);await page.keyboard.press('Space');
+ await until(/taken damage/);await page.screenshot({path:`${out}/09-taken-damage.png`});
+ await finishScene();await finishScene();assert.equal(await stage(),'ch6-rack');
+ await stand(360,136);await page.waitForTimeout(200);await page.keyboard.press('Space');await until(/Resonance detected/);await page.screenshot({path:`${out}/10-resonance.png`});
+ await finishScene();assert.equal(await q(()=>window.__storyQA.world.story.callAwakened),true);
+ await stand(360,430);await page.waitForTimeout(200);await page.keyboard.press('Space');await until(/It bends/);await page.screenshot({path:`${out}/11-it-bent.png`});
+ await finishScene();assert.equal(await stage(),'ch6-buckets');
+ await page.keyboard.press('Escape');await stand(604,200);await page.waitForTimeout(200);await page.keyboard.press('Space');await page.waitForTimeout(200);
+ assert.equal(await q(()=>window.__storyQA.world.story.carrying),true);
+ await stand(560,330);await page.waitForTimeout(400);await page.screenshot({path:`${out}/12-carrying-buckets.png`});
+ // Skip ahead to the last trip.
+ await q(()=>{const s=window.__storyQA.world.story;s.buckets=39;s.carrying=true;});await stand(600,380);await page.waitForTimeout(200);await page.keyboard.press('Space');
+ await until(/fortieth bucket/);await finishScene();
+ assert.equal(await stage(),'ch6-night');await until(/stool/);await page.screenshot({path:`${out}/13-night-ocelot.png`});
+ await finishScene();assert.equal(await stage(),'ch6-complete');await page.waitForTimeout(400);await page.screenshot({path:`${out}/14-chapter-complete.png`});
+ await page.setViewportSize({width:844,height:390});await resume();await page.waitForTimeout(400);
+ assert.equal(await stage(),'ch6-complete');await page.screenshot({path:`${out}/15-phone-landscape.png`});
+ assert.deepEqual(errors,[]);console.log('Chapter 6 browser preview passed.');
+ await browser.close();process.exit(0);
+})().catch(e=>{console.error(e);process.exit(1);});

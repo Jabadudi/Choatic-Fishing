@@ -1,6 +1,6 @@
 import {practise} from './skills.js';
 import {PERMANENT_ITEMS} from './inventory.js';
-import {rodReady,createStory,currentScene,inspectStory,advanceStory,skipStory,storyObjective,updateStory,inlandUnlocked,storyTransitionAllowed,onStoryAreaChange} from './story.js';
+import {storySpeed,rodReady,createStory,currentScene,inspectStory,advanceStory,skipStory,storyObjective,updateStory,inlandUnlocked,storyTransitionAllowed,onStoryAreaChange} from './story.js';
 import {nearbyDrop,dropItem} from './drops.js';
 import {createQuests,maraQuestDialogue} from './quests.js';
 import {questFor} from './side-quests.js';
@@ -249,7 +249,7 @@ export class World {
    while(this.dashCooldown<=1e-9&&this.player.dashCharges<this.progression.maxDashes){this.player.dashCharges++;if(this.player.dashCharges<this.progression.maxDashes)this.dashCooldown+=2;else this.dashCooldown=0;}
   }
   const p=this.player;p.angle=Math.atan2(input.aim.y-p.y,input.aim.x-p.x);
-  if(!dashing&&p.health>0&&(this.fishing.state==='idle'||this.fishing.state==='reeling')){const analog=Number.isFinite(input.moveX)&&Number.isFinite(input.moveY),x=analog?input.moveX:Number(input.right)-Number(input.left),y=analog?input.moveY:Number(input.down)-Number(input.up),len=Math.max(1,Math.hypot(x,y)),speed=195*this.progression.speedMultiplier;if(x||y){p.facing=facingFor(x,y);p.steppedAt=this.elapsed;}this.move(x/len*speed*dt,y/len*speed*dt,this.fishing.state==='reeling');}
+  if(!dashing&&p.health>0&&(this.fishing.state==='idle'||this.fishing.state==='reeling')){const analog=Number.isFinite(input.moveX)&&Number.isFinite(input.moveY),x=analog?input.moveX:Number(input.right)-Number(input.left),y=analog?input.moveY:Number(input.down)-Number(input.up),len=Math.max(1,Math.hypot(x,y)),speed=195*this.progression.speedMultiplier*storySpeed(this);if(x||y){p.facing=facingFor(x,y);p.steppedAt=this.elapsed;}this.move(x/len*speed*dt,y/len*speed*dt,this.fishing.state==='reeling');}
   if(p.health>0)this.advanceFishing(p,dt,input.held);
  }
 }
