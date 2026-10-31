@@ -1,7 +1,5 @@
 # Brume (the Moonfang wolf) - Character Sheet
 
-> "Brume" is a placeholder name. Netanel is choosing between ten options. Replace it everywhere when decided.
-
 **Role:** The huge gray wolf that saves Eli from the shadow walker during the storm. Oscar's old companion, who waited for him on the Reedwater shore. A Moonfang who has chosen Eli.
 
 **First appearance:** Chapter 1 (the rescue; recalled in Chapters 2 and 4). Named and meets Eli face to face in Chapter 10.
@@ -39,7 +37,6 @@
 - The promise Oscar asked of him, and what else Oscar said.
 
 ## Open questions / not yet established
-- The final name (placeholder only).
 - Age, and how long Moonfang live.
 - Markings or scars (a small notch in the left ear is used in art as a placeholder).
 - Whether other Moonfang will also come into the village now.
