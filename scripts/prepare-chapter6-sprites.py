@@ -14,7 +14,7 @@ on a shared baseline and its head and torso centred, at twice the size the game 
   ocelot-sheet.png   rows 0-3 walk (the side rows have 7 frames; the 8th cell repeats the 1st),
                      row 4 the dissolve strip (sitting, then breaking into blue motes), kept in place frame to frame.
 
-  brume-sheet.png    rows 0-3 walk, cut from Brume's column-layout sheet (the Moonfang wolf).
+  brume-sheet.png    rows 0-3 walk, cut from Brume's column-layout sheet (the Moonfang wolf), row 4 his bow, row 5 lying down to sleep.
 
 Run from the repository root: python3 scripts/prepare-chapter6-sprites.py
 Requires Pillow and NumPy.
@@ -108,6 +108,19 @@ def strip(path,fixed):
     out.append((img,ax,by))
   return out
 
+def strip_column(path):
+  """One column of 8 frames, top to bottom, found by the gaps between them. Each frame keeps its sideways place, so a
+  figure that bows or lies down moves the way it was drawn; the anchor is frame 1's body centre, and each frame stands
+  on its own lowest pixels (bowing and lying down both keep the paws on the ground)."""
+  im,mask=load(path);xs=np.nonzero(mask.any(0))[0];l,r=xs.min(),xs.max()+1;out=[];ax=None
+  for y0,y1 in frame_slices(mask[:,l:r].T,8):
+    sub=mask[y0:y1,l:r];ys=np.nonzero(sub.any(1))[0];t=ys.min();top,bottom=body_rows(sub[t:])
+    if ax is None:ax=np.nonzero(sub[t+top:t+bottom])[1].mean()
+    m=sub[t:t+bottom];rgb=im[y0+t:y0+t+bottom,l:r].copy()
+    g=rgb[...,1];lim=np.maximum(rgb[...,0],rgb[...,2]);rgb[...,1]=np.where(g>lim*1.1,lim*1.1,g).astype(int)
+    out.append((Image.fromarray(np.dstack([rgb.clip(0,255).astype(np.uint8),(m*255).astype(np.uint8)]),'RGBA'),ax,bottom))
+  return out
+
 def pack(name,groups):
   """groups: (frames, scale). Every frame shares one cell; feet sit 2 px above the cell's bottom edge."""
   # Empty cells (rows with fewer than 8 frames) stay transparent.
@@ -144,4 +157,7 @@ if __name__=='__main__':
   sit=strip(CR+'talking-ocelot_dissolve_strip.png',True)
   pack('ocelot-sheet.png',[(frames,k),(sit,36*2/height(sit[:1]))])
   # Brume, the Moonfang wolf: pony-sized, about 64 px tall side-on.
-  frames=walk(MF+'brume_walk_sheet.png',(8,8,8,8),'columns','body');pack('brume-sheet.png',[(frames,64*2/height(frames[:8]))])
+  # Row 4 is the bow and row 5 lying down to sleep, both facing right, scaled so he stands as tall as when walking.
+  frames=walk(MF+'brume_walk_sheet.png',(8,8,8,8),'columns','body')
+  bow=strip_column(MF+'brume_bow_column.png');sleep=strip_column(MF+'brume_sleep_column.png')
+  pack('brume-sheet.png',[(frames,64*2/height(frames[:8])),(bow,64*2/height(bow[:1])),(sleep,64*2/height(sleep[:1]))])

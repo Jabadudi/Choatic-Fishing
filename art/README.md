@@ -5,7 +5,7 @@ Generated concept art, references, cutscenes and sprite sheets for Volume 1. The
 | Folder | Contents |
 | --- | --- |
 | `cutscenes/vol1/` | Story panels by chapter, numbered in the order they play (`ch01_01_…`). `_alts/` keeps earlier takes. |
-| `characters/` | Reference sheets (front, side, face) for Mara, Emilia, Eli, Drayfus and Croshelda. |
+| `characters/` | Reference sheets (front, side, face) for Mara, Emilia, Eli, Drayfus, Croshelda and Brume. |
 | `sprites/creatures/` | Rimejaw, Flitlynx and Moonfang: a single pose and an animation sheet each. The talking ocelot: a 4-direction walk sheet and a dissolve strip. |
 | `sprites/mobs/` | Nightwalker (shadow walker) enemy: reference sheet, pose and animation sheet. |
 | `sprites/characters/` | Playable and NPC character sprites: Eli (walk and throw sheets, the style and walk layout every moving entity follows), 4-direction walk sheets for Mara, Emilia and Drayfus, Drayfus's beckon strip, and his older side-view action sheet. |
@@ -31,7 +31,7 @@ Sheet rows are idle, walk or fly, run where present, attack, then extras (howl, 
 
 ## Chapter 6 characters
 
-`scripts/prepare-chapter6-sprites.py` cuts the walk sheets for Mara, Emilia, Drayfus and the talking ocelot into `assets/story/<name>-sheet.png`, in the same layout as Eli's. Drayfus's sheet adds his beckon strip as a fifth row (he waits with his arms folded and waves Eli over), and the ocelot's adds its dissolve strip (its first frame is how it sits). The ocelot's side rows have 7 frames. It also cuts Brume's walk sheet (`sprites/creatures/moonfang/brume_walk_sheet.png`, the first sheet drawn in the column layout every new walk set uses) into `assets/story/brume-sheet.png`; the Moonfang familiar walks on it. `brume_walk_sheet_rows-old.png` is the earlier row version, kept for reference.
+`scripts/prepare-chapter6-sprites.py` cuts the walk sheets for Mara, Emilia, Drayfus and the talking ocelot into `assets/story/<name>-sheet.png`, in the same layout as Eli's. Drayfus's sheet adds his beckon strip as a fifth row (he waits with his arms folded and waves Eli over), and the ocelot's adds its dissolve strip (its first frame is how it sits). The ocelot's side rows have 7 frames. It also cuts Brume's sheets in `sprites/creatures/moonfang/` (the walk set, drawn in the column layout every new walk set uses, and single columns for his bow and lying down to sleep) into `assets/story/brume-sheet.png`. The Moonfang familiar walks on it, bows when summoned and sleeps when Eli stands still. His reference sheet is in `characters/brume/`.
 
 ## Furniture and props
 

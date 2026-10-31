@@ -3,6 +3,7 @@
 // Shards keep counting after the bond: 25 strengthens its passive and 100 wakes its last, strongest one.
 // Gameplay only. The follower is drawn by familiar-art.js from the species' own sprite.
 import {walkable,areaFor} from './wilds.js';
+import {BRUME_TIMING} from './sprite-definitions.js';
 export const FAMILIAR_TIERS=Object.freeze([5,25,100]);
 // Keyed by loot table, so a creature's shard, loot and index entry share one id. Guardians are keyed by their index entry.
 // passive.ranks[0] is the summoning passive, ranks[1] its stronger version at 25 shards. ultimate joins at 100.
@@ -66,7 +67,7 @@ function place(world){
  const p=world.player,id=world.familiars.active;if(!id){world.companion=null;return;}
  const spot=[[-36,18],[36,18],[0,34],[-24,-10],[0,0]].map(([dx,dy])=>({x:p.x+dx,y:p.y+dy})).find(s=>walkable(s.x,s.y,world.areaId))||{x:p.x,y:p.y};
  // Hunting a shiny of its kind turns the familiar gold.
- world.companion={id,areaId:world.areaId,...spot,state:'idle',time:0,direction:{x:1,y:0},summonRemaining:.8,shiny:(world.hunting?.shiny?.hunted?.[id]||0)>0};
+ world.companion={id,areaId:world.areaId,...spot,state:'idle',time:0,direction:{x:1,y:0},summonRemaining:.8,greet:BRUME_TIMING.bow,shiny:(world.hunting?.shiny?.hunted?.[id]||0)>0};
 }
 export function absorbShard(world,id){
  if(!FAMILIARS[id]||!world.familiars)return null;
@@ -109,7 +110,7 @@ export function updateFamiliar(world,dt){
  const p=world.player,c=world.companion;
  if(!world.adventure||!world.familiars?.active){world.companion=null;return;}
  if(!c||c.id!==world.familiars.active||c.areaId!==world.areaId){place(world);return;}
- c.time+=dt;c.summonRemaining=Math.max(0,c.summonRemaining-dt);
+ c.time+=dt;c.summonRemaining=Math.max(0,c.summonRemaining-dt);c.greet=Math.max(0,(c.greet||0)-dt);
  const tx=p.x-Math.cos(p.angle)*42,ty=p.y-Math.sin(p.angle)*42+10,dx=tx-c.x,dy=ty-c.y,distance=Math.hypot(dx,dy);
  if(distance>480){place(world);return;}
  if(distance<14){if(c.state!=='idle'){c.state='idle';c.time=0;}return;}
