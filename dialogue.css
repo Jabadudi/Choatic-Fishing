@@ -80,8 +80,20 @@ body.exploring #open-settings{top:214px;}#music-icon,.music-hud{display:none!imp
 .dialogue-box[data-voice="narration"] .dialogue-text,.dialogue-box[data-voice="thought"] .dialogue-text{font-style:italic;}
 .dialogue-box[data-voice="thought"] .dialogue-text:before{content:'(';}.dialogue-box[data-voice="thought"] .dialogue-text:after{content:')';}
 .dialogue-box[data-voice="voice"] .dialogue-text{font-style:italic;letter-spacing:.04em;color:var(--voice,#2a6f9a);}
-/* The Region Core's writing: a floating blue panel. */
+/* The Region Core's writing is not a conversation: only its blue panel floats in the world, like a system announcement. */
 .dialogue-box[data-voice="core"] .dialogue-text{font-family:monospace;letter-spacing:.02em;color:#d9f6ff;background:linear-gradient(#1b4f78e6,#123a5ce6);border:1px solid #8fe3ff;box-shadow:0 0 12px #5ec8f066;padding:10px 12px;border-radius:3px;}
+#story-scene .dialogue-box[data-voice="core"]{display:block!important;width:min(560px,calc(100vw - 32px))!important;bottom:auto!important;top:clamp(70px,24vh,230px);padding:0!important;background:none!important;border:0!important;box-shadow:none!important;overflow:visible!important;max-height:none!important;}
+#story-scene .dialogue-box[data-voice="core"] .dialogue-identity,#story-scene .dialogue-box[data-voice="core"] .dialogue-chapter,#story-scene .dialogue-box[data-voice="core"] .dialogue-title,#story-scene .dialogue-box[data-voice="core"] .dialogue-close,#story-scene .dialogue-box[data-voice="core"] .dialogue-end,#story-scene .dialogue-box[data-voice="core"] .dialogue-page{display:none!important;}
+#story-scene .dialogue-box[data-voice="core"] .dialogue-content{min-height:0!important;padding:0!important;}
+#story-scene .dialogue-box[data-voice="core"] .dialogue-text{margin:0 0 10px!important;padding:16px 20px;font-size:16px;line-height:1.6;text-align:center;color:#e6f9ff;background:linear-gradient(#1d5784d9,#103452d9);border:1px solid #9be8ff;border-radius:4px;box-shadow:0 0 0 1px #0b2a4299,0 0 22px #5ec8f099,inset 0 0 18px #5ec8f033;text-shadow:0 0 6px #7fd8ff;backdrop-filter:blur(2px);}
+#story-scene .dialogue-box[data-voice="core"] .dialogue-text mark{background:none;color:#fff3b0;text-decoration:none;}
+#story-scene .dialogue-box[data-voice="core"] .dialogue-actions{justify-content:center;gap:10px;}
+#story-scene .dialogue-box[data-voice="core"] button{background:#0f3350cc;color:#d9f6ff;border:1px solid #8fe3ff99;box-shadow:0 0 8px #5ec8f055;min-height:34px;}
+#story-scene .dialogue-box[data-voice="core"].core-in .dialogue-text{animation:core-float-in .7s ease-out both,core-hover 3.2s ease-in-out .7s infinite;}
+#story-scene .dialogue-box[data-voice="core"] .dialogue-text{animation:core-hover 3.2s ease-in-out infinite;}
+@keyframes core-float-in{from{opacity:0;transform:translateY(10px) scale(.97);filter:blur(3px);}to{opacity:1;transform:none;filter:none;}}
+@keyframes core-hover{0%,100%{transform:translateY(0);}50%{transform:translateY(-3px);}}
+@media(max-height:500px){#story-scene .dialogue-box[data-voice="core"]{top:clamp(52px,16vh,110px);}#story-scene .dialogue-box[data-voice="core"] .dialogue-text{font-size:14px;padding:10px 14px;}}
 [data-dialogue-theme="lantern-night"] .dialogue-box,[data-dialogue-theme="quiet-hud"] .dialogue-box{--voice:#8fd3f0;}
 /* Custom cursor: one style everywhere the mouse goes, text fields keep their caret. */
 html[data-cursor],html[data-cursor] body,html[data-cursor] body *:not(input[type=text]):not(input[type=search]):not(textarea):not([contenteditable]){cursor:var(--game-cursor)!important;}

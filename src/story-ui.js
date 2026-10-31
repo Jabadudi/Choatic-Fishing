@@ -74,6 +74,8 @@ export function mountStory({getWorld,onAdvance=()=>{},onSettings=()=>{},isSettin
    key=nextKey;lastWorld=m.w;lastDialogue=m.w.dialogue;setupVisual(m);
    q('story-name').textContent=m.speaker.name;q('story-title').textContent=m.scene.title;
    q('story-chapter').textContent=m.story?chapterHeading(m.w.story.scene):'THE WILDS';setDialogueText(q('story-text'),m.scene.text);box.dataset.voice=m.speaker.id==='narrator'?'narration':m.scene.thought?'thought':m.speaker.id==='voice'?'voice':m.speaker.id==='core'?'core':'speech';
+   // The Region Core's writing floats in the world: replay its fade-in on every new line.
+   box.classList.remove('core-in');if(box.dataset.voice==='core'){void box.offsetWidth;box.classList.add('core-in');}
    q('story-page').textContent=`${m.page+1} / ${m.count}`;q('story-previous').disabled=!m.story||m.page===0;
    q('story-next').firstChild.textContent=m.story?'Next › ':'Done ';if(!dialog.open)dialog.showModal();q('story-next').focus();
   }
