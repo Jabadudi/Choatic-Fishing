@@ -24,6 +24,4 @@
 - Whether it is an ordinary ocelot or a strange local hybrid like the Rimejaw or Flitlynx (the text says only "ocelot").
 
 ## Visual reference notes
-Game design (Oct 2026): a mystical ocelot and axolotl spirit, house-cat sized. Golden-brown rosetted fur with faint glowing blue spots, feathery coral-pink gill fronds with blue tips behind its ears, smooth translucent pale-pink belly and paws, a finned axolotl tail tip, and eyes the blue of the Region Core. Prompts are in the project's `art/sprite-prompts/chapter6-art.md`.
-
 Sleek, spotted ocelot sitting confidently in a corner, as if it owns the room. Eye color, any glow, and size are undefined.
