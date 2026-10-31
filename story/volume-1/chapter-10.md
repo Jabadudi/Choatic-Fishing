@@ -360,6 +360,10 @@ I opened my mouth.
 
 I closed it again.
 
+Back on the walk to the village, that first morning, I'd told myself I was building a collection of things I didn't ask about. It had turned into a collection of things I *did* ask about and didn't get answered. Emilia's chest. Drayfus's face. The husk. And now a cat that had known a wolf when he was a pup.
+
+The collection was getting big enough to need its own shelf.
+
 Above me, the sky was a deep, cloudless blue. A thin line of smoke rose from the chief's chimney. Somewhere in the village, a small child was shrieking with laughter, and I heard Mara's voice, close by, calling out something about breakfast.
 
 I lay there with my hand open on the warm grass, and I thought about a wolf who had waited on a shore for years, for a man who couldn't come back.
