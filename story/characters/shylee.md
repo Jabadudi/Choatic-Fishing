@@ -37,6 +37,7 @@ Dry and teasing, but deeply caring. Described as "tougher than me" by Eli. After
 ## Open questions / not yet established
 - Hair color, eye color, height, style.
 - Where she is held, and by whom.
+- Whether she survives. Killing her off is on the table as a major turning point for Eli; to be decided later.
 - Whether she knows anything about Grandpa's other world.
 
 ## Visual reference notes
