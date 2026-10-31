@@ -37,8 +37,20 @@ export function drawVillageGround(c){
  boat(c,625,1210);boat(c,838,1370,-1);boat(c,980,1280);boat(c,415,1150,-1);
 }
 function window(c,x,y){r(c,'#5d4932',x-16,y-20,32,29);r(c,'#edc67b',x-12,y-16,24,21);r(c,'#fff0b3',x-11,y-15,9,13);r(c,'#715537',x-1,y-18,3,24);r(c,'#715537',x-13,y-7,26,3);r(c,'#b18b52',x-18,y+8,36,5);}
+// A tall timber watchtower: four legs, a ladder, a railed platform and a plank roof.
+function watchtower(c,x,y){
+ ellipse(c,x+8,y+4,38,10,'#18392c44');
+ for(const dx of [-24,18])r(c,'#5c4128',x+dx,y-92,7,96);for(const dx of [-16,10])r(c,'#4a331f',x+dx,y-88,6,90);
+ for(const yy of [y-30,y-62]){r(c,'#6f5134',x-24,yy,49,4);}
+ r(c,'#7d5c38',x-4,y-86,3,88);r(c,'#7d5c38',x+5,y-86,3,88);for(let yy=y-80;yy<y;yy+=10)r(c,'#a07a4a',x-4,yy,12,2);
+ r(c,'#6f5134',x-34,y-100,68,10);r(c,'#b19058',x-34,y-100,68,3);
+ for(const dx of [-33,-12,9,29])r(c,'#5c4128',x+dx,y-122,4,22);r(c,'#8a6640',x-34,y-124,68,4);
+ r(c,'#5b3e2a',x-40,y-150,80,8);r(c,'#7b5636',x-36,y-158,72,9);r(c,'#946a42',x-30,y-165,60,8);
+ for(const dx of [-33,29])r(c,'#4a331f',x+dx,y-150,4,28);
+}
 export function drawVillageObject(c,b,time=0){
  const {x,y}=b;
+ if(b.kind==='watchtower'){watchtower(c,x,y);return;}
  if(b.kind==='well'){
   if(drawProp(c,'well',{x,y:y+18,w:92,h:126}))return;
   ellipse(c,x+9,y+8,40,17,'#1a392c44');ellipse(c,x,y,30,17,'#647a70');ellipse(c,x,y-8,30,17,'#b4b69a');ellipse(c,x,y-10,21,10,'#314f4b');r(c,'#658e88',x-13,y-11,24,3);

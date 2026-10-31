@@ -72,7 +72,22 @@ Continue from the end of Chapter 5, in Eli's room. Every finished scene is a sav
 7. **Forty trips**: fill the buckets at the yard well and empty them into the trough. Full buckets slow Eli down, more as the trips add up. The count is saved.
 8. After the fortieth bucket, Eli wakes in his room that night. The ocelot on the stool explains reserves with the heavy-box lesson. Chapter 6 ends there, and pays the chapter Wishstones.
 
-Drayfus and the ocelot use drawn placeholders until their walk sheets arrive (prompts in the project's `art/sprite-prompts/chapter6-art.md`). Drayfus's dialogue portrait is a crop of his index portrait.
+Drayfus, Mara, Emilia and the ocelot walk on their own sheets (see `art/README.md`). Drayfus's dialogue portrait is a crop of his index portrait.
+
+## Chapter 7 — Legs
+
+Continue from the end of Chapter 6, in Eli's room. Every finished scene is a saved checkpoint, and so is each guard post passed and each second of the squat.
+
+1. **Go to sleep** in the bed. Drayfus comes in with a lantern before dawn: “Up.” The Region Core reports reserves recovering, and the ocelot notices Eli did not dream.
+2. **The dawn run.** Eli starts outside the lodge in the dark. He runs the path round Willowback past eight posts in order: seven guards (“Morning, Oscar's boy.”) and the watchtower at the southern end, where Drayfus watches from the platform. The sky greys as the posts go by; standing still too long draws a warning from the tower.
+3. **Sunrise** at the watchtower: eleven laps, the waterskin, and Mara asking whether he threw up.
+4. **Have breakfast with Mara** in the chief's kitchen. Emilia is out.
+5. **Report to Drayfus** in the training circle, then **hold the squat**: stand still in front of him for 20 seconds. Moving or stepping off the spot starts the count again. Eli crouches and starts to shake as it goes on.
+6. Drayfus asks about the cat and talks about Oscar, and freezes when Eli asks about his grandmother: “Eleven laps. Now.”
+7. **The second run** past the same posts. Eli's legs are gone, so he moves more slowly with every post.
+8. **Lie down on the grass** beside the guest lodge. Mara brings bread, warns him not to ask Drayfus again, and Eli works out the woman in the photograph was Emilia. Still Water activates, and it feels like holding his breath. Chapter 7 ends there and pays the chapter Wishstones.
+
+`src/chapter7.js` supplies the dialogue, the posts (`PERIMETER`), the watchtower and the objectives. The watchtower is a village prop with collision. `tests/chapter7.test.js` and `scripts/chapter7-preview.cjs` cover the chapter.
 
 The tour and the night are saved checkpoints (`ch5-tour`, `ch5-night`, `ch5-sleep`, `ch5-morning`). Mara stands at a fixed place in each: in Eli’s room for the tour, in the chief’s house overnight, and outside the lodge door at sunrise. A save made during the video reopens on the video page.
 

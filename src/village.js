@@ -21,7 +21,8 @@ export const VILLAGE_BUILDINGS=[
  {id:'garden-home',x:650,y:830,w:150,h:76,roof:'#a56242',trim:'#d29760',kind:'home'},
  {id:'boathouse',x:410,y:1030,w:156,h:70,roof:'#567d76',trim:'#8faba0',name:'WILLOW DOCKS',kind:'boat'}
 ];
-export const VILLAGE_PROPS=[{id:'well',x:1000,y:690,kind:'well'},{id:'produce-stall',x:1180,y:855,kind:'stall'},{id:'fish-stall',x:920,y:975,kind:'fish-stall'}];
+// The guard's watchtower at the southern end of the path round the village (Chapter 7).
+export const VILLAGE_PROPS=[{id:'watchtower',x:560,y:1000,kind:'watchtower'},{id:'well',x:1000,y:690,kind:'well'},{id:'produce-stall',x:1180,y:855,kind:'stall'},{id:'fish-stall',x:920,y:975,kind:'fish-stall'}];
 export const VILLAGE_PLACES=[
  {id:'village-gate',name:'Willowback Gate',x:1770,y:530,kind:'village-gate',text:'Willowback Village. Beyond the apple baskets and lantern posts, the riverside lanes lead to the commons. The eastern road returns to the crossroads.'},
  {id:'village-commons',name:'The Willow Commons',x:1000,y:740,kind:'village-square',text:'An old well anchors the village commons. Worn paving, shared benches and market awnings make this a natural meeting place.'},
@@ -36,6 +37,6 @@ export const villageWaterDistance=(x,y)=>Math.min(villageShore(x)-y,x-(185+Math.
 export const onVillageDeck=(x,y)=>(x>=685&&x<=775&&y>=1060&&y<=1360)||(x>=520&&x<=940&&y>=1250&&y<=1320);
 export function villageBlocked(x,y){
  if(VILLAGE_BUILDINGS.some(b=>Math.abs(x-b.x)<b.w/2+12&&y>b.y-b.h-10&&y<b.y+18))return true;
- return VILLAGE_PROPS.some(p=>p.kind==='well'?Math.hypot(x-p.x,y-p.y)<35:Math.abs(x-p.x)<55&&y>p.y-25&&y<p.y+20);
+ return VILLAGE_PROPS.some(p=>p.kind==='watchtower'?Math.abs(x-p.x)<28&&y>p.y-22&&y<p.y+8:p.kind==='well'?Math.hypot(x-p.x,y-p.y)<35:Math.abs(x-p.x)<55&&y>p.y-25&&y<p.y+20);
 }
 export const villageClear=(x,y)=>x>300&&x<1810&&y>240&&y<1120||onVillageDeck(x,y);
