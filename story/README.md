@@ -2,7 +2,7 @@
 
 The narrative behind The Wilds. Nothing here is loaded by the game.
 
-- `volume-1/` — chapters 1–5, the current canon text, and drafts of chapters 6–12 and 15.5 (not yet in the game).
+- `volume-1/` — chapters 1–5, the current canon text, and drafts of chapters 6–13 and 15.5 (not yet in the game).
 - `world-rules.md` — world rules that have been decided (mana, the hollow, core abilities).
 - `characters/` — one sheet per character, written strictly from the chapters. Details the story has not established are listed under each sheet's open questions.
 
