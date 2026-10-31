@@ -35,3 +35,7 @@
 
 ## Visual reference notes
 Girl with very long, pearly-white hair down her back and storm-purple eyes, crying, with an aura of moving black "anti-light" bursting outward. In-world legend frames her as the Witch of Darkness.
+
+## Planned (decided, not yet revealed in text)
+- Eli's father was Croshelda's own son. Oscar rescued him as a toddler and claimed him as "a bastard of his, from one of his travels" (Ch13). Croshelda is Eli's real grandmother; the father of her son is a later mystery.
+- Her bloodline is why Eli can save her, which is the meaning of "You have to save her."

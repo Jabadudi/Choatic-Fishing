@@ -25,6 +25,11 @@ Friendly and teasing. He laughs at Eli's seasickness. Sincerely grieves Oscar. H
 - The two-hour trip ends at a place Mara says "is no island." Whether the captain knows where he really took Eli is unknown.
 - His phone number is on the back of Eli's hand.
 
+## Chapter 15.5 interlude (draft)
+- Recognizes Shylee from the school photo Oscar showed him on every trip ("You're the little one").
+- Takes her to the island when she says Eli never called anyone. Stays at the bottom of the path by the boat, afraid to go near the burned cabin.
+- Last seen shouting Shylee's name as she is taken. He is a witness.
+
 ## Open questions / not yet established
 - Name, exact age, eye/hair details, clothing.
 - Whether he knows about the other world or Oscar's secret.

@@ -26,9 +26,18 @@ Dry and teasing, but deeply caring. Described as "tougher than me" by Eli. After
 - Eli never texted. In Ch5 Eli imagines her waiting alone in the apartment, the way Grandpa used to wait on the dock.
 - Eli: "I didn't think anything of it. You never do." This foreshadows a long separation.
 
+## Chapter 15.5 interlude (draft)
+- Narrates her own short interlude in first person. Keeps a day count on the fridge in dry-erase marker, under Grandpa's trout magnet.
+- The police brushed her off. On day 31 she finds the captain at the port; he knows her from the school photo Oscar kept in his wallet ("You're the little one").
+- She doesn't get seasick (and plans to bring it up every Thanksgiving).
+- On the island she finds the cabin burned by lightning, no body, the lure's shelf unburned with a clean spot in the dust, and a ring of dead, cold gray grass in the clearing.
+- A faceless shadow man in the trees, speaking in the layered voice from Eli's dream, says "There's the other one." The cold takes her. She is kidnapped; her story pauses until Eli sees her in captivity in a later vision.
+- Timeline: 15.5 is told as a separate timeline that happened on day 31. When Eli later gets the vision, he eventually realizes it has been a while since she was taken.
+
 ## Open questions / not yet established
 - Hair color, eye color, height, style.
-- What she is doing now, and whether she will try to find Eli.
+- Where she is held, and by whom.
+- Whether she survives. Killing her off is on the table as a major turning point for Eli; to be decided later.
 - Whether she knows anything about Grandpa's other world.
 
 ## Visual reference notes
