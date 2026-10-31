@@ -29,6 +29,11 @@ Warm and maternal, with quiet authority. Her expression carries "the careful kin
 - Mara calls the cabin "my grandma's old home" (Ch2).
 - **Hint, not confirmed:** her younger self (long dark hair, laughing to one side) resembles the woman in Oscar's photo.
 
+## Chapters 13–14 (draft)
+- A powerful water mage (decided). In the raid she pulls water from the trough, well and rain barrels, freezes ranks of shadow walkers into ice walls, and throws ice spears. Her magic is clean winter cold, unlike the shadow walkers' dead cold.
+- Before she steps out, she tells Eli privately that Oscar once came to the village at night with a little boy in his arms who had his exact face, most likely Eli's father, and that "whatever she wants from you, it started that night."
+- Death: overwhelmed, she starts a final attack that pulls on the whole lake and would kill her. A shadow walker comes up behind her and kills her before she can release it. Her holding the lane gets every boat away.
+
 ## Open questions / not yet established
 - Whether she is the woman in the photo. Her relationship with Oscar, and whether she is connected to Eli's grandmother.
 - Why she says "look how you've grown" to Eli.

@@ -164,11 +164,19 @@ I hadn't seen her come. None of us had. She was just there, suddenly, walking do
 
 The shield wall opened for her without anyone telling it to.
 
-She walked through it. Past me. Past Mara, who made a sound like she'd been hit. Out into the empty ground between us and the general, until she was standing alone in the firelight, ten paces from him.
+She stopped beside me. Just for a moment. She leaned in close, so close I could smell the herbs on her shawl, and she spoke very fast and very low, for me and nobody else.
+
+"Listen. Your grandfather came to this village once, a long time ago, in the middle of the night. He had a little boy in his arms. Wrapped in a blanket. The boy had his face, Eli. His exact face." Her hand found mine and squeezed it, hard. "I think that boy was your father. Whatever she wants from you, it started that night. Remember that."
+
+"Emilia, what—"
+
+But she'd already let go.
+
+She walked on through the line. Past me. Past Mara, who made a sound like she'd been hit. Out into the empty ground between us and the general, until she was standing alone in the firelight, ten paces from him.
 
 "Grandma," said Mara. "Grandma, *no*—"
 
-"He's not yours," Emilia said again. "He never was. Neither was the child a man once carried into this village, wrapped in a blanket, on a night a lot like this one." She lifted her chin. "You've had a long walk, general. Go home and tell her that."
+"He's not yours," Emilia said again. "He never was." She lifted her chin. "You've had a long walk, general. Go home and tell her that."
 
 Corvane smiled.
 
@@ -186,19 +194,27 @@ Everyone in that village knew. You could see it in the way they stepped aside fo
 
 I hadn't known she was *this.*
 
-Light came out of her.
+Behind me, the trough beside the training circle exploded.
 
-Not fire. Not lightning. Light, pure and white and silver, like moonlight if the moon were standing right in front of you. It poured out of the staff and out of her hands and out of her *eyes,* and it hit the shadow walkers like a wave hitting sand.
+That's the only word for it. The water I'd carried into it, forty buckets at a time, for a month, came up out of it in a single rope, thick as my arm, and flew over our heads. So did the well. So did every rain barrel on the lane. The water came from everywhere, all at once, in long silver ropes, and wrapped itself around her like a cloak.
 
-They didn't burn. They *vanished.* The front ranks just stopped existing, a whole street's width of them, gone in a gust of black ash. The infected elk behind them reared and screamed and came apart. The light rolled down the lane and out across the fields, and everywhere it touched, the dark shrank away from it.
+She swung the staff.
 
-For one moment, in the middle of the worst night of my life, it was bright as noon in Willowback.
+The water went out in a wave, a real one, chest-high and roaring, straight down the lane into the front rank of shadow walkers. And as it hit them, it *froze.*
 
-I could see her face. She wasn't afraid.
+It happened in a heartbeat. One moment, a wave. The next, a wall of white ice across the whole lane, with shadow walkers locked inside it like flies in amber. Twenty of them. Thirty. Their long arms still reaching. An infected elk reared up behind them, and she flicked her fingers, and a spear of ice went through its chest and it came apart in black ash.
+
+The cold came off her in waves. Not the shadow walkers' cold, the dead, cellar cold. This was clean. Winter cold. Lake cold. Frost spread out across the dirt from her feet in white ferns, and the fire pits along the lane hissed and spat.
+
+I'd carried that water.
+
+Every single bucket of it.
+
+I could see her face in the firelight. She wasn't afraid.
 
 She looked young.
 
-Corvane threw up an arm. The light broke around him like water around a rock. His dark armor smoked and hissed, and for the first time, the calm went out of his face.
+Corvane threw up an arm. A shard of ice the size of a door broke against it, and his dark armor cracked and hissed, and for the first time, the calm went out of his face.
 
 "Drayfus," said Emilia. She didn't turn around. Her voice was perfectly steady. "Call the water."
 
@@ -220,7 +236,11 @@ Hobb didn't look at me.
 
 He didn't need to.
 
-And Emilia stood in the middle of the lane, alone, with the light pouring out of her and the whole army of the Witch of Darkness pressing in on every side, and she held.
+And Emilia stood in the middle of the lane, alone, and held.
+
+Wall after wall of ice. Spear after spear. Every time the shadow walkers broke through, she froze them again, and every time it took her a little longer. They came over the ice walls now, climbing over their own frozen dead. They came around the sides, through the gardens, over the back fences. She turned and froze them there too.
+
+But there were so many of them.
 
 One breath.
 
@@ -256,11 +276,11 @@ Mostly.
 
 I looked back once.
 
-Just once. At the top of the lane, where it bent around the corner of the lodge, right before the light would have been gone from view. I didn't decide to. My head just turned.
+Just once. At the top of the lane, where it bent around the corner of the lodge, right before she would have been gone from view. I didn't decide to. My head just turned.
 
 She was still standing there.
 
-Small. So small, in the middle of all that dark. The light around her was shrinking now, pulling in, a circle of silver getting tighter and tighter as the shadows leaned on it from every side. And Corvane was walking toward her through it, slowly, one step at a time, with his armor smoking and his face set like stone.
+Small. So small, in the middle of all that dark. The ring of frost around her was shrinking now, the ice walls cracking and giving way one after another as the shadows leaned on them from every side. And Corvane was walking toward her through the gap, slowly, one step at a time, with frost on his cracked armor and his face set like stone.
 
 She didn't step back.
 
@@ -268,11 +288,31 @@ She looked over her shoulder, once. Not at Corvane. At the docks. At the long li
 
 She smiled.
 
-Then she turned back, and she raised the staff over her head with both hands, and all the light she had left went up at once, in a single column, straight up into the sky, so bright that I had to look away.
+Then she turned back toward the army, and planted the staff in the frozen dirt, and raised both hands.
 
-When I looked back, the light was gone.
+And the lake moved.
 
-The lane was dark.
+I felt it more than saw it. The whole lake, behind the village, *pulled,* the way a tide pulls, the way the water in the trough had pulled toward her, except this was the whole lake. Out past the boats, a long, slow swell was rising, higher and higher, black and glittering. The air went so cold my breath turned to ice crystals in front of my face.
+
+The ocelot made a sound at my feet. Small. Horrified.
+
+"She can't," it whispered. "Eli. That much. It will take everything she has. She won't survive it."
+
+She knew that.
+
+I could see on her face that she knew that.
+
+She didn't stop.
+
+And she never got to finish.
+
+It came from the side. From the gardens, from behind a frozen wall she'd made, a single shadow walker that had climbed over its own dead while she was looking at the lake. It didn't run. It didn't make a sound. It just stepped out of the dark behind her, and reached out one long, black arm, and put its hand through her back.
+
+The swell on the lake hung in the air for one long, glittering second.
+
+Then it fell. All of it. Back into the lake, with a sound like the whole world exhaling.
+
+The ice walls in the lane cracked, all at once, from end to end.
 
 And Emilia wasn't standing anymore.
 
@@ -287,6 +327,10 @@ I remember her hands, both of them, fisted in my shirt. I remember her pulling. 
 Out on the lake, the boats were still moving. Every one of them.
 
 None of the shadow walkers had followed them. They were standing at the water's edge. Hundreds of them. Just standing there, the way they'd stood in the valley in my dream, looking out at the boats they couldn't reach.
+
+She'd never finished it. Her last, biggest attack had come apart in the air.
+
+It didn't matter. Every minute she'd held that lane, another boat had pulled away from the docks.
 
 She'd bought them the water.
 
