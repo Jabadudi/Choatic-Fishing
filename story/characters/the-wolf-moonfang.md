@@ -21,7 +21,7 @@
 - Has guarded the Reedwater shore for longer than Emilia has been alive.
 - The first to find Oscar when he arrived in this world. Went out with Oscar on night rounds and taught him the shoreline.
 - When Oscar stopped coming, he waited. He went to the cabin shore every night.
-- That is why he was at the cabin shore on the night of the storm. Mara chased a shadow walker there but was too slow, and Brume hit it just before it reached Eli (Ch1, Ch2, Ch10). He was not part of the village fight: "He had gone home."
+- On the night of the storm Mara chased a shadow walker toward the cabin but was too slow. Brume came out of the dark and hit it just before it reached Eli (Ch1, Ch2, Ch10). The story does not say how he knew; he is simply a keen, sharp, powerful wolf who saw the same thing Mara did.
 - "The Moonfang chooses once." He has now chosen Eli and will not leave his side for long.
 
 ## Relationships

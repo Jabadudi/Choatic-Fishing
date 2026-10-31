@@ -278,11 +278,9 @@ The kitchen was very quiet.
 
 "The Moonfang don't choose a person," Emilia said. "They choose to wait. It is the only thing they do that we have never understood. A wolf will watch a door for fifty winters if it believes someone is coming through it." She looked at me. "He went to the cabin every night. Every single one. He sat on the shore and watched the water, and he did not stop, even when everyone told him that Oscar was too old to come back."
 
-"That's why he was there," I said slowly. "The night of the storm. He was already at the shore."
+"That's why he came for me," I said slowly. "The night of the storm."
 
-"It was a shadow walker I was chasing," Mara said. Her voice was very small. "It broke away from the fight and went straight for the cabin, and I couldn't catch it. I was too slow. By the time I got there, you were on the ground, and it was almost on top of you." She swallowed. "And then something came out of the dark and hit it. I didn't know it was Brume. I thought he was fighting with the others."
-
-"He wasn't fighting with the others," said Emilia gently. "He had gone home."
+"It was a shadow walker I was chasing," Mara said. Her voice was very small. "It broke away from the fight and went straight for the cabin, and I couldn't catch it. I was too slow. By the time I got there, you were on the ground, and it was almost on top of you." She swallowed. "And then something came out of the dark and hit it. I didn't know it was Brume."
 
 I stared out the window at the great gray shape lying in the morning light, and thought about a man on a dock, years ago, waiting for somebody who was late.
 
