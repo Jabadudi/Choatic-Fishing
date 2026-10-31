@@ -16,7 +16,7 @@ Then he walked to the lower rung of the tower ladder, reached behind it, and hel
 
 "The hollow?"
 
-"You know the one." He tapped two fingers against his own breastbone. "That emptiness behind the ribs, like something has been scooped out of you. That is your reserves running dry. Every caster feels it, and every caster who ignores it ends up face down in the dirt, or worse, face down in the river."
+"You know the one." He tapped two fingers against his own breastbone. "That emptiness behind the ribs, like something has been scooped out of you. That is your reserves running dry. Everyone carries mana, and anyone who pays enough attention to their own body learns to feel the bottom coming. I am no caster, but I have felt it after a long night of fighting. The ones who never learn to listen end up face down in the dirt, or worse, face down in the river."
 
 I did know it. I'd spent most of the first night with my face in the pillow, feeling it.
 
