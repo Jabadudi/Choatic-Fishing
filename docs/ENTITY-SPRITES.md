@@ -13,7 +13,7 @@ Eli uses `story/eli-sheet.png` (see below). Mara, the other explorers, eel and p
 
 ## Standard for moving entities: the Eli walk set
 
-Every character, NPC, creature and enemy that moves gets the same art and layout as Eli: 16-bit SNES-style pixel art with clean dark outlines and a limited palette, and a 4-direction walk of 8 frames per direction (right, left, toward the camera, away from the camera) on a flat `#00FF00` background with a shared baseline. Extra actions, such as Eli's throw, go in further rows of the same sheet.
+Every character, NPC, creature and enemy that moves gets the same art and layout as Eli: 16-bit SNES-style pixel art with clean dark outlines and a limited palette, and a 4-direction walk (right, left, toward the camera, away from the camera) on a flat `#00FF00` background with a shared baseline. Eli's walk has 8 frames per direction; every other character, NPC, creature and enemy has 6. Sheets are packed 8 cells wide either way, and `walkClips(frames, cycle)` in `src/sprite-definitions.js` builds the clips. `cycle` is the seconds one stride loop takes, so a 6-frame and an 8-frame walk move at the same pace, and older 8-frame NPC sheets keep working. Extra actions, such as Eli's throw, go in further rows of the same sheet.
 
 `scripts/prepare-eli-sprites.py` turns the source sheets in `art/sprites/characters/eli/` into `assets/story/eli-sheet.png`: green removed, every frame in a 126×120 cell, feet on the baseline and head centred. Copy it for the next entity.
 

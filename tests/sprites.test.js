@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {SPRITES,PROPS} from '../src/sprite-definitions.js';
+import {SPRITES,PROPS,walkClips} from '../src/sprite-definitions.js';
 import {existsSync} from 'node:fs';
 import {drawSprite,drawEntitySprite,drawProp,frameIndex,frameRect,clearSpriteCache} from '../src/sprites.js';
 import {createNpcs,drawNpc} from '../src/npcs.js';
@@ -100,3 +100,11 @@ test('story NPCs walk with the sheet row for the way they are heading',()=>withI
  assert.deepEqual(crop({animationState:'walk',facingX:-3}),frameRect(d,8,704,452).slice(0,2));
  assert.deepEqual(crop({}),frameRect(d,16,704,452).slice(0,2));
 },[704,452]));
+test('a 6-frame walk keeps the same stride pace as an 8-frame one',()=>{
+ const six={animations:walkClips(6,.8)},eight={animations:walkClips(8,.8)};
+ assert.deepEqual(six.animations['walk:left'].frames,[8,9,10,11,12,13]);assert.deepEqual(eight.animations['walk:up'].frames,[24,25,26,27,28,29,30,31]);
+ // Halfway through the loop each sheet shows its halfway frame, and both loop back at the same moment.
+ assert.equal(frameIndex(six,'walk',.4,{direction:'right'}),3);assert.equal(frameIndex(eight,'walk',.4,{direction:'right'}),4);
+ assert.equal(frameIndex(six,'walk',.8,{direction:'right'}),0);assert.equal(frameIndex(eight,'walk',.8,{direction:'right'}),0);
+ assert.deepEqual(walkClips([7,7,8,8],.8)['walk:left'].frames,[8,9,10,11,12,13,14]);
+});

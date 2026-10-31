@@ -26,7 +26,8 @@ export function spriteAssetUrl(asset){
 export function frameIndex(definition,state='idle',time=0,{direction,duration}={}){
  const clips=definition.animations||{},clip=clips[`${state}:${direction}`]||clips[state]||clips.idle;
  if(!clip?.frames?.length)return 0;
- const clock=Math.max(0,Number.isFinite(time)?time:0),rate=duration>0?clip.frames.length/duration:clip.fps||1;
+ // cycle is the seconds one loop takes, so a 6-frame and an 8-frame walk keep the same pace.
+ const clock=Math.max(0,Number.isFinite(time)?time:0),n=clip.frames.length,rate=duration>0?n/duration:clip.cycle>0?n/clip.cycle:clip.fps||1;
  const step=Math.floor(clock*rate),index=clip.loop===false?Math.min(clip.frames.length-1,step):step%clip.frames.length;
  return clip.frames[index];
 }
