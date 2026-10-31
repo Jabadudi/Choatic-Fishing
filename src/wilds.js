@@ -3,12 +3,13 @@ import {CABIN_AREA,CABIN_PLACES,cabinInteriorBlocked,cabinBlocked,cabinClearing,
 import {cabinDamaged} from './story.js';
 import {CHIEF_HOUSE,CHIEF_HOUSE_PLACES,chiefHouseBlocked,drawChiefHouse} from './chief-house.js';
 import {GUEST_LODGE,GUEST_LODGE_PLACES,guestLodgeBlocked,drawGuestLodge} from './guest-lodge.js';
-import {TRAINING_GROUND,TRAINING_GROUND_PLACES,trainingGroundBlocked,drawTrainingGround} from './training-ground.js';
+import {TRAINING_GROUND,TRAINING_GROUND_PLACES,trainingGroundBlocked,drawTrainingGround,drawCastGuide} from './training-ground.js';
 import {MARSH,MARSH_ROADS,MARSH_PLACES,MARSH_OBJECTS,marshWaterDistance,onMarshDeck,marshBlocked} from './marsh.js';
 import {drawMarshGround,drawMarshObject} from './marsh-art.js';
 import {VILLAGE,VILLAGE_ROADS,VILLAGE_PLACES,VILLAGE_PROPS,villageWaterDistance,onVillageDeck,villageBlocked,villageClear} from './village.js';
 import {drawVillageGround,drawVillageObject,villageObjects,paintVillageBuildings,drawDistrictGround,paintBuildings} from './village-art.js';
 import {DISTRICTS} from './village-districts.js';
+import {BUCKET_TRIPS} from './chapter6.js';
 import {drawEntitySprite,drawProp,onPropLoad} from './sprites.js';
 import {CROSSROADS,CROSSROADS_ROADS,CROSSROADS_PLACES,crossroadsWaterDistance,crossroadsBlocked,onCrossroadsDeck,drawCrossroads,drawCrossroadsLabels} from './crossroads.js';
 import {leafyTree,meadowRock,meadowBush,grassDetail,wildflower} from './plains-art.js';
@@ -374,7 +375,9 @@ export function drawWilds(ctx,world,view={left:world.player.x-700,right:world.pl
  const id=world.areaId||'landing',area=areaFor(id);ctx.imageSmoothingEnabled=false;
  if(typeof document!=='undefined')drawChunks(ctx,view,id);else staticArea(ctx,view.left,view.top,view.right-view.left,view.bottom-view.top,id);
  if(id==='guest-lodge'){const stage=world.story?.stage;drawGuestLodge(ctx,{night:['ch5-night','ch5-sleep','ch6-night','ch6-complete'].includes(stage),morning:['ch5-morning','ch6-door'].includes(stage)});if(stage==='ch5-morning'&&!world.story.scene)drawFloatingWriting(ctx,world.player,world.elapsed||0);}
- if(id==='training-ground'){const stage=world.story?.stage;drawTrainingGround(ctx,{t:world.elapsed||0,evening:stage==='ch6-buckets'&&world.story.buckets>=30,sword:['ch6-buckets'].includes(stage)});}
+ if(id==='training-ground'){const stage=world.story?.stage;drawTrainingGround(ctx,{t:world.elapsed||0,evening:stage==='ch6-buckets'&&world.story.buckets>=BUCKET_TRIPS-1,sword:['ch6-buckets'].includes(stage)});}
+ // Where to stand to cast at Drayfus's sword: a glowing patch of dirt with an arrow over it, and one by Eli pointing the way.
+ if(id==='training-ground'&&world.story?.stage==='ch6-cast'&&!world.story.scene)drawCastGuide(ctx,world.elapsed||0,world.player);
  if(id==='cabin')drawWeaponRack(ctx,world.story);
  drawWater(ctx,world,view,id);
  if(id==='landing'&&cabinDamaged(world.story)&&world.story.stage!=='storm')drawCamp(ctx,world.elapsed||0);

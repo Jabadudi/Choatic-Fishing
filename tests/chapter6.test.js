@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {World} from '../src/world.js';
-import {neutralInput} from '../src/protocol.js';
+import {neutralInput,applyAction} from '../src/protocol.js';
+import {sparDown,sparSwing} from '../src/spar.js';
 import {createStoryNpcs,currentScene,storyPrompt,storyObjective,chapterHeading,SCENES,storySpeed} from '../src/story.js';
 import {BUCKET_TRIPS,CHAPTER6_SCENES,CORE,OCELOT} from '../src/chapter6.js';
 import {GUEST_LODGE,LODGE_MORNING_SPOT,LODGE_WAKE_SPOT} from '../src/guest-lodge.js';
@@ -19,6 +20,18 @@ function morning(){
  w.story={stage:'ch5-morning',scene:null,page:0,lureSeen:true,photoSeen:true,rod:true,bow:true,coreIngested:true,callAwakened:false,guide:{...LODGE_MORNING_SPOT,waypoint:0,areaId:'village'}};
  w.npcs=createStoryNpcs(w.story,w.elapsed);stand(w,LODGE_WAKE_SPOT.x,LODGE_WAKE_SPOT.y);return w;
 }
+// The spar: stand still and let Drayfus knock Eli down ten times, or sidestep a lunge and hit him while he recovers.
+function sparUntilScene(w,act=()=>{}){for(let i=0;i<4000&&!w.story.scene;i++){act();w.update(.05,neutralInput());}assert.ok(w.story.scene,'the spar ends');}
+function loseSpar(w){const spot={x:DRAYFUS_SPOT.x,y:DRAYFUS_SPOT.y+60};sparUntilScene(w,()=>{if(!sparDown(w))stand(w,spot.x,spot.y);});}
+function winSpar(w){
+ let dodged=false;
+ sparUntilScene(w,()=>{
+  const f=w.spar,d=npc(w,'drayfus');if(!f)return;
+  // Step well back, away from the lunge, so it falls short.
+  if(f.phase==='lunge'&&!dodged){dodged=true;const p=w.player,a=Math.atan2(p.y-d.y,p.x-d.x);stand(w,p.x+Math.cos(a)*110,p.y+Math.sin(a)*110);}
+  if(f.phase==='recover'){stand(w,d.x-50,d.y);w.player.angle=0;sparSwing(w);}
+ });
+}
 // Plays Chapter 6 up to (not into) the given stage.
 function playTo(stage){
  const w=morning();
@@ -26,7 +39,7 @@ function playTo(stage){
   ['ch6-door',()=>{w.inspect();finish(w);}],
   ['ch6-circle',()=>{const m=npc(w,'mara');stand(w,m.x,m.y-30);w.inspect();finish(w);}],
   ['ch6-spar',()=>{stand(w,TRAINING_GATE.x,TRAINING_GATE.y+20);w.areaId='village';w.inspect();const d=npc(w,'drayfus');stand(w,d.x,d.y+50);w.inspect();finish(w);}],
-  ['ch6-rack',()=>{w.inspect();finish(w);finish(w);}],
+  ['ch6-rack',()=>{w.inspect();finish(w);winSpar(w);finish(w);finish(w);}],
   ['ch6-cast',()=>{stand(w,RACK_SPOT.x,RACK_SPOT.y+40);w.inspect();finish(w);}],
   ['ch6-buckets',()=>{stand(w,CAST_SPOT.x,CAST_SPOT.y);w.inspect();finish(w);}]
  ];
@@ -62,10 +75,15 @@ test('the training ground opens at the end of the path north out of the village 
  assert.equal(npc(w,'drayfus').areaId,TRAINING_GROUND.id);assert.equal(npc(w,'emilia').areaId,TRAINING_GROUND.id);
  assert.deepEqual({x:npc(w,'emilia').x,y:npc(w,'emilia').y},TRAINING_EMILIA_SPOT);
 });
-test('Drayfus knocks Eli down, the confession follows, and Grandpa’s rod wakes Reedwater’s Call',()=>{
+test('Drayfus knocks Eli down ten times in a real spar, the confession follows, and Grandpa’s rod wakes Reedwater’s Call',()=>{
  const w=playTo('ch6-spar');
- assert.equal(storyPrompt(w),'Spar with Drayfus');w.inspect();
- assert.equal(SCENES['ch6-spar'].filter(p=>p.speaker===CORE&&/taken damage/.test(p.text)).length,2);
+ assert.equal(storyPrompt(w),'Spar with Drayfus');w.inspect();assert.equal(w.story.scene,'ch6-spar');finish(w);
+ // The fight: no prompt while it runs, the objective counts knockdowns, and nothing costs Eli health.
+ assert.ok(w.spar);assert.equal(storyPrompt(w),null);assert.match(storyObjective(w),/knocked down 0\/10/);
+ const health=w.player.health;
+ loseSpar(w);
+ assert.equal(w.spar,null);assert.equal(w.story.scene,'ch6-spar-ten');assert.equal(w.player.health,health);
+ assert.ok(SCENES['ch6-spar-ten'].some(p=>/You stopped flinching/.test(p.text)));
  finish(w);
  assert.equal(w.story.stage,'ch6-confession');assert.equal(w.story.scene,'ch6-confession','the confession follows straight on');
  assert.ok(SCENES['ch6-confession'].some(p=>p.speaker==='Emilia'&&/Oscar used to do that/.test(p.text)));
@@ -77,9 +95,9 @@ test('Drayfus knocks Eli down, the confession follows, and Grandpa’s rod wakes
  assert.ok(SCENES['ch6-cast'].some(p=>p.speaker==='Drayfus'&&p.text==='Oscar.'));
  finish(w);
  assert.equal(w.story.stage,'ch6-buckets');assert.ok(w.progression.skills.fishing.xp+w.progression.totalXp>before,'the disarm counts as fishing');
- assert.match(storyObjective(w),/0\/40 trips/);
+ assert.match(storyObjective(w),/0\/3 trips/);
 });
-test('forty trips from the well to the trough, slower with full buckets, end the day in Eli’s room',()=>{
+test('three trips from the well to the trough, slower with full buckets, end the day in Eli’s room',()=>{
  const w=playTo('ch6-buckets');
  stand(w,TROUGH.x,TROUGH.y-40);assert.equal(storyPrompt(w),null,'the buckets start empty');
  assert.equal(storySpeed(w),1);
@@ -87,7 +105,7 @@ test('forty trips from the well to the trough, slower with full buckets, end the
   stand(w,YARD_WELL.x,YARD_WELL.y+50);assert.equal(storyPrompt(w),'Fill the buckets');w.inspect();assert.equal(w.story.carrying,true);
   assert.ok(storySpeed(w)<1);
   stand(w,TROUGH.x,TROUGH.y-40);assert.equal(storyPrompt(w),'Empty the buckets into the trough');w.inspect();
-  if(trip===12){const restored=restoreSave(captureSave(w));assert.equal(restored.story.buckets,12);assert.equal(restored.story.carrying,false);}
+  if(trip===2){const restored=restoreSave(captureSave(w));assert.equal(restored.story.buckets,2);assert.equal(restored.story.carrying,false);}
   if(trip<BUCKET_TRIPS)assert.equal(w.story.buckets,trip);
  }
  assert.equal(w.story.scene,'ch6-forty');
@@ -116,14 +134,14 @@ test('saves from before the ingest scene lose the core and gain the flag',()=>{
  const kept=restoreSave(captureSave(earlier));assert.equal(kept.story.coreIngested,false);assert.equal(kept.inventory.countOf('Region Core'),1);
 });
 test('invalid Chapter 6 progress is rejected',()=>{
- const w=playTo('ch6-buckets');w.story.buckets=5;const original=captureSave(w);
- for(const change of [s=>s.buckets=41,s=>s.buckets=-1,s=>s.carrying='yes',s=>delete s.buckets,s=>s.scene='ch6-forty',s=>{s.stage='ch6-rack';},s=>s.guide.areaId=GUEST_LODGE.id,s=>s.guide.x=500]){
+ const w=playTo('ch6-buckets');w.story.buckets=1;const original=captureSave(w);
+ for(const change of [s=>s.buckets=4,s=>s.buckets=-1,s=>s.carrying='yes',s=>delete s.buckets,s=>s.scene='ch6-forty',s=>{s.stage='ch6-rack';},s=>s.guide.areaId=GUEST_LODGE.id,s=>s.guide.x=500]){
   const bad=structuredClone(original);change(bad.state.story);assert.throws(()=>restoreSave(bad),/story|bucket/i);
  }
  assert.ok(AREAS[TRAINING_GROUND.id]);
 });
 test('a closed conversation in Chapter 6 can be picked up again',()=>{
- const w=playTo('ch6-spar');w.inspect();finish(w);
+ const w=playTo('ch6-spar');w.inspect();finish(w);winSpar(w);assert.equal(w.story.scene,'ch6-spar-touch');finish(w);
  assert.equal(w.story.scene,'ch6-confession');w.story.scene=null;w.story.page=0;
  const d=npc(w,'drayfus');stand(w,d.x,d.y+50);assert.equal(storyPrompt(w),'Continue the conversation');w.inspect();assert.equal(currentScene(w).title,'You what?');
 });
@@ -142,4 +160,10 @@ test('the path north out of the village walks into the training ground once trai
  const early=playTo('ch6-door');early.areaId='village';stand(early,TRAINING_GATE.x,10);
  early.update(.2,{...neutralInput(),up:true});
  assert.equal(early.areaId,'village');assert.match(early.message,/Nobody is expecting you/);
+});
+test('the use button swings the practice sword while sparring, and full buckets are heavy from the first trip',()=>{
+ const w=playTo('ch6-spar');w.inspect();finish(w);assert.ok(w.spar);
+ const swings=w.effects.length;assert.equal(applyAction(w,w.player.id,'click',{...neutralInput(),aim:{x:w.player.x+50,y:w.player.y}}),true);
+ assert.ok(w.effects.length>swings,'a swing plays');assert.equal(w.fishing.state,'idle','no cast while sparring');
+ const b=playTo('ch6-buckets');stand(b,YARD_WELL.x,YARD_WELL.y+50);b.inspect();assert.ok(storySpeed(b)<=.7);
 });

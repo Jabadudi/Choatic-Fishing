@@ -113,3 +113,24 @@ export function drawTrainingGround(c,{t=0,evening=false,sword=false}={}){
  if(sword&&!drawProp(c,'glowing-sword',{x:CAST_SPOT.x+28,y:CAST_SPOT.y+14,w:40,h:40})){c.save();c.translate(CAST_SPOT.x+28,CAST_SPOT.y+6);c.rotate(-.5);c.fillStyle='#9b7444';c.fillRect(-2,-24,5,30);c.fillStyle='#5c3b22';c.fillRect(-7,4,15,4);c.fillRect(-1,8,3,8);c.restore();}
  if(evening){c.fillStyle='rgba(120,50,30,.28)';c.fillRect(0,0,W,H);}
 }
+// Chapter 6: shows Eli where to stand to cast at the sword. The spot glows and an arrow bobs over it; while he is
+// further than a few steps away, a second arrow circles him, pointing at it.
+export function drawCastGuide(c,t=0,player=null){
+ const {x,y}=CAST_SPOT,pulse=(Math.sin(t*3)+1)/2;
+ c.save();
+ const g=c.createRadialGradient?c.createRadialGradient(x,y,4,x,y,46):null;
+ if(g){g.addColorStop(0,`rgba(170,240,255,${.8+.2*pulse})`);g.addColorStop(.6,`rgba(110,210,255,${.45+.2*pulse})`);g.addColorStop(1,'rgba(110,210,255,0)');c.fillStyle=g;}else c.fillStyle='rgba(140,230,255,.5)';
+ c.beginPath();c.ellipse(x,y,56,26,0,0,Math.PI*2);c.fill();
+ c.strokeStyle=`rgba(225,250,255,${.7+.3*pulse})`;c.lineWidth=3;c.beginPath();c.ellipse(x,y,34+pulse*8,15+pulse*4,0,0,Math.PI*2);c.stroke();
+ for(let i=0;i<6;i++){const k=(t*.6+i/6)%1;c.fillStyle=`rgba(200,245,255,${.8*(1-k)})`;c.fillRect(Math.round(x-30+i*12),Math.round(y-k*40),3,3);}
+ arrow(c,x,y-34-Math.abs(Math.sin(t*4))*12,Math.PI/2,1.1);
+ if(player){const dx=x-player.x,dy=y-player.y,d=Math.hypot(dx,dy);if(d>110){const a=Math.atan2(dy,dx);arrow(c,player.x+Math.cos(a)*48,player.y-20+Math.sin(a)*48,a,.75);}}
+ c.restore();
+}
+// A chunky gold arrow pointing along angle a, centred on its tip.
+function arrow(c,x,y,a,k){
+ c.save();c.translate(x,y);c.rotate(a);c.scale(k,k);
+ c.fillStyle='#1f2a22';c.beginPath();c.moveTo(2,0);c.lineTo(-18,-14);c.lineTo(-18,-6);c.lineTo(-34,-6);c.lineTo(-34,6);c.lineTo(-18,6);c.lineTo(-18,14);c.closePath();c.fill();
+ c.fillStyle='#ffd65a';c.beginPath();c.moveTo(-1,0);c.lineTo(-16,-10);c.lineTo(-16,-4);c.lineTo(-31,-4);c.lineTo(-31,4);c.lineTo(-16,4);c.lineTo(-16,10);c.closePath();c.fill();
+ c.restore();
+}

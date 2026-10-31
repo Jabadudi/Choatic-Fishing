@@ -11,6 +11,7 @@ import {createVillageResidents,updateVillageResidents} from './village-life.js';
 import {createNpcs} from './npcs.js';
 import {NPC_TYPES} from './entities.js';
 import {practise} from './skills.js';
+import {startSpar,updateSpar,sparDown,sparObjective} from './spar.js';
 export const COOKING_XP=40;
 // Fishing XP for line-casting the sword out of Drayfus's hand.
 export const DISARM_XP=30;
@@ -71,6 +72,7 @@ export function storyObjective(world){
  if(villageStory(s)&&s.stage!=='ch4-complete'&&!chapterFive(s)&&!training(s)&&s.guide?.areaId!==world.areaId){const names={landing:'Reedwater Landing',windchime:'Windchime Path',crossroads:'Willowbank Crossroads',village:'Willowback Village','chief-house':'the chief’s house'};return `Chapter ${chapterFour(s)?4:3} · ${chapterFour(s)?'Mara':'Your guide'} is waiting in ${names[s.guide.areaId]}. Return to her to continue.`;}
  if(s.stage==='fish')return supperObjective(world);
  if(s.stage==='ch6-buckets')return bucketObjective(s.buckets||0,!!s.carrying);
+ if(s.stage==='ch6-spar'&&world.spar)return sparObjective(world.spar);
  if(['ch7-run','ch7-laps'].includes(s.stage))return runObjective(s.stage,s.run||0);
  if(s.stage==='ch7-hold')return holdObjective(s.hold||0);
  return ({...CHAPTER3_OBJECTIVES,...CHAPTER4_OBJECTIVES,...CHAPTER5_OBJECTIVES,...CHAPTER6_OBJECTIVES,...CHAPTER7_OBJECTIVES,arrival:'Chapter 1 · Follow the path to Grandpa’s cabin.',explore:'Chapter 1 · Examine the lure box and the photograph inside the cabin.',rest:'Chapter 1 · When you are ready, rest in the cabin bed.',storm:'Chapter 1 · Survive the storm.',awakening:'Chapter 1 · A new morning.',complete:'Chapter 2 · Talk to the girl beside the campfire at Reedwater Landing.',
@@ -124,7 +126,7 @@ function trainingPrompt(w,near){
  const s=w.story,d=w.npcs.find(n=>n.id==='drayfus'&&n.areaId===w.areaId);
  const byDrayfus=d&&near(d.x,d.y,NPC_TYPES.mara.talkRange);
  if(byDrayfus&&s.stage==='ch6-circle')return 'Meet Drayfus';
- if(byDrayfus&&s.stage==='ch6-spar')return 'Spar with Drayfus';
+ if(byDrayfus&&s.stage==='ch6-spar'&&!w.spar)return 'Spar with Drayfus';
  if(byDrayfus&&s.stage==='ch6-confession')return 'Continue the conversation';
  if(s.stage==='ch6-rack'&&near(RACK_SPOT.x,RACK_SPOT.y+40,70))return 'Choose a weapon';
  if(s.stage==='ch6-cast'&&near(CAST_SPOT.x,CAST_SPOT.y,60))return 'Cast at the sword';
@@ -136,7 +138,7 @@ function trainingPrompt(w,near){
  return null;
 }
 // Full buckets slow Eli down, and they get heavier as the trips add up.
-export const storySpeed=w=>{const s=w.story;if(s?.stage==='ch7-laps')return Math.max(.6,.85-(s.run||0)*.03);return s?.stage==='ch6-buckets'&&s.carrying?Math.max(.55,.8-(s.buckets||0)*.006):1;};
+export const storySpeed=w=>{const s=w.story;if(sparDown(w))return 0;if(s?.stage==='ch7-laps')return Math.max(.6,.85-(s.run||0)*.03);return s?.stage==='ch6-buckets'&&s.carrying?Math.max(.5,.7-(s.buckets||0)*.07):1;};
 // Swallowing the core empties the lure's place in the backpack.
 export function ingestCore(w){
  w.story.coreIngested=true;
@@ -267,7 +269,9 @@ export function advanceStory(w){
  // The ocelot steps into the sunlight and breaks apart into blue motes.
  if(scene==='ch6-door'&&s.stage==='ch6-door'){sixth('ch6-circle');if(w.areaId===GUEST_LODGE.id)w.npcs.push({id:'ocelot-vanish',name:'',areaId:GUEST_LODGE.id,...OCELOT_CORNER,npc:true,creature:true,spriteId:'ocelot',animationState:'vanish',animationStart:w.elapsed,talkRange:-1,vanishing:true});}
  if(scene==='ch6-drayfus'&&s.stage==='ch6-circle')sixth('ch6-spar');
- if(scene==='ch6-spar'&&s.stage==='ch6-spar'){sixth('ch6-confession');show(w,'ch6-confession');}
+ // The spar itself is a fight; the scene that follows depends on how it ended.
+ if(scene==='ch6-spar'&&s.stage==='ch6-spar')startSpar(w);
+ if(['ch6-spar-ten','ch6-spar-touch'].includes(scene)&&s.stage==='ch6-spar'){sixth('ch6-confession');show(w,'ch6-confession');}
  if(scene==='ch6-confession'&&s.stage==='ch6-confession')sixth('ch6-rack');
  // Holding Grandpa's rod with the core inside him wakes Reedwater's Call.
  if(scene==='ch6-rod'&&s.stage==='ch6-rack'){s.callAwakened=true;sixth('ch6-cast');}
@@ -402,6 +406,7 @@ export function updateStory(w,dt,walkable){
  if(w.npcs?.some(n=>n.vanishing&&w.elapsed-n.animationStart>VANISH_TIME))w.npcs=w.npcs.filter(n=>!n.vanishing||w.elapsed-n.animationStart<=VANISH_TIME);
  const s=w.story;if(!villageStory(s)){updateChapterTwo(w,dt,walkable);return;}
  if(chapterSeven(s)){updateChapterSeven(w,dt);return;}
+ if(s.stage==='ch6-spar'&&w.spar&&w.areaId===TRAINING_GROUND.id&&!pendingScene(w)){const end=updateSpar(w,dt,walkable);if(end){w.spar=null;w.npcs=createStoryNpcs(s,w.elapsed);show(w,end==='touch'?'ch6-spar-touch':'ch6-spar-ten');}return;}
  if(pendingScene(w)||['ch3-lore','ch3-complete'].includes(s.stage)||chapterFour(s)||chapterFive(s)||chapterSix(s)||w.player.health<=0)return;
  const n=w.npcs.find(n=>n.id==='mara'),g=s.guide;if(!n||!g)return;
  n.animationState='idle';if(w.areaId!==g.areaId)return;
@@ -428,7 +433,7 @@ export function restoreStory(data){
  if(!data||!STORY_STAGES.includes(data.stage)||typeof data.lureSeen!=='boolean'||typeof data.photoSeen!=='boolean'||(data.scene!==null&&!Object.hasOwn(SCENES,data.scene))||!Number.isInteger(data.page)||data.page<0||(data.scene?data.page>=SCENES[data.scene].length:data.page!==0))throw Error('Invalid story progress.');
  if((data.stage==='storm'&&data.scene!=='storm')||(data.stage==='awakening'&&data.scene!=='awakening')||(data.scene==='storm'&&data.stage!=='storm'))throw Error('Invalid story scene.');
  if(['fish','rest','storm','awakening','complete',...CHAPTER_TWO_STAGES,...CHAPTER_THREE_STAGES,...CHAPTER_FOUR_STAGES,...CHAPTER_FIVE_STAGES,...CHAPTER_SIX_STAGES,...CHAPTER_SEVEN_STAGES].includes(data.stage)&&(!data.lureSeen||!data.photoSeen))throw Error('Invalid story discoveries.');
- const sceneStages={'ch2-shadow':'ch2-camp','ch2-cabin':'ch2-cabin','ch2-island':'ch2-home','ch2-departure':'ch2-ready','ch2-end':'ch2-follow','ch3-start':'ch2-complete','ch3-chimes':'ch3-chimes','ch3-arrival':'ch3-travel','ch3-beasts':'ch3-creatures','ch3-history':'ch3-lore','ch3-end':'ch3-chief',...Object.fromEntries(CHAPTER4_SEQUENCE.map(scene=>[scene,scene])),'ch5-tour':'ch5-tour','ch5-sleep':'ch5-sleep','ch6-wake':'ch5-morning','ch7-up':'ch6-complete','ch7-sunrise':'ch7-run','ch7-breakfast':'ch7-breakfast','ch7-stance':'ch7-squat','ch7-cat':'ch7-hold','ch7-grass':'ch7-rest','ch6-door':'ch6-door','ch6-drayfus':'ch6-circle','ch6-spar':'ch6-spar','ch6-confession':'ch6-confession','ch6-rod':'ch6-rack','ch6-cast':'ch6-cast','ch6-forty':'ch6-buckets','ch6-night':'ch6-night'};
+ const sceneStages={'ch2-shadow':'ch2-camp','ch2-cabin':'ch2-cabin','ch2-island':'ch2-home','ch2-departure':'ch2-ready','ch2-end':'ch2-follow','ch3-start':'ch2-complete','ch3-chimes':'ch3-chimes','ch3-arrival':'ch3-travel','ch3-beasts':'ch3-creatures','ch3-history':'ch3-lore','ch3-end':'ch3-chief',...Object.fromEntries(CHAPTER4_SEQUENCE.map(scene=>[scene,scene])),'ch5-tour':'ch5-tour','ch5-sleep':'ch5-sleep','ch6-wake':'ch5-morning','ch7-up':'ch6-complete','ch7-sunrise':'ch7-run','ch7-breakfast':'ch7-breakfast','ch7-stance':'ch7-squat','ch7-cat':'ch7-hold','ch7-grass':'ch7-rest','ch6-door':'ch6-door','ch6-drayfus':'ch6-circle','ch6-spar':'ch6-spar','ch6-spar-ten':'ch6-spar','ch6-spar-touch':'ch6-spar','ch6-confession':'ch6-confession','ch6-rod':'ch6-rack','ch6-cast':'ch6-cast','ch6-forty':'ch6-buckets','ch6-night':'ch6-night'};
  if(sceneStages[data.scene]&&sceneStages[data.scene]!==data.stage)throw Error('Invalid story scene.');
  if(data.stage==='ch2-camp'&&data.scene!=='ch2-shadow')throw Error('Invalid story scene.');
  let guide=null;

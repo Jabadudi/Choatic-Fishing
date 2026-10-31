@@ -4,8 +4,8 @@ import {script,say,think,narrate} from './scene-script.js';
 export const CORE='Region Core',OCELOT='The ocelot';
 export const CHAPTER_SIX_STAGES=['ch6-door','ch6-circle','ch6-spar','ch6-confession','ch6-rack','ch6-cast','ch6-buckets','ch6-night','ch6-complete'];
 export const chapterSix=s=>!!s&&CHAPTER_SIX_STAGES.includes(s.stage);
-// Drayfus's forty trips from the yard well to the trough.
-export const BUCKET_TRIPS=40;
+// Drayfus's bucket trips from the yard well to the trough: three, with the buckets full to the brim.
+export const BUCKET_TRIPS=3;
 const eli=text=>say('Eli',text),mara=text=>say('Mara',text),emilia=text=>say('Emilia',text),drayfus=text=>say('Drayfus',text),ocelot=text=>say(OCELOT,text),core=text=>say(CORE,text);
 export const CHAPTER6_OBJECTIVES={
  'ch6-door':'Chapter 6 · Mara is pounding on the door. Answer it.',
@@ -20,10 +20,8 @@ export const CHAPTER6_OBJECTIVES={
 export const bucketObjective=(trips,carrying)=>`Chapter 6 · ${carrying?'Carry the full buckets to the trough':'Fill the buckets at the yard well'} (${trips}/${BUCKET_TRIPS} trips).`;
 // What Eli thinks as the trips add up.
 export const BUCKET_NOTES={
- 10:'Ten trips. Eli’s shoulders have opinions.',
- 20:'Twenty. Halfway. The buckets are definitely getting heavier. Buckets don’t do that.',
- 30:'Trip thirty. Now Eli understands what Drayfus meant.',
- 34:'Both hands on the handles. Eyes on his own feet. Looking further ahead makes the well move away.'
+ 1:'One trip. Eli’s shoulders have opinions.',
+ 2:'Two. The buckets are definitely getting heavier. Buckets don’t do that.'
 };
 export const CHAPTER6_SCENES={
  // Plays in Eli's room at the end of Chapter 5, the moment he reads the writing in the air.
@@ -47,10 +45,18 @@ export const CHAPTER6_SCENES={
   {title:'Sunrise was some time ago',lines:[drayfus('Sunrise was some time ago.'),eli('Sorry. I had a, uh. Rough night.'),drayfus('So did the Rimejaw we buried yesterday.'),think('Eli','Okay. So that’s how this is going to go.'),emilia('Drayfus.')]},
   {title:'You are nothing like him',lines:[drayfus('Drayfus. I lead the village guard. I fought my first shadow walker when I was younger than her.'),narrate('He tips his head at Mara.'),drayfus('Your grandfather taught me how to hold a blade. So the chief tells me I owe him.'),eli('You knew him?'),drayfus('I knew him. And you are nothing like him. Pick up a sword.')]}
  ]),
+ // Drayfus hands Eli a practice sword; the spar itself is played as a fight (spar.js).
  'ch6-spar':script([
-  {title:'Two seconds',lines:[narrate('He hands Eli a wooden practice sword, heavier than it looks, and picks up one for himself that looks like a toothpick in his hand.'),drayfus('Attack me.'),narrate('Eli swings. Drayfus is not there anymore. Something taps the back of Eli’s knee, very gently, and the ground comes up and hits him in the face.'),core('You have taken damage.'),eli('Thanks. Really helpful.'),drayfus('Up.')]},
-  {title:'Up',lines:[narrate('He gets up. He swings again. This time he doesn’t even see what hits him. One second he is standing; the next he is looking at a very nice blue sky, and his sword is somewhere over by the fence.'),core('You have taken damage.'),drayfus('Up.'),narrate('Mara sits on the fence, swinging her legs, one hand over her mouth. Her shoulders are shaking.'),eli('You’re laughing.'),mara('I’m not.'),narrate('She is.')]},
-  {title:'Ten',lines:[narrate('Eli goes down nine times. On the tenth, his legs simply decide to stop being involved, and he stays down. Lungs on fire. Arms full of sand.'),think('Eli','The last real exercise I did was carrying groceries up three flights of stairs. Shylee carried half of them.'),core('[Still Water] has activated.')]},
+  {title:'Attack me',lines:[narrate('He hands Eli a wooden practice sword, heavier than it looks, and picks up one for himself that looks like a toothpick in his hand.'),drayfus('Attack me.'),narrate('Mara climbs onto the fence to watch. Emilia pours herself more tea.')]}
+ ]),
+ // After the fight, if Drayfus knocked Eli down ten times.
+ 'ch6-spar-ten':script([
+  {title:'Ten',lines:[narrate('On the tenth time, Eli’s legs simply decide to stop being involved, and he stays down. Lungs on fire. Arms full of sand.'),narrate('Mara sits on the fence, swinging her legs, one hand over her mouth. Her shoulders are shaking.'),eli('You’re laughing.'),mara('I’m not.'),narrate('She is.'),think('Eli','The last real exercise I did was carrying groceries up three flights of stairs. Shylee carried half of them.')]},
+  {title:'Shoulders',lines:[narrate('The cool feeling slides through his chest, and the panic sinks like a stone. Without the panic in the way, he starts noticing things.'),think('Eli','His feet never cross. He moves before I swing, like he’s reading something. He waits for me to commit, and then he just isn’t there.'),think('Eli','He’s watching my shoulders. I telegraph everything with my shoulders.'),drayfus('You stopped flinching. Around the sixth time. Why?'),narrate('Eli looks past him, at Emilia on her bench. She has stopped drinking her tea, and she is watching him very closely.'),eli('I ate it.')]}
+ ]),
+ // After the fight, if Eli landed a hit.
+ 'ch6-spar-touch':script([
+  {title:'A tap on the ribs',lines:[narrate('Drayfus looks down at the place where Eli’s practice sword touched his ribs. It was barely a tap. It would not have bruised a peach.'),narrate('On the fence, Mara has stopped laughing.'),drayfus('Again.'),eli('I hit you.'),drayfus('Once. Again.')]},
   {title:'Shoulders',lines:[narrate('The cool feeling slides through his chest, and the panic sinks like a stone. Without the panic in the way, he starts noticing things.'),think('Eli','His feet never cross. He moves before I swing, like he’s reading something. He waits for me to commit, and then he just isn’t there.'),think('Eli','He’s watching my shoulders. I telegraph everything with my shoulders.'),drayfus('You stopped flinching. Around the sixth time. Why?'),narrate('Eli looks past him, at Emilia on her bench. She has stopped drinking her tea, and she is watching him very closely.'),eli('I ate it.')]}
  ]),
  'ch6-confession':script([
@@ -71,10 +77,10 @@ export const CHAPTER6_SCENES={
   {title:'It bent',lines:[narrate('He casts. The line sings off the reel in a thin, bright whistle, and the bare hook flashes core blue in the morning sun.'),narrate('The line does not arc the way a line should arc. It bends. It curves around Drayfus’s guard, under his arm, and wraps three times around the blade of his practice sword, neat as a knot, before he has finished blinking.'),narrate('Eli pulls. The sword leaves Drayfus’s hand, sails across the circle end over end, and lands with a thump in the dirt at Eli’s feet.')]},
   {title:'Fishing has increased',lines:[narrate('Nobody says anything. On the roof of the chief’s house, a Flitlynx stops cleaning its paw.'),core('Fishing has increased.'),eli('…Huh.')]},
   {title:'Oscar',lines:[narrate('Drayfus looks at his empty hand. Then he looks at Eli, and for the first time the measuring look is gone. He looks like a man looking at a house he used to live in.'),narrate('He picks his sword out of the dirt and turns it over. Three neat rings of burn marks circle the wood, glowing faintly blue before they fade.'),drayfus('Oscar.'),narrate('Just the name. Then his face closes again like a door.'),drayfus('Again.'),narrate('Somewhere warm, low in Eli’s stomach, he could swear he hears a cat laughing.')]},
-  {title:'Forty trips',lines:[narrate('Eli does not get to cast again. Drayfus takes the rod off him, leans it against the fence, puts a bucket in each of his hands and points at the yard well.'),drayfus('Forty trips.'),eli('Why?'),drayfus('Because the next time you cast that thing, I want you to be standing up when it’s over.')]}
+  {title:'Three trips',lines:[narrate('Eli does not get to cast again. Drayfus takes the rod off him, leans it against the fence, puts a bucket in each of his hands and points at the yard well.'),drayfus('Three trips. Full to the brim. Spill and it doesn’t count.'),eli('Only three?'),drayfus('You haven’t lifted them yet.'),eli('Why?'),drayfus('Because the next time you cast that thing, I want you to be standing up when it’s over.')]}
  ]),
  'ch6-forty':script([
-  {title:'Forty',lines:[narrate('He tips the fortieth bucket into the trough. Drayfus nods once, says nothing, and walks off. It is the nicest thing he has done all day.')]},
+  {title:'Three',lines:[narrate('He tips the third bucket into the trough, and the water slops over the rim. Drayfus nods once, says nothing, and walks off. It is the nicest thing he has done all day.')]},
   {title:'The walk back',lines:[narrate('The sun is gone when they let him go. Mara steers him by the elbow as far as the lodge door, tells him to drink the waterskin, and leaves before he can thank her.'),narrate('He remembers the door. Then he remembers the bed. In between there is a blank where a person’s memories are supposed to be.')]}
  ]),
  'ch6-night':script([
