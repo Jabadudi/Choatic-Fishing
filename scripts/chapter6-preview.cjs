@@ -37,13 +37,14 @@ const out=process.env.SHOTS||'screenshots';
  await stand(mara.x,mara.y-30);await page.waitForTimeout(300);await page.screenshot({path:`${out}/04-mara-at-door.png`});
  await page.keyboard.press('Space');await until(/What cat\?/);await page.screenshot({path:`${out}/05-what-cat.png`});
  await finishScene();assert.equal(await stage(),'ch6-circle');
- // Out to the village, through the gate beside the chief's house.
- await q(async()=>{const w=window.__storyQA.world,{TRAINING_GATE}=await import('/src/training-ground.js');w.areaId='village';Object.assign(w.player,{x:TRAINING_GATE.x,y:TRAINING_GATE.y+30});});
- await page.waitForTimeout(500);await page.screenshot({path:`${out}/06-training-gate.png`});
+ // Out to the village and up the path north, past the back of the chief's house.
+ await q(async()=>{const w=window.__storyQA.world,{TRAINING_GATE}=await import('/src/training-ground.js');w.areaId='village';Object.assign(w.player,{x:640,y:200});});
+ await page.waitForTimeout(500);await page.screenshot({path:`${out}/06-north-path.png`});
+ await q(async()=>{const w=window.__storyQA.world,{TRAINING_GATE}=await import('/src/training-ground.js');Object.assign(w.player,{x:TRAINING_GATE.x,y:TRAINING_GATE.y+30});});
+ await page.waitForTimeout(500);await page.screenshot({path:`${out}/06b-training-gate.png`});
  await page.keyboard.press('Space');await page.waitForTimeout(500);
  assert.equal(await q(()=>window.__storyQA.world.areaId),'training-ground');
  await stand(540,520);await page.waitForTimeout(400);await page.screenshot({path:`${out}/07-training-ground.png`});
- await stand(540,120);await page.waitForTimeout(400);await page.screenshot({path:`${out}/07b-north-path.png`});
  await stand(540,485);await page.waitForTimeout(200);await page.keyboard.press('Space');
  await until(/Sunrise was some time ago \|/);assert.equal(await page.locator('#story-name').innerText(),'Drayfus');await page.screenshot({path:`${out}/08-drayfus.png`});
  await finishScene();await stand(540,485);await page.waitForTimeout(200);await page.keyboard.press('Space');

@@ -65,7 +65,7 @@ Continue from the end of Chapter 5, in Eli's room. Every finished scene is a sav
 
 1. **Read the floating writing** (press Space anywhere in the room). The Region Core's writing speaks in a blue panel: Reedwater has accepted Eli, Still Water is awakened, Reedwater's Call is dormant and two slots are locked. The ocelot talks, refuses to give its name, and Still Water activates for the first time.
 2. Mara now stands in the doorway. **Answer the door**: she cannot see the ocelot, which dissolves into blue motes and settles in Eli's stomach.
-3. Go to the village and through the **Training Ground** gate on the west side of the chief's house. The training ground is a fenced yard with a weapon rack, straw dummies, a yard well and a trough. Drayfus stands in the circle, Emilia sits on her bench and Mara sits on the fence.
+3. Go to the village and up the path north out of the village, past the back of the chief's house, to the **Training Ground** gate. Walk off the top of the map or press Space at the gate. The training ground is a fenced yard with a weapon rack, straw dummies, a yard well and a trough. Drayfus stands in the circle, Emilia sits on her bench and Mara sits on the fence.
 4. **Meet Drayfus**, then **Spar with Drayfus**: ten knockdowns, Still Water, and Eli's confession that he ate the core. Emilia remembers Oscar reading writing nobody else could see; the ocelot warns Eli to keep Croshelda's name to himself.
 5. **Choose a weapon** at the rack. Eli picks Grandpa's rod, and Reedwater's Call awakens (`story.callAwakened` becomes true).
 6. Stand at the south edge of the circle and **Cast at the sword**. The line bends and disarms Drayfus. Eli earns Fishing XP, and Drayfus whispers “Oscar.”
@@ -79,7 +79,7 @@ Drayfus, Mara, Emilia and the ocelot walk on their own sheets (see `art/README.m
 Continue from the end of Chapter 6, in Eli's room. Every finished scene is a saved checkpoint, and so is each guard post passed and each second of the squat.
 
 1. **Go to sleep** in the bed. Drayfus comes in with a lantern before dawn: “Up.” The Region Core reports reserves recovering, and the ocelot notices Eli did not dream.
-2. **The dawn run.** Eli starts outside the lodge in the dark. He runs the path round Willowback past eight posts in order: seven guards (“Morning, Oscar's boy.”) and the watchtower at the southern end, where Drayfus watches from the platform. The sky greys as the posts go by; standing still too long draws a warning from the tower.
+2. **The dawn run.** Eli starts outside the lodge in the dark. He runs the path round Willowback past eight posts in order: seven guards (“Morning, Oscar's boy.”) down the west side, along the river and up the east side to the watchtower just outside the village gate, where Drayfus watches from the platform. The sky greys as the posts go by; standing still too long draws a warning from the tower.
 3. **Sunrise** at the watchtower: eleven laps, the waterskin, and Mara asking whether he threw up.
 4. **Have breakfast with Mara** in the chief's kitchen. Emilia is out.
 5. **Report to Drayfus** in the training circle, then **hold the squat**: stand still in front of him for 20 seconds. Moving or stepping off the spot starts the count again. Eli crouches and starts to shake as it goes on.

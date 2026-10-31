@@ -1,13 +1,11 @@
-// The village guard's training ground beside the chief's house. Geometry, collision and artwork only; story.js decides who stands here.
+// The village guard's training ground, up the path north out of Willowback. Geometry, collision and artwork only; story.js decides who stands here.
 import {drawGrassBase} from './grass-texture.js';
 import {drawProp,drawTiles} from './sprites.js';
-// The gate in Willowback, on the west side of the chief's house, and the path that comes out behind it.
-export const TRAINING_GATE={x:580,y:290};
-export const TRAINING_BACK={x:780,y:175};
+// The path leaves Willowback past the back of the chief's house and runs north out of the village to this gate.
+export const TRAINING_GATE={x:740,y:60};
 const W=1080,H=840;
-export const TRAINING_GROUND={id:'training-ground',name:'The Training Ground',width:W,height:H,seed:7361,spawn:{x:540,y:780},northSpawn:{x:540,y:90},exits:[
- {edge:'south',from:490,to:590,target:'village',entry:{x:TRAINING_GATE.x,y:TRAINING_GATE.y+40},label:'Willowback Village'},
- {edge:'north',from:500,to:580,target:'village',entry:TRAINING_BACK,label:'Behind the Chief’s House'}]};
+export const TRAINING_GROUND={id:'training-ground',name:'The Training Ground',width:W,height:H,seed:7361,spawn:{x:540,y:780},exits:[
+ {edge:'south',from:490,to:590,target:'village',entry:{x:TRAINING_GATE.x,y:TRAINING_GATE.y+60},label:'Willowback Village'}]};
 export const CIRCLE={x:540,y:440,rx:250,ry:180};
 export const DRAYFUS_SPOT={x:540,y:430};
 export const BENCH={x:190,y:360};
@@ -23,11 +21,11 @@ const DUMMIES=[{x:250,y:170},{x:330,y:150},{x:860,y:450}];
 // Scenery only, with no drawn fallback: a barrel of practice weapons, a spear crate, an archery target and hay.
 const EXTRAS=[['weapon-barrel',880,160,40,52],['spear-crate',640,160,40,52],['archery-target',1020,430,44,54],['hay-bale',1024,510,44,44]];
 export const TRAINING_GROUND_PLACES=[];
-// Split-log fence all round, with a gap for the path north and the gate south.
-const TOP=56,FENCE=34,NORTH_GAP=[500,580],SOUTH_GAP=[490,590];
+// Split-log fence all round, with the gate south onto the path back down to the village.
+const TOP=56,FENCE=34,SOUTH_GAP=[490,590];
 export function trainingGroundBlocked(x,y){
  if(x<FENCE||x>W-FENCE)return true;
- if(y<TOP&&(x<NORTH_GAP[0]||x>NORTH_GAP[1]))return true;
+ if(y<TOP)return true;
  if(y>H-FENCE&&(x<SOUTH_GAP[0]||x>SOUTH_GAP[1]))return true;
  if(x>RACK_SPOT.x-70&&x<RACK_SPOT.x+70&&y>RACK_SPOT.y-40&&y<RACK_SPOT.y+20)return true;
  if(Math.hypot(x-YARD_WELL.x,y-YARD_WELL.y)<38)return true;
@@ -91,8 +89,8 @@ function willow(c,t){
 // Drawn each frame: the light follows the story, from a bright morning to a long red evening.
 export function drawTrainingGround(c,{t=0,evening=false,sword=false}={}){
  if(!drawGrassBase(c,0,0,W,H,()=>{})){c.fillStyle='#86ad48';c.fillRect(0,0,W,H);}
- // Packed dirt: the circle, the path south to the village gate and the path north to the chief's house.
- const paths=[[SOUTH_GAP[0]+12,CIRCLE.y,SOUTH_GAP[1]-SOUTH_GAP[0]-24,H-CIRCLE.y],[NORTH_GAP[0]+6,0,NORTH_GAP[1]-NORTH_GAP[0]-12,CIRCLE.y]];
+ // Packed dirt: the circle and the path south to the gate.
+ const paths=[[SOUTH_GAP[0]+12,CIRCLE.y,SOUTH_GAP[1]-SOUTH_GAP[0]-24,H-CIRCLE.y]];
  c.save();c.beginPath();c.ellipse(CIRCLE.x,CIRCLE.y,CIRCLE.rx,CIRCLE.ry,0,0,Math.PI*2);for(const [x,y,w,h] of paths)c.rect(x,y,w,h);c.clip();
  const dirt=drawTiles(c,'dirt-ground',{x:0,y:0,w:W,h:H,tw:96});c.restore();
  if(!dirt){
@@ -103,8 +101,7 @@ export function drawTrainingGround(c,{t=0,evening=false,sword=false}={}){
  }
  // Fences go in before the scenery, so the props stand in front of the north rail.
  const rail=(x0,x1,y)=>{if(!drawTiles(c,'log-fence',{x:x0,y,w:x1-x0,h:30,th:30}))for(let x=x0;x<x1;x+=34){log(c,x,y+6,Math.min(34,x1-x),8);log(c,x,y+20,Math.min(34,x1-x),8);}};
- rail(0,NORTH_GAP[0]-6,TOP-34);rail(NORTH_GAP[1]+6,W,TOP-34);
- if(!drawProp(c,'training-gate-posts',{x:540,y:TOP+4,w:100,h:86})){c.fillStyle='#4a301c';for(const x of [NORTH_GAP[0]-6,NORTH_GAP[1]-2])c.fillRect(x,TOP-40,8,44);}
+ rail(0,W,TOP-34);
  willow(c,t);bench(c);rack(c);well(c,t);trough(c);
  for(const d of DUMMIES)dummy(c,d,t,d.x>600);
  for(const [id,x,y,w,h] of EXTRAS)drawProp(c,id,{x,y,w,h});

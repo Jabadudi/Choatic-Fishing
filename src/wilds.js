@@ -6,7 +6,7 @@ import {GUEST_LODGE,GUEST_LODGE_PLACES,guestLodgeBlocked,drawGuestLodge} from '.
 import {TRAINING_GROUND,TRAINING_GROUND_PLACES,trainingGroundBlocked,drawTrainingGround} from './training-ground.js';
 import {MARSH,MARSH_ROADS,MARSH_PLACES,MARSH_OBJECTS,marshWaterDistance,onMarshDeck,marshBlocked} from './marsh.js';
 import {drawMarshGround,drawMarshObject} from './marsh-art.js';
-import {VILLAGE,VILLAGE_ROADS,VILLAGE_PLACES,villageWaterDistance,onVillageDeck,villageBlocked,villageClear} from './village.js';
+import {VILLAGE,VILLAGE_ROADS,VILLAGE_PLACES,VILLAGE_PROPS,villageWaterDistance,onVillageDeck,villageBlocked,villageClear} from './village.js';
 import {drawVillageGround,drawVillageObject,villageObjects,paintVillageBuildings} from './village-art.js';
 import {drawEntitySprite,drawProp,onPropLoad} from './sprites.js';
 import {CROSSROADS,CROSSROADS_ROADS,CROSSROADS_PLACES,crossroadsWaterDistance,crossroadsBlocked,onCrossroadsDeck,drawCrossroads,drawCrossroadsLabels} from './crossroads.js';
@@ -99,7 +99,7 @@ function findScenery(gx,gy,id){
  if(interior(id)||id==='landing'&&cabinClearing(gx*72+36,gy*72+36))return null;
  if(id==='marsh')return null;
  const x=gx*72+12+hash(gx,gy)*48,y=gy*72+12+hash(gx,gy,3)*48,r=hash(gx,gy,9),region=regionAt(x,y,id);
- if(id==='village'&&villageClear(x,y))return null;
+ if(id==='village'&&(villageClear(x,y)||VILLAGE_PROPS.some(p=>p.kind==='watchtower'&&Math.hypot(x-p.x,y-p.y)<110)))return null;
  if(id==='crossroads'&&((x>475&&x<900&&y>440&&y<860)||(x>1200&&y>570&&y<1000)||(x<430&&y>340&&y<530)))return null;
  if(waterDistance(x,y,id)<95||roadDistance(x,y,id)<65||placesFor(id).some(p=>Math.hypot(x-p.x,y-p.y)<100))return null;
  let kind=region==='Windchime Path'||region==='Forest Approach'?(r<.78?'tree':r<.87?'bush':null):r<.13?'tree':r<.21?'rock':r<.35?'bush':null;

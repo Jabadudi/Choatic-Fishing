@@ -1,5 +1,5 @@
 // Village geography and collision stay independent of the painted architecture.
-export const VILLAGE={id:'village',name:'Willowback Village',width:1920,height:2000,seed:7343,spawn:{x:1800,y:530},exits:[{edge:'east',from:450,to:610,target:'crossroads',entry:{x:65,y:460},label:'Willowbank Crossroads'}]};
+export const VILLAGE={id:'village',name:'Willowback Village',width:1920,height:2000,seed:7343,spawn:{x:1800,y:530},exits:[{edge:'east',from:450,to:610,target:'crossroads',entry:{x:65,y:460},label:'Willowbank Crossroads'},{edge:'north',from:690,to:790,target:'training-ground',entry:{x:540,y:780},label:'Training Ground'}]};
 export const VILLAGE_ROADS=[
  [[1920,530],[1680,530],[1570,580],[1290,580],[1140,680],[1000,750]],
  [[1000,750],[850,850],[750,1010],[730,1210]],
@@ -7,8 +7,8 @@ export const VILLAGE_ROADS=[
  [[1570,580],[1660,870],[1460,870],[1370,1010]],
  [[1290,580],[1440,460]],[[750,1010],[500,1090]],
  [[750,1010],[1060,1030],[1370,1010]],
- // The training ground's back path comes out behind the chief's house and loops round to its gate.
- [[580,330],[530,240],[560,150],[700,140],[780,175]]
+ // The path to the training ground: up past the back of the chief's house and north out of the village.
+ [[580,340],[575,250],[620,170],[700,110],[740,40],[740,0]]
 ];
 export const VILLAGE_BUILDINGS=[
  {id:'blacksmith',x:1220,y:390,w:180,h:90,roof:'#565d68',trim:'#a6a69c',name:'THE BLACKSMITH',kind:'workshop'},
@@ -21,15 +21,15 @@ export const VILLAGE_BUILDINGS=[
  {id:'garden-home',x:650,y:830,w:150,h:76,roof:'#a56242',trim:'#d29760',kind:'home'},
  {id:'boathouse',x:410,y:1030,w:156,h:70,roof:'#567d76',trim:'#8faba0',name:'WILLOW DOCKS',kind:'boat'}
 ];
-// The guard's watchtower at the southern end of the path round the village (Chapter 7).
-export const VILLAGE_PROPS=[{id:'watchtower',x:560,y:1000,kind:'watchtower'},{id:'well',x:1000,y:690,kind:'well'},{id:'produce-stall',x:1180,y:855,kind:'stall'},{id:'fish-stall',x:920,y:975,kind:'fish-stall'}];
+// The guard's watchtower, just outside the village gate on the east road (Chapter 7).
+export const VILLAGE_PROPS=[{id:'watchtower',x:1715,y:740,kind:'watchtower'},{id:'well',x:1000,y:690,kind:'well'},{id:'produce-stall',x:1180,y:855,kind:'stall'},{id:'fish-stall',x:920,y:975,kind:'fish-stall'}];
 export const VILLAGE_PLACES=[
  {id:'village-gate',name:'Willowback Gate',x:1770,y:530,kind:'village-gate',text:'Willowback Village. Beyond the apple baskets and lantern posts, the riverside lanes lead to the commons. The eastern road returns to the crossroads.'},
  {id:'village-commons',name:'The Willow Commons',x:1000,y:740,kind:'village-square',text:'An old well anchors the village commons. Worn paving, shared benches and market awnings make this a natural meeting place.'},
  {id:'village-inn',name:'The Willow Hearth',x:1000,y:555,kind:'village-inn',text:'Warm light spills from the Willow Hearth. Bundles of firewood and a painted fish sign welcome travellers. The door is closed for now.'},
  {id:'village-docks',name:'Willow Docks',x:730,y:1190,kind:'village-dock',text:'Fishing boats rock beside the timber jetty. Cast into the open river from the dock, or follow the quay back toward the commons.'},
  {id:'village-gardens',name:'Kitchen Gardens',x:1370,y:1010,kind:'village-garden',text:'Cabbages, carrots and climbing beans grow behind low woven fences. Watering cans wait beside rain barrels. These gardens feed the village.'},
- {id:'training-gate',name:'Training Ground',x:580,y:290,kind:'training-gate',text:'A gate in a split-log fence beside the chief’s house. Behind it, the village guard trains at sunrise.'},
+ {id:'training-gate',name:'Training Ground',x:740,y:60,kind:'training-gate',text:'The path out of the village to the north, past the back of the chief’s house. At the end of it, the village guard trains at sunrise.'},
  {id:'village-netmaker',name:"Netmaker's Yard",x:1460,y:865,kind:'village-workshop',text:'Nets dry outside a small workshop. Floats, rope coils and repaired crab pots cover the yard. The workshop has not opened for trading yet.'}
 ];
 export const villageShore=x=>1145+Math.sin(x*.004)*28+Math.sin(x*.011)*10;

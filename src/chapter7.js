@@ -5,20 +5,21 @@ import {CORE,OCELOT} from './chapter6.js';
 // training circle until Drayfus freezes at the word "grandmother", runs again, and ends on the grass behind the lodge.
 export const CHAPTER_SEVEN_STAGES=['ch7-run','ch7-breakfast','ch7-squat','ch7-hold','ch7-laps','ch7-rest','ch7-complete'];
 export const chapterSeven=s=>!!s&&CHAPTER_SEVEN_STAGES.includes(s.stage);
-// The guard posts on the path around Willowback, in running order. The last one is the watchtower at the southern end.
+// The guard posts on the path around Willowback, in running order: down the west side, along the river and up the
+// east side to the watchtower just outside the village gate, where the sun comes up.
 export const PERIMETER=[
  {x:300,y:200,place:'the north-west corner'},
- {x:900,y:200,place:'behind the chief’s house'},
- {x:1560,y:280,place:'the north fields'},
- {x:1780,y:640,place:'the east gate'},
- {x:1640,y:1050,place:'the east gardens'},
- {x:1050,y:1090,place:'the river road'},
+ {x:330,y:650,place:'the west lanes'},
+ {x:560,y:1050,place:'the boathouse'},
  {x:760,y:1100,place:'the docks'},
- {x:560,y:1050,place:'the watchtower',tower:true}
+ {x:1050,y:1090,place:'the river road'},
+ {x:1370,y:1080,place:'the kitchen gardens'},
+ {x:1640,y:1050,place:'the east gardens'},
+ {x:1715,y:790,place:'the watchtower',tower:true}
 ];
-// The watchtower itself stands just north of its post; Drayfus watches from the platform.
-export const WATCHTOWER={x:560,y:1000};
-export const TOWER_PLATFORM={x:560,y:890};
+// The watchtower itself stands just north of its post, beside the east road at the gate; Drayfus watches from the platform.
+export const WATCHTOWER={x:1715,y:740};
+export const TOWER_PLATFORM={x:1715,y:630};
 // Eli squats in the middle of the training circle, just in front of Drayfus.
 export const HOLD_SECONDS=20;
 // Where Eli lies down at the end of the day: the grass on the river side of the guest lodge, out of sight of the lanes.

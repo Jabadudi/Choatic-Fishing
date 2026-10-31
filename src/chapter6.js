@@ -9,7 +9,7 @@ export const BUCKET_TRIPS=40;
 const eli=text=>say('Eli',text),mara=text=>say('Mara',text),emilia=text=>say('Emilia',text),drayfus=text=>say('Drayfus',text),ocelot=text=>say(OCELOT,text),core=text=>say(CORE,text);
 export const CHAPTER6_OBJECTIVES={
  'ch6-door':'Chapter 6 · Mara is pounding on the door. Answer it.',
- 'ch6-circle':'Chapter 6 · Go through the gate beside the chief’s house to the training ground, and meet Drayfus.',
+ 'ch6-circle':'Chapter 6 · Take the path north out of the village, past the back of the chief’s house, to the training ground, and meet Drayfus.',
  'ch6-spar':'Chapter 6 · Talk to Drayfus to spar with him.',
  'ch6-confession':'Chapter 6 · Tell them what you did last night.',
  'ch6-rack':'Chapter 6 · Choose a weapon from the rack at the back of the training ground.',

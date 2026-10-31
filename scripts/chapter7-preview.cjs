@@ -34,7 +34,7 @@ const out=process.env.SHOTS||'screenshots';
  await stand(PERIMETER[0].x,PERIMETER[0].y);await page.waitForTimeout(400);await page.screenshot({path:`${out}/04-first-guard.png`});
  for(let i=1;i<6;i++){await stand(PERIMETER[i].x,PERIMETER[i].y);await page.waitForTimeout(200);}
  await stand(PERIMETER[6].x,PERIMETER[6].y);await page.waitForTimeout(300);
- await stand(PERIMETER[7].x,PERIMETER[7].y-60);await page.waitForTimeout(500);await page.screenshot({path:`${out}/05-watchtower.png`});
+ await stand(PERIMETER[7].x-90,PERIMETER[7].y+20);await page.waitForTimeout(500);await page.screenshot({path:`${out}/05-watchtower.png`});
  await stand(PERIMETER[7].x,PERIMETER[7].y);await until(/Did you throw up\?/);await page.screenshot({path:`${out}/06-sunrise-mara.png`});
  await finishScene();assert.equal(await stage(),'ch7-breakfast');
  // Breakfast in the chief's kitchen.
