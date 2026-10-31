@@ -26,7 +26,7 @@ Dry and teasing, but deeply caring. Described as "tougher than me" by Eli. After
 - Eli never texted. In Ch5 Eli imagines her waiting alone in the apartment, the way Grandpa used to wait on the dock.
 - Eli: "I didn't think anything of it. You never do." This foreshadows a long separation.
 
-## Chapter 11 interlude (draft)
+## Chapter 15.5 interlude (draft)
 - Narrates her own short interlude in first person. Keeps a day count on the fridge in dry-erase marker, under Grandpa's trout magnet.
 - The police brushed her off. On day 31 she finds the captain at the port; he knows her from the school photo Oscar kept in his wallet ("You're the little one").
 - She doesn't get seasick (and plans to bring it up every Thanksgiving).
