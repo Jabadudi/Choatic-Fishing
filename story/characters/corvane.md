@@ -38,4 +38,6 @@ Calm, courteous, patient, utterly certain. He treats the battle as a formality. 
 - Whether he survives Volume 1.
 
 ## Visual reference notes
+Art delivered (staged in `/mnt/project-files/art/incoming-corvane/` for the game thread): reference sheet, walk sheet (4 columns × 8), shadows-part strip, block strip. The reference sheet sets his look: wavy dark hair, a high-collared black plate armor with chevron plates, a black belt, a long thin sword at his hip, and a smoky black cloak.
+
 Tall, lean general in plate armor so black it seems to drink light, with no visible shine or trim. A pale, narrow, almost handsome face with hollow cheeks, black glassy eyes and short dark swept-back hair (placeholder; the text gives no hair). A tattered black cloak that frays into smoke at the hem, like the shadow walkers. Calm, polite expression.
