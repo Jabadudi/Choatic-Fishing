@@ -1,4 +1,5 @@
 import {currentScene} from './story.js';
+import {sparSwing} from './spar.js';
 import {World,createActor} from './world.js';
 export const VERSION=6;
 export const neutralInput=()=>({left:false,right:false,up:false,down:false,held:false,aim:{x:480,y:365}});
@@ -13,6 +14,8 @@ export function applyAction(world,id,action,input){
  return world.asActor(actor,()=>{
   actor.angle=Math.atan2(input.aim.y-actor.y,input.aim.x-actor.x);
   if(/^slot-[1-7]$/.test(action))return world.equip(Number(action.slice(5)));
+  // Sparring with Drayfus in Chapter 6: the use button swings the practice sword.
+  if(world.spar&&actor===world.player&&['click','use','toggle'].includes(action))return sparSwing(world);
   switch(action){
    case 'upgrade-hermes':return world.chooseUpgrade('hermes');
    case 'upgrade-dash':return world.chooseUpgrade('dash');
