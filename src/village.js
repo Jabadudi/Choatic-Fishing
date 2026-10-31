@@ -6,7 +6,9 @@ export const VILLAGE_ROADS=[
  [[1000,750],[1080,740],[1100,620],[1000,550]],[[1000,750],[710,620],[590,570]],
  [[1570,580],[1660,870],[1460,870],[1370,1010]],
  [[1290,580],[1440,460]],[[750,1010],[500,1090]],
- [[750,1010],[1060,1030],[1370,1010]]
+ [[750,1010],[1060,1030],[1370,1010]],
+ // The training ground's back path comes out behind the chief's house and loops round to its gate.
+ [[580,330],[530,240],[560,150],[700,140],[780,175]]
 ];
 export const VILLAGE_BUILDINGS=[
  {id:'blacksmith',x:1220,y:390,w:180,h:90,roof:'#565d68',trim:'#a6a69c',name:'THE BLACKSMITH',kind:'workshop'},

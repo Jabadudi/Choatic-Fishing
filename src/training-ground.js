@@ -1,33 +1,41 @@
-// The village guard's training ground behind the chief's house. Geometry, collision and artwork only; story.js decides who stands here.
+// The village guard's training ground beside the chief's house. Geometry, collision and artwork only; story.js decides who stands here.
 import {drawGrassBase} from './grass-texture.js';
 import {drawProp,drawTiles} from './sprites.js';
-// The gate in Willowback, on the west side of the chief's house.
+// The gate in Willowback, on the west side of the chief's house, and the path that comes out behind it.
 export const TRAINING_GATE={x:580,y:290};
-export const TRAINING_GROUND={id:'training-ground',name:'The Training Ground',width:720,height:560,seed:7361,spawn:{x:360,y:480},exits:[{edge:'south',from:310,to:410,target:'village',entry:{x:TRAINING_GATE.x,y:TRAINING_GATE.y+40},label:'Willowback Village'}]};
-export const CIRCLE={x:360,y:300,rx:190,ry:140};
-export const DRAYFUS_SPOT={x:360,y:290};
-export const BENCH={x:110,y:250};
-export const TRAINING_EMILIA_SPOT={x:110,y:226};
-export const FENCE_MARA_SPOT={x:200,y:470};
-export const RACK_SPOT={x:360,y:96};
-export const YARD_WELL={x:604,y:150};
-export const TROUGH={x:600,y:420};
+export const TRAINING_BACK={x:780,y:175};
+const W=1080,H=840;
+export const TRAINING_GROUND={id:'training-ground',name:'The Training Ground',width:W,height:H,seed:7361,spawn:{x:540,y:780},northSpawn:{x:540,y:90},exits:[
+ {edge:'south',from:490,to:590,target:'village',entry:{x:TRAINING_GATE.x,y:TRAINING_GATE.y+40},label:'Willowback Village'},
+ {edge:'north',from:500,to:580,target:'village',entry:TRAINING_BACK,label:'Behind the Chief’s House'}]};
+export const CIRCLE={x:540,y:440,rx:250,ry:180};
+export const DRAYFUS_SPOT={x:540,y:430};
+export const BENCH={x:190,y:360};
+export const TRAINING_EMILIA_SPOT={x:190,y:336};
+export const FENCE_MARA_SPOT={x:330,y:720};
+export const RACK_SPOT={x:760,y:130};
+export const YARD_WELL={x:940,y:250};
+export const TROUGH={x:920,y:650};
 // Where Eli stands to cast at Drayfus's sword: the south edge of the circle.
-export const CAST_SPOT={x:360,y:430};
-const DUMMIES=[{x:150,y:120},{x:214,y:104},{x:560,y:300}];
+export const CAST_SPOT={x:540,y:600};
+const WILLOW={x:150,y:322};
+const DUMMIES=[{x:250,y:170},{x:330,y:150},{x:860,y:450}];
 // Scenery only, with no drawn fallback: a barrel of practice weapons, a spear crate, an archery target and hay.
-const EXTRAS=[['weapon-barrel',470,118,40,52],['spear-crate',256,118,40,52],['archery-target',660,250,44,54],['hay-bale',666,330,44,44]];
+const EXTRAS=[['weapon-barrel',880,160,40,52],['spear-crate',640,160,40,52],['archery-target',1020,430,44,54],['hay-bale',1024,510,44,44]];
 export const TRAINING_GROUND_PLACES=[];
-const WALL=84,FENCE=34;
+// Split-log fence all round, with a gap for the path north and the gate south.
+const TOP=56,FENCE=34,NORTH_GAP=[500,580],SOUTH_GAP=[490,590];
 export function trainingGroundBlocked(x,y){
- if(y<WALL||x<FENCE||x>720-FENCE)return true;
- if(y>560-FENCE&&(x<322||x>398))return true;
- if(x>290&&x<430&&y<116)return true;
+ if(x<FENCE||x>W-FENCE)return true;
+ if(y<TOP&&(x<NORTH_GAP[0]||x>NORTH_GAP[1]))return true;
+ if(y>H-FENCE&&(x<SOUTH_GAP[0]||x>SOUTH_GAP[1]))return true;
+ if(x>RACK_SPOT.x-70&&x<RACK_SPOT.x+70&&y>RACK_SPOT.y-40&&y<RACK_SPOT.y+20)return true;
  if(Math.hypot(x-YARD_WELL.x,y-YARD_WELL.y)<38)return true;
  if(x>TROUGH.x-58&&x<TROUGH.x+58&&y>TROUGH.y-24&&y<TROUGH.y+20)return true;
  if(x>BENCH.x-44&&x<BENCH.x+44&&y>BENCH.y-6&&y<BENCH.y+22)return true;
- if(Math.hypot(x-470,y-104)<24||Math.hypot(x-256,y-104)<24)return true;
- if(x>636&&y>210&&y<342)return true;
+ if(Math.hypot(x-WILLOW.x,y-WILLOW.y+10)<18)return true;
+ if(Math.hypot(x-880,y-146)<24||Math.hypot(x-640,y-146)<24)return true;
+ if(x>996&&y>380&&y<522)return true;
  return DUMMIES.some(d=>Math.hypot(x-d.x,y-d.y)<20);
 }
 function log(c,x,y,w,h){c.fillStyle='#5c3b22';c.fillRect(x,y,w,h);c.fillStyle='#8a6038';c.fillRect(x+1,y+1,w-2,Math.max(1,h/2-1));c.fillStyle='#3a2414';c.fillRect(x,y+h-2,w,2);}
@@ -39,7 +47,7 @@ function dummy(c,{x,y},t,beaten){
  c.fillStyle='#d6b25e';c.beginPath();c.arc(x,y-42,9,0,Math.PI*2);c.fill();c.fillStyle='#8a5a2a';c.fillRect(x-10,y-24,20,3);
  if(beaten){c.fillStyle='#e8cf86';c.fillRect(x+8,y-38+Math.sin(t*2)*1,6,2);c.fillRect(x-14,y-20,5,2);}
 }
-// Weapon rack against the chief's house: swords, spears, axes and a cracked bow.
+// Weapon rack by the north fence: swords, spears, axes and a cracked bow.
 function rack(c){
  const {x,y}=RACK_SPOT;
  if(drawProp(c,'weapon-rack',{x,y:y+22,w:140,h:96}))return;
@@ -73,41 +81,38 @@ function bench(c){
  log(c,x-42,y,84,8);c.fillStyle='#4a301c';c.fillRect(x-36,y+8,6,12);c.fillRect(x+30,y+8,6,12);
 }
 function willow(c,t){
- c.fillStyle='rgba(20,40,20,.22)';c.beginPath();c.ellipse(116,236,110,70,0,0,Math.PI*2);c.fill();
- if(drawProp(c,'willow-tree',{x:70,y:218,w:220,h:200}))return;
- c.fillStyle='#5a3d22';c.fillRect(54,96,16,110);
- for(let i=0;i<14;i++){const sway=Math.sin(t*.8+i)*2;c.fillStyle=i%2?'#6f9a3e':'#86ad48';c.fillRect(20+i*9+sway,90+(i%3)*6,4,80+(i%4)*14);}
- c.fillStyle='#5f8a37';c.beginPath();c.ellipse(64,92,64,36,0,0,Math.PI*2);c.fill();c.fillStyle='#78a544';c.beginPath();c.ellipse(52,82,40,22,0,0,Math.PI*2);c.fill();
+ const {x,y}=WILLOW;
+ c.fillStyle='rgba(20,40,20,.22)';c.beginPath();c.ellipse(x+46,y+18,110,70,0,0,Math.PI*2);c.fill();
+ if(drawProp(c,'willow-tree',{x,y:y+4,w:220,h:200}))return;
+ c.fillStyle='#5a3d22';c.fillRect(x-16,y-120,16,110);
+ for(let i=0;i<14;i++){const sway=Math.sin(t*.8+i)*2;c.fillStyle=i%2?'#6f9a3e':'#86ad48';c.fillRect(x-50+i*9+sway,y-126+(i%3)*6,4,80+(i%4)*14);}
+ c.fillStyle='#5f8a37';c.beginPath();c.ellipse(x-6,y-124,64,36,0,0,Math.PI*2);c.fill();c.fillStyle='#78a544';c.beginPath();c.ellipse(x-18,y-134,40,22,0,0,Math.PI*2);c.fill();
 }
 // Drawn each frame: the light follows the story, from a bright morning to a long red evening.
 export function drawTrainingGround(c,{t=0,evening=false,sword=false}={}){
- if(!drawGrassBase(c,0,0,720,560,()=>{})){c.fillStyle='#86ad48';c.fillRect(0,0,720,560);}
- // Packed dirt circle.
- c.save();c.beginPath();c.ellipse(CIRCLE.x,CIRCLE.y,CIRCLE.rx,CIRCLE.ry,0,0,Math.PI*2);c.rect(330,420,60,140);c.clip();
- const dirt=drawTiles(c,'dirt-ground',{x:0,y:0,w:720,h:560,tw:96});c.restore();
+ if(!drawGrassBase(c,0,0,W,H,()=>{})){c.fillStyle='#86ad48';c.fillRect(0,0,W,H);}
+ // Packed dirt: the circle, the path south to the village gate and the path north to the chief's house.
+ const paths=[[SOUTH_GAP[0]+12,CIRCLE.y,SOUTH_GAP[1]-SOUTH_GAP[0]-24,H-CIRCLE.y],[NORTH_GAP[0]+6,0,NORTH_GAP[1]-NORTH_GAP[0]-12,CIRCLE.y]];
+ c.save();c.beginPath();c.ellipse(CIRCLE.x,CIRCLE.y,CIRCLE.rx,CIRCLE.ry,0,0,Math.PI*2);for(const [x,y,w,h] of paths)c.rect(x,y,w,h);c.clip();
+ const dirt=drawTiles(c,'dirt-ground',{x:0,y:0,w:W,h:H,tw:96});c.restore();
  if(!dirt){
- c.fillStyle='#b99662';c.beginPath();c.ellipse(CIRCLE.x,CIRCLE.y,CIRCLE.rx,CIRCLE.ry,0,0,Math.PI*2);c.fill();
- c.fillStyle='#a8844f';c.beginPath();c.ellipse(CIRCLE.x,CIRCLE.y,CIRCLE.rx-20,CIRCLE.ry-16,0,0,Math.PI*2);c.fill();
- c.fillStyle='#c8a872';for(let i=0;i<40;i++){const a=i*2.4,r=(i*37)%150;c.fillRect(CIRCLE.x+Math.cos(a)*r,CIRCLE.y+Math.sin(a)*r*.72,3,2);}
- // Path from the gate.
- c.fillStyle='#c9ad74';c.fillRect(330,440,60,120);
+  c.fillStyle='#c9ad74';for(const [x,y,w,h] of paths)c.fillRect(x,y,w,h);
+  c.fillStyle='#b99662';c.beginPath();c.ellipse(CIRCLE.x,CIRCLE.y,CIRCLE.rx,CIRCLE.ry,0,0,Math.PI*2);c.fill();
+  c.fillStyle='#a8844f';c.beginPath();c.ellipse(CIRCLE.x,CIRCLE.y,CIRCLE.rx-20,CIRCLE.ry-16,0,0,Math.PI*2);c.fill();
+  c.fillStyle='#c8a872';for(let i=0;i<60;i++){const a=i*2.4,r=(i*37)%200;c.fillRect(CIRCLE.x+Math.cos(a)*r,CIRCLE.y+Math.sin(a)*r*.72,3,2);}
  }
- // The back wall of the chief's house: red plaster and white timber.
- if(!drawTiles(c,'training-wall',{x:0,y:0,w:720,h:WALL-8,th:WALL-8})){
- c.fillStyle='#8e3b33';c.fillRect(0,0,720,WALL-8);c.fillStyle='#e4d8bb';for(let x=40;x<720;x+=120)c.fillRect(x,0,8,WALL-8);c.fillRect(0,WALL-16,720,6);
- c.fillStyle='#5f3a26';c.fillRect(0,WALL-10,720,4);c.fillStyle='#3a2a20';c.fillRect(220,14,46,40);c.fillStyle='#f0d690';c.fillRect(224,18,38,32);c.fillStyle='#3a2a20';c.fillRect(242,18,2,32);
- }
+ // Fences go in before the scenery, so the props stand in front of the north rail.
+ const rail=(x0,x1,y)=>{if(!drawTiles(c,'log-fence',{x:x0,y,w:x1-x0,h:30,th:30}))for(let x=x0;x<x1;x+=34){log(c,x,y+6,Math.min(34,x1-x),8);log(c,x,y+20,Math.min(34,x1-x),8);}};
+ rail(0,NORTH_GAP[0]-6,TOP-34);rail(NORTH_GAP[1]+6,W,TOP-34);
+ if(!drawProp(c,'training-gate-posts',{x:540,y:TOP+4,w:100,h:86})){c.fillStyle='#4a301c';for(const x of [NORTH_GAP[0]-6,NORTH_GAP[1]-2])c.fillRect(x,TOP-40,8,44);}
  willow(c,t);bench(c);rack(c);well(c,t);trough(c);
- for(const d of DUMMIES)dummy(c,d,t,d.x>400);
+ for(const d of DUMMIES)dummy(c,d,t,d.x>600);
  for(const [id,x,y,w,h] of EXTRAS)drawProp(c,id,{x,y,w,h});
- // Split-log fence on three sides, with a gap at the south gate.
- if(!drawTiles(c,'log-fence-side',{x:8,y:WALL-6,w:22,h:560-WALL,tw:22})||!drawTiles(c,'log-fence-side',{x:690,y:WALL-6,w:22,h:560-WALL,tw:22}))
-  for(let y=WALL;y<560;y+=26){log(c,6,y,26,8);log(c,688,y,26,8);}
- if(!drawTiles(c,'log-fence',{x:0,y:528,w:318,h:30,th:30})||!drawTiles(c,'log-fence',{x:402,y:528,w:318,h:30,th:30}))
-  for(let x=6;x<714;x+=34)if(x<318||x>398){log(c,x,534,34,8);log(c,x,548,34,8);}
- for(const x of [19,701])drawProp(c,'fence-corner-post',{x,y:560,w:40,h:40});
- if(!drawProp(c,'training-gate-posts',{x:360,y:562,w:100,h:92})){c.fillStyle='#4a301c';for(const x of [312,404])c.fillRect(x,520,8,40);}
+ for(const x of [8,W-30])if(!drawTiles(c,'log-fence-side',{x,y:TOP-36,w:22,h:H-TOP+36,tw:22}))for(let y=TOP-30;y<H;y+=26)log(c,x-2,y,26,8);
+ rail(0,SOUTH_GAP[0]-6,H-32);rail(SOUTH_GAP[1]+6,W,H-32);
+ for(const [x,y] of [[19,TOP+2],[W-19,TOP+2],[19,H],[W-19,H]])drawProp(c,'fence-corner-post',{x,y,w:40,h:40});
+ if(!drawProp(c,'training-gate-posts',{x:540,y:H+2,w:100,h:92})){c.fillStyle='#4a301c';for(const x of [SOUTH_GAP[0]-6,SOUTH_GAP[1]-2])c.fillRect(x,H-40,8,40);}
  // Drayfus's practice sword in the dirt after the disarm.
  if(sword&&!drawProp(c,'glowing-sword',{x:CAST_SPOT.x+28,y:CAST_SPOT.y+14,w:40,h:40})){c.save();c.translate(CAST_SPOT.x+28,CAST_SPOT.y+6);c.rotate(-.5);c.fillStyle='#9b7444';c.fillRect(-2,-24,5,30);c.fillStyle='#5c3b22';c.fillRect(-7,4,15,4);c.fillRect(-1,8,3,8);c.restore();}
- if(evening){c.fillStyle='rgba(120,50,30,.28)';c.fillRect(0,0,720,560);}
+ if(evening){c.fillStyle='rgba(120,50,30,.28)';c.fillRect(0,0,W,H);}
 }

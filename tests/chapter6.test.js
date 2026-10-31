@@ -6,7 +6,7 @@ import {createStoryNpcs,currentScene,storyPrompt,storyObjective,chapterHeading,S
 import {BUCKET_TRIPS,CHAPTER6_SCENES,CORE,OCELOT} from '../src/chapter6.js';
 import {GUEST_LODGE,LODGE_MORNING_SPOT,LODGE_WAKE_SPOT} from '../src/guest-lodge.js';
 import {CHIEF_HOUSE} from '../src/chief-house.js';
-import {TRAINING_GROUND,TRAINING_GATE,RACK_SPOT,CAST_SPOT,YARD_WELL,TROUGH,DRAYFUS_SPOT,FENCE_MARA_SPOT,TRAINING_EMILIA_SPOT} from '../src/training-ground.js';
+import {TRAINING_GROUND,TRAINING_GATE,TRAINING_BACK,RACK_SPOT,CAST_SPOT,YARD_WELL,TROUGH,DRAYFUS_SPOT,FENCE_MARA_SPOT,TRAINING_EMILIA_SPOT} from '../src/training-ground.js';
 import {captureSave,restoreSave} from '../src/save-format.js';
 import {walkable,transitionAt,AREAS} from '../src/wilds.js';
 import {wellLedger} from '../src/wishing-well.js';
@@ -54,8 +54,11 @@ test('the training ground opens from a gate beside the chief’s house and leads
  assert.equal(storyPrompt(w),'Go to the training ground');w.inspect();
  assert.equal(w.areaId,TRAINING_GROUND.id);assert.ok(walkable(w.player.x,w.player.y,w.areaId));
  for(const [x,y] of [[DRAYFUS_SPOT.x,DRAYFUS_SPOT.y+50],[RACK_SPOT.x,RACK_SPOT.y+40],[CAST_SPOT.x,CAST_SPOT.y],[YARD_WELL.x,YARD_WELL.y+50],[TROUGH.x,TROUGH.y-40],[FENCE_MARA_SPOT.x,FENCE_MARA_SPOT.y]])assert.ok(walkable(x,y,TRAINING_GROUND.id),`${x},${y}`);
- for(const [x,y] of [[RACK_SPOT.x,RACK_SPOT.y],[YARD_WELL.x,YARD_WELL.y],[TROUGH.x,TROUGH.y],[10,300],[100,550]])assert.equal(walkable(x,y,TRAINING_GROUND.id),false,`${x},${y}`);
- assert.deepEqual(transitionAt(360,TRAINING_GROUND.height+4,TRAINING_GROUND.id),{areaId:'village',x:TRAINING_GATE.x,y:TRAINING_GATE.y+40});
+ for(const [x,y] of [[RACK_SPOT.x,RACK_SPOT.y],[YARD_WELL.x,YARD_WELL.y],[TROUGH.x,TROUGH.y],[10,300],[100,830],[300,20]])assert.equal(walkable(x,y,TRAINING_GROUND.id),false,`${x},${y}`);
+ assert.deepEqual(transitionAt(540,TRAINING_GROUND.height+4,TRAINING_GROUND.id),{areaId:'village',x:TRAINING_GATE.x,y:TRAINING_GATE.y+40});
+ // No back wall: a path runs north out of the yard to behind the chief's house, and back in.
+ assert.ok(walkable(540,20,TRAINING_GROUND.id));
+ assert.deepEqual(transitionAt(540,-4,TRAINING_GROUND.id),{areaId:'village',...TRAINING_BACK});assert.ok(walkable(TRAINING_BACK.x,TRAINING_BACK.y,'village'));
  assert.ok(walkable(TRAINING_GATE.x,TRAINING_GATE.y+40,'village'));
  assert.equal(npc(w,'drayfus').areaId,TRAINING_GROUND.id);assert.equal(npc(w,'emilia').areaId,TRAINING_GROUND.id);
  assert.deepEqual({x:npc(w,'emilia').x,y:npc(w,'emilia').y},TRAINING_EMILIA_SPOT);
@@ -131,4 +134,9 @@ test('the ocelot breaks into motes after the door scene, and Drayfus waves Eli o
  w.elapsed+=2;w.update(.05,neutralInput());assert.equal(npc(w,'ocelot-vanish'),undefined);
  assert.equal(npc(w,'drayfus').animationState,'beckon');
  assert.equal(npc(playTo('ch6-rack'),'drayfus').animationState,'idle');
+});
+test('the path behind the chief’s house leads into the north end of the training ground',()=>{
+ const w=playTo('ch6-circle');w.areaId='village';stand(w,TRAINING_BACK.x,TRAINING_BACK.y);
+ assert.equal(storyPrompt(w),'Go to the training ground');w.inspect();
+ assert.equal(w.areaId,TRAINING_GROUND.id);assert.deepEqual({x:w.player.x,y:w.player.y},TRAINING_GROUND.northSpawn);assert.ok(walkable(w.player.x,w.player.y,w.areaId));
 });

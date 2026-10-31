@@ -4,7 +4,7 @@ import {CHAPTER1_SCENES,CHAPTER2_SCENES} from './chapter1.js';
 import {CHAPTER_FIVE_STAGES,chapterFive,CHAPTER5_SCENES,CHAPTER5_OBJECTIVES,CHAPTER5_MARA_GREETING} from './chapter5.js';
 import {CHIEF_DOOR,CHIEF_HOUSE,EMILIA_SPOT,MARA_SPOT} from './chief-house.js';
 import {CHAPTER_SIX_STAGES,chapterSix,CHAPTER6_SCENES,CHAPTER6_OBJECTIVES,BUCKET_TRIPS,BUCKET_NOTES,bucketObjective} from './chapter6.js';
-import {TRAINING_GROUND,TRAINING_GATE,DRAYFUS_SPOT,TRAINING_EMILIA_SPOT,FENCE_MARA_SPOT,RACK_SPOT,YARD_WELL,TROUGH,CAST_SPOT} from './training-ground.js';
+import {TRAINING_GROUND,TRAINING_GATE,TRAINING_BACK,DRAYFUS_SPOT,TRAINING_EMILIA_SPOT,FENCE_MARA_SPOT,RACK_SPOT,YARD_WELL,TROUGH,CAST_SPOT} from './training-ground.js';
 import {GUEST_LODGE,LODGE_DOOR,LODGE_MARA_SPOT,LODGE_MORNING_SPOT,LODGE_BED,LODGE_STOOL,LODGE_WINDOW,LODGE_POT,LODGE_WAKE_SPOT} from './guest-lodge.js';
 import {createVillageResidents,updateVillageResidents} from './village-life.js';
 import {createNpcs} from './npcs.js';
@@ -84,7 +84,7 @@ export function storyPrompt(w){
  }
  if(w.areaId==='village'&&(chapterFour(w.story)||chapterFive(w.story)||chapterSix(w.story))&&near(CHIEF_DOOR.x,CHIEF_DOOR.y+20,70))return 'Enter the chief’s house';
  if(w.areaId==='village'&&(chapterFive(w.story)||chapterSix(w.story))&&near(LODGE_DOOR.x,LODGE_DOOR.y+20,70))return 'Enter the guest lodge';
- if(w.areaId==='village'&&trainingOpen(w.story)&&near(TRAINING_GATE.x,TRAINING_GATE.y,70))return 'Go to the training ground';
+ if(w.areaId==='village'&&trainingOpen(w.story)&&(near(TRAINING_GATE.x,TRAINING_GATE.y,70)||near(TRAINING_BACK.x,TRAINING_BACK.y,70)))return 'Go to the training ground';
  if(w.areaId===TRAINING_GROUND.id&&chapterSix(w.story)){const t=trainingPrompt(w,near);if(t)return t;}
  // The writing hangs in front of Eli wherever he stands in the room, until he reads it.
  if(w.areaId===GUEST_LODGE.id&&w.story.stage==='ch5-morning')return 'Read the floating writing';
@@ -151,7 +151,7 @@ export function inspectStory(w){
  if(prompt==='Enter the guest lodge'){w.cancel();w.areaId=GUEST_LODGE.id;Object.assign(w.player,GUEST_LODGE.spawn);w.message=s.stage==='ch5-morning'?'Sunlight through warped glass. The blanket is still on the floor, and blue writing hangs in the air.':'Eli’s room. Small, plain and quiet.';return true;}
  if(prompt==='Read the floating writing'){show(w,'ch6-wake');return true;}
  if(prompt==='Answer the door'){show(w,'ch6-door');return true;}
- if(prompt==='Go to the training ground'){w.cancel();w.areaId=TRAINING_GROUND.id;Object.assign(w.player,TRAINING_GROUND.spawn,{vx:0,vy:0});w.message=s.stage==='ch6-circle'?'Packed dirt, split-log fences and a man with a very large sword.':'The training ground. The dummies have not recovered.';return true;}
+ if(prompt==='Go to the training ground'){w.cancel();w.areaId=TRAINING_GROUND.id;Object.assign(w.player,Math.hypot(w.player.x-TRAINING_BACK.x,w.player.y-TRAINING_BACK.y)<Math.hypot(w.player.x-TRAINING_GATE.x,w.player.y-TRAINING_GATE.y)?TRAINING_GROUND.northSpawn:TRAINING_GROUND.spawn,{vx:0,vy:0});w.message=s.stage==='ch6-circle'?'Packed dirt, split-log fences and a man with a very large sword.':'The training ground. The dummies have not recovered.';return true;}
  if(prompt==='Meet Drayfus'){show(w,'ch6-drayfus');return true;}
  if(prompt==='Spar with Drayfus'){show(w,'ch6-spar');return true;}
  if(prompt==='Continue the conversation'){show(w,'ch6-confession');return true;}
