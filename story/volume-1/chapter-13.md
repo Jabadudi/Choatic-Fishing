@@ -210,7 +210,7 @@ I expected *another night.* I had a whole shelf for *another night.*
 
 Instead, she told me.
 
-"Your grandfather came to Willowback one night in the middle of a storm," she said. "Long before you were born. He came up from this dock soaked to the skin, and he had a little boy in his arms. Two years old, maybe. Wrapped in his coat, asleep." She was looking at the water, not at me. "The boy had his face, Eli. His exact face. You couldn't have mistaken it."
+"Your grandfather came to Willowback one night in the middle of a storm," she said. "Long before you were born. He came up from this dock soaked to the skin, and he had a little boy in his arms. Two years old, maybe. Wrapped in his coat, asleep." She was looking at the water, not at me. "Dark hair, like Oscar's. He slept with one fist wound into Oscar's collar and wouldn't let go, not even in his sleep. Nobody in Willowback doubted for a second that he was Oscar's." She paused. "I didn't either."
 
 I didn't say anything. I don't think I could have.
 
@@ -226,7 +226,7 @@ I thought about my dad. About his laugh, which I mostly remember from photos now
 
 "You think that boy was my dad," I said.
 
-"I think he had Oscar's face," said Emilia. "And so do you."
+"I think Oscar only ever carried one child through a storm," said Emilia. "And you're standing on his dock."
 
 "And the mother?"
 
