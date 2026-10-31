@@ -11,6 +11,7 @@ import {captureSave,restoreSave} from '../src/save-format.js';
 import {walkable} from '../src/wilds.js';
 import {SPRITES,STORY_ART} from '../src/sprite-definitions.js';
 import {frameRect} from '../src/sprites.js';
+import {createVillageResidents} from '../src/village-life.js';
 const finish=w=>{const scene=w.story.scene;assert.ok(scene);for(let i=0;i<60&&w.story.scene===scene;i++)w.advanceStory();assert.notEqual(w.story.scene,scene);};
 function atPorch(){
  const w=new World(()=>.2,{adventure:true,story:true});w.journeyId='chapter4-test';w.areaId='village';
@@ -30,7 +31,7 @@ test('Chapter 4 goes inside the chief’s house and plays the meeting as checkpo
   finish(w);
  }
  assert.equal(w.story.scene,null);assert.equal(w.story.stage,'ch4-complete');assert.match(w.message,/Chapter 4 complete/);
- assert.equal(npc(w,'mara').name,'Mara');assert.equal(npc(w,'emilia').name,'Emilia');assert.equal(w.npcs.length,10);assert.equal(storyPrompt(w),null);
+ assert.equal(npc(w,'mara').name,'Mara');assert.equal(npc(w,'emilia').name,'Emilia');assert.equal(w.npcs.length,2+createVillageResidents().length);assert.equal(storyPrompt(w),null);
  assert.equal(w.progression.totalXp,0);
  const restored=restoreSave(captureSave(w));assert.equal(restored.story.stage,'ch4-complete');assert.equal(restored.areaId,CHIEF_HOUSE.id);assert.equal(npc(restored,'mara').name,'Mara');
 });

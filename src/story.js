@@ -294,6 +294,8 @@ export function skipStory(w){
  while(currentScene(w)&&!currentScene(w).action&&turned<1000){advanceStory(w);turned++;}
  return turned>0;
 }
+// The commons' regulars who stay out during Chapter 7's afternoon laps.
+const LAPS_COMMONS=['net-carrier','basket-carrier','village-smith','village-fisher','child-one','child-two'];
 export function createStoryNpcs(story,elapsed=0){
  if(!cabinDamaged(story)||story.stage==='storm')return [];
  const position=story.guide||{x:1850,y:1640};
@@ -314,7 +316,14 @@ export function createStoryNpcs(story,elapsed=0){
  // Only Eli can see the ocelot. It sits in his room in the morning, then lives in his stomach until night.
  if(['ch5-morning','ch6-door','ch6-night','ch6-complete','ch7-complete'].includes(story.stage))list.push({id:'ocelot',name:'The ocelot',areaId:GUEST_LODGE.id,...(story.stage.startsWith('ch5')||story.stage==='ch6-door'?OCELOT_CORNER:OCELOT_STOOL),...NPC_TYPES.flitlynx,npc:true,creature:true,spriteId:'ocelot',talkRange:80,
   greeting:story.stage==='ch5-morning'?'The ocelot watches you with core-blue eyes, and waits for you to read.':story.stage==='ch6-door'?'It flicks its tail toward the door. Somebody is about to break it down.':'Sleep. Drayfus will wake you before the sun.'});
- if(villageStory(story)&&(position.areaId==='village'||chapterFour(story)||chapterFive(story)||training(story)))list.push(...createVillageResidents(elapsed));
+ if(villageStory(story)&&(position.areaId==='village'||chapterFour(story)||chapterFive(story)||training(story))){
+  let people=createVillageResidents(elapsed);
+  // Chapter 7's runs: before dawn the village is asleep, and on the afternoon laps the guards at the posts take the
+  // place of most of the commons, so no area has more than 20 people in it.
+  if(story.stage==='ch7-run')people=people.filter(n=>n.creature);
+  else if(story.stage==='ch7-laps')people=people.filter(n=>n.creature||n.areaId!=='village'||LAPS_COMMONS.includes(n.id));
+  list.push(...people);
+ }
  return list;
 }
 const MARA_CH7={'ch7-run':'Morning! Keep your elbows in!','ch7-breakfast':'Sit. Eat. You look like a ghost.','ch7-squat':'He’s in the circle. Good luck with your legs.','ch7-hold':'Don’t look at me, look at your feet!','ch7-laps':'Go! I’m not carrying you.','ch7-rest':'You look like a dropped sack of flour.','ch7-complete':'Not today, Eli.'};

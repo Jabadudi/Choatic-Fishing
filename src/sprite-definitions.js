@@ -20,6 +20,13 @@ export function walkClips(frames,cycle,{layout='rows'}={}){
 }
 // How long Brume's bow and lying down take, in seconds. The familiar times them from these.
 export const BRUME_TIMING=Object.freeze({bow:1.6,lieDown:2.4,restBeforeSleep:6});
+export const VILLAGER_LOOKS=[
+ ['baker','#c9b48a','#6a4a2c','#e3b48c'],['weaver','#5c6f8a','#2b2522','#9c6a4a'],['herbalist','#557a3e','#a8a090','#d9b08a'],['carpenter','#8a6640','#3a2a20','#c08a62'],
+ ['miller','#d8d0b8','#7a6a58','#e6c29c'],['farmer','#7a8a4a','#4a3020','#b07850'],['shepherd','#a89a7a','#202020','#8a5a3a'],['tanner','#6f5134','#5a3a28','#d0a07a'],
+ ['washer','#6c8fb0','#9a3a2a','#f0c8a0'],['lamplighter','#4a4a5a','#c8c0b0','#c89878'],['potter','#b86b4c','#2a2a2a','#7a4a30'],['cooper','#734a39','#8a7a5a','#e0b890'],
+ ['elder','#7a6a9a','#e8e4dc','#d8b090'],['elder-two','#5a7a6a','#d0ccc4','#a87050'],['guard','#5a5a4a','#3a2a20','#c89070'],['trader','#a45543','#4a3a2a','#e8c0a0'],
+ ['child-three','#d8a040','#6a4a2c','#c8906a',.7],['child-four','#8fae74','#2a2020','#8a5a3a',.7],['child-five','#c99aa8','#a06030','#f0d0b0',.7]
+];
 export const SPRITES={
  // The second rows are runs, used by the guardian familiars. Both sheets face right; the village creatures stay on idle.
  rimejaw:{asset:'story/rimejaw-sheet.png',chromaKey:'green',frames:[[45,35,410,270],[475,35,410,270],[900,35,410,270],[1320,35,440,270],[10,330,292,225],[302,330,292,225],[598,330,292,225],[886,330,292,225],[1174,330,292,225],[1468,330,292,225]],scale:.27,anchor:[.5,1],offset:[0,12],mirror:'right',animations:{idle:{frames:[0,1,2,3],fps:2},walk:{frames:[4,5,6,7,8,9],fps:9}}},
@@ -32,6 +39,8 @@ export const SPRITES={
  'villager-fisher':{asset:null,fallback:{coat:'#747d51',hair:'#b3afa0',skin:'#ddaa80'}},
  'villager-child-one':{asset:null,fallback:{coat:'#b26b58',hair:'#392b24',skin:'#d4a27a',visualScale:.7}},
  'villager-child-two':{asset:null,fallback:{coat:'#69849e',hair:'#503f2b',skin:'#e4c4a1',visualScale:.7}},
+ // The rest of Willowback: drawn villagers in a spread of coats, hair and skin, so a crowd doesn't look like one family.
+ ...Object.fromEntries(VILLAGER_LOOKS.map(([id,coat,hair,skin,visualScale])=>[`villager-${id}`,{asset:null,fallback:{coat,hair,skin,...(visualScale?{visualScale}:{})}}])),
  // A portrait crop, not a gameplay actor or hitbox.
  'mara-portrait':{asset:'story/mara.webp',frames:[[850,130,500,620]],scale:.12,anchor:[.5,0],offset:[0,0]},
  'emilia-portrait':{asset:'story/emilia.png',frames:[[930,60,500,620]],scale:.12,anchor:[.5,0],offset:[0,0]},

@@ -39,8 +39,8 @@ test('Chapter 3 follows connected maps, discovers the village creatures and ends
  assert.equal(w.story.stage,'ch3-lore');assert.equal(storyPrompt(w),'Ask about shadow walkers');w.inspect();finish(w);
  assert.equal(w.story.stage,'ch3-chief');follow(w,()=>!!currentScene(w));assert.equal(w.story.scene,'ch3-end');finish(w);
  assert.equal(w.story.stage,'ch3-complete');assert.deepEqual(w.inventory.allItems,items);assert.equal(w.progression.totalXp,0);assert.ok(cabinDamaged(w.story));
- assert.equal(w.npcs.find(n=>n.id==='mara').name,'The girl');assert.equal(w.npcs.length,9);
- const restored=restoreSave(captureSave(w));assert.equal(restored.story.stage,'ch3-complete');assert.deepEqual(restored.story.guide,w.story.guide);assert.equal(restored.npcs.length,9);
+ assert.equal(w.npcs.find(n=>n.id==='mara').name,'The girl');assert.equal(w.npcs.length,1+createVillageResidents().length);
+ const restored=restoreSave(captureSave(w));assert.equal(restored.story.stage,'ch3-complete');assert.deepEqual(restored.story.guide,w.story.guide);assert.equal(restored.npcs.length,1+createVillageResidents().length);
 });
 test('guide waits across exploration detours and forward exits wait for the guide',()=>{
  const w=atTrail();w.inspect();finish(w);Object.assign(w.player,{x:1400,y:1});w.move(0,-8,false);assert.equal(w.areaId,'landing');assert.match(w.message,/guide/);
@@ -54,13 +54,13 @@ test('version 3 Chapter 2 checkpoints migrate guide geography without replay or 
 });
 test('save/resume preserves each map’s guide, creature scene page and village residents',()=>{
  let w=atTrail();throughForest(w);follow(w,()=>w.story.guide.waypoint===chapter3Route(w.story).length);Object.assign(w.player,{x:1220,y:500});w.inspect();w.advanceStory();
- w=restoreSave(captureSave(w));assert.equal(currentScene(w).art,'blacksmith');assert.equal(w.story.page,1);assert.equal(w.npcs.length,9);
+ w=restoreSave(captureSave(w));assert.equal(currentScene(w).art,'blacksmith');assert.equal(w.story.page,1);assert.equal(w.npcs.length,1+createVillageResidents().length);
  const before=w.npcs.filter(n=>n.origin).map(n=>[n.id,n.x,n.y]);const again=restoreSave(captureSave(w));assert.deepEqual(again.npcs.filter(n=>n.origin).map(n=>[n.id,n.x,n.y]),before);
  finish(w);w.inspect();w.advanceStory();assert.equal(restoreSave(captureSave(w)).story.page,1);
 });
 test('village creatures and residents stay outside hunting, and their patrols remain walkable',()=>{
  const list=createVillageResidents();for(const n of list){assert.equal(n.entityType,'npc');assert.equal(n.huntable,false);assert.equal(damage({},n,999,{},0),false);}
- for(let t=0;t<100;t+=.7){updateVillageResidents(list,t);for(const n of list.filter(n=>!n.creature))assert.ok(walkable(n.x,n.y,'village'),`${n.id} patrol blocked`);}
+ for(let t=0;t<100;t+=.7){updateVillageResidents(list,t);for(const n of list.filter(n=>!n.creature))assert.ok(walkable(n.x,n.y,n.areaId),`${n.id} patrol blocked`);}
  const cat=list.find(n=>n.spriteId==='flitlynx');assert.ok(cat.sortY>390,'roof creature must draw over the blacksmith roof');
  const c=new Proxy({},{get:()=>()=>{},set:()=>true});const before=JSON.stringify(list);for(const n of list)drawNpc(c,n,10);assert.equal(JSON.stringify(list),before,'drawing cannot move residents');
 });

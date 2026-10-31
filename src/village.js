@@ -1,5 +1,5 @@
 // Village geography and collision stay independent of the painted architecture.
-export const VILLAGE={id:'village',name:'Willowback Village',width:1920,height:2000,seed:7343,spawn:{x:1800,y:530},exits:[{edge:'east',from:450,to:610,target:'crossroads',entry:{x:65,y:460},label:'Willowbank Crossroads'},{edge:'north',from:690,to:790,target:'training-ground',entry:{x:540,y:780},label:'Training Ground'}]};
+export const VILLAGE={id:'village',name:'Willowback Village',width:1920,height:2000,seed:7343,spawn:{x:1800,y:530},exits:[{edge:'east',from:450,to:610,target:'crossroads',entry:{x:65,y:460},label:'Willowbank Crossroads'},{edge:'north',from:690,to:790,target:'training-ground',entry:{x:540,y:780},label:'Training Ground'},{edge:'north',from:1500,to:1620,target:'village-north',entry:{x:800,y:1120},label:'Upper Lanes'}]};
 export const VILLAGE_ROADS=[
  [[1920,530],[1680,530],[1570,580],[1290,580],[1140,680],[1000,750]],
  [[1000,750],[850,850],[750,1010],[730,1210]],
@@ -8,7 +8,9 @@ export const VILLAGE_ROADS=[
  [[1290,580],[1440,460]],[[750,1010],[500,1090]],
  [[750,1010],[1060,1030],[1370,1010]],
  // The path to the training ground: up past the back of the chief's house and north out of the village.
- [[580,340],[575,250],[620,170],[700,110],[740,40],[740,0]]
+ [[580,340],[575,250],[620,170],[700,110],[740,40],[740,0]],
+ // Up to the Upper Lanes, between the north home and the gate fence.
+ [[1570,580],[1560,440],[1560,0]]
 ];
 export const VILLAGE_BUILDINGS=[
  {id:'blacksmith',x:1220,y:390,w:180,h:90,roof:'#565d68',trim:'#a6a69c',name:'THE BLACKSMITH',kind:'workshop'},
@@ -19,7 +21,11 @@ export const VILLAGE_BUILDINGS=[
  {id:'north-home',x:1440,y:390,w:154,h:82,roof:'#966145',trim:'#c59364',kind:'home'},
  {id:'netmaker',x:1460,y:800,w:180,h:86,roof:'#547c71',trim:'#91aaa0',name:'NET & NEEDLE',kind:'workshop'},
  {id:'garden-home',x:650,y:830,w:150,h:76,roof:'#a56242',trim:'#d29760',kind:'home'},
- {id:'boathouse',x:410,y:1030,w:156,h:70,roof:'#567d76',trim:'#8faba0',name:'WILLOW DOCKS',kind:'boat'}
+ {id:'boathouse',x:410,y:1030,w:156,h:70,roof:'#567d76',trim:'#8faba0',name:'WILLOW DOCKS',kind:'boat'},
+ // More family homes, on the west lanes and up by the gate.
+ {id:'west-lane-home',x:380,y:560,w:140,h:78,roof:'#6b5a7a',trim:'#b2a2c2',kind:'home'},
+ {id:'lane-end-home',x:420,y:820,w:140,h:78,roof:'#7b3f35',trim:'#d39a72',kind:'home'},
+ {id:'gate-home',x:1700,y:400,w:140,h:78,roof:'#565d68',trim:'#a6a69c',kind:'home'}
 ];
 // The guard's watchtower, just outside the village gate on the east road (Chapter 7).
 export const VILLAGE_PROPS=[{id:'watchtower',x:1715,y:740,kind:'watchtower'},{id:'well',x:1000,y:690,kind:'well'},{id:'produce-stall',x:1180,y:855,kind:'stall'},{id:'fish-stall',x:920,y:975,kind:'fish-stall'}];

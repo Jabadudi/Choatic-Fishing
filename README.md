@@ -39,7 +39,9 @@ checkpoints are described in [docs/STORY.md](docs/STORY.md).
 
 - **A connected world.** Reedwater Landing (beach, dock, Grandpa's cabin), Windchime
   Path, Willowbank Crossroads, Willowback Village and Shellback Marsh, joined by
-  walking off the map edge. Press **M** for the area map.
+  walking off the map edge. Willowback itself spans three areas: the commons by the
+  river, the Upper Lanes to the north and Millside along the mill stream, with 15 to
+  20 villagers in each. Press **M** for the area map.
 - **Walk-in interiors.** Grandpa's cabin, the chief's house and the guest lodge,
   furnished with hand-made prop sprites on tiled walls and floors.
 - **Fishing.** Cast into the water and keep the catch inside the reeling bar.
