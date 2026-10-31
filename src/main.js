@@ -99,8 +99,9 @@ addEventListener('keydown',e=>{
     }
     for(let slot=1;slot<=7;slot++)if(matchesBinding('slot'+slot,e.code))equip(slot);
     if(matchesBinding('use',e.code))act('use');
-    if(matchesBinding('tidal',e.code))act('tidal');
-    if(matchesBinding('whirlpool',e.code))act('whirlpool');
+    // In the story the two ability keys fire the Region Core's powers; matches keep the level-up specials.
+    if(matchesBinding('tidal',e.code))act(world.adventure?'still-water':'tidal');
+    if(matchesBinding('whirlpool',e.code))act(world.adventure?'reeds-call':'whirlpool');
     if(e.code==='Enter'&&['won','lost','finished'].includes(world.matchState))restart();
     if((e.code==='Escape'||matchesBinding('cancel',e.code)))act('cancel');
   }

@@ -67,30 +67,44 @@
 #hud-shell .dash-mini{position:absolute;left:0;top:-1px;transform:translateX(-100%);display:flex;flex-direction:row;align-items:center;gap:4px;padding-right:8px;font:8px monospace;color:#c9eddb}
 #hud-shell .dash-mini span{display:none}
 #hud-shell #dash-pips{display:flex;gap:3px}#hud-shell #dash-pips i{width:10px;height:3px;border-radius:2px;background:var(--hud-cream)}#hud-shell #dash-pips i.spent{opacity:.25}
-/* 7 · Action buttons. Touch keeps its own Use and Examine buttons (they hold to reel); this cluster adds the rest. */
-#hud-actions{position:absolute;right:env(safe-area-inset-right,0px);bottom:var(--hud-b);width:230px;height:170px;pointer-events:none}
+/* 7 · Action wheel. The main attack sits in the corner and the Region Core's powers ring it, like an action RPG's skill wheel.
+   Ring buttons place themselves from an angle (--a) around the attack's centre. Touch keeps its own Attack and Examine buttons
+   (they hold to reel) at the same spots; this cluster adds the rest. */
+#hud-actions,:root body.touch-mode.exploring .touch-actions{--cx:122px;--cy:146px;--r:82px}
+@media(max-height:420px){#hud-actions,:root body.touch-mode.exploring .touch-actions{--cx:110px;--cy:128px;--r:74px}.hud-act.ring,:root body.touch-mode.exploring #touch-examine{scale:.92}.hud-act.use,:root body.touch-mode.exploring .touch-action.primary{scale:.9}}
+#hud-actions{position:absolute;right:env(safe-area-inset-right,0px);bottom:var(--hud-b);width:236px;height:206px;pointer-events:none}
 .hud-act{position:absolute;display:grid;place-items:center;padding:0;border-radius:50%;background:#10272cb3;border:1.5px solid #f3e6bf88;box-shadow:0 2px 8px #0007;cursor:pointer;pointer-events:auto;touch-action:manipulation;transition:transform .08s}
 .hud-act:active{transform:scale(.9)}.hud-act:disabled{opacity:.55;cursor:default}.hud-act:disabled:active{transform:none}
 .hud-act svg{width:52%;height:52%}
 .hud-act small{position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);font:bold 8.5px Arial,sans-serif;white-space:nowrap;text-shadow:0 1px 2px #000}
 .hud-act kbd{position:absolute;right:-3px;top:-3px;font:8px/1 monospace;padding:2px 3px;border-radius:3px;background:var(--hud-cream);color:#1a1608}.hud-act kbd:empty{display:none}
-.hud-charges{position:absolute;left:-3px;bottom:-3px;min-width:13px;font:bold 8px/13px monospace;border-radius:7px;background:#0b1d1e;border:1px solid var(--hud-side);text-align:center}
-.hud-act.use{right:62px;bottom:26px;width:68px;height:68px;border-width:2px;background:radial-gradient(#24413ae6,#10272ce6)}
-.hud-use-icon{display:grid;place-items:center;font-size:28px;color:var(--hud-gold)}.hud-use-icon img{width:42px;height:42px;image-rendering:pixelated}
-.hud-act.dash{right:10px;bottom:24px;width:42px;height:42px}
-.hud-act.talk{right:142px;bottom:20px;width:44px;height:44px}
-.hud-act.tidal{right:144px;bottom:80px;width:44px;height:44px;border-color:var(--hud-side)}
-.hud-act.whirlpool{right:84px;bottom:106px;width:48px;height:48px;border-color:#9ad7ff;box-shadow:0 0 10px #59b9ff88}
+.hud-act.ring,:root body.touch-mode.exploring #touch-examine{left:calc(var(--cx) + cos(var(--a)) * var(--r));top:calc(var(--cy) - sin(var(--a)) * var(--r));translate:-50% -50%;width:44px;height:44px}
+.hud-act.use,:root body.touch-mode.exploring .touch-action.primary{left:var(--cx);top:var(--cy);translate:-50% -50%;width:78px;height:78px;border-width:2px;border-color:#f3e6bfcc;background:radial-gradient(circle at 50% 35%,#2f5247f0,#10272cf0 70%);box-shadow:0 3px 12px #0009,inset 0 0 0 3px #10272c,inset 0 0 0 4px #e8c46a66}
+.hud-use-icon{display:grid;place-items:center;font-size:30px;color:var(--hud-gold)}.hud-use-icon img{width:46px;height:46px;image-rendering:pixelated}
+.hud-act.core{border-color:#9ad7ffaa;background:radial-gradient(circle at 50% 35%,#1d4a5cf0,#0d2430f0 72%);color:#cdeeff;box-shadow:0 0 9px #59b9ff55,0 2px 8px #0007;overflow:visible}
+.hud-act.core.locked{border-color:#8a8f8a77;background:radial-gradient(circle at 40% 30%,#5a5f5c,#2a2e2d 70%);color:#c7c9c2;box-shadow:inset 0 2px 4px #fff2,0 2px 8px #0007}
+.hud-act.core.locked svg{opacity:.7}
+/* Like the reference wheel, the powers go by their icons; the name shows on hover and in the status line when used. */
+.hud-act.core small{display:none}
+.hud-act.core.active{border-color:#e8f7ff;box-shadow:0 0 16px #8fd4ff,0 2px 8px #0007}
+.hud-cd{position:absolute;inset:0;border-radius:50%;background:conic-gradient(#000a var(--cd,0deg),transparent 0);pointer-events:none}
+.hud-act.core.locked .hud-cd{display:none}
+.hud-reserves{position:absolute;left:calc(var(--cx) - 46px);top:calc(var(--cy) + 46px);width:92px;height:4px;border-radius:2px;background:#0b1d1ecc;border:1px solid #9ad7ff66;overflow:hidden;pointer-events:none}
+.hud-reserves i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#59b9ff,#cdeeff);transition:width .2s}
 :root body.touch-mode #hud-actions .desk{display:none}
-:root body.touch-mode.exploring .touch-actions{position:absolute;inset:auto env(safe-area-inset-right,0px) var(--hud-b) auto;left:auto;width:230px;height:170px;display:block;pointer-events:none}
-:root body.touch-mode.exploring .touch-action{position:absolute;width:44px;min-height:0;height:44px;padding:0;border-radius:50%;display:grid;place-items:center;background:#10272cb3;border:1.5px solid #f3e6bf88;box-shadow:0 2px 8px #0007;pointer-events:auto}
-:root body.touch-mode.exploring .touch-action.primary{right:62px;bottom:26px;width:68px;height:68px;min-height:0;border:2px solid #f3e6bfbb;background:radial-gradient(#24413ae6,#10272ce6)}
-:root body.touch-mode.exploring #touch-examine{right:142px;bottom:20px}
+:root body.touch-mode.exploring .touch-actions{position:absolute;inset:auto env(safe-area-inset-right,0px) var(--hud-b) auto;left:auto;width:236px;height:206px;display:block;pointer-events:none}
+@media(max-height:420px){#hud-actions,:root body.touch-mode.exploring .touch-actions{width:214px;height:186px}}
+/* On phones the bottom notice sits between the joystick and the wheel. */
+:root body.touch-mode.exploring #world-notice:not(:empty){left:calc(var(--hud-l) + 130px);right:calc(env(safe-area-inset-right,0px) + 220px);transform:none;width:fit-content;margin-inline:auto}
+:root body.touch-mode.exploring .touch-action{position:absolute;min-height:0;padding:0;border-radius:50%;display:grid;place-items:center;background:#10272cb3;border:1.5px solid #f3e6bf88;box-shadow:0 2px 8px #0007;pointer-events:auto}
+:root body.touch-mode.exploring .touch-action.primary{min-height:0;border-width:2px;border-color:#f3e6bfcc}
+:root body.touch-mode.exploring #touch-examine{--a:180deg}
 :root body.touch-mode.exploring .touch-action strong{position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);font:bold 8.5px Arial,sans-serif;white-space:nowrap;text-shadow:0 1px 2px #000}
+:root body.touch-mode.exploring .touch-action.primary strong{bottom:5px;font-size:9px;letter-spacing:.5px}
 :root body.touch-mode.exploring .touch-action small{display:none}
 :root body.touch-mode.exploring #touch-examine span{font-size:20px;line-height:1}
-:root body.touch-mode.exploring #touch-use .touch-symbol{display:grid;place-items:center;font-size:28px}
-:root body.touch-mode.exploring #touch-use .touch-symbol img{width:42px;height:42px;image-rendering:pixelated}
+:root body.touch-mode.exploring #touch-use .touch-symbol{display:grid;place-items:center;font-size:30px;margin-top:-8px}
+:root body.touch-mode.exploring #touch-use .touch-symbol img{width:44px;height:44px;image-rendering:pixelated}
 :root body.touch-mode.exploring .touch-action.pressed,:root body.touch-mode.exploring .touch-action:active{transform:scale(.92);background:#24413ae6}
 /* 8 · Joystick, bottom-left */
 :root body.touch-mode .touch-movement{left:calc(var(--hud-l) + 18px);right:auto;bottom:calc(12px + var(--hud-b));width:100px;gap:0}
@@ -120,7 +134,6 @@
 :root body.exploring:has(#line-panel:not([hidden])) .hotbar{display:none}
 :root body.exploring #line-panel{left:auto;right:var(--hud-r);top:calc(58px + var(--hud-t));bottom:auto;transform:none;width:110px}
 :root body.exploring:has(#line-panel:not([hidden])) .status{bottom:auto}
-:root body.exploring:has(#line-panel:not([hidden])) .hud-act.tidal,:root body.exploring:has(#line-panel:not([hidden])) .hud-act.whirlpool{display:none}
 @media(max-height:599px){:root body.exploring #line-panel .fishing{height:min(calc(100dvh - 250px),130px)}}
 /* 9 · Radio, beside the joystick */
 :root body.exploring .radio-chip:not([hidden]){left:150px;right:auto;top:auto;bottom:calc(14px + var(--hud-b));width:150px;grid-template-columns:minmax(0,1fr) auto;padding:2px 6px 2px 3px;border:1px solid #c2b68e66;border-radius:17px;background:#10272ccc;box-shadow:0 2px 8px #0007}

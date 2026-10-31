@@ -7,6 +7,7 @@ import {bindingLabel} from './keybinds.js';
 import {regionAt} from './wilds.js';
 import {FAMILIARS} from './familiars.js';
 import {wishstonesLabel} from './wishing-well.js';
+import {coreWheel,RESERVES_MAX,abilityUnlocked} from './core-abilities.js';
 const svg=(body,size=24)=>`<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
 const el=(tag,className,text)=>{const node=document.createElement(tag);if(className)node.className=className;if(text!==undefined)node.textContent=text;return node;};
 const ICONS={
@@ -19,8 +20,9 @@ const ICONS={
  full:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
  talk:'<path d="M4 5h16v10H9l-5 4z"/>',
  dash:'<path d="M5 12h9M9 7l5 5-5 5M17 6v12"/>',
- tidal:'<path d="M3 15c3 0 3-3 6-3s3 3 6 3 3-3 6-3M3 19c3 0 3-3 6-3s3 3 6 3 3-3 6-3M14 8l4-4M18 4h-3M18 4v3"/>',
- whirlpool:'<path d="M12 12m-2 0a2 2 0 1 0 4 0a4 4 0 1 0-8 0a6 6 0 1 0 12 0a8 8 0 1 0-16 0"/>'
+ 'still-water':'<path d="M12 3c2.5 3.2 4 5.4 4 7.2a4 4 0 0 1-8 0C8 8.4 9.5 6.2 12 3z"/><path d="M3 17c2.5 0 3-1.5 4.5-1.5S10 17 12 17s3-1.5 4.5-1.5S19 17 21 17M6 20.5h12"/>',
+ 'reeds-call':'<path d="M4 20c4-1 6-5 7-9s3-7 8-7"/><path d="M19 4v4.5a2.5 2.5 0 0 1-5 0"/><path d="M6 13v7M8.5 10v10"/>',
+ sealed:'<rect x="6" y="11" width="12" height="9" rx="1.5"/><path d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3M12 14.5v2"/>'
 };
 // A story objective reads "Chapter 5 · Mara is waiting…"; the part before the first dot becomes the tracker's heading.
 export function splitObjective(text,fallback){
@@ -37,11 +39,14 @@ export function mountHudShell({act,openHelp,examine,openAtlas,openQuests,openWel
 <div id="hud-icons"><button id="hud-well" class="hud-icon" hidden aria-label="Open the Wishing Well">${svg(ICONS.well,20)}<span>Well</span></button></div>
 <div id="hud-vitals"><div class="hud-level"><b id="hud-name">Eli</b> · <span id="hud-level">Lv. 1</span></div><div id="hud-xp" aria-hidden="true"><i></i></div></div>
 <div id="hud-actions">
- <button class="hud-act whirlpool" data-act="whirlpool" aria-label="Whirlpool">${svg(ICONS.whirlpool)}<kbd></kbd><b class="hud-charges"></b><small>Whirlpool</small></button>
- <button class="hud-act tidal" data-act="tidal" aria-label="Tidal Cannon">${svg(ICONS.tidal)}<kbd></kbd><b class="hud-charges"></b><small>Tidal</small></button>
- <button class="hud-act talk desk" data-act="talk" aria-label="Talk or examine">${svg(ICONS.talk)}<kbd></kbd><small>Talk</small></button>
- <button class="hud-act use desk" data-act="use" aria-label="Use selected item"><span class="hud-use-icon"></span><kbd></kbd><small></small></button>
- <button class="hud-act dash" data-act="dash" aria-label="Dash">${svg(ICONS.dash)}<kbd></kbd><small>Dash</small></button>
+ <div class="hud-reserves" hidden aria-label="Reserves"><i></i></div>
+ <button class="hud-act ring talk desk" style="--a:180deg" data-act="talk" aria-label="Talk or examine">${svg(ICONS.talk)}<kbd></kbd><small>Talk</small></button>
+ <button class="hud-act ring core" style="--a:144deg" data-act="still-water" data-core="still-water" aria-label="Still Water">${svg(ICONS['still-water'])}<i class="hud-cd"></i><kbd></kbd><small>Still Water</small></button>
+ <button class="hud-act ring core" style="--a:108deg" data-act="reeds-call" data-core="reeds-call" aria-label="Reedwater’s Call">${svg(ICONS['reeds-call'])}<i class="hud-cd"></i><kbd></kbd><small>Call</small></button>
+ <button class="hud-act ring core" style="--a:72deg" data-act="sealed" data-core="sealed-3" aria-label="Sealed power">${svg(ICONS.sealed)}<small>???</small></button>
+ <button class="hud-act ring core" style="--a:36deg" data-act="sealed" data-core="sealed-4" aria-label="Sealed power">${svg(ICONS.sealed)}<small>???</small></button>
+ <button class="hud-act ring dash" style="--a:0deg" data-act="dash" aria-label="Dash">${svg(ICONS.dash)}<kbd></kbd><small>Dash</small></button>
+ <button class="hud-act use desk" data-act="use" aria-label="Attack with the selected item"><span class="hud-use-icon"></span><kbd></kbd><small></small></button>
 </div>
 <div id="hud-banner" aria-hidden="true"><small></small><b></b><i></i></div>
 <button id="hud-found" hidden><span class="hud-found-card"><small class="hud-found-tag">NEW ITEM</small><span class="hud-found-icon"></span><b></b><small class="hud-found-kind"></small><span class="hud-found-text"></span><small class="hud-found-tap">Tap to continue</small></span></button>`;
@@ -126,9 +131,17 @@ export function mountHudShell({act,openHelp,examine,openAtlas,openQuests,openWel
    setItemIcon(actions.querySelector('.hud-use-icon'),rod?'Fishing Rod':item?.name);
    setText(actions.querySelector('.use small'),world.fishing.state==='reeling'?'Reel':world.fishing.state==='waiting'?'Cancel':rod?'Cast rod':item?.name||'Empty');
    const touchSymbol=document.querySelector('#touch-use .touch-symbol');if(touchSymbol)setItemIcon(touchSymbol,rod?'Fishing Rod':item?.name);
-   for(const kind of ['tidal','whirlpool']){const b=actions.querySelector('.'+kind),n=p.specials[kind];setText(b.querySelector('.hud-charges'),String(n));b.disabled=n===0||world.fishing.state!=='idle';}
-   const keys={whirlpool:'whirlpool',tidal:'tidal',talk:'inspect',use:rod?'fish':'use',dash:'dash'};
-   for(const b of actions.querySelectorAll('[data-act]'))setText(b.querySelector('kbd'),touch?'':b.dataset.act==='use'?'Click':bindingLabel(keys[b.dataset.act]).replace(/^(Left|Right) /,''));
+   // The Region Core's powers ring the attack: sealed until the story wakes them, then a cooldown sweep and a reserves bar.
+   for(const row of coreWheel(world)){
+    const b=actions.querySelector(`[data-core="${row.id}"]`);if(!b)continue;
+    b.classList.toggle('locked',!row.unlocked);b.classList.toggle('active',row.active);b.classList.toggle('waiting',row.unlocked&&!row.ready);
+    if(!row.sealed){const name=row.unlocked?row.name:'???';setText(b.querySelector('small'),row.id==='reeds-call'&&row.unlocked?'Call':name);b.setAttribute('aria-label',row.unlocked?row.name:'Sealed power');b.title=row.unlocked?row.name:'Not yet awakened';
+     const cd=b.querySelector('.hud-cd'),sweep=`${Math.round(row.cooldownFraction*360)}deg`;if(cd.style.getPropertyValue('--cd')!==sweep)cd.style.setProperty('--cd',sweep);}
+   }
+   const reserves=actions.querySelector('.hud-reserves');reserves.hidden=!abilityUnlocked(world,'reeds-call');
+   if(!reserves.hidden){const w=`${Math.round((world.core?.reserves??RESERVES_MAX)/RESERVES_MAX*100)}%`;if(reserves.firstElementChild.style.width!==w)reserves.firstElementChild.style.width=w;}
+   const keys={'still-water':'tidal','reeds-call':'whirlpool',talk:'inspect',use:rod?'fish':'use',dash:'dash'};
+   for(const b of actions.querySelectorAll('[data-act]')){const k=b.querySelector('kbd');if(k)setText(k,touch?'':b.dataset.act==='use'?'Click':bindingLabel(keys[b.dataset.act]).replace(/^(Left|Right) /,''));}
    // Pickups and first finds.
    const seen=notePickups(world,carried);carried=seen.carried;
    for(const g of seen.gained)pushFeed(g);queue.push(...seen.firsts);

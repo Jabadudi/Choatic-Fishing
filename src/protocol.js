@@ -26,6 +26,8 @@ export function applyAction(world,id,action,input){
    case 'dash':return world.dash(input);
    case 'tidal':return world.useSpecial('tidal');
    case 'whirlpool':return world.useSpecial('whirlpool');
+   case 'still-water':case 'reeds-call':return world.adventure&&world.useCoreAbility(action);
+   case 'sealed':return world.adventure&&world.useCoreAbility('sealed-3');
    case 'choose-tidal':return actor.progression.choose('tidal');
    case 'choose-whirlpool':return actor.progression.choose('whirlpool');
    default:return false;
