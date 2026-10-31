@@ -159,9 +159,6 @@ body.exploring #quest-objective{font:11px/1.5 monospace;color:#f3e6bf;margin:10p
 .backpack-details[data-rarity]:not([data-rarity=""]) .backpack-uses{color:color-mix(in srgb,var(--r) 60%,#fff)}
 .backpack-artifact-details{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
 .backpack-artifact-effect{margin:0;font:15px/1.45 Arial,sans-serif;color:#9fd8a8}
-.backpack-artifact-tiers{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
-.backpack-artifact-tiers span{padding:5px 2px;border:1px solid #c9a85f2e;border-radius:4px;text-align:center;font:10px Arial,sans-serif;color:var(--bp-muted);overflow:hidden;text-overflow:ellipsis}
-.backpack-artifact-tiers span.current{border-color:var(--r);color:#fff;font-weight:700;background:color-mix(in srgb,var(--r) 45%,transparent)}
 .backpack-artifact-progress{margin:0;font:13px Arial,sans-serif;color:var(--bp-muted)}
 .backpack-filters button:focus-visible,.backpack-sort select:focus-visible,.backpack-order:focus-visible,.backpack-details button:focus-visible{outline:2px solid #fff0cb;outline-offset:2px}
 /* Laptops: a narrower detail panel. */
