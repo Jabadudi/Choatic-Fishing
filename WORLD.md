@@ -29,7 +29,7 @@ and clamps to each area's bounds. Area maps, geography, scenery caches and
 discovery counts switch with the active area; prior discoveries remain in memory.
 
 WASD moves, mouse aims, left click uses the equipped item, E casts or abandons fishing,
-Space examines landmarks and reels, Left Shift dashes, R and T use the Region Core's powers once the story wakes them, and M opens/closes the area map. On phones the main attack sits in the bottom-right corner with the powers, Examine and Dash ringed around it (`src/core-abilities.js`). Fishing, inventory,
+Space examines landmarks and reels, Left Shift dashes, R and T use the Region Core's powers once the story wakes them, and M opens/closes the area map. On phones the main attack sits in the bottom-right corner with the powers and Dash ringed around it and Examine just to their left (`src/core-abilities.js`). Fishing, inventory,
 regeneration and timed upgrades remain available. The dock can be walked on.
 
 Scenery and explorer artwork are original; rabbits use the user-supplied sprite

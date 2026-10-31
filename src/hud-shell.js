@@ -40,11 +40,11 @@ export function mountHudShell({act,openHelp,examine,openAtlas,openQuests,openWel
 <div id="hud-vitals"><div class="hud-level"><b id="hud-name">Eli</b> · <span id="hud-level">Lv. 1</span></div><div id="hud-xp" aria-hidden="true"><i></i></div></div>
 <div id="hud-actions">
  <div class="hud-reserves" hidden aria-label="Reserves"><i></i></div>
- <button class="hud-act ring talk desk" style="--a:180deg" data-act="talk" aria-label="Talk or examine">${svg(ICONS.talk)}<kbd></kbd><small>Talk</small></button>
- <button class="hud-act ring core" style="--a:144deg" data-act="still-water" data-core="still-water" aria-label="Still Water">${svg(ICONS['still-water'])}<i class="hud-cd"></i><kbd></kbd><small>Still Water</small></button>
- <button class="hud-act ring core" style="--a:108deg" data-act="reeds-call" data-core="reeds-call" aria-label="Reedwater’s Call">${svg(ICONS['reeds-call'])}<i class="hud-cd"></i><kbd></kbd><small>Call</small></button>
- <button class="hud-act ring core" style="--a:72deg" data-act="sealed" data-core="sealed-3" aria-label="Sealed power">${svg(ICONS.sealed)}<small>???</small></button>
- <button class="hud-act ring core" style="--a:36deg" data-act="sealed" data-core="sealed-4" aria-label="Sealed power">${svg(ICONS.sealed)}<small>???</small></button>
+ <button class="hud-act side talk desk" data-act="talk" aria-label="Talk or examine">${svg(ICONS.talk)}<kbd></kbd><small>Talk</small></button>
+ <button class="hud-act ring core" style="--a:180deg" data-act="still-water" data-core="still-water" aria-label="Still Water">${svg(ICONS['still-water'])}<i class="hud-cd"></i><kbd></kbd><small>Still Water</small></button>
+ <button class="hud-act ring core" style="--a:135deg" data-act="reeds-call" data-core="reeds-call" aria-label="Reedwater’s Call">${svg(ICONS['reeds-call'])}<i class="hud-cd"></i><kbd></kbd><small>Call</small></button>
+ <button class="hud-act ring core" style="--a:90deg" data-act="sealed" data-core="sealed-3" aria-label="Sealed power">${svg(ICONS.sealed)}<small>???</small></button>
+ <button class="hud-act ring core" style="--a:45deg" data-act="sealed" data-core="sealed-4" aria-label="Sealed power">${svg(ICONS.sealed)}<small>???</small></button>
  <button class="hud-act ring dash" style="--a:0deg" data-act="dash" aria-label="Dash">${svg(ICONS.dash)}<kbd></kbd><small>Dash</small></button>
  <button class="hud-act use desk" data-act="use" aria-label="Attack with the selected item"><span class="hud-use-icon"></span><kbd></kbd><small></small></button>
 </div>

@@ -70,15 +70,17 @@
 /* 7 · Action wheel. The main attack sits in the corner and the Region Core's powers ring it, like an action RPG's skill wheel.
    Ring buttons place themselves from an angle (--a) around the attack's centre. Touch keeps its own Attack and Examine buttons
    (they hold to reel) at the same spots; this cluster adds the rest. */
-#hud-actions,:root body.touch-mode.exploring .touch-actions{--cx:122px;--cy:146px;--r:82px}
-@media(max-height:420px){#hud-actions,:root body.touch-mode.exploring .touch-actions{--cx:110px;--cy:128px;--r:74px}.hud-act.ring,:root body.touch-mode.exploring #touch-examine{scale:.92}.hud-act.use,:root body.touch-mode.exploring .touch-action.primary{scale:.9}}
-#hud-actions{position:absolute;right:env(safe-area-inset-right,0px);bottom:var(--hud-b);width:236px;height:206px;pointer-events:none}
+#hud-actions,:root body.touch-mode.exploring .touch-actions{--cx:186px;--cy:146px;--r:82px}
+@media(max-height:420px){#hud-actions,:root body.touch-mode.exploring .touch-actions{--cx:170px;--cy:128px;--r:74px}.hud-act.ring,.hud-act.side,:root body.touch-mode.exploring #touch-examine{scale:.92}.hud-act.use,:root body.touch-mode.exploring .touch-action.primary{scale:.9}}
+#hud-actions{position:absolute;right:env(safe-area-inset-right,0px);bottom:var(--hud-b);width:300px;height:206px;pointer-events:none}
 .hud-act{position:absolute;display:grid;place-items:center;padding:0;border-radius:50%;background:#10272cb3;border:1.5px solid #f3e6bf88;box-shadow:0 2px 8px #0007;cursor:pointer;pointer-events:auto;touch-action:manipulation;transition:transform .08s}
 .hud-act:active{transform:scale(.9)}.hud-act:disabled{opacity:.55;cursor:default}.hud-act:disabled:active{transform:none}
 .hud-act svg{width:52%;height:52%}
 .hud-act small{position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);font:bold 8.5px Arial,sans-serif;white-space:nowrap;text-shadow:0 1px 2px #000}
 .hud-act kbd{position:absolute;right:-3px;top:-3px;font:8px/1 monospace;padding:2px 3px;border-radius:3px;background:var(--hud-cream);color:#1a1608}.hud-act kbd:empty{display:none}
-.hud-act.ring,:root body.touch-mode.exploring #touch-examine{left:calc(var(--cx) + cos(var(--a)) * var(--r));top:calc(var(--cy) - sin(var(--a)) * var(--r));translate:-50% -50%;width:44px;height:44px}
+.hud-act.ring{left:calc(var(--cx) + cos(var(--a)) * var(--r));top:calc(var(--cy) - sin(var(--a)) * var(--r));translate:-50% -50%;width:44px;height:44px}
+/* Interact stands on its own, just left of the ring, so only the attack's powers circle it. */
+.hud-act.side,:root body.touch-mode.exploring #touch-examine{left:calc(var(--cx) - var(--r) - 60px);top:calc(var(--cy) - 18px);translate:-50% -50%;width:44px;height:44px}
 .hud-act.use,:root body.touch-mode.exploring .touch-action.primary{left:var(--cx);top:var(--cy);translate:-50% -50%;width:78px;height:78px;border-width:2px;border-color:#f3e6bfcc;background:radial-gradient(circle at 50% 35%,#2f5247f0,#10272cf0 70%);box-shadow:0 3px 12px #0009,inset 0 0 0 3px #10272c,inset 0 0 0 4px #e8c46a66}
 .hud-use-icon{display:grid;place-items:center;font-size:30px;color:var(--hud-gold)}.hud-use-icon img{width:46px;height:46px;image-rendering:pixelated}
 .hud-act.core{border-color:#9ad7ffaa;background:radial-gradient(circle at 50% 35%,#1d4a5cf0,#0d2430f0 72%);color:#cdeeff;box-shadow:0 0 9px #59b9ff55,0 2px 8px #0007;overflow:visible}
@@ -92,13 +94,12 @@
 .hud-reserves{position:absolute;left:calc(var(--cx) - 46px);top:calc(var(--cy) + 46px);width:92px;height:4px;border-radius:2px;background:#0b1d1ecc;border:1px solid #9ad7ff66;overflow:hidden;pointer-events:none}
 .hud-reserves i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#59b9ff,#cdeeff);transition:width .2s}
 :root body.touch-mode #hud-actions .desk{display:none}
-:root body.touch-mode.exploring .touch-actions{position:absolute;inset:auto env(safe-area-inset-right,0px) var(--hud-b) auto;left:auto;width:236px;height:206px;display:block;pointer-events:none}
-@media(max-height:420px){#hud-actions,:root body.touch-mode.exploring .touch-actions{width:214px;height:186px}}
+:root body.touch-mode.exploring .touch-actions{position:absolute;inset:auto env(safe-area-inset-right,0px) var(--hud-b) auto;left:auto;width:300px;height:206px;display:block;pointer-events:none}
+@media(max-height:420px){#hud-actions,:root body.touch-mode.exploring .touch-actions{width:276px;height:186px}}
 /* On phones the bottom notice sits between the joystick and the wheel. */
-:root body.touch-mode.exploring #world-notice:not(:empty){left:calc(var(--hud-l) + 130px);right:calc(env(safe-area-inset-right,0px) + 220px);transform:none;width:fit-content;margin-inline:auto}
+:root body.touch-mode.exploring #world-notice:not(:empty){left:calc(var(--hud-l) + 130px);right:calc(env(safe-area-inset-right,0px) + 280px);transform:none;width:fit-content;margin-inline:auto}
 :root body.touch-mode.exploring .touch-action{position:absolute;min-height:0;padding:0;border-radius:50%;display:grid;place-items:center;background:#10272cb3;border:1.5px solid #f3e6bf88;box-shadow:0 2px 8px #0007;pointer-events:auto}
 :root body.touch-mode.exploring .touch-action.primary{min-height:0;border-width:2px;border-color:#f3e6bfcc}
-:root body.touch-mode.exploring #touch-examine{--a:180deg}
 :root body.touch-mode.exploring .touch-action strong{position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);font:bold 8.5px Arial,sans-serif;white-space:nowrap;text-shadow:0 1px 2px #000}
 :root body.touch-mode.exploring .touch-action.primary strong{bottom:5px;font-size:9px;letter-spacing:.5px}
 :root body.touch-mode.exploring .touch-action small{display:none}
