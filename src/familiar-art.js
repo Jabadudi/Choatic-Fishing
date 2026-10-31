@@ -27,9 +27,10 @@ export function drawFamiliar(c,companion,time){
  const glow=companion.shiny?'#ffd36a':GLOW[companion.id],bob=Math.sin(time*3.2)*2.5,appear=1-companion.summonRemaining/.8;
  c.save();
  // Spirit ring at the feet and a soft halo.
- const halo=c.createRadialGradient(companion.x,companion.y-16,2,companion.x,companion.y-16,40);halo.addColorStop(0,`${glow}88`);halo.addColorStop(.6,`${glow}33`);halo.addColorStop(1,`${glow}00`);
- c.fillStyle=halo;c.beginPath();c.arc(companion.x,companion.y-16,40,0,Math.PI*2);c.fill();
- c.fillStyle=`${glow}44`;c.strokeStyle=`${glow}dd`;c.lineWidth=2;c.beginPath();c.ellipse(companion.x,companion.y+3,20+Math.sin(time*2)*2,6,0,0,Math.PI*2);c.fill();c.stroke();
+ // A big familiar (ring>1) gets a wider glow and foot ring.
+ const k=f.ring||1,halo=c.createRadialGradient(companion.x,companion.y-16*k,2,companion.x,companion.y-16*k,40*k);halo.addColorStop(0,`${glow}88`);halo.addColorStop(.6,`${glow}33`);halo.addColorStop(1,`${glow}00`);
+ c.fillStyle=halo;c.beginPath();c.arc(companion.x,companion.y-16*k,40*k,0,Math.PI*2);c.fill();
+ c.fillStyle=`${glow}44`;c.strokeStyle=`${glow}dd`;c.lineWidth=2;c.beginPath();c.ellipse(companion.x,companion.y+3,(20+Math.sin(time*2)*2)*k,6*k,0,0,Math.PI*2);c.fill();c.stroke();
  c.globalAlpha=.3+.7*Math.min(1,appear);
  c.translate(companion.x,companion.y+bob);c.scale(f.scale,f.scale);
  const pose={...companion,x:0,y:0,health:1,maxHealth:1,hurtRemaining:0,deathRemaining:0,spriteId:f.spriteId,species:companion.id};

@@ -18,7 +18,7 @@ export const FAMILIARS=Object.freeze({
   passive:{name:'Slippery Grip',ranks:[{dexterity:2},{dexterity:5}]},ultimate:{name:'Current Sense',bonus:{fishingXp:.25}}},
  'shadow-walker':{name:'Shadow Walker',shard:'Shadow Walker Familiar Shard',spriteId:'nightwalker',scale:.75,
   passive:{name:'Whispers in the Dark',ranks:[{wisdom:2},{wisdom:5}]},ultimate:{name:'Borrowed Power',bonus:{strength:2,dexterity:2,luck:2,wisdom:2}}},
- moonfang:{name:'Moonfang',shard:'Moonfang Familiar Shard',spriteId:'moonfang',scale:.45,wellOnly:true,
+ moonfang:{name:'Moonfang',shard:'Moonfang Familiar Shard',spriteId:'moonfang',scale:.9,ring:1.8,wellOnly:true,
   passive:{name:'Pack Guardian',ranks:[{strength:1,health:10},{strength:3,health:25}]},ultimate:{name:'Moonlit Run',bonus:{speed:.15}}},
  rimejaw:{name:'Rimejaw',shard:'Rimejaw Familiar Shard',spriteId:'rimejaw',scale:.55,wellOnly:true,
   passive:{name:'Frost Scales',ranks:[{health:10,dexterity:1},{health:30,dexterity:3}]},ultimate:{name:'Frozen Bite',bonus:{damageReduction:.1,strength:2}}},
