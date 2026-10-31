@@ -10,6 +10,7 @@ import {Progression,XP} from './progression.js';
 import {Inventory,canUseItem,itemCount,stackable,HEALING} from './inventory.js';
 import {MERCHANTS,findMarks,marksLabel} from './trade.js';
 import {attack,special,updateProjectiles} from './combat.js';
+import {createCore,updateCore,useCoreAbility} from './core-abilities.js';
 import {facingFor} from './entities.js';
 import {updateBot} from './bots.js';
 import {LAND,CHESTS,LAKES,lakeDistance,isWater,nearWater,walkable} from './terrain.js';
@@ -43,7 +44,7 @@ export class World {
   }
   this.story=adventure&&story?createStory():null;this.adventure=adventure;this.drops=[];this.nextDropId=1;
   if(adventure)this.player.inventory=new Inventory({separateStorage:true});
-  this.rabbits=adventure?createRabbits():[];this.wildlife=adventure?createWildlife():[];this.hunting={total:0,bySpecies:{},shiny:{seen:{},hunted:{}}};this.spawns=adventure?createSpawns():null;this.familiars=createFamiliars();this.companion=null;this.codex=new Set();this.itemsFound=new Set();this.well=createWell();
+  this.rabbits=adventure?createRabbits():[];this.wildlife=adventure?createWildlife():[];this.hunting={total:0,bySpecies:{},shiny:{seen:{},hunted:{}}};this.spawns=adventure?createSpawns():null;this.familiars=createFamiliars();this.core=createCore();this.companion=null;this.codex=new Set();this.itemsFound=new Set();this.well=createWell();
   this.npcs=adventure?createNpcs():[];this.dialogue=null;this.quests=createQuests();
   if(adventure){this.areaId='landing';Object.assign(this.player,Wilds.SPAWN);this.bots=[];this.actors=[this.player];this.humans=[this.player];this.chests=[];this.countdownRemaining=0;this.matchState='playing';this.discovered=new Set();this.message='Welcome to Reedwater Landing. Follow the north trail to walk into Windchime Path. M opens the area map.';}
   if(adventure)this.player.progression.characterStats=true;
@@ -108,6 +109,7 @@ export class World {
   return false;
  }
  useSpecial(kind,actor=this.player){const used=special(this,actor,kind);if(actor===this.player)this.message=used?`${kind==='tidal'?'Tidal Cannon':'Whirlpool Burst'} unleashed!`:'Special unavailable. Earn a charge, abandon fishing, and let your attack recover.';return used;}
+ useCoreAbility(id){const {used,message}=useCoreAbility(this,id);if(message)this.message=message;return used;}
  recordElimination(victimId){return this.progression.recordElimination(victimId);}
  nearestWater(actor=this.player){return this.adventure?Wilds.nearWater(actor.x,actor.y,this.areaId):nearWater(actor.x,actor.y);}
  inspect(){
@@ -228,6 +230,7 @@ export class World {
   updateDefeat(this,dt);
   updateSpawns(this,dt);
   updateFamiliar(this,dt);
+  if(this.adventure)updateCore(this,dt);
   if(this.adventure)this.pullDrops(dt);
   updateDialogue(this,dt);
   updateStory(this,dt,Wilds.walkable);

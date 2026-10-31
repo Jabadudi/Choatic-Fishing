@@ -27,7 +27,9 @@ export function damage(world,target,amount,source,angle,knockback=0){
  if(target.entityType==='animal')return damageAnimal(world,target,amount,source,angle,knockback);
  if(target.health<=0||world.matchState!=='playing')return false;
  if(target.dashRemaining>0)return false;
- const taken=amount*(source.progression?.damageMultiplier??1)*(1-target.progression.damageReduction)*(1-artifactBonus(target,'mossback-scute'))*(source.entityType==='animal'?1-target.progression.passive('hunting.hide'):1);
+ // Still Water (a Region Core power) steadies Eli: less damage and no knockback while it holds.
+ const steady=target===world.player&&world.core?.stillWater>0;if(steady)knockback=0;
+ const taken=amount*(steady?.75:1)*(source.progression?.damageMultiplier??1)*(1-target.progression.damageReduction)*(1-artifactBonus(target,'mossback-scute'))*(source.entityType==='animal'?1-target.progression.passive('hunting.hide'):1);
  target.health=Math.max(0,target.health-taken);
  target.vx+=Math.cos(angle)*knockback;target.vy+=Math.sin(angle)*knockback;
  if(world.adventure)world.effects.push({name:'player-hit',label:`-${Math.round(taken)}`,x:target.x,y:target.y-40,angle:0,life:.7,duration:.7});
@@ -66,8 +68,11 @@ export function special(world,actor,kind){
 export function updateProjectiles(world,dt){
  for(const shot of world.projectiles){
   const startX=shot.x,startY=shot.y;
+  // Reedwater's Call bends toward the foe it was cast at.
+  if(shot.homing!==null&&shot.homing!==undefined){const t=combatTargets(world).find(c=>c.id===shot.homing&&c.health>0);if(t){const want=Math.atan2(t.y-shot.y,t.x-shot.x),diff=Math.atan2(Math.sin(want-shot.angle),Math.cos(want-shot.angle)),max=shot.turn*dt;shot.angle+=Math.max(-max,Math.min(max,diff));}}
   const step=Math.min(shot.speed*dt,shot.range-shot.travel);
   shot.x+=Math.cos(shot.angle)*step;shot.y+=Math.sin(shot.angle)*step;shot.travel+=step;
+  if(shot.trail){shot.trail.push({x:shot.x,y:shot.y});if(shot.trail.length>14)shot.trail.shift();}
   if(shot.kind==='bomb'){
    if(shot.travel>=shot.range){world.effects.push({name:'explosion',x:shot.x,y:shot.y,angle:0,life:.55});for(const target of combatTargets(world)){if(target!==shot.owner&&Math.hypot(target.x-shot.x,target.y-shot.y)<100)damage(world,target,shot.damage,shot.owner,Math.atan2(target.y-shot.y,target.x-shot.x),shot.knockback);}shot.done=true;}
   }else{

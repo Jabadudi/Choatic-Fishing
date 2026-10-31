@@ -1,3 +1,4 @@
+import {WEAPONS} from './combat.js';
 // Touch input remains separate from fishing physics and keyboard input.
 export function joystickVector(dx,dy,radius=46){
  const distance=Math.hypot(dx,dy),dead=radius*.16;
@@ -45,7 +46,7 @@ export function mountMobileControls({state,action,examine,active}){
    if(blocked)this.reset();
    const phase=world.fishing.state,item=world.inventory.item;
    root.querySelector('#touch-use-hint').textContent=phase==='reeling'?'Hold to reel':phase==='waiting'?'Cancel cast':world.inventory.selected===1?'Cast rod':item?.name||'Empty slot';
-   use.querySelector('strong').textContent=phase==='reeling'?'Reel':phase==='waiting'?'Cancel':'Use';
+   use.querySelector('strong').textContent=phase==='reeling'?'Reel':phase==='waiting'?'Cancel':world.inventory.selected===1?'Cast':WEAPONS[item?.name]?'Attack':'Use';
    use.setAttribute('aria-label',phase==='reeling'?'Hold to reel in the catch':phase==='waiting'?'Cancel fishing cast':world.inventory.selected===1?'Cast fishing rod':'Use selected item');
   }
  };
