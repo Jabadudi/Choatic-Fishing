@@ -32,6 +32,7 @@ Dry and teasing, but deeply caring. Described as "tougher than me" by Eli. After
 - She doesn't get seasick (and plans to bring it up every Thanksgiving).
 - On the island she finds the cabin burned by lightning, no body, the lure's shelf unburned with a clean spot in the dust, and a ring of dead, cold gray grass in the clearing.
 - A faceless shadow man in the trees, speaking in the layered voice from Eli's dream, says "There's the other one." The cold takes her. She is kidnapped; her story pauses until Eli sees her in captivity in a later vision.
+- Timeline: 15.5 is told as a separate timeline that happened on day 31. When Eli later gets the vision, he eventually realizes it has been a while since she was taken.
 
 ## Open questions / not yet established
 - Hair color, eye color, height, style.
