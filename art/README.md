@@ -5,7 +5,7 @@ Generated concept art, references, cutscenes and sprite sheets for Volume 1. The
 | Folder | Contents |
 | --- | --- |
 | `cutscenes/vol1/` | Story panels by chapter, numbered in the order they play (`ch01_01_…`). `_alts/` keeps earlier takes. |
-| `characters/` | Reference sheets (front, side, face) for Mara, Emilia, Eli, Drayfus, Croshelda and Brume. |
+| `characters/` | Reference sheets (front, side, face) for Mara, Emilia, Eli, Drayfus, Croshelda, Brume and Corvane. |
 | `sprites/creatures/` | Rimejaw, Flitlynx and Moonfang: a single pose and an animation sheet each. The talking ocelot: a 4-direction walk sheet and a dissolve strip. |
 | `sprites/mobs/` | Nightwalker (shadow walker) enemy: reference sheet, pose and animation sheet. |
 | `sprites/characters/` | Playable and NPC character sprites: Eli (walk and throw sheets, the style and walk layout every moving entity follows), 4-direction walk sheets for Mara, Emilia and Drayfus, Drayfus's beckon strip, and his older side-view action sheet. |
@@ -31,7 +31,7 @@ Sheet rows are idle, walk or fly, run where present, attack, then extras (howl, 
 
 ## Chapter 6 characters
 
-`scripts/prepare-chapter6-sprites.py` cuts the walk sheets for Mara, Emilia, Drayfus and the talking ocelot into `assets/story/<name>-sheet.png`, in the same layout as Eli's. Drayfus's sheet adds his beckon strip as a fifth row (he waits with his arms folded and waves Eli over), and the ocelot's adds its dissolve strip (its first frame is how it sits). The ocelot's side rows have 7 frames. It also cuts Brume's sheets in `sprites/creatures/moonfang/` (the walk set, drawn in the column layout every new walk set uses, and single columns for his bow and lying down to sleep) into `assets/story/brume-sheet.png`. The Moonfang familiar walks on it, bows when summoned and sleeps when Eli stands still. His reference sheet is in `characters/brume/`.
+`scripts/prepare-chapter6-sprites.py` cuts the walk sheets for Mara, Emilia, Drayfus and the talking ocelot into `assets/story/<name>-sheet.png`, in the same layout as Eli's. Drayfus's sheet adds his beckon strip as a fifth row (he waits with his arms folded and waves Eli over), and the ocelot's adds its dissolve strip (its first frame is how it sits). The ocelot's side rows have 7 frames. It also cuts Brume's sheets in `sprites/creatures/moonfang/` (the walk set, drawn in the column layout every new walk set uses, and single columns for his bow and lying down to sleep) into `assets/story/brume-sheet.png`. The Moonfang familiar walks on it, bows when summoned and sleeps when Eli stands still. His reference sheet is in `characters/brume/`. Corvane's sheets in `sprites/characters/corvane/` (a column-layout walk set with a ground line under each frame, which the script leaves out, and single columns for his shadows-part entrance and his block) become `assets/story/corvane-sheet.png`. He is staged for Chapter 14 and does not appear in the game yet.
 
 ## Furniture and props
 

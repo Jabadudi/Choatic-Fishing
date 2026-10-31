@@ -15,6 +15,7 @@ on a shared baseline and its head and torso centred, at twice the size the game 
                      row 4 the dissolve strip (sitting, then breaking into blue motes), kept in place frame to frame.
 
   brume-sheet.png    rows 0-3 walk, cut from Brume's column-layout sheet (the Moonfang wolf), row 4 his bow, row 5 lying down to sleep.
+  corvane-sheet.png  rows 0-3 walk (column layout, ground line removed), row 4 the shadows-part entrance, row 5 the block.
 
 Run from the repository root: python3 scripts/prepare-chapter6-sprites.py
 Requires Pillow and NumPy.
@@ -27,6 +28,7 @@ CH='art/sprites/characters/'
 WALK_FRAMES={'mara':(8,8,8,8),'emilia':(8,8,8,8),'drayfus':(8,8,8,8),'ocelot':(7,7,8,8)}
 CR='art/sprites/creatures/talking-ocelot/'
 MF='art/sprites/creatures/moonfang/'
+CV=CH+'corvane/'
 OUT='assets/story/'
 
 def load(path):
@@ -63,9 +65,18 @@ def body_rows(m):
   rows=np.nonzero(m.sum(1)>=4)[0]
   return rows.min(),rows.max()+1
 
-def cut(im,mask,y0,y1,x0,x1,anchor='head'):
-  """One frame as (RGBA image, anchor x, baseline y). anchor 'body' centres four-legged walkers on their whole body."""
-  m=mask[y0:y1,x0:x1];ys,xs=np.nonzero(m)
+def ground_line(m):
+  """Rows to drop from the bottom of a frame mask: a flat dark ground line drawn under the feet, wider than the boots."""
+  ys=np.nonzero(m.any(1))[0];by=ys.max()+1;width=lambda y:np.count_nonzero(m[y])
+  while by-6>ys.min() and width(by-1)>1.6*width(by-6):by-=1
+  return by
+
+def cut(im,mask,y0,y1,x0,x1,anchor='head',line=False):
+  """One frame as (RGBA image, anchor x, baseline y). anchor 'body' centres four-legged walkers on their whole body.
+  line: the sheet draws a ground line under each frame, which is left out."""
+  m=mask[y0:y1,x0:x1].copy()
+  if line:m[ground_line(m):]=False
+  ys,xs=np.nonzero(m)
   ty,by=ys.min(),ys.max()+1;lx,rx=xs.min(),xs.max()+1
   rgb=im[y0:y1,x0:x1][ty:by,lx:rx].copy();m=m[ty:by,lx:rx]
   g=rgb[...,1];lim=np.maximum(rgb[...,0],rgb[...,2]);rgb[...,1]=np.where(g>lim*1.1,lim*1.1,g).astype(int)
@@ -74,7 +85,7 @@ def cut(im,mask,y0,y1,x0,x1,anchor='head'):
   head=m[top:top+max(1,int((bottom-top)*.45))] if anchor=='head' else m[top:bottom];cx=np.nonzero(head)[1].mean()
   return img,cx,bottom
 
-def walk(path,counts=(8,8,8,8),layout='rows',anchor='head'):
+def walk(path,counts=(8,8,8,8),layout='rows',anchor='head',line=False):
   """layout 'rows': one direction per row, frames left to right (the older sheets).
   layout 'columns': one direction per column, frames top to bottom (sheets drawn from now on).
   Either way the frames come back in the house order: right, left, toward the camera, away, 8 slots each."""
@@ -85,8 +96,8 @@ def walk(path,counts=(8,8,8,8),layout='rows',anchor='head'):
   frames=[]
   for r,count in enumerate(counts):
     a0,a1=edges[r],edges[r+1]
-    if layout=='rows':row=[cut(im,mask,a0,a1,x0,x1,anchor) for x0,x1 in frame_slices(mask[a0:a1],count)]
-    else:row=[cut(im,mask,y0,y1,a0,a1,anchor) for y0,y1 in frame_slices(mask[:,a0:a1].T,count)]
+    if layout=='rows':row=[cut(im,mask,a0,a1,x0,x1,anchor,line) for x0,x1 in frame_slices(mask[a0:a1],count)]
+    else:row=[cut(im,mask,y0,y1,a0,a1,anchor,line) for y0,y1 in frame_slices(mask[:,a0:a1].T,count)]
     frames+=row+[None]*(8-len(row))
   return frames
 
@@ -161,3 +172,8 @@ if __name__=='__main__':
   frames=walk(MF+'brume_walk_sheet.png',(8,8,8,8),'columns','body')
   bow=strip_column(MF+'brume_bow_column.png');sleep=strip_column(MF+'brume_sleep_column.png')
   pack('brume-sheet.png',[(frames,64*2/height(frames[:8])),(bow,64*2/height(bow[:1])),(sleep,64*2/height(sleep[:1]))])
+  # Corvane, Croshelda's general: taller than Drayfus, about 68 px. Row 4 is the shadows-part entrance (facing the
+  # camera) and row 5 blocking Emilia's ice (facing right), each scaled to his walking height.
+  frames=walk(CV+'corvane_walk-sheet.png',(8,8,8,8),'columns','head',line=True)
+  part=strip_column(CV+'corvane_shadows-part.png');block=strip_column(CV+'corvane_block.png')
+  pack('corvane-sheet.png',[(frames,68*2/height(frames[16:24])),(part,68*2/height(part[:1])),(block,68*2/height(block[:1]))])
