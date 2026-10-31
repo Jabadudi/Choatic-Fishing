@@ -42,7 +42,7 @@ const assert=require('node:assert/strict');
  await w(()=>__qa.world.inventory.receive({name:'Deer Hide'}));
  await goTo('child-one');await w(()=>__qa.world.inspect());await page.locator('#quest-sheet[open]').waitFor();await page.locator('.quest-action.primary').click();await page.keyboard.press('Escape');await page.waitForTimeout(200);
  await page.keyboard.press('KeyJ');await page.locator('#quest-sheet[open]').waitFor();await page.waitForTimeout(300);
- assert.equal(await page.locator('#quest-sheet .quest-card').count(),2);await shot('09-quest-log');
+ assert.equal(await page.locator('#quest-sheet .quest-list .quest-entry[data-pick^="side-"]').count(),2);await shot('09-quest-log');
  await page.keyboard.press('Escape');await page.waitForTimeout(200);
  // A phone held sideways: the HUD line, the Quests button with its count, and the log.
  const phone=await (await browser.newContext({viewport:{width:844,height:390},isMobile:true,hasTouch:true,deviceScaleFactor:2,userAgent:'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Mobile Safari/537.36'})).newPage();
