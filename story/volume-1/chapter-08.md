@@ -16,9 +16,9 @@ Then he walked to the lower rung of the tower ladder, reached behind it, and hel
 
 "The hollow?"
 
-"You know the one."
+"You know the one." He tapped two fingers against his own breastbone. "That emptiness behind the ribs, like something has been scooped out of you. That is your reserves running dry. Every caster feels it, and every caster who ignores it ends up face down in the dirt, or worse, face down in the river."
 
-I did.
+I did know it. I'd spent most of the first night with my face in the pillow, feeling it.
 
 "Mara goes with you," he said. "If you fall in, she pulls you out. If you do something stupid, she tells me."
 
