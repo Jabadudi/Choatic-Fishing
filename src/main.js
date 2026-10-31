@@ -7,6 +7,8 @@ import {mountControlsHelp} from './controls-help.js';
 import {observeGameSounds,playSfx} from './sfx.js';
 import {mountStory} from './story-ui.js';
 import {currentScene,storyPrompt,cabinDamaged,rodReady} from './story.js';
+import {storyTarget} from './story-quests.js';
+import {paintQuestMap,paintQuestMinimap} from './quest-map.js';
 import {amountLabel} from './inventory.js';
 import {paintStoryMap} from './story-map.js';
 import {drawStoryWeather} from './story-weather.js';
@@ -192,7 +194,7 @@ function updateUI(){
   setText($('region-name'),regionAt(world.player.x,world.player.y,world.areaId));
   const purse=String(world.inventory.marks||0),purseText=$('purse-hud').lastChild;if(purseText.textContent!==purse){purseText.textContent=purse;$('purse-hud').setAttribute('aria-label',marksLabel(world.inventory.marks||0));}
   setText($('discovery-count'),`${places.filter(p=>world.discovered.has(p.id)).length} / ${places.length} places found here`);
-  setText(document.querySelector('.atlas-heading h2'),areaFor(world.areaId).name);
+  setText(document.querySelector('.atlas-heading h2'),areaFor(atlasFocus?.areaId||world.areaId).name);
   const hud=explorationHud(world,(performance.now()-exploreStart)/1000);
   setText($('area-kicker'),areaFor(world.areaId).name.toUpperCase());document.title=`The Wilds · ${areaFor(world.areaId).name}`;
   $('inspect-place').hidden=!hud.prompt;{const {verb,target}=promptParts(hud.prompt);setText($('inspect-place'),target);$('inspect-place').dataset.key=verb;}if(hud.prompt&&$('inspect-place').getAttribute('aria-label')!==hud.prompt)$('inspect-place').setAttribute('aria-label',hud.prompt);
@@ -221,7 +223,7 @@ const sheetOpen=()=>!!(hubUI?.open||backpackUI?.open||tradeUI?.open||wellUI?.ope
 document.querySelector('header h1').textContent='THE WILDS';
 document.querySelector('.playfield').insertAdjacentHTML('beforeend',`<section id="exploration-hud" hidden><span class="exploration-kicker" id="area-kicker">YOUR JOURNEY</span><h2 id="region-name">Reedwater Delta</h2><div id="player-hp" role="progressbar" aria-label="Health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><div class="hp-row"><span class="hp-label">HP</span><span id="player-hp-text">100 / 100</span></div><div class="hp-track"><i id="player-hp-trail"></i><i id="player-hp-fill"></i></div></div><p id="discovery-count">0 / 10 places found</p><div class="discovery-dots" id="discovery-dots"></div><p id="purse-hud" title="Reed marks">${markIcon(14)}<span></span></p></section><button id="inspect-place" hidden>G · Examine</button><div id="explore-hint" hidden></div><button id="music-icon" aria-label="Music settings" aria-expanded="false">♪</button><button id="open-atlas" hidden aria-label="Open world atlas"><canvas id="mini-atlas" width="176" height="176"></canvas><span>M · WORLD ATLAS</span></button><section id="world-atlas" hidden role="dialog" aria-modal="true" aria-label="World atlas"><div class="atlas-card"><div class="atlas-heading"><div><small>THE WILDS</small><h2>World Atlas</h2></div><button id="close-atlas">Close · M / Esc</button></div><canvas id="atlas-canvas" width="800" height="600"></canvas><p>Follow the old trails and bridges. Gold marks the places you have found. Your position is the bright marker.</p></div></section>`);
 touchUI=mountMobileControls({state:touchState,active:()=>touchMode&&!!lobby.world&&!atlasOpen&&!hubUI?.open&&!chatUI?.open&&!hudUI?.open&&!saveUI?.open&&!backpackUI?.open&&!tradeUI?.open&&!wellUI?.open&&!radioUI?.open&&!skillsUI?.open&&!codexUI?.open&&!questUI?.open&&!settingsUI?.open&&!helpUI?.open&&!storyUI?.open&&!currentScene(world),action:()=>{pointer=null;const f=world.fishing;if(f.state==='waiting')act('cancel');else if(f.state==='idle')act('click');},examine:()=>{world.inspect();canvas.focus();}});
-let atlasOpen=false,exploreStart=performance.now(),lastMessage='',messageSince=0,lastNotice='',noticeSince=0,dotsKey='',hpShown='',hpFraction=1;
+let atlasFocus=null,atlasOpen=false,exploreStart=performance.now(),lastMessage='',messageSince=0,lastNotice='',noticeSince=0,dotsKey='',hpShown='',hpFraction=1;
 $('upgrade-timer').insertAdjacentHTML('afterend','<div id="upgrade-bar"><i id="upgrade-fill"></i></div><p id="quest-objective" hidden aria-live="polite"></p><p id="side-objective" hidden aria-live="polite"></p>');
 document.querySelector('.hotbar').insertAdjacentHTML('beforeend','<div class="dash-mini"><div id="dash-pips"></div><span>DASH</span></div>');
 $('music-icon').onclick=()=>{const open=document.querySelector('.music-hud').classList.toggle('open');$('music-icon').setAttribute('aria-expanded',open);canvas.focus();};
@@ -229,15 +231,17 @@ $('open-atlas').setAttribute('aria-label','Open area map');$('open-atlas').query
 $('world-atlas').setAttribute('aria-label','Area map');document.querySelector('.atlas-card p').textContent='Walk through the marked map edge to reach the connecting path. Gold marks places you have found; the bright marker shows your position.';
 canvas.setAttribute('aria-label','Reedwater exploration. WASD move, Space talk or examine, left click use item, B backpack, H controls.');
 const atlasImages=new Map();
+// The area map shows where Eli is, or the area of the story's next stop when opened from the quest log.
 function drawMap(target){
- const area=areaFor(world.areaId),key=`${area.id}:${target.width}:${target.height}`;let base=atlasImages.get(key);
+ const area=areaFor(atlasFocus?.areaId||world.areaId),here=area.id===world.areaId,key=`${area.id}:${target.width}:${target.height}`;let base=atlasImages.get(key);
  if(!base){base=document.createElement('canvas');base.width=target.width;base.height=target.height;paintAtlas(base.getContext('2d'),base.width,base.height,null,new Set(),area.id);atlasImages.set(key,base);}
  const c=target.getContext('2d');c.imageSmoothingEnabled=false;c.drawImage(base,0,0);
  const sx=target.width/area.width,sy=target.height/area.height;
  if(area.id==='landing'){paintStoryMap(c,sx,sy,world.story);if(target.width>400&&world.story){c.font='bold 12px monospace';c.textAlign='center';c.fillStyle='#fff0c9';c.fillText(cabinDamaged(world.story)?'Damaged Cabin':'Grandpa’s Cabin',1630*sx,1300*sy);}}
  const guide=world.story?.guide;if(guide&&(guide.areaId||'landing')===area.id){c.fillStyle='#99e4df';c.beginPath();c.arc(guide.x*sx,guide.y*sy,4,0,Math.PI*2);c.fill();if(target.width>400){c.font='bold 12px monospace';c.textAlign='center';c.fillText('Your guide',guide.x*sx,guide.y*sy-10);}}
  for(const p of placesFor(area.id))if(world.discovered.has(p.id)){c.fillStyle='#e8be65';c.fillRect(p.x*sx-3,p.y*sy-3,6,6);}
- c.fillStyle='#fff4c1';c.strokeStyle='#20383d';c.lineWidth=2;c.beginPath();c.arc(world.player.x*sx,world.player.y*sy,4,0,Math.PI*2);c.fill();c.stroke();
+ paintQuestMap(c,world,area.id,storyTarget(world)?.areaId===area.id?storyTarget(world):atlasFocus,sx,sy,performance.now()/1000);
+ if(here){c.fillStyle='#fff4c1';c.strokeStyle='#20383d';c.lineWidth=2;c.beginPath();c.arc(world.player.x*sx,world.player.y*sy,4,0,Math.PI*2);c.fill();c.stroke();}
 }
 // The minimap follows Eli: a close crop of the area atlas, centred on him.
 function drawMinimap(target){
@@ -250,10 +254,11 @@ function drawMinimap(target){
  if(area.id==='landing')paintStoryMap(c,sx,sy,world.story);
  const guide=world.story?.guide;if(guide&&(guide.areaId||'landing')===area.id){c.fillStyle='#e8c46a';c.save();c.translate(guide.x*sx,guide.y*sy);c.rotate(Math.PI/4);c.fillRect(-4,-4,8,8);c.restore();}
  for(const p of placesFor(area.id))if(world.discovered.has(p.id)){c.fillStyle='#e8be65';c.fillRect(p.x*sx-2,p.y*sy-2,4,4);}
+ c.setTransform(1,0,0,1,0,0);paintQuestMinimap(c,world,storyTarget(world),zoom,target.width/2,target.height/2,Math.min(target.width,target.height)/2);
  c.setTransform(1,0,0,1,target.width/2,target.height/2);c.rotate(world.player.angle+Math.PI/2);
  c.fillStyle='#fff4c1';c.strokeStyle='#20383d';c.lineWidth=2;c.beginPath();c.moveTo(0,-9);c.lineTo(7,7);c.lineTo(0,3);c.lineTo(-7,7);c.closePath();c.stroke();c.fill();c.setTransform(1,0,0,1,0,0);
 }
-function toggleAtlas(open=!atlasOpen){if(open){backpackUI?.close();skillsUI?.close();codexUI?.close();questUI?.close();}atlasOpen=open;release();if(open&&touchUI)touchUI.update(world,true);$('world-atlas').hidden=!open;if(open)drawMap($('atlas-canvas'));else canvas.focus();}
+function toggleAtlas(open=!atlasOpen){if(!open)atlasFocus=null;if(open){backpackUI?.close();skillsUI?.close();codexUI?.close();questUI?.close();}atlasOpen=open;release();if(open&&touchUI)touchUI.update(world,true);$('world-atlas').hidden=!open;if(open)drawMap($('atlas-canvas'));else canvas.focus();}
 $('open-atlas').onclick=()=>toggleAtlas(true);$('close-atlas').onclick=()=>toggleAtlas(false);$('inspect-place').onclick=()=>{world.inspect();canvas.focus();};
 const lobby=new Lobby(updateLobby);
 skillsUI=mountSkills({getWorld:()=>world,onOpen:()=>{toggleAtlas(false);release();},onClose:()=>{release();canvas.focus();}});
@@ -262,7 +267,7 @@ tradeUI=mountTrade({getWorld:()=>world,onOpen:()=>{backpackUI?.close();skillsUI?
 radioUI=mountRadio({onOpen:()=>{backpackUI?.close();tradeUI?.close();wellUI?.close();skillsUI?.close();codexUI?.close();questUI?.close();toggleAtlas(false);release();},onClose:()=>{release();canvas.focus();}});
 radioUI.mountChip(document.querySelector('.playfield'));
 wellUI=mountWell({getWorld:()=>world,onOpen:()=>{backpackUI?.close();skillsUI?.close();codexUI?.close();questUI?.close();toggleAtlas(false);release();},onClose:()=>{release();canvas.focus();}});
-questUI=mountQuests({getWorld:()=>world,onOpen:()=>{backpackUI?.close();skillsUI?.close();codexUI?.close();toggleAtlas(false);release();},onClose:()=>{release();canvas.focus();},onTrade:id=>tradeUI?.show(id)});
+questUI=mountQuests({getWorld:()=>world,onOpen:()=>{backpackUI?.close();skillsUI?.close();codexUI?.close();toggleAtlas(false);release();},onClose:()=>{release();canvas.focus();},onMap:target=>{atlasFocus=target;toggleAtlas(true);},onTrade:id=>tradeUI?.show(id)});
 backpackUI=mountBackpack({getWorld:()=>world,onOpen:()=>{toggleAtlas(false);release();},onClose:()=>{release();canvas.focus();},onAction:(id,action,slot)=>world.backpackAction(id,action,slot)});
 saveUI=mountSaveUI({getWorld:()=>lobby.world,
  onLoad:restored=>{lobby.stop();lobby.mode='solo';lobby.world=restored;lobby.notify();progressionKey='';exploreStart=performance.now();release();canvas.focus();},
@@ -315,7 +320,7 @@ refreshKeyHints();
 mountScreenControls({onChange:()=>release()});
 helpUI=mountControlsHelp({isTouch:()=>touchMode,onOpen:()=>{release();backpackUI?.close();skillsUI?.close();codexUI?.close();questUI?.close();toggleAtlas(false);},onClose:()=>{release();canvas.focus();}});
 settingsUI=mountSettings({onOpen:()=>{release();backpackUI?.close();skillsUI?.close();codexUI?.close();questUI?.close();toggleAtlas(false);},onClose:()=>{release();if(!storyUI?.open)canvas.focus();}});
-hudUI=mountHudShell({act,openHelp:()=>helpUI.show(),examine:()=>{world.inspect();canvas.focus();},openAtlas:()=>toggleAtlas(true),openQuests:()=>questUI.show(),openWell:()=>wellUI.show(),openRadio:()=>radioUI.show(),isTouch:()=>touchMode});
+hudUI=mountHudShell({act,openHelp:()=>helpUI.show(),examine:()=>{world.inspect();canvas.focus();},openAtlas:()=>toggleAtlas(true),openQuests:mode=>mode==='drawer'?questUI.showDrawer():questUI.showLog(mode),openWell:()=>wellUI.show(),openRadio:()=>radioUI.show(),isTouch:()=>touchMode});
 storyUI=mountStory({getWorld:()=>lobby.world,onAdvance:()=>{release();lastAtlasDraw=0;canvas.focus();},onSettings:()=>settingsUI.show(),isSettingsOpen:()=>settingsUI.open});
 document.addEventListener('click',e=>{if(e.target.closest('button')&&!e.target.closest('#story-scene,#settings-sfx-test'))playSfx('ui');});
 updateLobby();

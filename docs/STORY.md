@@ -165,3 +165,12 @@ A new cutscene image fades in over 1 second, remains clear for 3 seconds, dims o
 Dinner now stays in the cabin view rather than opening the photograph illustration. Storm pages keep their existing save indices, but the strike, collapse, rescue and blackout now play automatically. A fixed-step story controller moves Eli along a land-checked cabin exit and shore route; the camera follows the player, input stays locked, and Settings pauses playback. The collapse uses a rendered fallen pose, the rescue uses the existing artwork without a dialogue panel, and the blackout leads into the unchanged wake-up narration. Restoring during the sequence continues its saved beat and position; transient playback clocks do not alter the journey save contract. The damaged cabin appears during the escape, while the girl and camp appear after the rescue.
 
 Settings now has a Keybinds tab. Click an action and press a letter, digit, arrow, Shift, Space, or punctuation key. Conflicts swap actions; Escape cancels capture. Restore default keys resets only keyboard bindings. Device preferences retain bindings across reloads, and HUD prompts update immediately. Escape, F10, Ctrl/Cmd+S manual save, Enter to restart, and dialogue navigation remain fixed so menus remain reachable.
+
+## Quest log and journal
+
+`src/story-quests.js` describes the main story for the quest log. It lists each chapter's steps by stage, gives a short recap, and turns the current objective into a Now card with a progress count. It also names the next place to go (`storyTarget`). When that place is inside a building and Eli is in the village, the target is the building's door. Every story stage must belong to a chapter there, and `tests/story-quests.test.js` checks this.
+
+- **Quest log (J, or the Quests button)** has Story, Side and Done tabs. The list shows the current chapter, earlier chapters and side missions. The detail shows the Now card, the story so far and the steps reached so far. Later steps stay hidden. On phones and narrow windows the list folds into a picker above the detail.
+- **Journal drawer**: tapping the story card in the HUD tracker slides it in from the left, with the game still in view.
+- **Show on map** opens the area map of the next stop with a gold marker on it. During the Chapter 7 runs it also shows the numbered guard posts and the path between them. The minimap shows the same marker, or an arrow on its rim when the stop is out of view.
+- The HUD tracker shows the short form: the step, its count and where to go next.

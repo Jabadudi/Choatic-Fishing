@@ -79,7 +79,8 @@ export function mountHudShell({act,openHelp,examine,openAtlas,openQuests,openWel
  $('hud-menu').onclick=()=>{refreshSheet();sheet.showModal();};
  sheet.querySelector('.hud-sheet-close').onclick=()=>sheet.close();
  sheet.addEventListener('click',e=>{if(e.target===sheet)sheet.close();});
- const tracker=$('hud-tracker');tracker.addEventListener('click',e=>{if(e.target.closest('.hud-quest'))openQuests();});
+ // The story card opens the journal drawer beside the game; the side-mission card opens the log at that tab.
+ const tracker=$('hud-tracker');tracker.addEventListener('click',e=>{const card=e.target.closest('.hud-quest');if(card)openQuests(card.classList.contains('side')?'side':'drawer');});
  $('hud-well').onclick=()=>openWell();
  const actions=shell.querySelector('#hud-actions'),run=b=>{const a=b.dataset.act;if(a==='talk')examine();else if(a==='use')act(world?.inventory.selected===1?'toggle':'use');else act(a);};
  // Fingers fire on touch-down: phones send no click for a tap while another finger holds the joystick.
@@ -119,7 +120,7 @@ export function mountHudShell({act,openHelp,examine,openAtlas,openQuests,openWel
    const xp=$('hud-xp').firstElementChild,xpWidth=`${Math.min(100,p.xp/p.xpToNextLevel*100)}%`;if(xp.style.width!==xpWidth)xp.style.width=xpWidth;
    // Tracker: the story first in gold, then the active side mission in blue.
    const [story,side]=tracker.children;
-   for(const [card,text,fallback] of [[story,hud.quest,'Eli’s Journey'],[side,hud.sideQuest,'Side mission']]){
+   for(const [card,text,fallback] of [[story,hud.storyTrack||hud.quest,'Eli’s Journey'],[side,hud.sideQuest,'Side mission']]){
     card.hidden=!text;if(!text)continue;const {title,body}=splitObjective(text,fallback);setText(card.querySelector('b'),title);setText(card.querySelector('span'),body);
    }
    $('hud-well').hidden=!world.well?.awake;
