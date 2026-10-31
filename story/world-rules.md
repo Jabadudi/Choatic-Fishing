@@ -20,3 +20,8 @@ Settled by Netanel while drafting chapters 6–8. Add to this file as more are d
 - **Still Water:** awakened when Eli takes the core (chapter 6).
 - **Reedwater's Call:** awakens when Eli picks up Grandpa's rod (chapter 6). The line bends toward the caster's purpose, and casting costs less in living water (chapter 8).
 - Two further abilities are locked.
+
+## Learning magic
+- Mana theory is explained gradually in the story, as Eli is taught.
+- **Eli's first real magic lessons come from the elk spirit** at the Listening Tree, north of Willowback. Until then he only has the instinctive abilities the core gives him.
+- So during the training arc (chapters 7–12), Eli and the village talk about mana in plain terms like "reserves" and "the hollow" but do not give a full theory.
