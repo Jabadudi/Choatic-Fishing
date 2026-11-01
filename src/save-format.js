@@ -155,9 +155,12 @@ export function restoreSave(input){
  // Every saved creature is rebuilt in its slot. Migrated saves name the slot of the journey's starting creature.
  const starting=w.animals;w.rabbits=[];w.wildlife=[];const animalIds=new Set();
  for(const saved of s.animals){
-  if(!saved||typeof saved.id!=='string'||saved.id.length>80||typeof saved.slotId!=='string'||!Object.hasOwn(SLOTS,saved.slotId)||animalIds.has(saved.id))fail('Invalid animal state.');
+  if(!saved||typeof saved.id!=='string'||saved.id.length>80||typeof saved.slotId!=='string'||saved.slotId.length>80||animalIds.has(saved.id))fail('Invalid animal state.');
   const species=saved.species??starting.find(a=>a.id===saved.id)?.species;if(!species||!spawnable(species))fail('Invalid animal state.');
-  const animal=createCreature(SLOTS[saved.slotId],species,{id:saved.id,shiny:saved.shiny===true});if(!animal)fail('Invalid animal state.');
+  // The world editor can remove a spawn point or turn it from water to land. A creature whose point is gone, or no
+  // longer suits it, simply leaves; its slot is free for the next roll.
+  if(!Object.hasOwn(SLOTS,saved.slotId))continue;
+  const animal=createCreature(SLOTS[saved.slotId],species,{id:saved.id,shiny:saved.shiny===true});if(!animal)continue;
   const start=starting.find(a=>a.id===saved.id&&a.species===species);if(start)Object.assign(animal,{x:start.x,y:start.y,home:start.home,seed:start.seed,wait:start.wait});
   if(saved.seen===true)animal.seen=true;animalIds.add(saved.id);
   if(!number(saved.health,0,animal.maxHealth)||!number(saved.x,0,AREAS[animal.areaId].width)||!number(saved.y,0,AREAS[animal.areaId].height))fail('Invalid animal state.');

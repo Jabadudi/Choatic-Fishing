@@ -113,10 +113,12 @@ export function restoreSpawns(data,world){
  const here=spawnAreaFor(world.areaId);if(here)world.spawns.areas[here].lastSeen=world.elapsed;
  if(data===undefined||data===null)return;
  if(typeof data!=='object'||!Number.isSafeInteger(data.seed)||data.seed<1||data.seed>4294967295||!Number.isSafeInteger(data.next)||data.next<1||!data.areas||typeof data.areas!=='object')fail('Invalid spawn data.');
- if(data.current!==null&&!SPAWN_AREAS[data.current])fail('Invalid spawn area.');
- Object.assign(world.spawns,{seed:data.seed,next:data.next,current:data.current});
+ if(data.current!==null&&typeof data.current!=='string')fail('Invalid spawn area.');
+ // Areas the world editor has since removed are forgotten, and a timer longer than a shortened respawn time is cut down.
+ Object.assign(world.spawns,{seed:data.seed,next:data.next,current:SPAWN_AREAS[data.current]?data.current:null});
  for(const [id,saved] of Object.entries(data.areas)){
-  if(!SPAWN_AREAS[id]||!saved||(saved.lastSeen!==null&&!fine(saved.lastSeen))||!fine(saved.timer,SPAWN_AREAS[id].respawnSeconds))fail('Invalid spawn timers.');
-  world.spawns.areas[id]={lastSeen:saved.lastSeen,timer:saved.timer};
+  if(!saved||(saved.lastSeen!==null&&!fine(saved.lastSeen))||!fine(saved.timer))fail('Invalid spawn timers.');
+  if(!SPAWN_AREAS[id])continue;
+  world.spawns.areas[id]={lastSeen:saved.lastSeen,timer:Math.min(saved.timer,SPAWN_AREAS[id].respawnSeconds)};
  }
 }
