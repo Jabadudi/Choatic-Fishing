@@ -58,8 +58,8 @@ area({id:'upper-braids',num:'19.1',name:'Upper Braids',frame:[390,560,266,342],s
   ['land',[[466,282],[476,280],[482,292],[474,300],[464,296]],{zone:'sand'}],
   ['land',[[470,266],[486,266],[484,272],[472,274]],{zone:'sand'}]
  ],
- roads:[[[397,293],[412,300],[426,312],[426,330]],[[412,300],[430,292],[446,284]]],
- fords:[[[390,293],[397,293]],[[431,293],[437,285]],[[476,266],[476,274],[474,282]],[[460,288],[466,289]],[[480,296],[494,312]],[[526,312],[534,312]],[[426,330],[426,342]],[[498,332],[496,342]]],
+ roads:[[[535,312],[560,313]],[[397,293],[412,300],[426,312],[426,330]],[[412,300],[430,292],[446,284]]],
+ fords:[[[390,293],[397,293]],[[431,293],[437,285]],[[476,266],[476,274],[474,282]],[[460,288],[466,289]],[[480,296],[494,312]],[[517,313],[534,312]],[[426,330],[426,342]],[[498,332],[496,342]]],
  props:[{kind:'heron',at:[474,290]},{kind:'logs',at:[506,320]},{kind:'tent',at:[514,316]},{kind:'dock',at:[476,262]}],
  places:[
   {id:'egret-bar',name:'Egret Bar',at:[474,292],text:'A bare sandbar in the middle of the braids. The great egret stands here on one leg and does not care about you at all.'},
@@ -138,7 +138,7 @@ area({id:'sandbar-spits',num:'24',name:'Sandbar Spits',frame:[446,598,346,438],s
  ],
  zones:[['meadow',[[550,374],[556,371],[559,377],[553,380]]]],
  roads:[],
- fords:[[[498,408],[512,406],[528,402],[546,394]],[[510,407],[508,413]],[[556,383],[556,388]],[[586,393],[598,399]],[[584,386],[590,376],[596,370]]],
+ fords:[[[498,408],[512,406],[528,402],[546,394]],[[510,407],[508,413]],[[556,383],[556,388]],[[586,393],[598,399]],[[584,386],[590,376],[596,366],[598,362]]],
  props:[{kind:'sign',at:[568,392]},{kind:'nest',at:[554,376]}],
  places:[
   {id:'tide-shelf',name:'Tide Shelf',at:[484,408],text:'A rocky ledge below Crescent Beach, full of tide pools: crabs, anemones, a starfish the size of a hand.'},
@@ -148,7 +148,7 @@ area({id:'sandbar-spits',num:'24',name:'Sandbar Spits',frame:[446,598,346,438],s
  ],
  portals:[{at:[484,401],r:34,target:'delta-mouth',label:'Delta Mouth',entry:[487,390]}],
  exits:[
-  {edge:'north',from:590,to:598,target:'tidecave-coast',label:'Tidecave Coast'},
+  {edge:'east',from:356,to:368,target:'tidecave-coast',label:'Tidecave Coast'},
   {edge:'east',from:394,to:404,target:'heron-point',label:'Heron Point'}
  ]});
 
@@ -625,6 +625,7 @@ area({id:'drowned-road',num:'16',name:'The Drowned Road',frame:[0,235,265,395],s
   {id:'colonnade',name:'The Colonnade',at:[121,278],text:'A row of tall pillars, some still standing, some broken off at the knee. The road runs between them under a hand of water.'},
   {id:'eel-shallows',name:'Eel Shallows',at:[178,327],text:'The paving shows clearly here through the warm water. Eels slide between the stones.'},
   {id:'rookery-isle',name:'Rookery Isle',at:[46,340],text:'A wooded islet loud with seabirds. Nests in every crook of every tree.'},
+  {id:'beach-skiff',name:'Beach Skiff',at:[22,326],text:'A flat skiff pulled up on the west beach. Eli poles out south to the Outer Shallows',travel:{target:'outer-shallows',entry:[48,414]}},
   {id:'gull-islet',name:'Gull Islet',at:[118,360],text:'A grassy islet where gulls sit in rows and argue about everything.'}
  ],
  exits:[
@@ -647,6 +648,7 @@ area({id:'arrival-bay',num:'22',name:'Arrival Bay',frame:[180,300,385,470],size:
  places:[
   {id:'arrival-pier',name:'The Pier',at:[251,409],text:'The pier where the captain’s boat came in. A rowboat is tied at the end. Eli rows east to the Seal Skerries',travel:{target:'seal-skerries',entry:[371,384]}},
   {id:'wrecked-dinghy',name:'Wrecked Dinghy',at:[228,397],text:'A small boat with its bottom stove in, half buried in the sand. Someone painted a name on it once.'},
+  {id:'west-rowboat',name:'West Rowboat',at:[206,394],text:'A rowboat drawn up at the west end of the beach. Eli rows out west to the Outer Shallows',travel:{target:'outer-shallows',entry:[84,412]}},
   {id:'tide-pools',name:'Tide Pools',at:[268,393],text:'Rock pools left by the tide, full of little crabs and anemones that close up when your shadow falls on them.'},
   {id:'mistline',name:'The Mistline',at:[251,412],text:'Far out in the south, a wall of mist lies on the water. Every boat that tries it comes back the same way it went.'}
  ],
@@ -668,6 +670,157 @@ area({id:'old-roads',num:'5.2',name:'Old Roads',frame:[262,422,0,46],size:[2800,
  exits:[
   {edge:'south',from:295,to:305,target:'aqueduct-ruins',label:'Aqueduct Ruins'},
   {edge:'east',from:36,to:46,target:'great-bridge',label:'The Great Bridge'}
+ ]});
+
+// 7 Springmouth Cave: a cold spring pours out of a cave mouth at the foot of a rock face and runs off south-west as
+// Spring Creek. The old road comes in from Lookout Heights and climbs north toward the Crystal Lakes.
+area({id:'springmouth-cave',num:'7',name:'Springmouth Cave',frame:[586,710,0,96],size:[2400,1860],base:'land',ground:'forest',
+ shapes:[
+  ['land',[[600,20],[640,16],[650,30],[620,34],[600,34]],{zone:'meadow'}],
+  ['land',[[606,60],[640,64],[668,76],[668,90],[640,92],[606,84]],{zone:'meadow'}],
+  ['water','ellipse',[650,72],6,3],
+  ['water','line',[[648,74],[642,78],[632,86],[618,94],[612,96]],2.5]
+ ],
+ cliffs:[[[620,40],[690,36],[704,58],[684,68],[662,62],[640,60],[626,56]]],
+ zones:[['rock',[[616,38],[694,32],[708,60],[686,72],[660,66],[638,64],[622,60]]]],
+ roads:[[[586,30],[600,28],[616,24],[626,14],[630,0]],[[616,24],[612,40],[618,56],[630,66],[642,68]],[[630,66],[634,71]],[[640,80],[656,88],[670,96]]],
+ bridges:[[[633,70],[641,81]]],
+ props:[{kind:'cave',at:[652,64],scale:1.6},{kind:'sign',at:[622,22]},{kind:'logs',at:[628,5],solid:40},{kind:'stone',at:[660,74],solid:0},{kind:'lantern',at:[640,66]}],
+ places:[
+  {id:'springmouth',name:'Springmouth Cave',at:[642,69],text:'Cold air breathes out of a dark cave mouth, and a spring pours from it, clear as glass. The way in is too dark to try. Not yet.'},
+  {id:'crystal-lakes-road',name:'Crystal Lakes Road',at:[627,10],text:'The old road climbs north toward the Crystal Lakes. A fallen tree lies across it, and beyond it the forest is thick and dark.'},
+  {id:'spring-creek',name:'Spring Creek',at:[640,82],text:'The spring water runs off south-west over little rapids toward the shallows. It is cold enough to make your hand ache.'}
+ ],
+ exits:[
+  {edge:'west',from:24,to:36,target:'lookout-heights',label:'Lookout Heights'},
+  {edge:'south',from:665,to:675,target:'abandoned-quarry',label:'Abandoned Quarry'}
+ ]});
+
+// 8 Abandoned Quarry: terraced stone pits, old cranes and collapsed shafts, with a flooded pit at the bottom. Roads cross
+// the pit floor; the landing path comes in from Egret Isles and a bridge crosses the river south to the Broken Watch.
+area({id:'abandoned-quarry',num:'8',name:'Abandoned Quarry',frame:[596,716,96,190],size:[2400,1880],base:'land',ground:'meadow',
+ shapes:[
+  ['water',[[596,176],[630,174],[660,180],[690,176],[716,172],[716,190],[596,190]]],
+  ['land',[[624,104],[700,100],[712,130],[700,165],[640,170],[618,150]],{zone:'rock'}],
+  ['water','ellipse',[664,142],7,4]
+ ],
+ zones:[['dirt',[[640,118],[690,115],[698,140],[680,158],[645,158],[632,140]]],['forest',[[596,96],[620,96],[616,120],[596,124]]],['forest',[[596,164],[618,160],[630,174],[596,176]]]],
+ cliffs:[[[686,102],[712,98],[716,124],[702,124]],[[604,110],[620,104],[626,122],[610,128]]],
+ roads:[[[670,96],[666,110],[660,124]],[[596,158],[620,156],[640,150],[654,142]],[[630,112],[660,128],[684,140],[700,156]],[[700,112],[680,124],[656,134]],[[650,148],[630,160]],[[700,156],[706,168]]],
+ bridges:[[[706,168],[707,190]]],
+ props:[{kind:'crane',at:[650,116]},{kind:'crane',at:[694,146]},{kind:'mine',at:[692,116]},{kind:'cart',at:[676,128]},{kind:'logs',at:[626,150]},{kind:'stone',at:[640,138]},{kind:'stone',at:[686,156]},{kind:'gate',at:[618,156]}],
+ places:[
+  {id:'quarry-pit',name:'Flooded Pit',at:[664,133],text:'The lowest pit has filled with rain and spring water, deep and green. Something big turns over in it now and then.'},
+  {id:'old-crane',name:'Old Crane',at:[652,121],text:'A wooden crane with a rusted hook, still pointing at a block it never lifted.'},
+  {id:'collapsed-shaft',name:'Collapsed Shaft',at:[690,121],text:'A shaft into the rock, its timbers broken and the way in choked with stone. Cold air seeps between the rocks.'},
+  {id:'quarry-gate',name:'Quarry Gate',at:[624,157],text:'Two leaning posts where a gate used to hang. A faded board says the quarry is closed by order of somebody.'}
+ ],
+ exits:[
+  {edge:'north',from:665,to:675,target:'springmouth-cave',label:'Springmouth Cave'},
+  {edge:'west',from:152,to:164,target:'egret-isles',label:'Egret Isles'},
+  {edge:'south',from:702,to:712,target:'broken-watch',label:'The Broken Watch'}
+ ]});
+
+// 14 Heron Islands: wooded islands joined by sandbars, with a heron colony on the biggest. Fords lead north to Egret
+// Isles, west to Stilt Reach, south-west to the Upper Braids and east across the channel to the Broken Watch.
+area({id:'heron-islands',num:'14',name:'Heron Islands',frame:[508,628,200,330],size:[2400,2600],base:'water',ground:'forest',
+ shapes:[
+  ['land',[[510,210],[534,204],[548,212],[546,232],[526,236],[510,230]],{zone:'forest'}],
+  ['land',[[556,224],[586,218],[600,234],[592,256],[566,258],[552,246]],{zone:'forest'}],
+  ['land',[[540,266],[566,268],[582,286],[570,304],[546,306],[532,288]],{zone:'forest'}],
+  ['land',[[596,262],[618,256],[628,258],[628,282],[606,286]],{zone:'meadow'}],
+  ['land',[[540,312],[566,310],[572,330],[536,330]],{zone:'sand'}]
+ ],
+ zones:[['sand',[[512,226],[530,230],[546,226],[546,232],[526,236],[510,230]]],['meadow',[[566,232],[584,228],[590,240],[580,248],[566,246]]]],
+ fords:[[[530,200],[530,207]],[[508,222],[513,222]],[[546,222],[557,232]],[[567,256],[561,268]],[[595,250],[603,263]],[[556,304],[555,313]]],
+ props:[{kind:'heron',at:[572,236]},{kind:'heron',at:[580,240]},{kind:'heron',at:[568,244]},{kind:'nest',at:[576,232]},{kind:'nest',at:[584,236]},{kind:'nest',at:[574,246]},{kind:'big-tree',at:[562,286],solid:26},{kind:'wreck',at:[540,300]}],
+ places:[
+  {id:'heron-colony',name:'Heron Colony',at:[576,240],text:'Dozens of herons nest in the treetops here, croaking and clattering. The ground below is white with their mess, and smells like it.'},
+  {id:'sandbar-crossing',name:'Sandbar Crossing',at:[551,227],text:'A sandbar between the islands, just under the water at high tide. Little crabs scatter as you wade.'},
+  {id:'hidden-cove',name:'Hidden Cove',at:[546,296],text:'A tiny cove on the south isle with an old boat rotting in the reeds. Nobody seems to know whose it was.'},
+  {id:'east-isle',name:'East Isle',at:[612,272],text:'A grassy isle facing the Broken Watch across the channel. The tower watches back.'}
+ ],
+ exits:[
+  {edge:'north',from:526,to:536,target:'egret-isles',label:'Egret Isles'},
+  {edge:'west',from:218,to:228,target:'stilt-reach',label:'Stilt Reach'},
+  {edge:'south',from:540,to:556,target:'upper-braids',label:'Upper Braids'},
+  {edge:'east',from:262,to:278,target:'broken-watch',label:'The Broken Watch'}
+ ]});
+
+// 15 The Broken Watch: a ruined watchtower on the eastern cliffs. Its door is sealed; something still keeps watch.
+area({id:'broken-watch',num:'15',name:'The Broken Watch',frame:[620,716,190,310],size:[2000,2500],base:'land',ground:'forest',
+ shapes:[
+  ['water',[[620,190],[716,190],[716,198],[694,204],[668,208],[644,204],[620,206]]],
+  ['water',[[620,226],[628,236],[632,262],[628,290],[624,310],[620,310]]],
+  ['land',[[650,218],[680,216],[686,248],[656,252]],{zone:'rock'}]
+ ],
+ cliffs:[[[700,246],[716,236],[716,310],[694,310],[690,286]]],
+ roads:[[[706,206],[696,218],[680,226],[668,236]],[[668,236],[660,258],[650,280],[640,298],[632,310]],[[660,258],[646,264],[634,266]],[[660,258],[676,266],[688,270]]],
+ bridges:[[[707,188],[706,208]]],
+ fords:[[[620,266],[635,266]]],
+ props:[{kind:'tower',at:[666,232],scale:1.4,solid:70},{kind:'ruin',at:[680,240]},{kind:'ruin',at:[652,224]},{kind:'stone',at:[688,276]},{kind:'lantern',at:[662,246]}],
+ places:[
+  {id:'broken-watch-tower',name:'The Broken Watch',at:[666,245],text:'A ruined watchtower, its top half fallen. The door is sealed with rusted iron. High up, a light flickers for a moment, then is gone.'},
+  {id:'cliff-edge',name:'Cliff Edge',at:[688,268],text:'The forest stops at a sheer drop to the sea. Far below, waves boom into a cave.'},
+  {id:'watch-ford',name:'Channel Ford',at:[636,266],text:'A shallow ford across the channel to the Heron Islands. Herons stand in it and refuse to move for you.'}
+ ],
+ exits:[
+  {edge:'north',from:702,to:712,target:'abandoned-quarry',label:'Abandoned Quarry'},
+  {edge:'west',from:260,to:272,target:'heron-islands',label:'Heron Islands'},
+  {edge:'south',from:627,to:637,target:'tidecave-coast',label:'Tidecave Coast'}
+ ]});
+
+// 20 Tidecave Coast: a rocky coast below the Broken Watch with a sea cave in the cliff. A tide shelf runs under the cliff
+// to the cave mouth; a sandbar in the west wades over to the Sandbar Spits.
+area({id:'tidecave-coast',num:'20',name:'Tidecave Coast',frame:[580,720,300,400],size:[2800,2000],base:'water',ground:'forest',sea:true,
+ shapes:[
+  ['land',[[580,300],[720,300],[720,330],[704,336],[684,332],[664,338],[642,336],[620,342],[600,340],[580,336]],{zone:'forest'}],
+  ['land',[[676,328],[708,332],[706,344],[680,344]],{zone:'rock'}],
+  ['land',[[580,348],[626,352],[640,362],[616,368],[580,364]],{zone:'sand'}],
+  ['land','ellipse',[664,354],4,3],
+  ['land','ellipse',[690,362],3,2]
+ ],
+ zones:[['sand',[[600,334],[642,330],[664,334],[664,338],[642,336],[620,342],[600,340]]],['rock',[[662,350],[668,350],[668,358],[662,358]]]],
+ cliffs:[[[672,302],[720,302],[720,330],[704,334],[684,330],[674,318]]],
+ roads:[[[632,300],[630,320],[626,336]],[[630,320],[656,326],[678,334],[692,338]]],
+ fords:[[[624,338],[624,354]]],
+ props:[{kind:'cave',at:[692,332],scale:1.4},{kind:'stone',at:[664,352]},{kind:'stone',at:[690,360],scale:1.4},{kind:'logs',at:[600,356],solid:0},{kind:'shell',at:[610,360],solid:0}],
+ places:[
+  {id:'sea-cave',name:'Sea Cave',at:[692,340],text:'A dark sea cave under the cliff. The waves fill it with a deep, slow boom. The tide is in; it only opens when the water goes right out.'},
+  {id:'tide-shelf',name:'Tide Shelf',at:[682,338],text:'A flat rock shelf under the cliff, slippery with weed and full of pools. Seals bask on the rocks offshore.'},
+  {id:'tidecave-sandbar',name:'Tidecave Sandbar',at:[606,358],text:'A long sandbar running west toward the Sandbar Spits. You can wade it at any tide.'}
+ ],
+ exits:[
+  {edge:'north',from:627,to:637,target:'broken-watch',label:'The Broken Watch'},
+  {edge:'west',from:348,to:362,target:'sandbar-spits',label:'Sandbar Spits'}
+ ]});
+
+// 25 Heron Point: a rocky point in the far south-east where the great heron stands, as on the atlas.
+area({id:'heron-point',num:'25',name:'Heron Point',frame:[598,700,390,470],size:[2000,1560],base:'water',ground:'rock',sea:true,
+ shapes:[
+  ['land',[[598,390],[616,394],[634,408],[648,426],[644,442],[628,446],[612,436],[598,420]],{zone:'rock'}],
+  ['land','ellipse',[620,454],3,2]
+ ],
+ zones:[['sand',[[598,390],[616,394],[624,402],[598,410]]],['meadow',[[602,404],[618,404],[628,418],[614,424],[602,418]]]],
+ props:[{kind:'heron',at:[636,430],scale:2.6},{kind:'stone',at:[612,428]},{kind:'shell',at:[606,398],solid:0},{kind:'stone',at:[620,452],scale:1.4}],
+ places:[
+  {id:'heron-point',name:'Heron Point',at:[626,428],text:'The great heron stands at the end of the point, taller than Eli, grey as the rock. It looks at you for a long time. Then it looks back at the sea.'},
+  {id:'point-pools',name:'Point Pools',at:[608,410],text:'Tide pools in the rock, bright with anemones and tiny fish.'}
+ ],
+ exits:[{edge:'west',from:392,to:406,target:'sandbar-spits',label:'Sandbar Spits'}]});
+
+// 21 Outer Shallows: open water west of the Drowned Road, with sea stacks and one sandy islet. Boat only.
+area({id:'outer-shallows',num:'21',name:'Outer Shallows',frame:[0,180,380,480],size:[3000,1670],base:'water',ground:'sand',sea:true,spawn:[62,412],
+ shapes:[
+  ['land',[[36,404],[76,398],[96,410],[84,424],[50,426],[34,416]],{zone:'sand'}],
+  ['land','ellipse',[130,412],4,6],['land','ellipse',[150,440],3,4],['land','ellipse',[20,446],3,3]
+ ],
+ zones:[['meadow',[[50,406],[72,404],[80,412],[70,418],[52,416]]],['rock',[[124,404],[136,404],[136,420],[124,420]]],['rock',[[146,434],[154,434],[154,446],[146,446]]],['rock',[[16,442],[24,442],[24,450],[16,450]]]],
+ props:[{kind:'stone',at:[130,414],scale:2.4,solid:0},{kind:'stone',at:[150,442],scale:1.8,solid:0},{kind:'stone',at:[20,448],scale:1.4,solid:0},{kind:'raft',at:[92,416]},{kind:'raft',at:[40,418]},{kind:'logs',at:[64,422],solid:0}],
+ places:[
+  {id:'stack-islet',name:'Stack Islet',at:[64,410],text:'A sandy islet in open water, with sea stacks standing around it like old giants. Big fish cruise the drop-off.'},
+  {id:'to-arrival-bay',name:'Rowboat East',at:[88,414],text:'Eli rows back east to Arrival Bay',travel:{target:'arrival-bay',entry:[208,392]}},
+  {id:'to-drowned-road',name:'Skiff North',at:[44,414],text:'Eli poles north to the Drowned Road',travel:{target:'drowned-road',entry:[24,322]}}
  ]});
 
 export const DELTA_DEFS=DEFS;
