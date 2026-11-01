@@ -190,8 +190,11 @@ const underTint=d=>`rgba(40,120,140,${Math.min(.75,d*.012)})`;
 function block(ctx,x,y,w,h,base,top,depth){ctx.fillStyle='#4f5e55';ctx.fillRect(x,y,w,h);ctx.fillStyle=base;ctx.fillRect(x,y,w,h-2);ctx.fillStyle=top;ctx.fillRect(x,y,w,2);if(depth>0){ctx.fillStyle=underTint(depth);ctx.fillRect(x,y,w,h);}}
 function causeway(ctx){
  const top=CAUSEWAY_Y-22;
+ // The ford's painted stepping stones now carry the old road across, so its sunken cobbles are only drawn until they load.
+ if(!drawProp(ctx,'atlas/stepping-stone',{x:-1e5,y:-1e5,w:1,h:1})){
  for(let x=SHORE_X+56;x>SHORE_X-140;x-=8)for(let y=top;y<top+44;y+=8){const d=SHORE_X-x,j=(x*7+y*3)%5;block(ctx,x,y+(x%16?0:4),7,7,j<2?'#a9a58d':'#b8b39a','#cfc9ab',d);if(j===0&&d<10){ctx.fillStyle='#6f9a4a';ctx.fillRect(x+1,y+1,3,2);}}
  for(let x=SHORE_X+40;x>SHORE_X-160;x-=18){const d=SHORE_X-x;block(ctx,x,top-10,8,6,'#8f9c90','#c2c8b6',d);block(ctx,x,top+46,8,6,'#8f9c90','#c2c8b6',d);}
+ }
  for(const [x,y] of [[SHORE_X-8,top-12],[SHORE_X+4,top+58],[SHORE_X-20,top+60]])for(let i=0;i<4;i++){ctx.fillStyle=i%2?'#6d9a3a':'#8bb04a';ctx.fillRect(x+i*3,y-14+i,2,14-i);}
  // Milestone: soft shadow down-right, the leaning stone, then a level mound that buries its foot evenly.
  ctx.save();ctx.translate(MILESTONE.x-551,MILESTONE.y-1694);
