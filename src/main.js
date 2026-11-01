@@ -41,10 +41,12 @@ import {explorationHud,promptParts} from './hud.js';
 import {mountHudShell} from './hud-shell.js';
 import {mountHub} from './hub-ui.js';
 import {mountChat} from './chat-ui.js';
+import {installPressGuard} from './press-guard.js';
 let world=new World(Math.random,{botCount:0});
 const canvas=document.querySelector('#arena'),ctx=canvas.getContext('2d',{alpha:false});
 const touchState=new TouchInput(),touchMedia=matchMedia('(any-pointer: coarse), (max-width: 700px)');
 let hudUI=null,radioUI=null,tradeUI=null,wellUI=null,questUI=null,backpackUI=null,skillsUI=null,codexUI=null,saveUI=null,storyUI=null,settingsUI=null,hubUI=null,chatUI=null,helpUI=null;
+installPressGuard();
 let touchMode=touchMedia.matches,touchUI=null;document.body.classList.toggle('touch-mode',touchMode);
 // Keep the explorer readable on a narrow portrait viewport.
 let view={scale:1,x:0,y:0,width:960,height:720,dpr:1};
