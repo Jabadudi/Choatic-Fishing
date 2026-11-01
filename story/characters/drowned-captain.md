@@ -2,7 +2,7 @@
 
 **Role:** World boss of the Drowned Road. A shadow walker officer of Croshelda's army who went down with the old road when it flooded, and still holds it.
 
-**First appearance:** None yet. A world boss from the spawn plan, found in the colonnade on the Drowned Road (area 16).
+**First appearance:** World boss only (Netanel, 1 Nov 2026); he is not part of any chapter. Found in the colonnade on the Drowned Road (area 16).
 
 ## Appearance (placeholder; no chapter describes him yet)
 - Tall, taller than Drayfus, standing straight like a soldier on parade.
@@ -31,8 +31,9 @@ Silent. He fights like a drilled officer: a salute when he rises, measured steps
 
 ## Open questions / not yet established
 - His name, if he had one.
-- Whether he appears in a chapter or only as a world boss.
-- What he drops.
+- His loot (proposed 1 Nov 2026, not yet approved): Shadow Ichor, Drowned Brass, Barnacled Plate, his rusted helm as a trophy, the Drowned Gorget artifact and the Captain's Sabre weapon.
 
 ## Visual reference notes
+Art delivered (staged in `/mnt/project-files/art/incoming-drowned-captain/`): reference sheet, walk set (4 columns × 8), rise, sabre sweep, tide lunge, call the drowned, and hurt/defeat strips. In the pixel art the helm is a closed visor over the black face, and the gorget and trim read copper-orange.
+
 Rust orange, barnacle white, brass and weed green on a black shadow body, always wet. The silhouette is a tall soldier with a plumed helm and a long curved sabre held low.
