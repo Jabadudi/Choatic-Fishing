@@ -7,10 +7,10 @@ export const SPAWN_AREAS=Object.freeze({
  landing:{cap:12,chance:.65,respawnSeconds:60,
   tables:{land:{rabbit:55,deer:40,'shadow-walker':5},water:{eel:55,turtle:45}},
   slots:[
-   ['rabbit-0','land',1460,1540,'rabbit'],['rabbit-1','land',1000,1450,'rabbit'],['rabbit-2','land',1680,1300,'rabbit'],['rabbit-3','land',1070,850,'rabbit'],['rabbit-4','land',1670,770,'rabbit'],
-   ['deer-landing','land',1080,660,'deer'],['deer-meadow-west','land',900,1250,'deer',true],['deer-meadow','land',1120,1060,'deer',true],['deer-meadow-east','land',1620,1120,'deer',true],
+   ['rabbit-0','land',1460,1540,'rabbit'],['rabbit-1','land',1000,1450,'rabbit'],['rabbit-2','land',1680,1300,'rabbit'],['rabbit-3','land',1200,850,'rabbit'],['rabbit-4','land',1670,770,'rabbit'],
+   ['deer-landing','land',1300,640,'deer'],['deer-meadow-west','land',1150,1350,'deer',true],['deer-meadow','land',1250,1000,'deer',true],['deer-meadow-east','land',1620,1120,'deer',true],
    ['landing-east','land',2200,1200],
-   ['turtle-landing','water',1980,1060,'turtle'],['eel-landing','water',675,1910,'eel'],['landing-shallows','water',1500,2050]
+   ['turtle-landing','water',1980,1060,'turtle'],['eel-landing','water',500,700,'eel'],['landing-shallows','water',300,1300]
   ]},
  windchime:{cap:5,chance:.55,respawnSeconds:75,
   tables:{land:{deer:45,rabbit:40,'shadow-walker':15}},

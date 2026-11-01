@@ -5,7 +5,7 @@ import {AREAS} from './wilds.js';
 import {ATLAS_SIZE} from './atlas-area.js';
 export const ATLAS_IMAGE='assets/codex/reedwater-delta-map.jpg';
 // [left, right, top, bottom] in atlas pixels.
-const FRAMES={landing:[195,335,272,400],windchime:[262,340,236,296],crossroads:[266,350,176,243],marsh:[322,424,172,290],
+const FRAMES={windchime:[262,340,236,296],crossroads:[266,350,176,243],marsh:[322,424,172,290],
  village:[112,198,180,232],'village-port':[108,198,218,272],'village-market':[192,244,190,236],'village-farm':[234,270,178,236]};
 // Rooms sit inside the area whose door they open from.
 const PARENT={cabin:'landing','chief-house':'village','guest-lodge':'village'};

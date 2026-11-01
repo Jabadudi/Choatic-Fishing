@@ -25,13 +25,13 @@ export const AREAS={
  cabin:CABIN_AREA,
  'chief-house':CHIEF_HOUSE,
  'guest-lodge':GUEST_LODGE,
- landing:{id:'landing',name:'Reedwater Landing',width:2800,height:2200,seed:7319,spawn:{x:1250,y:1650},exits:[{edge:'north',from:1280,to:1520,target:'windchime',entry:{x:WINDCHIME_ENTRY.x,y:WINDCHIME_ENTRY.y},label:'Windchime Path'},{edge:'west',from:1500,to:1700,target:'drowned-road',label:'The Drowned Road'}]},
+ landing:DELTA.landing.area,
  crossroads:CROSSROADS,
  village:VILLAGE,
  ...Object.fromEntries(Object.entries(DISTRICTS).map(([id,d])=>[id,d.area])),
  marsh:MARSH,
  ...Object.fromEntries(Object.entries(DELTA).map(([id,b])=>[id,b.area])),
- windchime:{id:'windchime',name:'Windchime Path',width:1600,height:1200,seed:7321,spawn:{...WINDCHIME_ENTRY},exits:[{edge:'north',from:1080,to:1220,target:'crossroads',entry:{x:800,y:1130},label:'Willowbank Crossroads'},{edge:'south',from:260,to:400,target:'landing',entry:{x:1400,y:120},label:'Reedwater Landing'},{edge:'west',from:190,to:310,target:'stonefall',label:'Stonefall Creek'},{edge:'east',from:340,to:460,target:'chimewood',label:'Chimewood'}]}
+ windchime:{id:'windchime',name:'Windchime Path',width:1600,height:1200,seed:7321,spawn:{...WINDCHIME_ENTRY},exits:[{edge:'north',from:1080,to:1220,target:'crossroads',entry:{x:800,y:1130},label:'Willowbank Crossroads'},{edge:'south',from:260,to:400,target:'landing',entry:{x:1680,y:120},label:'Reedwater Landing'},{edge:'west',from:190,to:310,target:'stonefall',label:'Stonefall Creek'},{edge:'east',from:340,to:460,target:'chimewood',label:'Chimewood'}]}
 };
 // Atlas areas only keep the exits whose target is built; then every exit without a fixed entry gets one.
 for(const a of Object.values(AREAS))if(a.atlas){a.exits=a.exits.filter(e=>AREAS[e.target]);a.portals=a.portals.filter(e=>AREAS[e.target]);}
@@ -39,13 +39,7 @@ linkEntries(AREAS);
 export const WORLD=AREAS.landing;
 export const SPAWN=WORLD.spawn;
 export const LAND={left:0,right:WORLD.width,top:0,bottom:WORLD.height};
-const LANDING_PLACES=[
- {id:'landing',name:'Reedwater Landing',x:1250,y:1650,kind:'landing',text:'The captain’s boat has disappeared beyond the water. A path leads from the dock to Grandpa’s fishing cabin.'},
- {id:'drowned',name:'The Drowned Road',x:620,y:1640,kind:'drowned',text:'Through the shallows, squared stones lead to a doorway below the water. This shore was once a street.'},
- {id:'chimes',name:'The Three Chimes',x:1380,y:1180,kind:'chimes',text:'Three hollow wooden notes drift inland. Follow the worn trail north to enter Windchime Path.'},
- {id:'spring',name:'Reedwater Spring',x:1820,y:980,kind:'spring',text:'Warm water bubbles beneath the reeds. Tiny silver fish gather at the edge of the spring.'},
- {id:'tree',name:'The Hollow Tree',x:1010,y:600,kind:'tree',text:'A deer pauses beside the hollow trunk. Your footsteps echo from somewhere deeper in the roots.'}
-];
+const LANDING_PLACES=DELTA.landing.places;
 // 18.1 Windchime Path (v2): one dirt trail climbing from the Landing in the south-west to the Crossroads in the north-east,
 // through thick woods. Halfway up, the Fork Stones signpost points west to Stonefall Creek; near the top a spur runs east
 // into Chimewood. Neither is open yet, so both forks end in the trees. A short side path opens into a quiet glade.
@@ -59,16 +53,14 @@ const PATH_PLACES=[
 const GLADE={x:1110,y:700,rx:150,ry:110};
 const WINDCHIME_TREES=[[470,300],[384,520],[250,640],[200,800],[190,960],[1000,150],[1080,300]];
 export const LANDMARKS=LANDING_PLACES;
-// The pier's rowboat is a way across the bay, not one of the Landing's five landmarks.
-const LANDING_ALL=[...LANDING_PLACES,{id:'pier',name:'The Pier',x:1260,y:1900,kind:'atlas',text:'A rowboat is tied at the end of the pier. Eli rows out across Arrival Bay',travel:{target:'arrival-bay',entry:AREAS['arrival-bay'].fromAtlas([251,407])}}];
 // Walk-in rooms: no water, scenery, weather or open-air atmosphere.
 export const INTERIOR_AREAS=['cabin','chief-house','guest-lodge'];
 const interior=id=>INTERIOR_AREAS.includes(id);
-export const placesFor=id=>DELTA[id]?DELTA[id].places:DISTRICTS[id]?DISTRICTS[id].places:id==='cabin'?CABIN_PLACES:id==='guest-lodge'?GUEST_LODGE_PLACES:id==='chief-house'?CHIEF_HOUSE_PLACES:id==='marsh'?MARSH_PLACES:id==='village'?VILLAGE_PLACES:id==='crossroads'?CROSSROADS_PLACES:id==='windchime'?PATH_PLACES:LANDING_ALL;
+export const placesFor=id=>DELTA[id]?DELTA[id].places:DISTRICTS[id]?DISTRICTS[id].places:id==='cabin'?CABIN_PLACES:id==='guest-lodge'?GUEST_LODGE_PLACES:id==='chief-house'?CHIEF_HOUSE_PLACES:id==='marsh'?MARSH_PLACES:id==='village'?VILLAGE_PLACES:id==='crossroads'?CROSSROADS_PLACES:id==='windchime'?PATH_PLACES:LANDING_PLACES;
 export const areaFor=id=>AREAS[id]||WORLD;
 export const LAKES=[{x:2020,y:1050,rx:130,ry:150},{x:650,y:1910,rx:390,ry:190}];
 export const RIVERS=[[[2370,-100],[2290,500],[2320,1000],[2440,1500],[2310,2300]]];
-export const ROADS=[[[1400,1600],[1510,1570],[1630,1550]],[[1250,1650],[1400,1500],[1380,1180],[1350,800],[1400,0]],[[1380,1180],[1620,1000],[1820,980]],[[1350,800],[1100,700],[1010,600]],[[1250,1650],[960,1610],[620,1640]]];
+export const ROADS=DELTA.landing.roads;
 const PATH_ROADS=[[[330,1200],[348,1060],[303,928],[366,692],[511,510],[711,382],[892,291],[1128,164],[1150,0]],[[711,382],[530,291],[294,264],[40,250],[0,250]],[[1128,164],[1382,273],[1560,390],[1600,400]],[[784,346],[983,600],[1060,680]]];
 const pathsFor=id=>DELTA[id]?DELTA[id].roads:DISTRICTS[id]?DISTRICTS[id].roads:id==='marsh'?MARSH_ROADS:id==='village'?VILLAGE_ROADS:id==='crossroads'?CROSSROADS_ROADS:id==='windchime'?PATH_ROADS:ROADS;
 export function hash(x,y,s=0){let h=Math.imul(x+WORLD.seed,374761393)^Math.imul(y+s,668265263);h=Math.imul(h^(h>>>13),1274126177);return ((h^(h>>>16))>>>0)/4294967296;}
@@ -152,7 +144,6 @@ export function walkable(x,y,id='landing'){
  if(id==='chief-house')return !chiefHouseBlocked(x,y);
  if(id==='guest-lodge')return !guestLodgeBlocked(x,y);
  if(id==='landing'&&cabinBlocked(x,y))return false;
- if(id==='landing'&&x>=1225&&x<=1275&&y>=1730&&y<=1935)return true;
  if(id==='marsh'){if(marshBlocked(x,y))return false;if(onMarshDeck(x,y))return true;}
  if(id==='village'){if(villageBlocked(x,y))return false;if(onVillageDeck(x,y))return true;}
  if(DISTRICTS[id]){if(DISTRICTS[id].blocked(x,y))return false;if(DISTRICTS[id].deck(x,y))return true;}
@@ -179,19 +170,22 @@ const tree=leafyTree,rock=meadowRock;
 const WATER_RAMP=['#7cc8bd','#3ea6b0','#2a86a3','#1f6690','#1a5578'];
 function waterColor(wet,sea,marsh=false){if(marsh)return wet> -14?'#a8af79':wet> -40?'#739b7e':wet> -110?'#4e807b':'#315d69';const i=wet> -14?0:wet> -40?1:wet> -110?2:3;return WATER_RAMP[sea?Math.min(4,i+1):i];}
 function lilyPad(ctx,x,y,flower){ctx.fillStyle='#2f7a45';ctx.beginPath();ctx.ellipse(x,y,8,5,0,.5,6);ctx.lineTo(x,y);ctx.fill();ctx.fillStyle='#5aa552';ctx.fillRect(x-5,y-3,6,2);if(flower){ctx.fillStyle='#f6c6d6';ctx.fillRect(x-2,y-3,5,4);ctx.fillStyle='#ffeaa8';ctx.fillRect(x,y-2,1,2);}}
-// The Drowned Road entrance: mossy cobbles and edge stones running from the sand into the lake, reeds, and a leaning milestone
-// sunk into a level sand mound behind a shore rock. Stone sinking underwater is tinted by its depth below the waterline.
-const SHORE_Y=1722,MILESTONE={x:551,y:1694,a:-.35};
+// The Drowned Road entrance: mossy cobbles and edge stones running west from the sand into the lagoon, reeds, and a
+// leaning milestone sunk into a level sand mound behind a shore rock. Stone underwater is tinted by its depth.
+const SHORE_X=956,CAUSEWAY_Y=1134,MILESTONE={x:1000,y:1088,a:-.35};
+const LANDING_CHIMES=[[1460,688],[1460,997],[1680,619],[1760,756],[1700,1003]];
 const underTint=d=>`rgba(40,120,140,${Math.min(.75,d*.012)})`;
 function block(ctx,x,y,w,h,base,top,depth){ctx.fillStyle='#4f5e55';ctx.fillRect(x,y,w,h);ctx.fillStyle=base;ctx.fillRect(x,y,w,h-2);ctx.fillStyle=top;ctx.fillRect(x,y,w,2);if(depth>0){ctx.fillStyle=underTint(depth);ctx.fillRect(x,y,w,h);}}
 function causeway(ctx){
- for(let y=1664;y<1860;y+=8)for(let x=600;x<644;x+=8){const d=y-SHORE_Y,j=(x*7+y*3)%5;block(ctx,x+(y%16?0:4),y,7,7,j<2?'#a9a58d':'#b8b39a','#cfc9ab',d);if(j===0&&d<10){ctx.fillStyle='#6f9a4a';ctx.fillRect(x+1,y+1,3,2);}}
- for(let y=1680;y<1880;y+=18){const d=y-SHORE_Y;block(ctx,590,y,6,8,'#8f9c90','#c2c8b6',d);block(ctx,646,y,6,8,'#8f9c90','#c2c8b6',d);}
- for(const [x,y] of [[586,1730],[652,1718],[662,1734]])for(let i=0;i<4;i++){ctx.fillStyle=i%2?'#6d9a3a':'#8bb04a';ctx.fillRect(x+i*3,y-14+i,2,14-i);}
+ const top=CAUSEWAY_Y-22;
+ for(let x=SHORE_X+56;x>SHORE_X-140;x-=8)for(let y=top;y<top+44;y+=8){const d=SHORE_X-x,j=(x*7+y*3)%5;block(ctx,x,y+(x%16?0:4),7,7,j<2?'#a9a58d':'#b8b39a','#cfc9ab',d);if(j===0&&d<10){ctx.fillStyle='#6f9a4a';ctx.fillRect(x+1,y+1,3,2);}}
+ for(let x=SHORE_X+40;x>SHORE_X-160;x-=18){const d=SHORE_X-x;block(ctx,x,top-10,8,6,'#8f9c90','#c2c8b6',d);block(ctx,x,top+46,8,6,'#8f9c90','#c2c8b6',d);}
+ for(const [x,y] of [[SHORE_X-8,top-12],[SHORE_X+4,top+58],[SHORE_X-20,top+60]])for(let i=0;i<4;i++){ctx.fillStyle=i%2?'#6d9a3a':'#8bb04a';ctx.fillRect(x+i*3,y-14+i,2,14-i);}
  // Milestone: soft shadow down-right, the leaning stone, then a level mound that buries its foot evenly.
+ ctx.save();ctx.translate(MILESTONE.x-551,MILESTONE.y-1694);
  ctx.fillStyle='rgba(31,58,53,.32)';ctx.beginPath();ctx.ellipse(570,1714,19,5,0,0,Math.PI*2);ctx.fill();
  const R=(c,x,y,w,h)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h);};
- ctx.save();ctx.translate(MILESTONE.x,MILESTONE.y);ctx.rotate(MILESTONE.a);
+ ctx.save();ctx.translate(551,1694);ctx.rotate(MILESTONE.a);
  R('#7f8c80',-9,-26,21,46);R('#8f9c90',-9,-26,19,44);R('#b7c2b2',-9,-26,7,44);R('#c9d0c0',-9,-28,19,3);
  R('#5f6e66',4,-18,1,7);R('#5f6e66',3,-11,1,5);R('#5f8a4a',8,-28,5,3);
  ctx.restore();
@@ -199,6 +193,7 @@ function causeway(ctx){
  R('#5f8a4a',542,1706,6,4);R('#86b05a',543,1705,3,2);R('#5f8a4a',566,1705,6,3);R('#86b05a',568,1704,2,2);
  // The shore rock stands in front of the milestone, so it is painted again over the stone's foot.
  meadowRock(ctx,562.7,1716.4,true,false);
+ ctx.restore();
 }
 // The milestone glyph breathes: a slow swell of teal light with a soft halo, about four seconds per breath.
 export const milestoneBreath=t=>.5+.5*Math.sin(t*1.6);
@@ -254,10 +249,6 @@ function staticArea(ctx,left,top,width,height,id){
  if(id==='landing'){
   // The old road runs out of the sand as an overgrown causeway and on under the lake; a toppled milestone marks it.
   causeway(ctx);
-  // Wooden pier, and the dinghy you arrived in, wrecked on the shore beside it.
-  ctx.fillStyle='#604b38';ctx.fillRect(1210,1730,80,220);
-  for(let y=1735,i=0;y<1950;y+=12,i++){ctx.fillStyle=i%2?'#9a8058':'#a58b62';ctx.fillRect(1213,y,74,7);ctx.fillStyle='#c2a678';ctx.fillRect(1213,y,74,1);if(i%3===0){ctx.fillStyle='#4a3a28';ctx.fillRect(1206,y-2,7,12);ctx.fillRect(1287,y-2,7,12);}}
-  // The captain took the arrival boat back out to sea.
 
  }
 }
@@ -358,8 +349,8 @@ export function drawDepthSorted(ctx,world,view,actors,drawActor){
 }
 // Shore foam and sparkle positions are found once per chunk on a coarse grid, so the live water layer never samples distance per frame.
 const shores=new Map(),MAX_SHORES=60;
-// The pier, and the beached dinghy's hull (tested in its own rotated frame), stay free of foam and sparkles.
-const onDock=(x,y,id)=>id==='marsh'?onMarshDeck(x,y):id==='village'?onVillageDeck(x,y):id==='crossroads'?onCrossroadsDeck(x,y):DISTRICTS[id]?DISTRICTS[id].deck(x,y):DELTA[id]?DELTA[id].deck(x,y):id==='landing'&&((x>=1200&&x<=1300&&y>=1725&&y<=1955));
+// Boardwalks, piers and fords stay free of foam and sparkles.
+const onDock=(x,y,id)=>id==='marsh'?onMarshDeck(x,y):id==='village'?onVillageDeck(x,y):id==='crossroads'?onCrossroadsDeck(x,y):DISTRICTS[id]?DISTRICTS[id].deck(x,y):DELTA[id]?DELTA[id].deck(x,y):false;
 export function shorePoints(id,cx,cy){
  const key=`${id}:${cx},${cy}`;let points=shores.get(key);if(points)return points;
  points={foam:[],sparkle:[]};
@@ -402,11 +393,6 @@ function drawLandmark(ctx,p,t=0){
   for(let i=0;i<4;i++){const k=(t/2+i/4)%1;ctx.fillStyle=`rgba(225,250,240,${.8*(1-k)})`;ctx.fillRect(Math.round(x-15+i*10+Math.sin(t*3+i)*2),Math.round(y+4-k*22),3,3);}
  }
 }
-function lantern(ctx){
- const g=ctx.createRadialGradient(1292,1736,2,1292,1736,70);g.addColorStop(0,'rgba(255,205,120,.55)');g.addColorStop(1,'rgba(255,205,120,0)');
- ctx.save();ctx.globalCompositeOperation='screen';ctx.fillStyle=g;ctx.fillRect(1222,1666,140,140);ctx.restore();
- ctx.fillStyle='#4a3a28';ctx.fillRect(1290,1712,4,26);ctx.fillStyle='#ffd27a';ctx.fillRect(1287,1726,10,9);ctx.fillStyle='#2a2018';ctx.fillRect(1286,1724,12,2);
-}
 export function drawWilds(ctx,world,view={left:world.player.x-700,right:world.player.x+700,top:world.player.y-500,bottom:world.player.y+500}){
  const id=world.areaId||'landing',area=areaFor(id);ctx.imageSmoothingEnabled=false;
  if(typeof document!=='undefined')drawChunks(ctx,view,id);else staticArea(ctx,view.left,view.top,view.right-view.left,view.bottom-view.top,id);
@@ -420,8 +406,9 @@ export function drawWilds(ctx,world,view={left:world.player.x-700,right:world.pl
  drawWater(ctx,world,view,id);
  if(id==='landing'&&cabinDamaged(world.story)&&world.story.stage!=='storm')drawCamp(ctx,world.elapsed||0);
  for(const p of placesFor(id))if(p.x>view.left-120&&p.x<view.right+120&&p.y>view.top-100&&p.y<view.bottom+100)drawLandmark(ctx,p,world.elapsed||0);
- if(id==='landing'&&view.right>1220&&view.left<1370&&view.bottom>1660&&view.top<1810)lantern(ctx);
- if(id==='landing'&&view.right>520&&view.left<590&&view.bottom>1660&&view.top<1730)milestoneGlyph(ctx,world.elapsed||0);
+ if(id==='landing'&&view.right>MILESTONE.x-40&&view.left<MILESTONE.x+40&&view.bottom>MILESTONE.y-40&&view.top<MILESTONE.y+40)milestoneGlyph(ctx,world.elapsed||0);
+ // Chime posts along the trail up to Windchime Path.
+ if(id==='landing')for(const [x,y] of LANDING_CHIMES)if(x>view.left-60&&x<view.right+60&&y>view.top-20&&y<view.bottom+80)chimes(ctx,x,y,(world.elapsed||0)+x*.01);
  if(id==='crossroads')drawCrossroads(ctx,world.elapsed||0);
  // Chime trees along the west side of the trail.
  if(id==='windchime')for(const [x,y] of WINDCHIME_TREES)if(x>view.left-60&&x<view.right+60&&y>view.top-20&&y<view.bottom+80)chimes(ctx,x,y,(world.elapsed||0)+x*.01);

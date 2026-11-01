@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {World} from '../src/world.js';
+import {AREAS} from '../src/wilds.js';
 import {captureSave,restoreSave,parseSave,importantProgress} from '../src/save-format.js';
 import {SaveManager,findUsableSave} from '../src/save-store.js';
 import {neutralInput} from '../src/protocol.js';
@@ -35,8 +36,8 @@ test('restore preserves area and protects against changed-map positions and unsu
  assert.throws(()=>parseSave('not json'));assert.throws(()=>parseSave('{"__proto__":{"bad":true}}'),/invalid fields/);
  assert.throws(()=>parseSave('x'.repeat(5*1024*1024+1)),/too large/);
  assert.equal(w.inventory.allItems.length,0);
- const blocked=copy(save);blocked.state.areaId='landing';blocked.state.player.x=650;blocked.state.player.y=1910;
- assert.deepEqual({x:restoreSave(blocked).player.x,y:restoreSave(blocked).player.y},{x:1250,y:1650});
+ const blocked=copy(save);blocked.state.areaId='landing';blocked.state.player.x=400;blocked.state.player.y=500;
+ assert.deepEqual({x:restoreSave(blocked).player.x,y:restoreSave(blocked).player.y},AREAS.landing.spawn);
 });
 test('manual save stays separate while current autosave and three older backups rotate atomically',async()=>{
  const store=new MemoryStore();let now=1700000000000;const manager=new SaveManager(store,()=>{},()=>now),w=fresh();await manager.begin(w);

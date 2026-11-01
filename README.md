@@ -17,7 +17,7 @@ Chapters 1 to 5 of Volume 1 are playable. Each one continues from the previous
 chapter's save, so there is never a need to restart.
 
 1. **The Old Fishing Hut.** Eli explores Grandpa's cabin, finds the photograph and
-   the strange lure, catches supper at the dock and hunts deer with Grandpa's bow,
+   the strange lure, catches supper off the Arrival Bay pier and hunts deer with Grandpa's bow,
    cooks dinner, then flees a storm and a shadow walker until the wolf Moonfang
    saves him.
 2. **Shadow Walker.** Eli wakes by a campfire next to a girl who will not yet give

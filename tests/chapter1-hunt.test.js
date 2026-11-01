@@ -26,7 +26,7 @@ test('the weapon rack gives the rod first, and the bow only once two Sardines ar
  go(w,'landing',1250,1850);assert.equal(w.cast({x:1250,y:2000}),false);assert.match(w.message,/weapon rack/);
  go(w,'cabin',320,96);assert.ok(walkable(320,96,'cabin'));assert.equal(walkable(320,50,'cabin'),false);
  assert.equal(storyPrompt(w),'Take Grandpa’s fishing rod');w.inspect();assert.equal(w.story.scene,'rack-rod');finish(w);
- assert.equal(w.story.rod,true);assert.match(storyObjective(w),/Fish 2 Sardines from the dock \(0\/2\)/);
+ assert.equal(w.story.rod,true);assert.match(storyObjective(w),/Fish 2 Sardines from the pier \(0\/2\)/);
  assert.equal(storyPrompt(w),'Examine the weapon rack');w.inspect();assert.match(w.message,/two Sardines/);
  catchFish(w);assert.match(storyObjective(w),/\(1\/2\)/);catchFish(w);
  assert.match(storyObjective(w),/Take the hunting bow/);assert.equal(storyPrompt(w),'Take the hunting bow');w.inspect();finish(w);

@@ -4,7 +4,7 @@ import {World} from '../src/world.js';
 import {damage,updateProjectiles} from '../src/combat.js';
 import {CORE_ABILITIES,RESERVES_MAX,coreWheel,callCost,nearLivingWater} from '../src/core-abilities.js';
 import {applyAction,neutralInput} from '../src/protocol.js';
-const fresh=()=>{const w=new World(()=>.1,{adventure:true,story:true});w.story.scene=null;return w;};
+const fresh=()=>{const w=new World(()=>.1,{adventure:true,story:true});w.story.scene=null;w.areaId='landing';return w;};
 
 test('the wheel holds the two Reedwater powers and two sealed slots, all asleep until the story wakes them',()=>{
  const w=fresh();
