@@ -16,8 +16,8 @@ test('Windchime north opens into the crossroads and south returns with equipment
  // Windchime Path v2: the trail climbs diagonally from the Chime Arch to the north-east exit, with its forks walkable.
  for(const road of [[[330,1170],[348,1060],[303,928],[366,692],[511,510],[711,382],[892,291],[1128,164],[1150,0]],[[711,382],[530,291],[294,264],[60,250]],[[1128,164],[1382,273],[1550,390]]])
   for(let i=1;i<road.length;i++)for(let k=0;k<=40;k++){const t=k/40,x=road[i-1][0]+(road[i][0]-road[i-1][0])*t,y=road[i-1][1]+(road[i][1]-road[i-1][1])*t;if(y<4)continue;assert.ok(walkable(x,y,'windchime'),`${x},${y}`);}
- // The forks to Stonefall Creek and Chimewood are not open yet.
- assert.equal(transitionAt(-4,250,'windchime'),null);assert.equal(transitionAt(1604,390,'windchime'),null);
+ // The forks lead west to Stonefall Creek and east to Chimewood.
+ assert.equal(transitionAt(-4,250,'windchime').areaId,'stonefall');assert.equal(transitionAt(1604,400,'windchime').areaId,'chimewood');
 });
 
 test('every crossroads walking route is continuous and its six landmarks can be approached',()=>{
