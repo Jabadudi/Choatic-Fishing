@@ -8,7 +8,7 @@ import {observeGameSounds,playSfx} from './sfx.js';
 import {mountStory} from './story-ui.js';
 import {currentScene,storyPrompt,cabinDamaged,rodReady} from './story.js';
 import {storyTarget} from './story-quests.js';
-import {paintWorld,fullView,atlasPoint,areaAt,atlasImage} from './world-map.js';
+import {paintWorld,fullView,areaAt,atlasImage} from './world-map.js';
 import {paintQuestMap,paintQuestMinimap} from './quest-map.js';
 import {amountLabel} from './inventory.js';
 import {paintStoryMap} from './story-map.js';
@@ -222,7 +222,7 @@ function updateUI(){
 const sheetOpen=()=>!!(hubUI?.open||backpackUI?.open||tradeUI?.open||wellUI?.open||radioUI?.open||skillsUI?.open||codexUI?.open||questUI?.open||saveUI?.open||settingsUI?.open||hudUI?.open);
 // The adventure is the main player flow; legacy arena code remains an internal fixture.
 document.querySelector('header h1').textContent='THE WILDS';
-document.querySelector('.playfield').insertAdjacentHTML('beforeend',`<section id="exploration-hud" hidden><span class="exploration-kicker" id="area-kicker">YOUR JOURNEY</span><h2 id="region-name">Reedwater Delta</h2><div id="player-hp" role="progressbar" aria-label="Health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><div class="hp-row"><span class="hp-label">HP</span><span id="player-hp-text">100 / 100</span></div><div class="hp-track"><i id="player-hp-trail"></i><i id="player-hp-fill"></i></div></div><p id="discovery-count">0 / 10 places found</p><div class="discovery-dots" id="discovery-dots"></div><p id="purse-hud" title="Reed marks">${markIcon(14)}<span></span></p></section><button id="inspect-place" hidden>G · Examine</button><div id="explore-hint" hidden></div><button id="music-icon" aria-label="Music settings" aria-expanded="false">♪</button><button id="open-atlas" hidden aria-label="Open world atlas"><canvas id="mini-atlas" width="176" height="176"></canvas><span>M · WORLD ATLAS</span></button><button id="minimap-zoom" aria-label="Zoom the minimap out to the whole delta" aria-pressed="false">−</button><section id="world-atlas" hidden role="dialog" aria-modal="true" aria-label="World atlas"><div class="atlas-card"><div class="atlas-heading"><div><small>THE WILDS</small><h2>World Atlas</h2></div><div class="atlas-tabs" role="tablist" aria-label="Map scale"><button id="atlas-tab-area" role="tab" aria-selected="true">Area</button><button id="atlas-tab-world" role="tab" aria-selected="false">Reedwater Delta</button></div><button id="close-atlas">Close · M / Esc</button></div><canvas id="atlas-canvas" width="800" height="600"></canvas><p>Follow the old trails and bridges. Gold marks the places you have found. Your position is the bright marker.</p></div></section>`);
+document.querySelector('.playfield').insertAdjacentHTML('beforeend',`<section id="exploration-hud" hidden><span class="exploration-kicker" id="area-kicker">YOUR JOURNEY</span><h2 id="region-name">Reedwater Delta</h2><div id="player-hp" role="progressbar" aria-label="Health" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><div class="hp-row"><span class="hp-label">HP</span><span id="player-hp-text">100 / 100</span></div><div class="hp-track"><i id="player-hp-trail"></i><i id="player-hp-fill"></i></div></div><p id="discovery-count">0 / 10 places found</p><div class="discovery-dots" id="discovery-dots"></div><p id="purse-hud" title="Reed marks">${markIcon(14)}<span></span></p></section><button id="inspect-place" hidden>G · Examine</button><div id="explore-hint" hidden></div><button id="music-icon" aria-label="Music settings" aria-expanded="false">♪</button><button id="open-atlas" hidden aria-label="Open world atlas"><canvas id="mini-atlas" width="176" height="176"></canvas><span>M · WORLD ATLAS</span></button><section id="world-atlas" hidden role="dialog" aria-modal="true" aria-label="World atlas"><div class="atlas-card"><div class="atlas-heading"><div><small>THE WILDS</small><h2>World Atlas</h2></div><div class="atlas-tabs" role="tablist" aria-label="Map scale"><button id="atlas-tab-area" role="tab" aria-selected="true">Area</button><button id="atlas-tab-world" role="tab" aria-selected="false">Reedwater Delta</button></div><button id="close-atlas">Close · M / Esc</button></div><canvas id="atlas-canvas" width="800" height="600"></canvas><p>Follow the old trails and bridges. Gold marks the places you have found. Your position is the bright marker.</p></div></section>`);
 touchUI=mountMobileControls({state:touchState,active:()=>touchMode&&!!lobby.world&&!atlasOpen&&!hubUI?.open&&!chatUI?.open&&!hudUI?.open&&!saveUI?.open&&!backpackUI?.open&&!tradeUI?.open&&!wellUI?.open&&!radioUI?.open&&!skillsUI?.open&&!codexUI?.open&&!questUI?.open&&!settingsUI?.open&&!helpUI?.open&&!storyUI?.open&&!currentScene(world),action:()=>{pointer=null;const f=world.fishing;if(f.state==='waiting')act('cancel');else if(f.state==='idle')act('click');},examine:()=>{world.inspect();canvas.focus();}});
 let atlasFocus=null,atlasOpen=false,exploreStart=performance.now(),lastMessage='',messageSince=0,lastNotice='',noticeSince=0,dotsKey='',hpShown='',hpFraction=1;
 $('upgrade-timer').insertAdjacentHTML('afterend','<div id="upgrade-bar"><i id="upgrade-fill"></i></div><p id="quest-objective" hidden aria-live="polite"></p><p id="side-objective" hidden aria-live="polite"></p>');
@@ -232,8 +232,8 @@ $('open-atlas').setAttribute('aria-label','Open area map');$('open-atlas').query
 $('world-atlas').setAttribute('aria-label','Area map');document.querySelector('.atlas-card p').textContent='Walk through the marked map edge to reach the connecting path. Gold marks places you have found; the bright marker shows your position.';
 canvas.setAttribute('aria-label','Reedwater exploration. WASD move, Space talk or examine, left click use item, B backpack, H controls.');
 const atlasImages=new Map();
-// The map shows the area Eli is in, or zooms out to the whole delta; the minimap has the same two scales.
-let mapMode='area',minimapMode='area';
+// The map shows the area Eli is in, or zooms out to the whole delta.
+let mapMode='area';
 const storyGoal=()=>{const t=storyTarget(world);return t?.toward||t;};
 function setMapMode(mode){mapMode=mode;$('atlas-tab-area').setAttribute('aria-selected',mode==='area');$('atlas-tab-world').setAttribute('aria-selected',mode==='world');document.querySelector('.atlas-card p').textContent=mode==='world'?'The whole Reedwater Delta. Green outlines are the places you can walk; gold is where you are. Click an area to open its map.':'Walk through the marked map edge to reach the connecting path. Gold marks places you have found; the bright marker shows your position.';drawMap($('atlas-canvas'));}
 atlasImage(()=>{if(atlasOpen)drawMap($('atlas-canvas'));});
@@ -252,7 +252,6 @@ function drawMap(target){
 }
 // The minimap follows Eli: a close crop of the area atlas, centred on him.
 function drawMinimap(target){
- if(minimapMode==='world'){const p=atlasPoint(world.areaId,world.player.x,world.player.y)||{x:360,y:240};paintWorld(target.getContext('2d'),target.width,target.height,world,{...p,scale:1.5},{target:storyGoal(),t:performance.now()/1000});return;}
  const area=areaFor(world.areaId),key=`${area.id}:800:600`;let base=atlasImages.get(key);
  if(!base){base=document.createElement('canvas');base.width=800;base.height=600;paintAtlas(base.getContext('2d'),800,600,null,new Set(),area.id);atlasImages.set(key,base);}
  const c=target.getContext('2d'),span=Math.min(area.width,area.height,900),zoom=target.width/span,sx=zoom,sy=zoom;
@@ -268,7 +267,6 @@ function drawMinimap(target){
 }
 function toggleAtlas(open=!atlasOpen){if(!open)atlasFocus=null;if(open){backpackUI?.close();skillsUI?.close();codexUI?.close();questUI?.close();}atlasOpen=open;release();if(open&&touchUI)touchUI.update(world,true);$('world-atlas').hidden=!open;if(open)drawMap($('atlas-canvas'));else canvas.focus();}
 $('open-atlas').onclick=()=>toggleAtlas(true);
-$('minimap-zoom').onclick=()=>{minimapMode=minimapMode==='area'?'world':'area';const z=$('minimap-zoom');z.textContent=minimapMode==='area'?'−':'+';z.setAttribute('aria-pressed',minimapMode==='world');z.setAttribute('aria-label',minimapMode==='area'?'Zoom the minimap out to the whole delta':'Zoom the minimap back in to this area');canvas.focus();};
 $('atlas-tab-area').onclick=()=>{atlasFocus=null;setMapMode('area');};$('atlas-tab-world').onclick=()=>setMapMode('world');
 $('atlas-canvas').addEventListener('click',e=>{if(mapMode!=='world')return;const c=$('atlas-canvas'),r=c.getBoundingClientRect(),x=(e.clientX-r.left)*c.width/r.width,y=(e.clientY-r.top)*c.height/r.height,id=areaAt(x,y,c.width,c.height,fullView(c.width,c.height));if(id){atlasFocus={areaId:id};setMapMode('area');}});$('close-atlas').onclick=()=>toggleAtlas(false);$('inspect-place').onclick=()=>{world.inspect();canvas.focus();};
 const lobby=new Lobby(updateLobby);
