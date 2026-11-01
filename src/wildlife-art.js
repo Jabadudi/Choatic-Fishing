@@ -25,7 +25,11 @@ export function animalPose(a){
  if(a.hurtRemaining>0)return {state:'hurt',time:.25-a.hurtRemaining};
  // A sheet with a run row (the fox, the boar) runs away, or after Eli once it is angry; the others walk.
  const clips=SPRITES[a.spriteId]?.animations||{};
- if(a.state==='flee'||a.state==='walk'&&a.anger>0)return {state:clips['run:right']?'run':'walk',time:t};
+ if(a.state==='flee'||a.state==='walk'&&a.anger>0){
+  // Without a run row the walk plays faster to match the flight, so the feet keep up instead of sliding.
+  const run=!!clips['run:right'],pace=a.state==='flee'&&!run?Math.min(3,Math.max(1,a.fleeSpeed/a.speed)):1;
+  return {state:run?'run':'walk',time:t*pace};
+ }
  // An attack clip, where there is one, plays across the windup so the hit lands on its last frame.
  // The bear's roar plays across its rearing time.
  if(a.state==='roar')return clips.roar?{state:'roar',time:t,duration:a.roar}:{state:'idle',time:t};
