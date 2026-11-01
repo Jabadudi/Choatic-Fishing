@@ -20,8 +20,8 @@ export const SPAWN_AREAS=Object.freeze({
   slots:[['crossroads-north','land',1200,300],['crossroads-west','land',300,800],['crossroads-middle','land',1000,600],['crossroads-south','land',300,1100],['crossroads-pond','water',1500,1000]]},
  marsh:{cap:8,chance:.55,respawnSeconds:75,
   tables:{land:{'shadow-walker':50,rabbit:25,deer:25},water:{turtle:60,eel:40}},
-  slots:[['marsh-island','land',1000,1100],['marsh-east','land',1500,800],['marsh-south','land',1100,1600],
-   ['marsh-pool-north','water',400,500],['marsh-reeds','water',700,1400],['marsh-channel','water',1300,1100],['marsh-pool-east','water',1600,500],['marsh-lagoon','water',1600,1600],['marsh-shallows','water',900,1900]]}
+  slots:[['marsh-island','land',1580,1150],['marsh-east','land',1800,600],['marsh-south','land',1650,2000],
+   ['marsh-pool-north','water',700,300],['marsh-reeds','water',500,950],['marsh-channel','water',1000,1100],['marsh-pool-east','water',1900,950],['marsh-lagoon','water',1150,2000],['marsh-shallows','water',900,2200]]}
 });
 // Interiors belong to the area outside their door, so stepping indoors and back out is not a new visit.
 export const SPAWN_PARENT=Object.freeze({cabin:'landing','chief-house':'village','guest-lodge':'village'});

@@ -9,7 +9,7 @@ const fresh=()=>new World(()=>.1,{adventure:true});
 test('crossroads east and marsh west connect in both directions and preserve the journey',()=>{
  const w=fresh();w.areaId='crossroads';Object.assign(w.player,{x:1596,y:445});w.inventory.receive({name:'Sardine'});w.quests['mara-sardine'].status='active';
  w.move(12,0,false);assert.equal(w.areaId,'marsh');assert.deepEqual({x:w.player.x,y:w.player.y},MARSH.spawn);assert.ok(walkable(w.player.x,w.player.y,'marsh'));
- Object.assign(w.player,{x:4,y:760});w.move(-12,0,false);assert.equal(w.areaId,'crossroads');assert.equal(w.player.x,1490);assert.ok(walkable(w.player.x,w.player.y,'crossroads'));
+ Object.assign(w.player,{x:4,y:1830});w.move(-12,0,false);assert.equal(w.areaId,'crossroads');assert.equal(w.player.x,1490);assert.ok(walkable(w.player.x,w.player.y,'crossroads'));
  assert.equal(w.inventory.allItems[0].name,'Sardine');assert.equal(w.quests['mara-sardine'].status,'active');
  assert.equal(transitionAt(-1,100,'marsh'),null);assert.equal(transitionAt(2101,1000,'marsh'),null);
 });
@@ -18,7 +18,7 @@ test('all boardwalk centre lines remain continuous and every landmark is reachab
   const a=board.points[i-1],b=board.points[i],t=j/100,x=a[0]+(b[0]-a[0])*t,y=a[1]+(b[1]-a[1])*t;
   assert.ok(walkable(x,y,'marsh'),`blocked boardwalk ${x},${y}`);
  }
- const queue=[[140,760]],seen=new Set(['140,760']),reached=new Set();
+ const queue=[[140,1830]],seen=new Set(['140,1830']),reached=new Set();
  for(let at=0;at<queue.length;at++){
   const [x,y]=queue[at];for(const place of MARSH_PLACES)if(Math.hypot(x-place.x,y-place.y)<60)reached.add(place.id);
   for(const [dx,dy]of [[20,0],[-20,0],[0,20],[0,-20]]){const nx=x+dx,ny=y+dy,key=`${nx},${ny}`;if(nx<20||nx>2080||ny<20||ny>2380||seen.has(key)||!walkable(nx,ny,'marsh'))continue;seen.add(key);queue.push([nx,ny]);}
@@ -27,9 +27,9 @@ test('all boardwalk centre lines remain continuous and every landmark is reachab
  for(const object of MARSH_OBJECTS)assert.equal(walkable(object.x,object.y,'marsh'),false,object.id);
 });
 test('deep channels block walking while boardwalks permit fishing and exclude water glints',()=>{
- assert.ok(isWater(1650,1340,'marsh'));assert.ok(onMarshDeck(1650,1340));assert.ok(walkable(1650,1340,'marsh'));
- assert.ok(isWater(1850,1500,'marsh'));assert.equal(walkable(1850,1500,'marsh'),false);
- const w=fresh();w.areaId='marsh';Object.assign(w.player,{x:1650,y:1340});assert.ok(w.cast({x:1850,y:1500}));
+ assert.ok(isWater(1050,1570,'marsh'));assert.ok(onMarshDeck(1050,1570));assert.ok(walkable(1050,1570,'marsh'));
+ assert.ok(isWater(1050,1300,'marsh'));assert.equal(walkable(1050,1300,'marsh'),false);
+ const w=fresh();w.areaId='marsh';Object.assign(w.player,{x:1050,y:1570});assert.ok(w.cast({x:1050,y:1350}));
  const bobber={...w.bobber};w.move(10,0,true);assert.deepEqual(w.bobber,bobber);
  for(const points of Object.values(shorePoints('marsh',3,2)))for(const [x,y]of points)assert.equal(onMarshDeck(x,y),false);
 });

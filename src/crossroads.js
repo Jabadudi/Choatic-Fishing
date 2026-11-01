@@ -9,7 +9,7 @@ const GEO=defineArea({id:'crossroads-geo',frame:[266,350,176,243],size:[1600,128
  shapes:[['water',[[266,180],[280,187],[292,196],[304,204],[320,209],[336,212],[350,213],[350,243],[338,236],[322,226],[308,217],[295,210],[282,202],[266,193]]]],
  walks:[{pts:[[304,218],[316,212],[328,207],[340,202],[350,199]],width:3.4},{pts:[[325,226],[325,230.5]],width:2.4}]});
 export const BOARDWALK=GEO.walks[0].pts;
-export const CROSSROADS={id:'crossroads',name:'Willowbank Crossroads',width:1600,height:1280,seed:7327,spawn:{x:800,y:1130},exits:[{edge:'south',from:680,to:920,target:'windchime',entry:{x:1150,y:80},label:'Windchime Path'},{edge:'west',from:410,to:510,target:'village-farm',entry:{x:1930,y:830},label:'Willowback'},{edge:'east',from:400,to:490,target:'marsh',entry:{x:140,y:760},label:'Shellback Marsh'}]};
+export const CROSSROADS={id:'crossroads',name:'Willowbank Crossroads',width:1600,height:1280,seed:7327,spawn:{x:800,y:1130},exits:[{edge:'south',from:680,to:920,target:'windchime',entry:{x:1150,y:80},label:'Windchime Path'},{edge:'west',from:410,to:510,target:'village-farm',entry:{x:1930,y:830},label:'Willowback'},{edge:'east',from:400,to:490,target:'marsh',entry:{x:140,y:1830},label:'Shellback Marsh'}]};
 export const CROSSROADS_ROADS=[
  [[800,1280],[790,1100],[724,974],[667,821]],
  [[667,821],[476,688],[248,554],[0,439]],
