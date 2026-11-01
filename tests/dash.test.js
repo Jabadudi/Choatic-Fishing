@@ -36,3 +36,13 @@ test('joystick dash follows the stick exactly, not the nearest of eight directio
  const w=fresh();assert.ok(w.dash({right:true,down:true,moveX:.8,moveY:.3}));
  const d=Math.hypot(.8,.3);assert.ok(Math.abs(w.dashDirection.x-.8/d)<1e-9);assert.ok(Math.abs(w.dashDirection.y-.3/d)<1e-9);
 });
+
+test('dash button meter drains over the recharge and is ready again once a charge is back',async()=>{
+ const {dashMeter}=await import('../src/hud.js');const {DASH_RECHARGE}=await import('../src/world.js');
+ const w=fresh();
+ assert.deepEqual(dashMeter(w),{charges:1,max:1,ready:true,remaining:0,seconds:0});
+ assert.ok(w.dash({right:true}));let m=dashMeter(w);assert.equal(m.ready,false);assert.equal(m.remaining,1);
+ w.update(.16,input);m=dashMeter(w);assert.equal(m.ready,false);assert.equal(m.remaining,1);assert.equal(m.seconds,DASH_RECHARGE);
+ w.update(DASH_RECHARGE/2,input);m=dashMeter(w);assert.equal(m.ready,false);assert.ok(Math.abs(m.remaining-.5)<1e-6);
+ w.update(DASH_RECHARGE/2,input);m=dashMeter(w);assert.equal(m.ready,true);assert.equal(m.remaining,0);assert.equal(m.charges,1);
+});
