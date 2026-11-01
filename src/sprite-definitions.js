@@ -227,6 +227,8 @@ export const SPRITES={
   'wade-idle':{frames:[32]},'wade-idle:right':{frames:[32]},'wade-idle:down':{frames:[48]},'wade-idle:up':{frames:[56]}}}),
  // The Ash Archer draws (32-35) and looses (36-39); row 5 stepping back, played while it backs away from Eli.
  'ash-archer':shadowKind('ash-archer',[232,134],7,{attack:32,hurt:48,cycle:1.1,extra:{back:{frames:[40,41,42,43,44,45,46,47],cycle:.9}}}),
+ // The atlas waterfall loop (scripts/prepare-atlas-props.py): a ledge pouring into a pool, 8 frames.
+ waterfall:{asset:'waterfall-sheet.png',frameSize:[129,84],columns:8,scale:.6,anchor:[.5,.78],offset:[0,0],animations:{idle:{frames:[0,1,2,3,4,5,6,7],fps:10}}},
  // The arrow's 4 flight frames, pointing right; the renderer turns it to its heading.
  'ash-arrow':{asset:'ash-arrow.png',frameSize:[56,23],columns:4,scale:.5,anchor:[.5,.5],offset:[0,0],animations:{idle:{frames:[0,1,2,3],fps:12}}},
  // The Inkeel's walk set is its swim; row 4 the strike up out of the water.

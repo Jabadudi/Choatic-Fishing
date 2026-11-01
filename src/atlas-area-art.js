@@ -3,12 +3,28 @@ import {drawEntitySprite,drawProp as drawPropSprite} from './sprites.js';
 const each=(pts,step,fn)=>{for(let i=1;i<pts.length;i++){const [ax,ay]=pts[i-1],[bx,by]=pts[i],len=Math.hypot(bx-ax,by-ay),n=Math.max(1,Math.floor(len/step));for(let j=0;j<n;j++){const t=j/n;fn(ax+(bx-ax)*t,ay+(by-ay)*t,Math.atan2(by-ay,bx-ax),j);}}};
 function stroke(ctx,pts,width,color){ctx.strokeStyle=color;ctx.lineWidth=width;ctx.lineJoin='round';ctx.lineCap='round';ctx.beginPath();pts.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.stroke();}
 const near=(pts,half,left,top,width,height)=>pts.some(([x,y])=>x>left-400&&x<left+width+400&&y>top-400&&y<top+height+400);
+// Lays a painted walkway tile (running left to right) along a line: each tile turned to its segment, deck as wide as
+// the walkway, repeated end to end. Returns false until the tile has loaded.
+function tiled(ctx,pts,id,deck,aspect){
+ if(!drawPropSprite(ctx,id,{x:-1e5,y:-1e5,w:1,h:1}))return false;
+ const h=deck,w=h*aspect;
+ for(let i=1;i<pts.length;i++){
+  const [ax,ay]=pts[i-1],[bx,by]=pts[i],len=Math.hypot(bx-ax,by-ay),n=Math.max(1,Math.ceil(len/(w*.92)));
+  ctx.save();ctx.translate(ax,ay);ctx.rotate(Math.atan2(by-ay,bx-ax));
+  for(let j=0;j<n;j++)drawPropSprite(ctx,id,{x:(j+.5)*len/n,y:h/2,w:len/n+2,h});
+  ctx.restore();
+ }
+ return true;
+}
 export function drawAtlasGround(ctx,built,left,top,width,height){
- for(const b of built.bridges){if(!near(b.pts,b.half,left,top,width,height))continue;const w=b.half*2;
+ // Painted walkways where the tiles have loaded: stone bridge decks, marsh boardwalks and stepping stones.
+ for(const b of built.bridges)if(near(b.pts,b.half,left,top,width,height))b.painted=tiled(ctx,b.pts,'atlas/stone-bridge-h',b.half*2+14,322/125);
+ for(const b of built.walks)if(near(b.pts,b.half,left,top,width,height))b.painted=tiled(ctx,b.pts,'atlas/walk-h',b.half*2+12,278/124);
+ for(const b of built.bridges){if(!near(b.pts,b.half,left,top,width,height))continue;if(b.painted)continue;const w=b.half*2;
   stroke(ctx,b.pts,w+10,'#3d3a36');stroke(ctx,b.pts,w+4,'#8d877a');stroke(ctx,b.pts,w-6,'#b9b19c');
   each(b.pts,14,(x,y,a)=>{ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.fillStyle='#a39a84';ctx.fillRect(-1,-b.half+5,2,w-10);ctx.restore();});
  }
- for(const b of built.walks){if(!near(b.pts,b.half,left,top,width,height))continue;const w=b.half*2;
+ for(const b of built.walks){if(!near(b.pts,b.half,left,top,width,height))continue;if(b.painted)continue;const w=b.half*2;
   // Posts under the deck, then the planks laid across the line.
   each(b.pts,46,(x,y,a)=>{ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.fillStyle='#3e2b1c';ctx.fillRect(-4,-b.half-5,8,8);ctx.fillRect(-4,b.half-3,8,8);ctx.restore();});
   stroke(ctx,b.pts,w+4,'#4f3a26');stroke(ctx,b.pts,w-2,'#a8875c');
@@ -16,6 +32,8 @@ export function drawAtlasGround(ctx,built,left,top,width,height){
  }
  for(const b of built.fords){if(!near(b.pts,b.half,left,top,width,height))continue;
   stroke(ctx,b.pts,b.half*2+8,'rgba(150,215,205,.55)');
+  const stone=drawPropSprite(ctx,'atlas/stepping-stone',{x:-1e5,y:-1e5,w:1,h:1});
+  if(stone){each(b.pts,26,(x,y,a,j)=>{const o=(j%2?1:-1)*b.half*.25;drawPropSprite(ctx,'atlas/stepping-stone',{x:x-Math.sin(a)*o,y:y+Math.cos(a)*o+9,w:34,h:21});});continue;}
   each(b.pts,26,(x,y,a,j)=>{const o=(j%2?1:-1)*b.half*.25,dx=-Math.sin(a)*o,dy=Math.cos(a)*o;ctx.fillStyle='#55605a';ctx.beginPath();ctx.ellipse(x+dx+1,y+dy+3,13,9,a,0,Math.PI*2);ctx.fill();ctx.fillStyle=j%3?'#a7a594':'#b8b5a2';ctx.beginPath();ctx.ellipse(x+dx,y+dy,12,8,a,0,Math.PI*2);ctx.fill();ctx.fillStyle='#d2cfbb';ctx.fillRect(Math.round(x+dx-5),Math.round(y+dy-5),6,2);});
  }
  for(const r of built.roads){if(!near(r,0,left,top,width,height))continue;}

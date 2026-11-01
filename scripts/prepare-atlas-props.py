@@ -68,3 +68,19 @@ for sheet,names in SHEETS.items():
     crop=rgba[t:b,l:r].copy();crop[...,3]=np.where(keep[t:b,l:r],crop[...,3],0)
     im=Image.fromarray(crop,'RGBA');im=im.resize((max(1,im.width//2),max(1,im.height//2)),Image.LANCZOS)
     im.save(f'{OUT}{name}.webp',quality=92,method=6);print(f'{OUT}{name}.webp',im.size)
+
+# Water motion (section 5): one column of 8 looping frames each, saved as an 8-frame row at half size.
+# The shoreline foam strip (shore-waves-strip.png) is kept in art/ for later: it needs straight shores to lie along.
+for name in ['waterfall']:
+  rgba=key(np.array(Image.open(f'art/sprites/props/water-motion/{name}-strip.png').convert('RGB')));mask=rgba[...,3]>40
+  rows=np.nonzero(mask.any(1))[0];runs=[]
+  for y in rows:
+    if runs and y-runs[-1][1]<=3:runs[-1][1]=y+1
+    else:runs.append([y,y+1])
+  runs=[r for r in runs if r[1]-r[0]>20];assert len(runs)==8,(name,runs)
+  h=max(b-a for a,b in runs);xs=np.nonzero(mask.any(0))[0];l,r=xs.min(),xs.max()+1
+  frames=[Image.fromarray(rgba[a:a+h,l:r],'RGBA') for a,b in runs]
+  sheet=Image.new('RGBA',((r-l)*8,h))
+  for i,f in enumerate(frames):sheet.paste(f,(i*(r-l),0))
+  sheet=sheet.resize((sheet.width//2,sheet.height//2),Image.LANCZOS)
+  sheet.save(f'assets/{name}-sheet.png',optimize=True);print(f'assets/{name}-sheet.png frameSize [{sheet.width//8},{sheet.height}]')

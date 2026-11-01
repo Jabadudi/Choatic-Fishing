@@ -384,8 +384,21 @@ export function shorePoints(id,cx,cy){
  for(let y=Math.ceil(cy*CHUNK/18)*18;y<(cy+1)*CHUNK;y+=18)for(let x=Math.ceil(cx*CHUNK/18)*18;x<(cx+1)*CHUNK;x+=18)if(waterDistance(x,y,id)< -20&&!onDock(x,y,id))points.sparkle.push([x,y,hash(x,y,11)]);
  shores.set(key,points);if(shores.size>MAX_SHORES)shores.delete(shores.keys().next().value);return points;
 }
+// The falls and rapids the atlas areas name: each sits on the water nearest its label.
+const FALLS=/^(The Stonefall|The Falls|The Rush|Sluice Falls|Top Falls|The Cascade|Middle Falls|Lower Falls)$/,falls=new Map();
+export function fallsFor(id){
+ if(!DELTA[id]||id==='landing')return [];
+ let list=falls.get(id);if(list)return list;list=[];
+ for(const p of DELTA[id].places){
+  if(!FALLS.test(p.name||''))continue;let best=null,bd=Infinity;
+  for(let r=0;r<=320&&!best;r+=8)for(let k=0;k<32;k++){const x=p.x+Math.cos(k/32*Math.PI*2)*r,y=p.y+Math.sin(k/32*Math.PI*2)*r,d=waterDistance(x,y,id);if(d< -10&&r<bd){bd=r;best={x:Math.round(x),y:Math.round(y)};}}
+  if(best)list.push(best);
+ }
+ falls.set(id,list);return list;
+}
 function drawWater(ctx,world,view,id){
  if(id==='windchime'||interior(id))return;const t=world.elapsed||0;ctx.save();
+ for(const f of fallsFor(id))if(f.x>view.left-80&&f.x<view.right+80&&f.y>view.top-80&&f.y<view.bottom+80)drawEntitySprite(ctx,'waterfall',{x:f.x,y:f.y,state:'idle',time:t+f.x*.01});
  for(let cy=Math.floor(view.top/CHUNK);cy<=Math.floor(view.bottom/CHUNK);cy++)for(let cx=Math.floor(view.left/CHUNK);cx<=Math.floor(view.right/CHUNK);cx++){
   const {foam,sparkle}=shorePoints(id,cx,cy);
   ctx.fillStyle='#fffff5';
