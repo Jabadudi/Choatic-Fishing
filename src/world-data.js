@@ -4,10 +4,10 @@
 export const WORLD_DATA=Object.freeze({
  settings:{awaySeconds:30,clearance:350,shiny:{chance:0.01,loot:4,health:1.5,huntXp:2,seenRange:520}},
  spawnAreas:{
-  landing:{cap:12,chance:0.65,respawnSeconds:60,tables:{land:{rabbit:55,deer:40,"shadow-walker":5},water:{eel:55,turtle:45}}},
+  landing:{cap:12,chance:0.65,respawnSeconds:60,tables:{land:{deer:40,rabbit:55,"shadow-walker":5},water:{eel:55,turtle:45}}},
   windchime:{cap:5,chance:0.55,respawnSeconds:75,tables:{land:{deer:45,rabbit:40,"shadow-walker":15}}},
-  crossroads:{cap:4,chance:0.5,respawnSeconds:90,tables:{land:{rabbit:45,deer:30,"shadow-walker":25},water:{eel:100}}},
-  marsh:{cap:8,chance:0.55,respawnSeconds:75,tables:{land:{"shadow-walker":50,rabbit:25,deer:25},water:{turtle:60,eel:40}}}
+  crossroads:{cap:4,chance:0.5,respawnSeconds:90,tables:{land:{deer:30,rabbit:45,"shadow-walker":25},water:{eel:100}}},
+  marsh:{cap:8,chance:0.55,respawnSeconds:75,tables:{land:{deer:25,rabbit:25,"shadow-walker":50},water:{eel:40,turtle:60}}}
  },
  spawnSlots:[
   {id:"rabbit-0",areaId:"landing",habitat:"land",x:1460,y:1540,start:"rabbit"},

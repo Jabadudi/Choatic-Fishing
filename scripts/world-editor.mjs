@@ -28,8 +28,9 @@ export function fromEditor({spawnAreas=[],spawnSlots=[],npcs=[],bosses=[]},areas
  const mapOrder=new Map(Object.keys(areas).map((a,i)=>[a,i])),rank=d=>(d.order??1e3)*1e3+(mapOrder.get(d.id)??999);
  for(const d of spawnAreas.filter(d=>d.id!=='_shared').sort((a,b)=>rank(a)-rank(b))){
   if(!known(d.id)){notes.push(`Skipped spawn settings for unknown area ${d.id}.`);continue;}
+  // Creatures are listed alphabetically: the database does not keep the order they were added in.
   const tables={};
-  for(const h of HABITATS){const t=d.tables?.[h];if(!t)continue;const row=Object.fromEntries(Object.entries(t).filter(([s,w])=>id(s)&&num(w,0,1000,0)>0).map(([s,w])=>[s,round(w)]));if(Object.keys(row).length)tables[h]=row;}
+  for(const h of HABITATS){const t=d.tables?.[h];if(!t)continue;const row=Object.fromEntries(Object.entries(t).sort(([a],[b])=>a.localeCompare(b)).filter(([s,w])=>id(s)&&num(w,0,1000,0)>0).map(([s,w])=>[s,round(w)]));if(Object.keys(row).length)tables[h]=row;}
   out.spawnAreas[d.id]={cap:round(num(d.cap,0,60,4)),chance:num(d.chance,0,1,.5),respawnSeconds:round(num(d.respawnSeconds,5,3600,75)),tables};
  }
  const order=new Map([...Object.keys(out.spawnAreas),...Object.keys(areas)].map((a,i,all)=>[a,all.indexOf(a)]));

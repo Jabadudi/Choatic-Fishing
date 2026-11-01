@@ -67,7 +67,7 @@ test('the same seed rolls the same creatures, so a reload cannot reroll a spawn'
 });
 
 test('shadow walkers roam the wilder areas, but in the story only after the storm has shown one',()=>{
- assert.deepEqual(spawnWeights('marsh','land').map(([s])=>s),['shadow-walker','rabbit','deer']);
+ assert.deepEqual(spawnWeights('marsh','land').map(([s])=>s).sort(),['deer','rabbit','shadow-walker']);
  const roll=w=>{const seen=new Set();Object.assign(w.player,{x:10,y:10});for(let i=0;i<30;i++){for(const a of inArea(w,'marsh'))kill(w,a);w.areaId='marsh';rollArea(w,'marsh');for(const a of inArea(w,'marsh'))seen.add(a.species);}return seen;};
  assert.ok(roll(fresh()).has('shadow-walker'));
  const story=new World(()=>.2,{adventure:true,story:true});story.journeyId='spawn-story';
