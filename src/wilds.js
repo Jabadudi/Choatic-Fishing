@@ -231,13 +231,15 @@ function staticArea(ctx,left,top,width,height,id){
  // The lodge's light follows the story, so drawWilds paints it each frame instead of caching it.
  if(id==='guest-lodge')return;
  const texturedGrass=id!=='marsh'&&drawGrassBase(ctx,left,top,width,height,markStale);
- const dirt=pathPattern(ctx,markStale),atlasTextures=!!DELTA[id]&&id!=='landing';
+ const dirt=pathPattern(ctx,markStale),atlasTextures=!!DELTA[id];
  for(let y=Math.floor(top/8)*8;y<top+height;y+=8)for(let x=Math.floor(left/8)*8;x<left+width;x+=8){
   const px=x+4,py=y+4,wet=waterDistance(px,py,id),road=roadDistance(px,py,id),r=hash(x,y,4),palette=paletteAt(px,py,id);
   // Visual fringes soften the shoreline and trail without changing collision geometry.
   const deck=id==='marsh'&&onMarshDeck(px,py)||id==='crossroads'&&onCrossroadsDeck(px,py)||id==='village'&&onVillageDeck(px,py)||!!DISTRICTS[id]?.deck(px,py),water=wet<0&&!deck,path=!water&&(deck||road<24+r*12),zone=DELTA[id]?.zoneAt(px,py),sand=!water&&!path&&(zone==='sand'||wet< (DELTA[id]?30:coastDistance(px,py)>-70?58:20)+r*8),ground=!water&&!path&&!sand&&(zone==='rock'||zone==='marsh'||zone==='dirt'||zone==='cliff');
-  // The atlas areas paint their textures where they have one (not the Landing, which keeps its own shore art).
-  const texture=atlasTextures&&groundPattern(ctx,groundKind(id,{water,path,sand,zone,wet,r}),markStale);
+  // The atlas areas paint their ground and water textures where they have one; every other outdoor area (the Landing,
+  // Willowback, the marsh, the Crossroads) paints its water with them and keeps its own ground.
+  const texture=atlasTextures?groundPattern(ctx,groundKind(id,{water,path,sand,zone,wet,r}),markStale)
+   :water&&groundPattern(ctx,waterKind(id,wet,r,px,py),markStale);
   if(texture){ctx.fillStyle=texture;ctx.fillRect(x,y,8,8);continue;}
   else if(water||path||sand||ground||!texturedGrass){ctx.fillStyle=water?waterColor(wet,id==='landing'&&coastDistance(px,py)>0,id==='marsh'):path?['#d6bd7a','#dfc885','#d9c17e'][Math.floor(r*3)]:sand?(id==='marsh'?['#8c8b60','#a2a074','#929469']:['#c5ba77','#d1c487','#cabe7d'])[Math.floor(r*3)]:palette[Math.floor(hash(Math.floor(x/48),Math.floor(y/48))*3)];ctx.fillRect(x,y,8,8);}
   if(path&&dirt){ctx.fillStyle=dirt;ctx.fillRect(x,y,8,8);}
@@ -386,6 +388,13 @@ export function shorePoints(id,cx,cy){
  for(let y=cy*CHUNK;y<(cy+1)*CHUNK;y+=8)for(let x=cx*CHUNK;x<(cx+1)*CHUNK;x+=8){const d=waterDistance(x,y,id);if(d<0&&d> -8&&!onDock(x,y,id))points.foam.push([x,y,d]);}
  for(let y=Math.ceil(cy*CHUNK/18)*18;y<(cy+1)*CHUNK;y+=18)for(let x=Math.ceil(cx*CHUNK/18)*18;x<(cx+1)*CHUNK;x+=18)if(waterDistance(x,y,id)< -20&&!onDock(x,y,id))points.sparkle.push([x,y,hash(x,y,11)]);
  shores.set(key,points);if(shores.size>MAX_SHORES)shores.delete(shores.keys().next().value);return points;
+}
+// Water texture outside the atlas areas: a turquoise shallow band at the shore, then open sea off the Landing's coast and
+// the port, river water in the lakes, rivers and the marsh's murky channels.
+function waterKind(id,wet,r,x,y){
+ if(id==='marsh')return 'river';
+ if(wet> -38+r*12)return 'shallow';
+ return id==='landing'&&coastDistance(x,y)>0||id==='village-port'?'sea':'river';
 }
 // The falls and rapids the atlas areas name: each sits on the water nearest its label.
 const FALLS=/^(The Stonefall|The Falls|The Rush|Sluice Falls|Top Falls|The Cascade|Middle Falls|Lower Falls)$/,falls=new Map();
