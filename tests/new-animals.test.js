@@ -74,7 +74,35 @@ test('herons stalk the delta landmarks and fly off when Eli comes close',()=>{
  damageAnimal(w,heron,1e4,w.player,0);assert.ok(w.drops.some(d=>d.item.name==='Heron Feather'));
 });
 
-for(const id of ['fox','boar','elk','bear','heron'])test(`every ${id} clip points at a frame inside its sheet`,()=>{
+const spawnAt=(w,areaId,habitat,species)=>{
+ const slot=Object.values(SLOTS).find(s=>s.areaId===areaId&&s.habitat===habitat),a=createCreature(slot,species,{id:`${species}-1`,seed:4});
+ w.wildlife.push(a);w.areaId=areaId;return a;
+};
+test('crabs and goats fight back; a goat headbutt throws Eli further than a crab nip',()=>{
+ for(const [species,area] of [['crab','arrival-bay'],['goat','lookout-heights']]){
+  assert.ok(spawnWeights(area,'land').some(([s])=>s===species),area);
+  const w=fresh(),a=spawnAt(w,area,'land',species);Object.assign(w.player,{x:a.x+30,y:a.y});
+  damageAnimal(w,a,5,w.player,0);a.hurtRemaining=0;updateWildlife(w,1/60);
+  assert.equal(a.state,'attack',species);assert.equal(animalPose(a).state,'attack');
+ }
+ assert.ok(createCreature(Object.values(SLOTS).find(s=>s.areaId==='lookout-heights'&&s.habitat==='land'),'goat').knockback>90);
+});
+test('otters, ducks and seals keep to the water and swim or fly off when Eli comes close',()=>{
+ for(const [species,area] of [['otter','falls-channels'],['duck','glasswater'],['seal','seal-skerries']]){
+  assert.ok(spawnWeights(area,'water').some(([s])=>s===species),area);
+  const w=fresh(),a=spawnAt(w,area,'water',species);assert.equal(a.habitat,'water');
+  Object.assign(w.player,{x:a.x+60,y:a.y});updateWildlife(w,1/60);
+  assert.equal(a.state,'flee',species);assert.equal(animalPose(a).state,'run');
+ }
+});
+test('a hurt pike lunges at Eli from the water',()=>{
+ const w=fresh(),a=spawnAt(w,'glasswater','water','pike');Object.assign(w.player,{x:a.x+60,y:a.y});
+ damageAnimal(w,a,5,w.player,0);a.hurtRemaining=0;updateWildlife(w,1/60);
+ assert.equal(a.state,'attack');assert.equal(animalPose(a).state,'attack');
+ damageAnimal(w,a,1e4,w.player,0);assert.ok(w.drops.some(d=>d.item.name==='Pike Fillet'));
+});
+
+for(const id of ['fox','boar','elk','bear','heron','crab','goat','otter','duck','pike','seal'])test(`every ${id} clip points at a frame inside its sheet`,()=>{
  const def=SPRITES[id],[w,h]=pngSize(`assets/${def.asset}`),[cw,ch]=def.frameSize;
  assert.equal(w%cw,0);assert.equal(h%ch,0);
  const count=(w/cw)*(h/ch);

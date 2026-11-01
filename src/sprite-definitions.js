@@ -156,6 +156,51 @@ export const SPRITES={
   'run:right':{frames:[36,37,38,39],cycle:.5},'run:down':{frames:[36,37,38,39],cycle:.5},'run:up':{frames:[36,37,38,39],cycle:.5},
   hurt:{frames:[48,49,50],fps:12,loop:false},death:{frames:[51,52,53,54,55],fps:6,loop:false}
  }},
+ // Shore crab, cut by the same script from art/sprites/creatures/crab/. Rows 0-3 the scuttle (it moves sideways facing the
+ // camera, so right and left are both drawn); row 4 the pinch (claws up 32-33, snaps 34-37); row 5 hurt (40-41) then flipped.
+ crab:{asset:'crab-sheet.png',frameSize:[84,52],columns:8,scale:.5,anchor:[.5,1],offset:[0,3],animations:{
+  idle:{frames:[16]},'idle:right':{frames:[0]},'idle:left':{frames:[8]},'idle:down':{frames:[16]},'idle:up':{frames:[24]},
+  ...walkClips(8,.6),
+  attack:{frames:[32,33,34,35,36,37],loop:false},
+  hurt:{frames:[40,41],fps:8,loop:false},death:{frames:[42,43,44,45,46,47],fps:6,loop:false}
+ }},
+ // Crag goat. Rows 0-3 walk; row 4 rearing (32-33) and the headbutt (34-36), then shaking its head; row 5 hurt then down.
+ goat:{asset:'goat-sheet.png',frameSize:[130,83],columns:8,scale:.5,anchor:[.5,1],offset:[0,2],mirror:'right',mirrorDirections:{left:'right'},animations:{
+  idle:{frames:[0]},'idle:right':{frames:[0]},'idle:down':{frames:[16]},'idle:up':{frames:[24]},
+  ...walkClips(8,.9),
+  attack:{frames:[32,33,34,35,36],loop:false},
+  hurt:{frames:[40,41],fps:8,loop:false},death:{frames:[42,43,44,45,46,47],fps:6,loop:false}
+ }},
+ // River otter. Rows 0-3 swimming (its walk, since it lives in the water); rows 4-7 the land lope; row 8 the dive; row 9
+ // hurt then still. A startled otter swims off fast.
+ otter:{asset:'otter-sheet.png',frameSize:[104,61],columns:8,scale:.5,anchor:[.5,1],offset:[0,4],mirror:'right',mirrorDirections:{left:'right'},animations:{
+  idle:{frames:[0,1,2,3,4,5,6,7]},'idle:right':{frames:[0,1,2,3,4,5,6,7],cycle:1.6},'idle:down':{frames:[16,17,18,19,20,21,22,23],cycle:1.6},'idle:up':{frames:[24]},
+  ...walkClips(8,1),
+  'run:right':{frames:[0,1,2,3,4,5,6,7],cycle:.45},'run:down':{frames:[16,17,18,19,20,21,22,23],cycle:.45},'run:up':{frames:[24,25,26,27,28,29,30,31],cycle:.45},
+  hurt:{frames:[72,73],fps:8,loop:false},death:{frames:[74,75,76,77,78,79],fps:6,loop:false}
+ }},
+ // Reed duck. Rows 0-3 paddling; row 4 taking off (32-35) and flying (36-39), drawn above the water; row 5 hurt then floating.
+ duck:{asset:'duck-sheet.png',frameSize:[98,79],columns:8,scale:.5,anchor:[.5,1],offset:[0,3],mirror:'right',mirrorDirections:{left:'right'},animations:{
+  idle:{frames:[0,1,2,3,4,5,6,7],cycle:2},'idle:right':{frames:[0,1,2,3,4,5,6,7],cycle:2},'idle:down':{frames:[16]},'idle:up':{frames:[24]},
+  ...walkClips(8,1.2),
+  'run:right':{frames:[36,37,38,39],cycle:.4},'run:down':{frames:[36,37,38,39],cycle:.4},'run:up':{frames:[36,37,38,39],cycle:.4},
+  hurt:{frames:[40,41,42],fps:10,loop:false},death:{frames:[43,44,45,46,47],fps:6,loop:false}
+ }},
+ // Silver pike, seen from above under the surface. Rows 0-3 swimming; row 4 the lunge (coil 32-33, strike 34-36); row 5 hurt
+ // then belly up.
+ pike:{asset:'pike-sheet.png',frameSize:[152,58],columns:8,scale:.5,anchor:[.5,1],offset:[0,8],mirror:'right',mirrorDirections:{left:'right'},animations:{
+  idle:{frames:[0,1,2,3,4,5,6,7],cycle:2},'idle:right':{frames:[0,1,2,3,4,5,6,7],cycle:2},'idle:down':{frames:[16,17,18,19,20,21,22,23],cycle:2},'idle:up':{frames:[24,25,26,27,28,29,30,31],cycle:2},
+  ...walkClips(8,1),
+  attack:{frames:[32,33,34,35,36],loop:false},
+  hurt:{frames:[40,41,42],fps:10,loop:false},death:{frames:[43,44,45,46,47],fps:5,loop:false}
+ }},
+ // Grey seal. Rows 0-3 swimming; rows 4-7 hauling along on land; row 8 sliding into the sea; row 9 hurt then still.
+ seal:{asset:'seal-sheet.png',frameSize:[164,80],columns:8,scale:.5,anchor:[.5,1],offset:[0,4],mirror:'right',mirrorDirections:{left:'right'},animations:{
+  idle:{frames:[0,1,2,3,4,5,6,7],cycle:2.2},'idle:right':{frames:[0,1,2,3,4,5,6,7],cycle:2.2},'idle:down':{frames:[16,17,18,19,20,21,22,23],cycle:2.2},'idle:up':{frames:[24]},
+  ...walkClips(8,1.3),
+  'run:right':{frames:[0,1,2,3,4,5,6,7],cycle:.6},'run:down':{frames:[16,17,18,19,20,21,22,23],cycle:.6},'run:up':{frames:[24,25,26,27,28,29,30,31],cycle:.6},
+  hurt:{frames:[72,73,74],fps:10,loop:false},death:{frames:[75,76,77,78,79],fps:5,loop:false}
+ }},
  // 4×4 grid of 64px cells: stand, walk, leap, graze. Cells keep ~5px below the hooves.
  deer:{asset:'deer-sheet.png',frameSize:[64,64],columns:4,scale:1,anchor:[.5,1],offset:[0,25],mirror:'left',animations:{
   idle:{frames:[0,1,2,3],fps:3},walk:{frames:[4,5,6,7],fps:8},
@@ -189,4 +234,4 @@ export const STORY_ART={
 // Each scene keeps its drawn shape as the fallback, and collision never depends on this artwork.
 export const PROPS=Object.fromEntries(['cook-stove','lure-box-shelf','photo-side-table','dining-table','chair','bed-green','fishing-rod-rack','oil-lamp','door-mat','rain-barrel','firewood-stack','bed-straw-violet','stool-waterskin','chest-brass','chamber-pot','rug-rust-red','stone-hearth','pot-herb-shelf','carved-post','window-evening','rug-red-blue','round-table','fur-stool','wall-bench','chief-cabinet','tea-set','barrel','lantern-post','well','produce-stall','fish-stall','plank-bench','bench-backrest','net-rack','rope-coils','rowing-boat','rest-shelter','fire-ring-cold','apple-crate','fishing-seat','fish-trap','flower-box','campfire','training-dummy','training-dummy-worn','archery-target','weapon-rack','weapon-barrel','water-trough','water-bucket','hay-bale','spear-crate','willow-tree','log-fence','log-fence-side','training-gate-posts','fence-corner-post','training-wall','dirt-ground','glowing-sword','water-bucket-full','training-gate-arch',...['cabin','chief','lodge'].flatMap(room=>['floor','wall','wall-top','wall-side'].map(part=>`${room}-${part}`))].map(id=>[id,`props/${id}.webp`]));
 // Familiar shards on the ground reuse their inventory icons.
-for(const id of ['rabbit','fox','deer','boar','elk','bear','heron','turtle','eel','shadow-walker','moonfang','rimejaw','flitlynx'])PROPS[`shard-${id}`]=`items/shard-${id}.webp`;
+for(const id of ['rabbit','fox','deer','boar','elk','bear','heron','crab','goat','otter','duck','pike','seal','turtle','eel','shadow-walker','moonfang','rimejaw','flitlynx'])PROPS[`shard-${id}`]=`items/shard-${id}.webp`;

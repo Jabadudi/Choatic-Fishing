@@ -106,7 +106,7 @@ export function updateWildlife(world,dt){
     if(a.attackRemaining>0){
      a.state='attack';a.attackRemaining=Math.max(0,a.attackRemaining-dt);
      if(a.attackRemaining===0){
-      if(range<=a.attackRange)damage(world,target,a.attackDamage,a,angle,90);
+      if(range<=a.attackRange)damage(world,target,a.attackDamage,a,angle,a.knockback??90);
       a.attackCooldownRemaining=a.attackCooldown;
      }
     }else if(range<=a.attackRange){

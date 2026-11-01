@@ -11,6 +11,15 @@ prepare-chapter6-sprites.py, so every sheet follows the house row layout: rows 0
                   defeat (frames 3-7).
   elk-sheet.png   rows 0-3 walk, row 4 the antler swing, row 5 grazing (idle), row 6 hurt (frames 0-1) and defeat (2-7).
   bear-sheet.png  rows 0-3 walk, row 4 rearing up to roar, row 5 the claw swipe, row 6 hurt (frames 0-1) and defeat (2-7).
+  crab-sheet.png  rows 0-3 the sideways scuttle (right and left are drawn, not mirrored), row 4 the claw pinch, row 5
+                  hurt (frames 0-1) and flipping onto its back (2-7).
+  goat-sheet.png  rows 0-3 walk, row 4 rearing up and the headbutt, row 5 hurt (frames 0-1) and defeat (2-7).
+  otter-sheet.png rows 0-3 swimming at the surface, rows 4-7 the bounding walk on land, row 8 diving (frames 0-1 swim,
+                  2-4 the dive, 5-7 the tail and ripples), row 9 hurt (frames 0-1) and defeat (2-7).
+  duck-sheet.png  rows 0-3 paddling, row 4 taking off (frames 0-3) and flying (4-7), row 5 hurt (0-2) and defeat (3-7).
+  pike-sheet.png  rows 0-3 swimming, seen from above, row 4 the lunge and snap, row 5 hurt (frames 0-2) and belly up (3-7).
+  seal-sheet.png  rows 0-3 swimming, rows 4-7 hauling itself along on land, row 8 sliding into the sea, row 9 hurt (0-2)
+                  and defeat (3-7).
   heron-sheet.png rows 0-3 walk, row 4 taking off (frames 0-3) and flying (4-7), lifted off the ground; row 5 spearing a
                   fish (idle); row 6 hurt (frames 0-2) and defeat (3-7).
 
@@ -110,3 +119,50 @@ if __name__=='__main__':
   # The generated walk shrinks down each column; a stalking heron stays upright, so every frame is scaled to full height.
   ch6.pack('heron-sheet.png',[([f],42*2/ch6.height([f])) for f in frames]+[(flight,kfl),(fish,kf),(hurt,kh)])
   portrait(d+'heron_pose.png','assets/codex/heron.png')
+  # The shore crab: knee-high to Eli and wide, about 22 px tall to the raised claws.
+  d=SRC+'crab/'
+  frames=ch6.walk(d+'crab_walk-sheet.png',(8,8,8,8),'columns','body');k=22*2/ch6.height(frames[:8]);side=width(frames[:8])
+  pinch,hurt=[drop_strays(ch6.strip_column(d+f'crab_{name}-column.png',1)) for name in ('pinch','hurt')]
+  # Both strips start in the walk's stance, so each is matched to the walk by its first frame's width.
+  ch6.pack('crab-sheet.png',[(frames,k),(pinch,k*side/width(pinch[:1])),(hurt,k*side/width(hurt[:1]))])
+  portrait(d+'crab_pose.png','assets/codex/crab.png')
+  # The crag goat: waist-high to Eli, about 34 px to the horn tips walking side-on.
+  d=SRC+'goat/'
+  frames=ch6.walk(d+'goat_walk-sheet.png',(8,8,8,8),'columns','body');k=34*2/ch6.height(frames[:8]);side=width(frames[:8])
+  butt,hurt=[drop_strays(ch6.strip_column(d+f'goat_{name}-column.png',1)) for name in ('headbutt','hurt')]
+  ch6.pack('goat-sheet.png',[(frames,k),(butt,k*side/width(butt[:1])),(hurt,k*side/width(hurt[:1]))])
+  portrait(d+'goat_pose.png','assets/codex/goat.png')
+  # The otter lives in the water, so its swim set is the walk; the land lope follows for when it is ashore. About 44 px
+  # nose to tail swimming side-on. The dive and hurt strips start swimming and standing side-on, matched by length.
+  d=SRC+'otter/'
+  swim=ch6.walk(d+'otter_swim-sheet.png',(8,8,8,8),'columns','body');k=44*2/width(swim[:8]);side=width(swim[:8])
+  land=ch6.walk(d+'otter_walk-sheet.png',(8,8,8,8),'columns','body');kl=k*side/width(land[:8])
+  dive,hurt=[drop_strays(ch6.strip_column(d+f'otter_{name}-column.png',1)) for name in ('dive','hurt')]
+  ch6.pack('otter-sheet.png',[(swim,k),(land,kl),(dive,k*side/width(dive[:1])),(hurt,kl*width(land[:8])/width(hurt[:1]))])
+  portrait(d+'otter_pose.png','assets/codex/otter.png')
+  # The reed duck: about 20 px tall paddling. Its hurt strip starts paddling like the walk; the take-off is drawn at the
+  # same scale as the hurt strip, so it shares that scale.
+  d=SRC+'duck/'
+  frames=ch6.walk(d+'duck_swim-sheet.png',(8,8,8,8),'columns','body');k=20*2/ch6.height(frames[:8]);side=width(frames[:8])
+  fly,hurt=[drop_strays(ch6.strip_column(d+f'duck_{name}-column.png',1)) for name in ('takeoff','hurt')]
+  kh=k*side/width(hurt[:1])
+  # The flying frames are lifted off the water, like the heron's.
+  lift=[0,0,.3,.6,1,1,1,1];fly=[(img,ax,base+round(l*14*2/kh)) for (img,ax,base),l in zip(fly,lift)]
+  ch6.pack('duck-sheet.png',[(frames,k),(fly,kh),(hurt,kh)])
+  portrait(d+'duck_pose.png','assets/codex/duck.png')
+  # The silver pike, seen from above under the surface: about 52 px long. Its lunge and hurt strips are side-on, matched
+  # to the swim's length by their first frames.
+  d=SRC+'pike/'
+  frames=ch6.walk(d+'pike_swim-sheet.png',(8,8,8,8),'columns','body');k=52*2/width(frames[:8]);side=width(frames[:8])
+  lunge,hurt=[drop_strays(ch6.strip_column(d+f'pike_{name}-column.png',1)) for name in ('lunge','hurt')]
+  ch6.pack('pike-sheet.png',[(frames,k),(lunge,k*side/width(lunge[:1])),(hurt,k*side/width(hurt[:1]))])
+  portrait(d+'pike_pose.png','assets/codex/pike.png')
+  # The grey seal: about 64 px nose to tail-flippers swimming. Like the otter, the swim set is its walk and the land
+  # haul follows; the slide into the sea and the hurt strip start on land, matched to the land set's length.
+  d=SRC+'seal/'
+  swim=ch6.walk(d+'seal_swim-sheet.png',(8,8,8,8),'columns','body');k=64*2/width(swim[:8]);side=width(swim[:8])
+  land=ch6.walk(d+'seal_walk-sheet.png',(8,8,8,8),'columns','body');kl=k*side/width(land[:8])
+  dive,hurt=[drop_strays(ch6.strip_column(d+f'seal_{name}-column.png',1)) for name in ('dive','hurt')]
+  lw=width(land[:8])
+  ch6.pack('seal-sheet.png',[(swim,k),(land,kl),(dive,kl*lw/width(dive[:1])),(hurt,kl*lw/width(hurt[:1]))])
+  portrait(d+'seal_pose.png','assets/codex/seal.png')

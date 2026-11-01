@@ -62,11 +62,11 @@ test('the Artifact pool spends stones and puts artifacts in the backpack; a seco
 
 test('every familiar is in the Familiar pool before Eli has met it',()=>{
  const w=awake(10);
- assert.deepEqual(familiarPool(w),['rabbit','fox','deer','boar','elk','bear','heron','turtle','eel','shadow-walker','moonfang','rimejaw','flitlynx']);
+ assert.deepEqual(familiarPool(w),['rabbit','fox','deer','boar','elk','bear','heron','crab','goat','otter','duck','pike','seal','turtle','eel','shadow-walker','moonfang','rimejaw','flitlynx']);
  assert.ok(poolRates(w,'familiars').prizes.every(p=>p.inPool&&p.why===null));
  assert.equal(w.codex.has('rimejaw'),false);
- // Rimejaw is the twelfth of thirteen, so a roll of .9 picks it.
- const rare=drawWell(w,'familiars',1,sequence([.5,.1,.9]));
+ // Rimejaw is the eighteenth of nineteen, so a roll of .92 picks it.
+ const rare=drawWell(w,'familiars',1,sequence([.5,.1,.92]));
  assert.equal(rare.results[0].familiar,'rimejaw');assert.equal(w.familiars.shards.rimejaw,SHARD_COUNTS.rare);assert.match(w.message,/Rimejaw Familiar Shard ×5/);
  assert.equal(w.codex.has('rimejaw'),true,'shards for an unmet creature open its index entry');
  assert.equal(w.familiarAction('rimejaw','combine'),true);
@@ -74,10 +74,10 @@ test('every familiar is in the Familiar pool before Eli has met it',()=>{
 
 test('the Familiar pool drops a creature once it has every shard it can use',()=>{
  const w=awake(10);
- const rare=drawWell(w,'familiars',1,sequence([.5,.1,.2]));
+ const rare=drawWell(w,'familiars',1,sequence([.5,.1,.13]));
  assert.equal(rare.results[0].count,SHARD_COUNTS.rare);assert.equal(w.familiars.shards.deer,5);assert.match(w.message,/Deer Familiar Shard ×5 \(Rare\)/);
  w.familiars.shards.deer=99;
- drawWell(w,'familiars',1,sequence([.5,.5,.2]));assert.equal(w.familiars.shards.deer,100);
+ drawWell(w,'familiars',1,sequence([.5,.5,.13]));assert.equal(w.familiars.shards.deer,100);
  assert.ok(!familiarPool(w).includes('deer'),'a creature with 100 shards leaves the pool');
  assert.match(poolRates(w,'familiars').prizes.find(p=>p.id==='deer').why,/Full/);
  for(const id of familiarPool(w))w.familiars.shards[id]=100;const before=w.well.stones;
