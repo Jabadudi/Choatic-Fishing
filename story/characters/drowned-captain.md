@@ -31,7 +31,7 @@ Silent. He fights like a drilled officer: a salute when he rises, measured steps
 
 ## Open questions / not yet established
 - His name, if he had one.
-- His loot (proposed 1 Nov 2026, not yet approved): Shadow Ichor, Drowned Brass, Barnacled Plate, his rusted helm as a trophy, the Drowned Gorget artifact and the Captain's Sabre weapon.
+- Loot (approved 1 Nov 2026, see art/sprite-prompts/drowned-captain-loot.md in the project files): Shadow Ichor, Drowned Brass, Barnacled Plate, his rusted helm as a trophy, the Drowned Gorget artifact and the Captain's Sabre weapon.
 
 ## Visual reference notes
 Art delivered (staged in `/mnt/project-files/art/incoming-drowned-captain/`): reference sheet, walk set (4 columns × 8), rise, sabre sweep, tide lunge, call the drowned, and hurt/defeat strips. In the pixel art the helm is a closed visor over the black face, and the gorget and trim read copper-orange.
