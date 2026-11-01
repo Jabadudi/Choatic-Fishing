@@ -15,6 +15,7 @@ import {drawEntitySprite,drawProp,onPropLoad} from './sprites.js';
 import {CROSSROADS,CROSSROADS_ROADS,CROSSROADS_PLACES,crossroadsWaterDistance,crossroadsBlocked,onCrossroadsDeck,drawCrossroads,drawCrossroadsLabels} from './crossroads.js';
 import {leafyTree,meadowRock,meadowBush,grassDetail,wildflower} from './plains-art.js';
 import {drawGrassBase} from './grass-texture.js';
+import {groundPattern,groundKind} from './ground-textures.js';
 import {pathPattern} from './path-texture.js';
 import {DELTA} from './delta-areas.js';
 import {linkEntries} from './atlas-area.js';
@@ -101,8 +102,19 @@ function atlasScenery(gx,gy,id){
  const b=DELTA[id],x=gx*72+12+hash(gx,gy)*48,y=gy*72+12+hash(gx,gy,3)*48,r=hash(gx,gy,9);
  if(b.clear(x,y)||waterDistance(x,y,id)<95||roadDistance(x,y,id)<65||b.places.some(p=>Math.hypot(x-p.x,y-p.y)<100))return null;
  const zone=b.zoneAt(x,y),kind=zone==='forest'?(r<.74?'tree':r<.84?'bush':null):zone==='cliff'?null:zone==='rock'?(r<.3?'rock':null):zone==='sand'||zone==='clear'||zone==='dirt'?(r<.04?'rock':null):zone==='marsh'?(r<.18?'bush':r<.24?'tree':null):(r<.13?'tree':r<.21?'rock':r<.35?'bush':null);
- return kind?{x,y,kind,r:kind==='tree'?12:kind==='rock'?15:0}:null;
+ return kind?{x,y,kind,r:kind==='tree'?12:kind==='rock'?15:0,art:atlasArt(id,zone,kind,hash(gx,gy,31))}:null;
 }
+// The painted tree, plant or rock (assets/props/atlas/) for a spot, with the box it fits in (game px).
+const DARK_WOODS=new Set(['whispering-woods','deep-trail']),COAST=new Set(['arrival-bay','delta-mouth','sandbar-spits','seal-skerries','tidecave-coast','heron-point','outer-shallows','heron-islands']);
+const ATLAS_ART={oak:[150,118],pine:[100,124],birch:[80,118],'dead-tree':[110,114],bush:[60,40],fern:[56,30],reeds:[56,38],'marsh-shrub':[60,26],
+ 'mossy-boulder':[50,38],'rock-cluster':[46,26],'mossy-log':[66,28],'sea-rock':[56,34]};
+function atlasArt(id,zone,kind,r){
+ const art=kind==='tree'?(zone==='marsh'?'dead-tree':zone==='forest'?(DARK_WOODS.has(id)?(r<.35?'dead-tree':'pine'):r<.4?'pine':r<.8?'oak':'birch'):r<.6?'oak':'birch')
+  :kind==='bush'?(zone==='marsh'?(r<.6?'reeds':'marsh-shrub'):zone==='forest'?(r<.5?'bush':'fern'):'bush')
+  :zone==='sand'&&COAST.has(id)?'sea-rock':zone==='forest'&&r<.3?'mossy-log':r<.55?'mossy-boulder':'rock-cluster';
+ return {id:`atlas/${art}`,w:ATLAS_ART[art][0],h:ATLAS_ART[art][1]};
+}
+const groundShadow=(ctx,x,y,rx)=>{ctx.fillStyle='rgba(20,40,30,.28)';ctx.beginPath();ctx.ellipse(x+3,y+2,rx,rx*.32,0,0,Math.PI*2);ctx.fill();};
 export function surfaceAt(x,y,id='landing'){
  if(DELTA[id]?.deck(x,y))return 'path';
  if(id==='marsh'&&onMarshDeck(x,y))return 'path';
@@ -178,8 +190,11 @@ const underTint=d=>`rgba(40,120,140,${Math.min(.75,d*.012)})`;
 function block(ctx,x,y,w,h,base,top,depth){ctx.fillStyle='#4f5e55';ctx.fillRect(x,y,w,h);ctx.fillStyle=base;ctx.fillRect(x,y,w,h-2);ctx.fillStyle=top;ctx.fillRect(x,y,w,2);if(depth>0){ctx.fillStyle=underTint(depth);ctx.fillRect(x,y,w,h);}}
 function causeway(ctx){
  const top=CAUSEWAY_Y-22;
+ // The ford's painted stepping stones now carry the old road across, so its sunken cobbles are only drawn until they load.
+ if(!drawProp(ctx,'atlas/stepping-stone',{x:-1e5,y:-1e5,w:1,h:1})){
  for(let x=SHORE_X+56;x>SHORE_X-140;x-=8)for(let y=top;y<top+44;y+=8){const d=SHORE_X-x,j=(x*7+y*3)%5;block(ctx,x,y+(x%16?0:4),7,7,j<2?'#a9a58d':'#b8b39a','#cfc9ab',d);if(j===0&&d<10){ctx.fillStyle='#6f9a4a';ctx.fillRect(x+1,y+1,3,2);}}
  for(let x=SHORE_X+40;x>SHORE_X-160;x-=18){const d=SHORE_X-x;block(ctx,x,top-10,8,6,'#8f9c90','#c2c8b6',d);block(ctx,x,top+46,8,6,'#8f9c90','#c2c8b6',d);}
+ }
  for(const [x,y] of [[SHORE_X-8,top-12],[SHORE_X+4,top+58],[SHORE_X-20,top+60]])for(let i=0;i<4;i++){ctx.fillStyle=i%2?'#6d9a3a':'#8bb04a';ctx.fillRect(x+i*3,y-14+i,2,14-i);}
  // Milestone: soft shadow down-right, the leaning stone, then a level mound that buries its foot evenly.
  ctx.save();ctx.translate(MILESTONE.x-551,MILESTONE.y-1694);
@@ -219,12 +234,17 @@ function staticArea(ctx,left,top,width,height,id){
  // The lodge's light follows the story, so drawWilds paints it each frame instead of caching it.
  if(id==='guest-lodge')return;
  const texturedGrass=id!=='marsh'&&drawGrassBase(ctx,left,top,width,height,markStale);
- const dirt=pathPattern(ctx,markStale);
+ const dirt=pathPattern(ctx,markStale),atlasTextures=!!DELTA[id];
  for(let y=Math.floor(top/8)*8;y<top+height;y+=8)for(let x=Math.floor(left/8)*8;x<left+width;x+=8){
   const px=x+4,py=y+4,wet=waterDistance(px,py,id),road=roadDistance(px,py,id),r=hash(x,y,4),palette=paletteAt(px,py,id);
   // Visual fringes soften the shoreline and trail without changing collision geometry.
   const deck=id==='marsh'&&onMarshDeck(px,py)||id==='crossroads'&&onCrossroadsDeck(px,py)||id==='village'&&onVillageDeck(px,py)||!!DISTRICTS[id]?.deck(px,py),water=wet<0&&!deck,path=!water&&(deck||road<24+r*12),zone=DELTA[id]?.zoneAt(px,py),sand=!water&&!path&&(zone==='sand'||wet< (DELTA[id]?30:coastDistance(px,py)>-70?58:20)+r*8),ground=!water&&!path&&!sand&&(zone==='rock'||zone==='marsh'||zone==='dirt'||zone==='cliff');
-  if(water||path||sand||ground||!texturedGrass){ctx.fillStyle=water?waterColor(wet,id==='landing'&&coastDistance(px,py)>0,id==='marsh'):path?['#d6bd7a','#dfc885','#d9c17e'][Math.floor(r*3)]:sand?(id==='marsh'?['#8c8b60','#a2a074','#929469']:['#c5ba77','#d1c487','#cabe7d'])[Math.floor(r*3)]:palette[Math.floor(hash(Math.floor(x/48),Math.floor(y/48))*3)];ctx.fillRect(x,y,8,8);}
+  // The atlas areas paint their ground and water textures where they have one; every other outdoor area (the Landing,
+  // Willowback, the marsh, the Crossroads) paints its water with them and keeps its own ground.
+  const texture=atlasTextures?groundPattern(ctx,groundKind(id,{water,path,sand,zone,wet,r}),markStale)
+   :water&&groundPattern(ctx,waterKind(id,wet,r,px,py),markStale);
+  if(texture){ctx.fillStyle=texture;ctx.fillRect(x,y,8,8);continue;}
+  else if(water||path||sand||ground||!texturedGrass){ctx.fillStyle=water?waterColor(wet,id==='landing'&&coastDistance(px,py)>0,id==='marsh'):path?['#d6bd7a','#dfc885','#d9c17e'][Math.floor(r*3)]:sand?(id==='marsh'?['#8c8b60','#a2a074','#929469']:['#c5ba77','#d1c487','#cabe7d'])[Math.floor(r*3)]:palette[Math.floor(hash(Math.floor(x/48),Math.floor(y/48))*3)];ctx.fillRect(x,y,8,8);}
   if(path&&dirt){ctx.fillStyle=dirt;ctx.fillRect(x,y,8,8);}
   if(water)continue;
   if(path||sand){
@@ -236,12 +256,17 @@ function staticArea(ctx,left,top,width,height,id){
  for(let y=Math.floor((top-24)/24)*24;y<top+height+24;y+=24)for(let x=Math.floor((left-24)/24)*24;x<left+width+24;x+=24){
   const px=x+hash(x,y)*17,py=y+hash(x,y,2)*17,wet=waterDistance(px,py,id),road=roadDistance(px,py,id),r=hash(x,y,19);
   if(id==='marsh')continue;
-  if(wet>35&&road>36&&r>.73){for(let i=0;i<3;i++)wildflower(ctx,Math.round(px+hash(x,i,3)*16),Math.round(py+hash(y,i,4)*13),i!==2);}
+  // Flowers grow in grass; the textured sand, stone and marsh of the atlas areas stay bare.
+  const bare=atlasTextures&&!['meadow','clear',undefined].includes(DELTA[id].zoneAt(px,py));
+  if(wet>35&&road>36&&r>.73&&!bare){for(let i=0;i<3;i++)wildflower(ctx,Math.round(px+hash(x,i,3)*16),Math.round(py+hash(y,i,4)*13),i!==2);}
   else if(wet>0&&wet<17&&r>.35)rock(ctx,px,py,true);
   else if(wet< -18&&wet> -110&&coastDistance(px,py)<0&&r>.8)lilyPad(ctx,Math.round(px),Math.round(py),r>.93);
   else if(wet< -2&&wet> -16&&r>.55)reeds(ctx,Math.round(px),Math.round(py),x);
  }
- for(let gy=Math.floor(top/72)-2;gy<Math.ceil((top+height)/72)+2;gy++)for(let gx=Math.floor(left/72)-2;gx<Math.ceil((left+width)/72)+2;gx++){const o=sceneryAt(gx,gy,id);if(!o)continue;if(o.kind==='tree')tree(ctx,o.x,o.y,false,typeof document!=='undefined'?'trunk':'all');else if(o.kind==='rock')rock(ctx,o.x,o.y);else meadowBush(ctx,o.x,o.y);}
+ for(let gy=Math.floor(top/72)-2;gy<Math.ceil((top+height)/72)+2;gy++)for(let gx=Math.floor(left/72)-2;gx<Math.ceil((left+width)/72)+2;gx++){const o=sceneryAt(gx,gy,id);if(!o)continue;
+  // Painted atlas scenery: the ground shadow here, rocks and plants too; trees stand in the depth-sorted layer.
+  if(o.art&&drawProp(ctx,o.art.id,{x:-1e4,y:-1e4,w:1,h:1})){groundShadow(ctx,o.x,o.y,o.art.w*(o.kind==='tree'?.24:.36));if(o.kind!=='tree')drawProp(ctx,o.art.id,{x:o.x,y:o.y+3,w:o.art.w,h:o.art.h});continue;}
+  if(o.kind==='tree')tree(ctx,o.x,o.y,false,typeof document!=='undefined'?'trunk':'all');else if(o.kind==='rock')rock(ctx,o.x,o.y);else meadowBush(ctx,o.x,o.y);}
  if(id==='marsh')drawMarshGround(ctx,left,top,width,height);
  if(id==='village')drawVillageGround(ctx);
  if(DISTRICTS[id])drawDistrictGround(ctx,id);
@@ -257,7 +282,9 @@ function staticArea(ctx,left,top,width,height,id){
 const chunks=new Map(),CHUNK=512,SEAM=2,MAX_CHUNKS=40,AHEAD=CHUNK/2;
 export const clearTerrainCache=()=>chunks.clear();
 // Image loads arrive in bursts, so they mark the cache stale and the next frame repaints once instead of once per image.
-let stale=false;const markStale=()=>{stale=true;};
+let stale=false;const staleListeners=new Set(),markStale=()=>{stale=true;for(const fn of staleListeners)fn();};
+// Other caches of painted ground (the area maps) listen so they repaint once late images arrive.
+export const onTerrainStale=fn=>staleListeners.add(fn);
 onPropLoad(markStale);
 export const cachedChunkCount=()=>chunks.size;
 function buildChunk(key,cx,cy,id){
@@ -303,7 +330,7 @@ export function crownSprite(big=false){
 const fades=new Map(),slots=[],order=[];let fadeTime=0;
 export const canopyAlpha=(gx,gy)=>fades.get(`${gx},${gy}`)??1;
 export const landmarkCanopyAlpha=id=>fades.get(`landmark:${id}`)??1;
-const slot=i=>slots[i]??=({y:0,kind:'',x:0,oy:0,key:'',sway:0,big:false,near:false,ref:null});
+const slot=i=>{const it=slots[i]??=({y:0,kind:'',x:0,oy:0,key:'',sway:0,big:false,near:false,ref:null,art:null});it.art=null;return it;};
 const nearActor=(x,y,actors)=>actors.some(a=>Math.abs(a.ref.x-x)<70&&a.ref.y>y-130&&a.ref.y<y+40);
 // A canopy that stands in front of the player and overlaps them eases to 30% so they stay visible.
 function fadeCanopy(key,x,y,big,p,step){
@@ -311,20 +338,22 @@ function fadeCanopy(key,x,y,big,p,step){
  if(next>.999)fades.delete(key);else fades.set(key,next);
 }
 function pushTree(it,x,y,key,sway,big,near){it.kind='tree';it.x=x;it.oy=y;it.y=y;it.key=key;it.sway=sway;it.big=big;it.near=near;}
-export function drawDepthSorted(ctx,world,view,actors,drawActor){
- const id=world.areaId||'landing',p=world.player,sprite=crownSprite(),bigSprite=crownSprite(true),t=world.elapsed||0,step=Math.min(1,Math.max(0,t-fadeTime)*8);fadeTime=t;
+// still: a one-off picture (the area maps): canopies stay solid and the live fade state is left alone.
+export function drawDepthSorted(ctx,world,view,actors,drawActor,{still=false}={}){
+ const id=world.areaId||'landing',p=world.player,sprite=crownSprite(),bigSprite=crownSprite(true),t=world.elapsed||0,step=Math.min(1,Math.max(0,t-fadeTime)*8);if(!still)fadeTime=t;
  let n=0;
  for(const a of actors){const it=slot(n++);it.kind='actor';it.y=a.y;it.ref=a.ref;}
  for(let gy=Math.floor(view.top/72)-1;gy<=Math.ceil((view.bottom+100)/72);gy++)for(let gx=Math.floor(view.left/72)-1;gx<=Math.ceil(view.right/72)+1;gx++){
   const o=sceneryAt(gx,gy,id);if(!o)continue;
   const near=nearActor(o.x,o.y,actors);if(o.kind!=='tree'&&!near)continue;if(o.kind==='tree'&&!near&&!sprite)continue;
   const it=slot(n++);
-  if(o.kind==='tree'){const key=`${gx},${gy}`;pushTree(it,o.x,o.y,key,hash(gx,gy,21)*6,false,near);if(sprite)fadeCanopy(key,o.x,o.y,false,p,step);}
+  if(o.kind==='tree'){const key=`${gx},${gy}`;pushTree(it,o.x,o.y,key,hash(gx,gy,21)*6,false,near);if(sprite&&!still)fadeCanopy(key,o.x,o.y,false,p,step);}
   else{it.kind=o.kind;it.x=o.x;it.oy=o.y;it.y=o.y+(o.kind==='rock'?8:4);}
+  it.art=o.art;
  }
  // Landmark trees (the Hollow Tree) sort the same way; their trunk base stays in the landmark layer.
  if(bigSprite)for(const place of placesFor(id))if(place.kind==='tree'&&place.x>view.left-120&&place.x<view.right+120&&place.y>view.top-40&&place.y<view.bottom+240){
-  const key=`landmark:${place.id}`;pushTree(slot(n++),place.x,place.y,key,hash(place.x,place.y,21)*6,true,nearActor(place.x,place.y,actors));fadeCanopy(key,place.x,place.y,true,p,step);
+  const key=`landmark:${place.id}`;pushTree(slot(n++),place.x,place.y,key,hash(place.x,place.y,21)*6,true,nearActor(place.x,place.y,actors));if(!still)fadeCanopy(key,place.x,place.y,true,p,step);
  }
  if(id==='marsh')for(const object of MARSH_OBJECTS)if(object.x>view.left-180&&object.x<view.right+180&&object.y>view.top-30&&object.y<view.bottom+200){const it=slot(n++);it.kind='marsh';it.y=object.y+12;it.ref=object;}
  if(DISTRICTS[id])for(const object of [...DISTRICTS[id].buildings,...DISTRICTS[id].props])if(object.x>view.left-200&&object.x<view.right+200&&object.y>view.top-30&&object.y<view.bottom+220){const it=slot(n++);it.kind='village';it.y=object.y+18;it.ref=object;}
@@ -338,12 +367,17 @@ export function drawDepthSorted(ctx,world,view,actors,drawActor){
   else if(it.kind==='village')drawVillageObject(ctx,it.ref,t);
   else if(it.kind==='atlas')drawAtlasProp(ctx,it.ref,t);
   else if(it.kind==='actor')drawActor(ctx,it.ref);
+  else if(it.art&&drawProp(ctx,it.art.id,{x:-1e4,y:-1e4,w:1,h:1})){
+   // A painted tree fades like a canopy when it stands in front of Eli.
+   if(it.kind==='tree')ctx.globalAlpha=fades.get(it.key)??1;
+   drawProp(ctx,it.art.id,{x:it.x,y:it.oy+3,w:it.art.w,h:it.art.h});ctx.globalAlpha=1;
+  }
   else if(it.kind==='rock')meadowRock(ctx,it.x,it.oy,false,false);
   else if(it.kind==='bush')meadowBush(ctx,it.x,it.oy,false);
   else{
    const crown=it.big?bigSprite:sprite,k=it.big?2:1;
    if(it.near)leafyTree(ctx,it.x,it.oy,it.big,'stem');
-   if(crown){const sway=Math.round(Math.sin(t*1.2+it.sway)*1.5);ctx.globalAlpha=fades.get(it.key)??1;ctx.drawImage(crown,Math.round(it.x)-48*k+sway,Math.round(it.oy)-100*k);ctx.globalAlpha=1;}
+   if(crown){const sway=Math.round(Math.sin(t*1.2+it.sway)*1.5);ctx.globalAlpha=still?1:fades.get(it.key)??1;ctx.drawImage(crown,Math.round(it.x)-48*k+sway,Math.round(it.oy)-100*k);ctx.globalAlpha=1;}
   }
  }
 }
@@ -358,8 +392,28 @@ export function shorePoints(id,cx,cy){
  for(let y=Math.ceil(cy*CHUNK/18)*18;y<(cy+1)*CHUNK;y+=18)for(let x=Math.ceil(cx*CHUNK/18)*18;x<(cx+1)*CHUNK;x+=18)if(waterDistance(x,y,id)< -20&&!onDock(x,y,id))points.sparkle.push([x,y,hash(x,y,11)]);
  shores.set(key,points);if(shores.size>MAX_SHORES)shores.delete(shores.keys().next().value);return points;
 }
+// Water texture outside the atlas areas: a turquoise shallow band at the shore, then open sea off the Landing's coast and
+// the port, river water in the lakes, rivers and the marsh's murky channels.
+function waterKind(id,wet,r,x,y){
+ if(id==='marsh')return 'river';
+ if(wet> -38+r*12)return 'shallow';
+ return id==='landing'&&coastDistance(x,y)>0||id==='village-port'?'sea':'river';
+}
+// The falls and rapids the atlas areas name: each sits on the water nearest its label.
+const FALLS=/^(The Stonefall|The Falls|The Rush|Sluice Falls|Top Falls|The Cascade|Middle Falls|Lower Falls)$/,falls=new Map();
+export function fallsFor(id){
+ if(!DELTA[id]||id==='landing')return [];
+ let list=falls.get(id);if(list)return list;list=[];
+ for(const p of DELTA[id].places){
+  if(!FALLS.test(p.name||''))continue;let best=null,bd=Infinity;
+  for(let r=0;r<=320&&!best;r+=8)for(let k=0;k<32;k++){const x=p.x+Math.cos(k/32*Math.PI*2)*r,y=p.y+Math.sin(k/32*Math.PI*2)*r,d=waterDistance(x,y,id);if(d< -10&&r<bd){bd=r;best={x:Math.round(x),y:Math.round(y)};}}
+  if(best)list.push(best);
+ }
+ falls.set(id,list);return list;
+}
 function drawWater(ctx,world,view,id){
  if(id==='windchime'||interior(id))return;const t=world.elapsed||0;ctx.save();
+ for(const f of fallsFor(id))if(f.x>view.left-80&&f.x<view.right+80&&f.y>view.top-80&&f.y<view.bottom+80)drawEntitySprite(ctx,'waterfall',{x:f.x,y:f.y,state:'idle',time:t+f.x*.01});
  for(let cy=Math.floor(view.top/CHUNK);cy<=Math.floor(view.bottom/CHUNK);cy++)for(let cx=Math.floor(view.left/CHUNK);cx<=Math.floor(view.right/CHUNK);cx++){
   const {foam,sparkle}=shorePoints(id,cx,cy);
   ctx.fillStyle='#fffff5';
@@ -393,9 +447,10 @@ function drawLandmark(ctx,p,t=0){
   for(let i=0;i<4;i++){const k=(t/2+i/4)%1;ctx.fillStyle=`rgba(225,250,240,${.8*(1-k)})`;ctx.fillRect(Math.round(x-15+i*10+Math.sin(t*3+i)*2),Math.round(y+4-k*22),3,3);}
  }
 }
-export function drawWilds(ctx,world,view={left:world.player.x-700,right:world.player.x+700,top:world.player.y-500,bottom:world.player.y+500}){
+// still: paint the ground straight onto ctx without the chunk cache (the area maps use it, so they never evict the live chunks).
+export function drawWilds(ctx,world,view={left:world.player.x-700,right:world.player.x+700,top:world.player.y-500,bottom:world.player.y+500},{still=false}={}){
  const id=world.areaId||'landing',area=areaFor(id);ctx.imageSmoothingEnabled=false;
- if(typeof document!=='undefined')drawChunks(ctx,view,id);else staticArea(ctx,view.left,view.top,view.right-view.left,view.bottom-view.top,id);
+ if(typeof document!=='undefined'&&!still)drawChunks(ctx,view,id);else staticArea(ctx,view.left,view.top,view.right-view.left,view.bottom-view.top,id);
  if(id==='guest-lodge'){const stage=world.story?.stage;drawGuestLodge(ctx,{night:['ch5-night','ch5-sleep','ch6-night','ch6-complete'].includes(stage),morning:['ch5-morning','ch6-door'].includes(stage)});if(stage==='ch5-morning'&&!world.story.scene)drawFloatingWriting(ctx,world.player,world.elapsed||0);}
  // The training yard in the farm, drawn each frame because its light and props follow the story.
  if(id===FARM_ID&&view.right>YARD.x&&view.left<YARD.x+YARD.w&&view.bottom>YARD.y&&view.top<YARD.y+YARD.h+60){ctx.save();ctx.translate(YARD.x,YARD.y);drawTrainingGround(ctx,{t:world.elapsed||0,sword:['ch6-buckets'].includes(world.story?.stage)});ctx.restore();}
@@ -433,14 +488,25 @@ export function drawExplorer(ctx,p,time=0){
  ctx.fillStyle=art.shirt||'#71885f';ctx.fillRect(x-11,y-8,22,17);ctx.fillStyle='#a2b580';ctx.fillRect(x-8,y-8,7,10);ctx.fillStyle='#c6a276';ctx.fillRect(x-7,y-20,14,12);ctx.fillStyle=art.hair||'#554739';ctx.fillRect(x-9,y-23,18,6);ctx.fillStyle='#d0b77e';if(art.hat!==false)ctx.fillRect(x-13,y-22,26,4);ctx.fillStyle='#775b44';ctx.fillRect(x-6,y-5,13,14);ctx.fillStyle='#c78066';ctx.fillRect(x-8,y-8,17,3);ctx.fillRect(x-11,y-5,5,8);
  ctx.strokeStyle='#c6ae78';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+10,y);ctx.lineTo(x+Math.cos(p.angle)*30,y+Math.sin(p.angle)*30);ctx.stroke();
 }
-export function paintAtlas(ctx,width,height,player,discovered=new Set(),id='landing'){
+// The blocky map: one colour per ground cell. The area maps show it while the real art is still being painted.
+export function paintAtlasGround(ctx,width,height,id='landing'){
  const area=areaFor(id),sx=width/area.width,sy=height/area.height,step=24;ctx.clearRect(0,0,width,height);
  for(let y=0;y<area.height;y+=step)for(let x=0;x<area.width;x+=step){const surface=surfaceAt(x+12,y+12,id);ctx.fillStyle=surface==='sea'?'#29596d':surface==='water'?(id==='marsh'?'#547e75':'#65a8af'):surface==='sand'?'#c9b78a':surface==='path'?'#c3ac79':paletteAt(x,y,id)[1];ctx.fillRect(x*sx,y*sy,step*sx+1,step*sy+1);}
  if(id==='village')paintVillageBuildings(ctx,sx,sy);
  if(DISTRICTS[id])paintBuildings(ctx,DISTRICTS[id].buildings,sx,sy);
+}
+// Place names, exits and doors over an area map of width × height.
+export function paintAtlasLabels(ctx,width,height,discovered=new Set(),id='landing'){
+ const area=areaFor(id),sx=width/area.width,sy=height/area.height;
  for(const p of placesFor(id)){ctx.fillStyle=discovered.has(p.id)?'#e6bd65':'#e3e1c9';ctx.fillRect(p.x*sx-2,p.y*sy-2,4,4);if(width>400){ctx.font='bold 12px monospace';ctx.textAlign='center';ctx.fillStyle='#203c38';ctx.fillText(p.name,p.x*sx+1,p.y*sy-9);ctx.fillStyle='#fff0c9';ctx.fillText(p.name,p.x*sx,p.y*sy-10);}}
- for(const e of area.exits){const horizontal=e.edge==='east'||e.edge==='west',x=horizontal?(e.edge==='east'?width-8:8):(e.from+e.to)/2*sx,y=horizontal?(e.from+e.to)/2*sy:e.edge==='north'?18:height-10;ctx.fillStyle='#f0d68b';ctx.textAlign=horizontal?(e.edge==='east'?'right':'left'):'center';ctx.font=`bold ${width>400?12:8}px monospace`;ctx.fillText(`${{north:'↑',south:'↓',west:'←',east:'→'}[e.edge]} ${e.label}`,x,y);}
- for(const q of area.portals||[]){ctx.fillStyle='#f0d68b';ctx.textAlign='center';ctx.font=`bold ${width>400?12:8}px monospace`;ctx.fillText(`◆ ${q.label}`,q.x*sx,q.y*sy-6);}
+ for(const e of area.exits){const horizontal=e.edge==='east'||e.edge==='west',x=horizontal?(e.edge==='east'?width-8:8):(e.from+e.to)/2*sx,y=horizontal?(e.from+e.to)/2*sy:e.edge==='north'?18:height-10;ctx.fillStyle='#f0d68b';ctx.textAlign=horizontal?(e.edge==='east'?'right':'left'):'center';ctx.font=`bold ${width>400?12:8}px monospace`;edgeText(ctx,`${{north:'↑',south:'↓',west:'←',east:'→'}[e.edge]} ${e.label}`,x,y);}
+ for(const q of area.portals||[]){ctx.fillStyle='#f0d68b';ctx.textAlign='center';ctx.font=`bold ${width>400?12:8}px monospace`;edgeText(ctx,`◆ ${q.label}`,q.x*sx,q.y*sy-6);}
+}
+// Exit and door signs sit on busy art, so they get a dark outline.
+function edgeText(ctx,text,x,y){ctx.save();ctx.lineWidth=3;ctx.lineJoin='round';ctx.strokeStyle='#14262a';ctx.strokeText(text,x,y);ctx.restore();ctx.fillText(text,x,y);}
+export function paintAtlas(ctx,width,height,player,discovered=new Set(),id='landing'){
+ paintAtlasGround(ctx,width,height,id);paintAtlasLabels(ctx,width,height,discovered,id);
+ const area=areaFor(id),sx=width/area.width,sy=height/area.height;
  if(player){ctx.fillStyle='#fff4be';ctx.beginPath();ctx.arc(player.x*sx,player.y*sy,5,0,Math.PI*2);ctx.fill();}
 }
 

@@ -31,7 +31,7 @@ function itemValid(item){return item&&typeof item.id==='string'&&item.id.length<
 // An artifact names a known artifact, matches its name and carries a known rarity.
 const artifactValid=item=>item.artifact===undefined&&item.rarity===undefined||Object.hasOwn(ARTIFACTS,item.artifact)&&ARTIFACTS[item.artifact].name===item.name&&RARITIES.includes(item.rarity);
 const slotValid=key=>key===null||typeof key==='string'&&Object.hasOwn(ARTIFACTS,key.split(':')[0])&&RARITIES.includes(key.split(':')[1])&&key.split(':').length===2;
-const ANIMAL_FIELDS=['x','y','health','state','time','wait','alert','direction','seed','hopDuration','hopDistance','anger','attackerId','attackRemaining','attackCooldownRemaining','threat','deathRemaining'];
+const ANIMAL_FIELDS=['x','y','health','state','time','wait','alert','direction','seed','hopDuration','hopDistance','anger','attackerId','attackRemaining','attackCooldownRemaining','roarRemaining','threat','deathRemaining'];
 export function captureSave(world,reason='autosave',now=Date.now()){
  if(!world?.adventure)fail('Only exploration progress can be saved.');
  const p=world.player;

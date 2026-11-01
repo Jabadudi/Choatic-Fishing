@@ -76,7 +76,8 @@ export function updateProjectiles(world,dt){
   if(shot.kind==='bomb'){
    if(shot.travel>=shot.range){world.effects.push({name:'explosion',x:shot.x,y:shot.y,angle:0,life:.55});for(const target of combatTargets(world)){if(target!==shot.owner&&Math.hypot(target.x-shot.x,target.y-shot.y)<100)damage(world,target,shot.damage,shot.owner,Math.atan2(target.y-shot.y,target.x-shot.x),shot.knockback);}shot.done=true;}
   }else{
-   const hits=combatTargets(world).filter(target=>target!==shot.owner&&target.health>0&&!shot.hit.has(target.id)).map(target=>({target,t:shotHit(shot,target,startX,startY)})).filter(hit=>hit.t!==null).sort((a,b)=>a.t-b.t);
+   // A monster's arrow only ever hits Eli.
+   const hits=(shot.hostile?[world.player]:combatTargets(world)).filter(target=>target!==shot.owner&&target.health>0&&!shot.hit.has(target.id)).map(target=>({target,t:shotHit(shot,target,startX,startY)})).filter(hit=>hit.t!==null).sort((a,b)=>a.t-b.t);
    for(const {target} of hits){
     damage(world,target,shot.damage,shot.owner,shot.angle,shot.knockback);shot.hit.add(target.id);if(shot.kind!=='wave'){shot.done=true;break;}
    }

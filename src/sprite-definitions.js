@@ -18,6 +18,16 @@ export function walkClips(frames,cycle,{layout='rows'}={}){
  const at=(d,i)=>layout==='columns'?i*4+d:d*8+i;
  return Object.fromEntries(['right','left','down','up'].map((dir,d)=>[`walk:${dir}`,{frames:Array.from({length:counts[d]},(_,i)=>at(d,i)),cycle}]));
 }
+// A shadow walker kind's sheet: walk rows 0-3, then the attack and hurt rows (first frame index of each).
+function shadowKind(id,frameSize,offset,{attack,hurt,cycle,extra={}}){
+ return {asset:`${id}-sheet.png`,frameSize,columns:8,scale:.5,anchor:[.5,1],offset:[0,offset],mirror:'right',mirrorDirections:{left:'right'},animations:{
+  idle:{frames:[0]},'idle:right':{frames:[0]},'idle:down':{frames:[16]},'idle:up':{frames:[24]},
+  ...walkClips(8,cycle),
+  raise:{frames:[attack,attack+1,attack+2,attack+3],loop:false},swing:{frames:[attack+2,attack+3,attack+4,attack+5,attack+6,attack+7],fps:8,loop:false},
+  hurt:{frames:[hurt,hurt+1],fps:8,loop:false},death:{frames:[hurt+1,hurt+2,hurt+3,hurt+4,hurt+5,hurt+6,hurt+7],fps:6,loop:false},
+  ...extra
+ }};
+}
 // How long Brume's bow and lying down take, in seconds. The familiar times them from these.
 export const BRUME_TIMING=Object.freeze({bow:1.6,lieDown:2.4,restBeforeSleep:6});
 export const VILLAGER_LOOKS=[
@@ -110,6 +120,119 @@ export const SPRITES={
  }},
  player:{asset:null,scale:1,anchor:[.5,1],offset:[0,15]},
  mara:{asset:null,scale:1,anchor:[.5,1],offset:[0,14]},
+ // Red fox, cut by scripts/prepare-animal-sprites.py from art/sprites/creatures/fox/. Rows 0-3 walk; row 4 the flee run;
+ // row 5 sitting and sniffing; row 6 hurt (48-49) then lying down (50-55). The run, sniff and hurt strips face right.
+ // Running away up or down the screen plays the walk faster.
+ fox:{asset:'fox-sheet.png',frameSize:[118,65],columns:8,scale:.5,anchor:[.5,1],offset:[0,3],mirror:'right',mirrorDirections:{left:'right'},animations:{
+  idle:{frames:[40,41,42,43,44,45,46,47],cycle:4},'idle:right':{frames:[40,41,42,43,44,45,46,47],cycle:4},'idle:down':{frames:[16]},'idle:up':{frames:[24]},
+  ...walkClips(8,.9),
+  'run:right':{frames:[32,33,34,35,36,37,38,39],cycle:.5},'run:down':{frames:[16,17,18,19,20,21,22,23],cycle:.45},'run:up':{frames:[24,25,26,27,28,29,30,31],cycle:.45},
+  hurt:{frames:[48,49],fps:8,loop:false},death:{frames:[50,51,52,53,54,55],fps:6,loop:false}
+ }},
+ // Bristleback boar, cut by the same script from art/sprites/creatures/boar/. Rows 0-3 walk (7 frames a side); row 4 the
+ // charge: scraping a hoof (32-33), the rush (34-37), the tusk toss (38) and a skid (39); row 5 hurt (40-42) then down (43-47).
+ // An angry boar chasing Eli rushes on the charge frames; the attack scrapes, then tosses its tusks as it lands.
+ boar:{asset:'boar-sheet.png',frameSize:[178,70],columns:8,scale:.5,anchor:[.5,1],offset:[0,3],mirror:'right',mirrorDirections:{left:'right'},animations:{
+  idle:{frames:[0]},'idle:right':{frames:[0]},'idle:down':{frames:[16]},'idle:up':{frames:[24]},
+  ...walkClips(7,1.1),
+  'run:right':{frames:[34,35,36,37],cycle:.4},'run:down':{frames:[16,17,18,19,20,21,22],cycle:.5},'run:up':{frames:[24,25,26,27,28,29,30],cycle:.5},
+  attack:{frames:[32,33,32,33,38],loop:false},
+  hurt:{frames:[41,42],fps:8,loop:false},death:{frames:[43,44,45,46,47],fps:6,loop:false}
+ }},
+ // Grey elk, cut by the same script from art/sprites/creatures/elk/. Rows 0-3 walk; row 4 the antler swing (head down
+ // 32-34, the sweep 35-37); row 5 grazing, its idle side-on; row 6 hurt (48-49) then sinking down to lie still (50-55).
+ elk:{asset:'elk-sheet.png',frameSize:[280,174],columns:8,scale:.5,anchor:[.5,1],offset:[0,3],mirror:'right',mirrorDirections:{left:'right'},animations:{
+  idle:{frames:[40,41,42,43,44,45,46,47],cycle:5},'idle:right':{frames:[40,41,42,43,44,45,46,47],cycle:5},'idle:down':{frames:[16]},'idle:up':{frames:[24]},
+  ...walkClips(8,1.2),
+  attack:{frames:[32,33,34,35,36,37],loop:false},
+  hurt:{frames:[48,49],fps:8,loop:false},death:{frames:[50,51,52,53,54,55],fps:5,loop:false}
+ }},
+ // Brown bear, cut by the same script from art/sprites/creatures/bear/. Rows 0-3 walk; row 4 rearing up to roar (the roar
+ // itself 35-37); row 5 the claw swipe (paw up 41-42, the sweep 43-45); row 6 hurt (48-49) then slumping onto its side (50-55).
+ // A bear that has just been hurt rears and roars before it comes after Eli; the attack lifts the paw and lands on the sweep.
+ bear:{asset:'bear-sheet.png',frameSize:[208,140],columns:8,scale:.5,anchor:[.5,1],offset:[0,3],mirror:'right',mirrorDirections:{left:'right'},animations:{
+  idle:{frames:[0]},'idle:right':{frames:[0]},'idle:down':{frames:[16]},'idle:up':{frames:[24]},
+  ...walkClips(8,1.4),
+  roar:{frames:[32,33,34,35,36,37,38,39],loop:false},
+  attack:{frames:[40,41,42,43,44],loop:false},
+  hurt:{frames:[48,49],fps:8,loop:false},death:{frames:[50,51,52,53,54,55],fps:5,loop:false}
+ }},
+ // Grey heron, cut by the same script from art/sprites/creatures/heron/. Rows 0-3 walk; row 4 taking off (32-35) and flying
+ // (36-39), drawn above the ground; row 5 spearing a fish, its idle side-on; row 6 hurt (48-50) then falling (51-55).
+ // A startled heron flies away whichever way it goes.
+ heron:{asset:'heron-sheet.png',frameSize:[188,115],columns:8,scale:.5,anchor:[.5,1],offset:[0,2],mirror:'right',mirrorDirections:{left:'right'},animations:{
+  idle:{frames:[40,41,42,43,44,45,46,47],cycle:5},'idle:right':{frames:[40,41,42,43,44,45,46,47],cycle:5},'idle:down':{frames:[16]},'idle:up':{frames:[24]},
+  ...walkClips(8,1.6),
+  'run:right':{frames:[36,37,38,39],cycle:.5},'run:down':{frames:[36,37,38,39],cycle:.5},'run:up':{frames:[36,37,38,39],cycle:.5},
+  hurt:{frames:[48,49,50],fps:12,loop:false},death:{frames:[51,52,53,54,55],fps:6,loop:false}
+ }},
+ // Shore crab, cut by the same script from art/sprites/creatures/crab/. Rows 0-3 the scuttle (it moves sideways facing the
+ // camera, so right and left are both drawn); row 4 the pinch (claws up 32-33, snaps 34-37); row 5 hurt (40-41) then flipped.
+ crab:{asset:'crab-sheet.png',frameSize:[84,52],columns:8,scale:.5,anchor:[.5,1],offset:[0,3],animations:{
+  idle:{frames:[16]},'idle:right':{frames:[0]},'idle:left':{frames:[8]},'idle:down':{frames:[16]},'idle:up':{frames:[24]},
+  ...walkClips(8,.6),
+  attack:{frames:[32,33,34,35,36,37],loop:false},
+  hurt:{frames:[40,41],fps:8,loop:false},death:{frames:[42,43,44,45,46,47],fps:6,loop:false}
+ }},
+ // Crag goat. Rows 0-3 walk; row 4 rearing (32-33) and the headbutt (34-36), then shaking its head; row 5 hurt then down.
+ goat:{asset:'goat-sheet.png',frameSize:[130,83],columns:8,scale:.5,anchor:[.5,1],offset:[0,2],mirror:'right',mirrorDirections:{left:'right'},animations:{
+  idle:{frames:[0]},'idle:right':{frames:[0]},'idle:down':{frames:[16]},'idle:up':{frames:[24]},
+  ...walkClips(8,.9),
+  attack:{frames:[32,33,34,35,36],loop:false},
+  hurt:{frames:[40,41],fps:8,loop:false},death:{frames:[42,43,44,45,46,47],fps:6,loop:false}
+ }},
+ // River otter. Rows 0-3 swimming (its walk, since it lives in the water); rows 4-7 the land lope; row 8 the dive; row 9
+ // hurt then still. A startled otter swims off fast.
+ otter:{asset:'otter-sheet.png',frameSize:[104,61],columns:8,scale:.5,anchor:[.5,1],offset:[0,4],mirror:'right',mirrorDirections:{left:'right'},animations:{
+  idle:{frames:[0,1,2,3,4,5,6,7]},'idle:right':{frames:[0,1,2,3,4,5,6,7],cycle:1.6},'idle:down':{frames:[16,17,18,19,20,21,22,23],cycle:1.6},'idle:up':{frames:[24]},
+  ...walkClips(8,1),
+  'run:right':{frames:[0,1,2,3,4,5,6,7],cycle:.45},'run:down':{frames:[16,17,18,19,20,21,22,23],cycle:.45},'run:up':{frames:[24,25,26,27,28,29,30,31],cycle:.45},
+  hurt:{frames:[72,73],fps:8,loop:false},death:{frames:[74,75,76,77,78,79],fps:6,loop:false}
+ }},
+ // Reed duck. Rows 0-3 paddling; row 4 taking off (32-35) and flying (36-39), drawn above the water; row 5 hurt then floating.
+ duck:{asset:'duck-sheet.png',frameSize:[98,79],columns:8,scale:.5,anchor:[.5,1],offset:[0,3],mirror:'right',mirrorDirections:{left:'right'},animations:{
+  idle:{frames:[0,1,2,3,4,5,6,7],cycle:2},'idle:right':{frames:[0,1,2,3,4,5,6,7],cycle:2},'idle:down':{frames:[16]},'idle:up':{frames:[24]},
+  ...walkClips(8,1.2),
+  'run:right':{frames:[36,37,38,39],cycle:.4},'run:down':{frames:[36,37,38,39],cycle:.4},'run:up':{frames:[36,37,38,39],cycle:.4},
+  hurt:{frames:[40,41,42],fps:10,loop:false},death:{frames:[43,44,45,46,47],fps:6,loop:false}
+ }},
+ // Silver pike, seen from above under the surface. Rows 0-3 swimming; row 4 the lunge (coil 32-33, strike 34-36); row 5 hurt
+ // then belly up.
+ pike:{asset:'pike-sheet.png',frameSize:[152,58],columns:8,scale:.5,anchor:[.5,1],offset:[0,8],mirror:'right',mirrorDirections:{left:'right'},animations:{
+  idle:{frames:[0,1,2,3,4,5,6,7],cycle:2},'idle:right':{frames:[0,1,2,3,4,5,6,7],cycle:2},'idle:down':{frames:[16,17,18,19,20,21,22,23],cycle:2},'idle:up':{frames:[24,25,26,27,28,29,30,31],cycle:2},
+  ...walkClips(8,1),
+  attack:{frames:[32,33,34,35,36],loop:false},
+  hurt:{frames:[40,41,42],fps:10,loop:false},death:{frames:[43,44,45,46,47],fps:5,loop:false}
+ }},
+ // Grey seal. Rows 0-3 swimming; rows 4-7 hauling along on land; row 8 sliding into the sea; row 9 hurt then still.
+ seal:{asset:'seal-sheet.png',frameSize:[164,80],columns:8,scale:.5,anchor:[.5,1],offset:[0,4],mirror:'right',mirrorDirections:{left:'right'},animations:{
+  idle:{frames:[0,1,2,3,4,5,6,7],cycle:2.2},'idle:right':{frames:[0,1,2,3,4,5,6,7],cycle:2.2},'idle:down':{frames:[16,17,18,19,20,21,22,23],cycle:2.2},'idle:up':{frames:[24]},
+  ...walkClips(8,1.3),
+  'run:right':{frames:[0,1,2,3,4,5,6,7],cycle:.6},'run:down':{frames:[16,17,18,19,20,21,22,23],cycle:.6},'run:up':{frames:[24,25,26,27,28,29,30,31],cycle:.6},
+  hurt:{frames:[72,73,74],fps:10,loop:false},death:{frames:[75,76,77,78,79],fps:5,loop:false}
+ }},
+ // The shadow walker kinds, cut by scripts/prepare-shadow-walker-sprites.py from art/sprites/mobs/<id>/. Rows 0-3 walk; then one
+ // row of 8 per action, facing right. raise plays across the windup and swing starts on the windup's last two frames (the
+ // strike begins .25 s in, src/wildlife-art.js); the defeat row is the hit (its first frame) and then breaking up into ash.
+ 'hollow-stag':shadowKind('hollow-stag',[560,214],12,{attack:32,hurt:48,cycle:1.1,extra:{'run:right':{frames:[40,41,42,43,44,45,46,47],cycle:.6}}}),
+ 'gloam-boar':shadowKind('gloam-boar',[248,103],10,{attack:32,hurt:40,cycle:.9}),
+ stoneshade:shadowKind('stoneshade',[394,209],14,{attack:32,hurt:40,cycle:1.6}),
+ // The Whisperer's row 4 fades out and back in; it fades in (36-39) as it notices Eli.
+ whisperer:shadowKind('whisperer',[548,187],20,{attack:40,hurt:48,cycle:1.3,extra:{appear:{frames:[36,37,38,39],loop:false}}}),
+ // The Mire Walker lies under the water as a ripple (32) and rises (32-39) when it notices Eli; row 5 the grab.
+ 'mire-walker':shadowKind('mire-walker',[278,130],6,{attack:40,hurt:48,cycle:1.3,extra:{submerged:{frames:[32]},appear:{frames:[32,33,34,35,36,37,38,39],loop:false}}}),
+ // The Drowned Soldier's rows 4-7 are the wading walk, used while it stands in water.
+ 'drowned-soldier':shadowKind('drowned-soldier',[248,131],5,{attack:64,hurt:72,cycle:1.2,extra:{
+  ...Object.fromEntries(Object.entries(walkClips(8,1.4)).map(([k,c])=>[k.replace('walk','wade'),{...c,frames:c.frames.map(f=>f+32)}])),
+  'wade-idle':{frames:[32]},'wade-idle:right':{frames:[32]},'wade-idle:down':{frames:[48]},'wade-idle:up':{frames:[56]}}}),
+ // The Ash Archer draws (32-35) and looses (36-39); row 5 stepping back, played while it backs away from Eli.
+ 'ash-archer':shadowKind('ash-archer',[232,134],7,{attack:32,hurt:48,cycle:1.1,extra:{back:{frames:[40,41,42,43,44,45,46,47],cycle:.9}}}),
+ // The atlas waterfall loop (scripts/prepare-atlas-props.py): a ledge pouring into a pool, 8 frames.
+ waterfall:{asset:'waterfall-sheet.png',frameSize:[129,84],columns:8,scale:.6,anchor:[.5,.78],offset:[0,0],animations:{idle:{frames:[0,1,2,3,4,5,6,7],fps:10}}},
+ // The arrow's 4 flight frames, pointing right; the renderer turns it to its heading.
+ 'ash-arrow':{asset:'ash-arrow.png',frameSize:[56,23],columns:4,scale:.5,anchor:[.5,.5],offset:[0,0],animations:{idle:{frames:[0,1,2,3],fps:12}}},
+ // The Inkeel's walk set is its swim; row 4 the strike up out of the water.
+ inkeel:shadowKind('inkeel',[268,167],28,{attack:32,hurt:40,cycle:1.2}),
  // 4×4 grid of 64px cells: stand, walk, leap, graze. Cells keep ~5px below the hooves.
  deer:{asset:'deer-sheet.png',frameSize:[64,64],columns:4,scale:1,anchor:[.5,1],offset:[0,25],mirror:'left',animations:{
   idle:{frames:[0,1,2,3],fps:3},walk:{frames:[4,5,6,7],fps:8},
@@ -143,4 +266,10 @@ export const STORY_ART={
 // Each scene keeps its drawn shape as the fallback, and collision never depends on this artwork.
 export const PROPS=Object.fromEntries(['cook-stove','lure-box-shelf','photo-side-table','dining-table','chair','bed-green','fishing-rod-rack','oil-lamp','door-mat','rain-barrel','firewood-stack','bed-straw-violet','stool-waterskin','chest-brass','chamber-pot','rug-rust-red','stone-hearth','pot-herb-shelf','carved-post','window-evening','rug-red-blue','round-table','fur-stool','wall-bench','chief-cabinet','tea-set','barrel','lantern-post','well','produce-stall','fish-stall','plank-bench','bench-backrest','net-rack','rope-coils','rowing-boat','rest-shelter','fire-ring-cold','apple-crate','fishing-seat','fish-trap','flower-box','campfire','training-dummy','training-dummy-worn','archery-target','weapon-rack','weapon-barrel','water-trough','water-bucket','hay-bale','spear-crate','willow-tree','log-fence','log-fence-side','training-gate-posts','fence-corner-post','training-wall','dirt-ground','glowing-sword','water-bucket-full','training-gate-arch',...['cabin','chief','lodge'].flatMap(room=>['floor','wall','wall-top','wall-side'].map(part=>`${room}-${part}`))].map(id=>[id,`props/${id}.webp`]));
 // Familiar shards on the ground reuse their inventory icons.
-for(const id of ['rabbit','deer','turtle','eel','shadow-walker','moonfang','rimejaw','flitlynx'])PROPS[`shard-${id}`]=`items/shard-${id}.webp`;
+// The Reedwater Delta atlas props, trees, plants and rocks (scripts/prepare-atlas-props.py).
+for(const id of ['listening-tree','fallen-giant','hollow-tree','goldleaf-tree','chime-tree','oak','pine','birch','dead-tree','bush','fern','reeds',
+ 'marsh-shrub','mossy-boulder','rock-cluster','mossy-log','sea-rock','tower','ruin-wall','arch','pillar','pillar-water','statue','shrine','standing-stone',
+ 'cairn','aqueduct','ring-stone','stilt-hut','fisher-hut','jetty','raft','wreck','dinghy','crane','water-wheel','lighthouse','lookout-hut','cave','mine',
+ 'tent','cart','log-stack','signpost','heron-nest','turtle-shell','gate','chimes-post','quarry-block','walk-h','walk-v','walk-platform','stone-bridge-h',
+ 'stone-bridge-v','stepping-stones','stepping-stone','rope-bridge','broken-watch','grey-spire','great-bridge','spring-pool','hollow-rock','drowned-colonnade'])PROPS[`atlas/${id}`]=`props/atlas/${id}.webp`;
+for(const id of ['rabbit','fox','deer','boar','elk','bear','heron','crab','goat','otter','duck','pike','seal','turtle','eel','shadow-walker','moonfang','rimejaw','flitlynx'])PROPS[`shard-${id}`]=`items/shard-${id}.webp`;

@@ -4,3 +4,4 @@ node_modules/
 # Local visual QA output and test logs
 screenshots/
 test-results.txt
+__pycache__/

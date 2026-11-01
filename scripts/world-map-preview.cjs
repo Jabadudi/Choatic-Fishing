@@ -1,4 +1,4 @@
-// Browser preview of the world map: the minimap zoomed out to the delta, and the map's Reedwater Delta tab.
+// Browser preview of the world map: the minimap (no zoom button), and the map's Reedwater Delta tab.
 // SHOTS=<dir> for screenshots.
 const {chromium}=require('playwright');
 const assert=require('node:assert/strict');
@@ -18,8 +18,8 @@ const out=process.env.SHOTS||'screenshots';
   await new IndexedSaveStore().update(()=>({journeyId:w.journeyId,current:captureSave(w),writerId:null,manual:null,backups:[]}));
  });
  await page.reload();await page.locator('#continue-journey:not([disabled])').waitFor();await page.locator('#continue-journey').click();await page.waitForFunction(()=>window.__storyQA.world.journeyId==='world-map-browser');
- await page.waitForTimeout(800);await page.locator('#minimap-zoom').click();await page.waitForTimeout(500);
- await page.screenshot({path:`${out}/world-minimap.png`,clip:{x:0,y:0,width:420,height:260}});
+ await page.waitForTimeout(800);assert.equal(await page.locator('#minimap-zoom').count(),0);
+ await page.screenshot({path:`${out}/minimap.png`,clip:{x:0,y:0,width:420,height:260}});
  await page.keyboard.press('m');await page.waitForTimeout(300);await page.locator('#atlas-tab-world').click();await page.waitForTimeout(800);
  await page.screenshot({path:`${out}/world-map.png`});
  await page.locator('#atlas-tab-area').click();await page.waitForTimeout(300);await page.screenshot({path:`${out}/area-map.png`});

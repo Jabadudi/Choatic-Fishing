@@ -1,20 +1,40 @@
 // Art for the atlas-built areas (atlas-area.js): boardwalks, fords, stone bridges and props. Drawing only.
+import {drawEntitySprite,drawProp as drawPropSprite} from './sprites.js';
 const each=(pts,step,fn)=>{for(let i=1;i<pts.length;i++){const [ax,ay]=pts[i-1],[bx,by]=pts[i],len=Math.hypot(bx-ax,by-ay),n=Math.max(1,Math.floor(len/step));for(let j=0;j<n;j++){const t=j/n;fn(ax+(bx-ax)*t,ay+(by-ay)*t,Math.atan2(by-ay,bx-ax),j);}}};
 function stroke(ctx,pts,width,color){ctx.strokeStyle=color;ctx.lineWidth=width;ctx.lineJoin='round';ctx.lineCap='round';ctx.beginPath();pts.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.stroke();}
 const near=(pts,half,left,top,width,height)=>pts.some(([x,y])=>x>left-400&&x<left+width+400&&y>top-400&&y<top+height+400);
+// Lays a painted walkway tile (running left to right) along a line: each tile turned to its segment, deck as wide as
+// the walkway, repeated end to end. Returns false until the tile has loaded.
+function tiled(ctx,pts,id,deck,aspect){
+ if(!drawPropSprite(ctx,id,{x:-1e5,y:-1e5,w:1,h:1}))return false;
+ const h=deck,w=h*aspect;
+ for(let i=1;i<pts.length;i++){
+  const [ax,ay]=pts[i-1],[bx,by]=pts[i],len=Math.hypot(bx-ax,by-ay),n=Math.max(1,Math.ceil(len/(w*.92)));
+  ctx.save();ctx.translate(ax,ay);ctx.rotate(Math.atan2(by-ay,bx-ax));
+  for(let j=0;j<n;j++)drawPropSprite(ctx,id,{x:(j+.5)*len/n,y:h/2,w:len/n+2,h});
+  ctx.restore();
+ }
+ return true;
+}
 export function drawAtlasGround(ctx,built,left,top,width,height){
- for(const b of built.bridges){if(!near(b.pts,b.half,left,top,width,height))continue;const w=b.half*2;
+ // Painted walkways where the tiles have loaded: stone bridge decks, marsh boardwalks and stepping stones.
+ for(const b of built.bridges)if(near(b.pts,b.half,left,top,width,height))b.painted=tiled(ctx,b.pts,'atlas/stone-bridge-h',b.half*2+14,322/125);
+ for(const b of built.walks)if(near(b.pts,b.half,left,top,width,height))b.painted=tiled(ctx,b.pts,'atlas/walk-h',b.half*2+12,278/124);
+ for(const b of built.bridges){if(!near(b.pts,b.half,left,top,width,height))continue;if(b.painted)continue;const w=b.half*2;
   stroke(ctx,b.pts,w+10,'#3d3a36');stroke(ctx,b.pts,w+4,'#8d877a');stroke(ctx,b.pts,w-6,'#b9b19c');
   each(b.pts,14,(x,y,a)=>{ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.fillStyle='#a39a84';ctx.fillRect(-1,-b.half+5,2,w-10);ctx.restore();});
  }
- for(const b of built.walks){if(!near(b.pts,b.half,left,top,width,height))continue;const w=b.half*2;
+ for(const b of built.walks){if(!near(b.pts,b.half,left,top,width,height))continue;if(b.painted)continue;const w=b.half*2;
   // Posts under the deck, then the planks laid across the line.
   each(b.pts,46,(x,y,a)=>{ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.fillStyle='#3e2b1c';ctx.fillRect(-4,-b.half-5,8,8);ctx.fillRect(-4,b.half-3,8,8);ctx.restore();});
   stroke(ctx,b.pts,w+4,'#4f3a26');stroke(ctx,b.pts,w-2,'#a8875c');
   each(b.pts,9,(x,y,a,j)=>{ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.fillStyle=j%2?'#9a7a52':'#b39066';ctx.fillRect(-3,-b.half+2,7,w-4);ctx.fillStyle='#6b5034';ctx.fillRect(3,-b.half+2,1,w-4);ctx.restore();});
  }
  for(const b of built.fords){if(!near(b.pts,b.half,left,top,width,height))continue;
-  stroke(ctx,b.pts,b.half*2+8,'rgba(150,215,205,.55)');
+  // The painted stepping stones sit straight in the water; the pale band only backs the drawn ones.
+  const stone=drawPropSprite(ctx,'atlas/stepping-stone',{x:-1e5,y:-1e5,w:1,h:1});
+  if(!stone)stroke(ctx,b.pts,b.half*2+8,'rgba(150,215,205,.55)');
+  if(stone){each(b.pts,26,(x,y,a,j)=>{const o=(j%2?1:-1)*b.half*.25;drawPropSprite(ctx,'atlas/stepping-stone',{x:x-Math.sin(a)*o,y:y+Math.cos(a)*o+9,w:34,h:21});});continue;}
   each(b.pts,26,(x,y,a,j)=>{const o=(j%2?1:-1)*b.half*.25,dx=-Math.sin(a)*o,dy=Math.cos(a)*o;ctx.fillStyle='#55605a';ctx.beginPath();ctx.ellipse(x+dx+1,y+dy+3,13,9,a,0,Math.PI*2);ctx.fill();ctx.fillStyle=j%3?'#a7a594':'#b8b5a2';ctx.beginPath();ctx.ellipse(x+dx,y+dy,12,8,a,0,Math.PI*2);ctx.fill();ctx.fillStyle='#d2cfbb';ctx.fillRect(Math.round(x+dx-5),Math.round(y+dy-5),6,2);});
  }
  for(const r of built.roads){if(!near(r,0,left,top,width,height))continue;}
@@ -27,8 +47,32 @@ export function drawAtlasProp(ctx,p,t=0){
  const s=p.scale||1;if(s===1)return drawProp(ctx,p,t);
  ctx.save();ctx.translate(p.x*(1-s),p.y*(1-s));ctx.scale(s,s);drawProp(ctx,p,t);ctx.restore();
 }
+// Which painted prop (assets/props/atlas/, scripts/prepare-atlas-props.py) stands for a prop kind, and the box it fits in
+// (game px, its foot on the prop's spot). Landmark pieces replace the plain kind where the area text names them.
+// Kinds without a painting here (lanterns, benches, boats, herons, the well) keep their drawn shapes.
+const PAINTED={hut:['fisher-hut',110,80],'stilt-hut':['stilt-hut',110,96],tower:['tower',120,175],ruin:['ruin-wall',100,76],arch:['arch',100,104],
+ pillar:['pillar',30,72],stone:['standing-stone',40,52],cairn:['cairn',40,40],raft:['raft',60,50],wheel:['water-wheel',80,92],cave:['cave',170,110],
+ tent:['tent',90,62],shell:['turtle-shell',150,92],sign:['signpost',44,56],crane:['crane',120,120],'big-tree':['oak',170,170],statue:['statue',44,96],
+ nest:['heron-nest',60,40],shrine:['shrine',60,70],cart:['cart',80,44],logs:['log-stack',64,42],mine:['mine',100,70],lighthouse:['lighthouse',80,185],
+ wreck:['wreck',190,80],gate:['gate',110,100],dock:['jetty',34,90],chimes:['chimes-post',60,72],spring:['spring-pool',110,96]};
+function painted(p){
+ const big=(p.scale||1)>=3;
+ if(p.kind==='tower'&&p.area==='broken-watch')return ['broken-watch',170,190];
+ if(p.kind==='cave'&&p.area==='chimewood')return ['hollow-rock',160,140];
+ if(p.kind==='pillar')return big?['grey-spire',34,80]:p.inWater?['pillar-water',40,76]:PAINTED.pillar;
+ if(p.kind==='logs'&&big)return ['fallen-giant',64,40];
+ if(p.kind==='wreck'&&p.area==='arrival-bay')return ['dinghy',110,48];
+ if(p.kind==='big-tree')return big?['listening-tree',110,110]:p.glow==='#ffd36a'?['goldleaf-tree',150,160]:p.glow==='#cfe8ff'?['hollow-tree',150,160]:PAINTED['big-tree'];
+ return PAINTED[p.kind];
+}
 function drawProp(ctx,p,t){
- const x=Math.round(p.x),y=Math.round(p.y);
+ const x=Math.round(p.x),y=Math.round(p.y),art=painted(p);
+ if(art){
+  // A jetty runs down from its spot into the water.
+  const [id,w,h]=art,foot=p.kind==='dock'?y+80:y;
+  if(!p.inWater&&p.kind!=='dock')shadow(ctx,x,foot,w*.36,Math.max(5,h*.07));
+  if(drawPropSprite(ctx,`atlas/${id}`,{x,y:foot,w,h}))return;
+ }
  switch(p.kind){
   case 'hut':shadow(ctx,x,y,52,14);R(ctx,'#6a4a2e',x-42,y-48,84,48);R(ctx,'#8a6440',x-40,y-46,80,4);for(let i=0;i<5;i++)R(ctx,'#5a3e26',x-40,y-38+i*8,80,1);R(ctx,'#2d2018',x-9,y-28,18,28);roof(ctx,x,y-46,84,34,p.roof||'#8f5a3c','#5a3524');break;
   case 'stilt-hut':for(const dx of [-30,-10,10,30])R(ctx,'#3e2b1c',x+dx-3,y-20,6,34);R(ctx,'#7a5a3a',x-40,y-26,80,8);R(ctx,'#6a4a2e',x-32,y-66,64,40);R(ctx,'#2d2018',x-7,y-50,14,24);roof(ctx,x,y-64,64,30,p.roof||'#a0703c','#634126');break;
@@ -54,7 +98,8 @@ function drawProp(ctx,p,t){
   case 'statue':shadow(ctx,x,y,24,8);R(ctx,'#7d776b',x-20,y-16,40,16);R(ctx,'#9b9584',x-10,y-74,20,58);R(ctx,'#9b9584',x-7,y-88,14,14);break;
   case 'bench':R(ctx,'#5c3b22',x-40,y-14,80,8);R(ctx,'#3e2b1c',x-36,y-6,6,8);R(ctx,'#3e2b1c',x+30,y-6,6,8);break;
   case 'nest':ctx.fillStyle='#6b5034';ctx.beginPath();ctx.ellipse(x,y,26,12,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#e9e4d0';for(const dx of [-8,2,10])ctx.fillRect(x+dx,y-4,6,5);break;
-  case 'heron':ctx.fillStyle='#e9eef0';ctx.beginPath();ctx.ellipse(x,y-30,12,18,0,0,Math.PI*2);ctx.fill();R(ctx,'#e9eef0',x+4,y-62,4,22);R(ctx,'#e9eef0',x+4,y-64,12,5);R(ctx,'#e0a63a',x+16,y-63,10,3);R(ctx,'#3a3a32',x-4,y-12,2,14);R(ctx,'#3a3a32',x+2,y-12,2,14);break;
+  // The landmark herons stand fishing on the heron sheet; the shapes below draw until it loads.
+  case 'heron':if(drawEntitySprite(ctx,'heron',{x,y,state:'idle',time:t+x*.013,direction:'right',facingX:1}))break;ctx.fillStyle='#e9eef0';ctx.beginPath();ctx.ellipse(x,y-30,12,18,0,0,Math.PI*2);ctx.fill();R(ctx,'#e9eef0',x+4,y-62,4,22);R(ctx,'#e9eef0',x+4,y-64,12,5);R(ctx,'#e0a63a',x+16,y-63,10,3);R(ctx,'#3a3a32',x-4,y-12,2,14);R(ctx,'#3a3a32',x+2,y-12,2,14);break;
   case 'shrine':shadow(ctx,x,y,30,8);R(ctx,'#7d776b',x-26,y-60,52,60);R(ctx,'#a39d8d',x-30,y-66,60,8);R(ctx,'#2a2824',x-8,y-40,16,24);R(ctx,'#9fe3c8',x-3,y-34,6,6);break;
   case 'cart':R(ctx,'#6a4a2e',x-30,y-34,60,22);R(ctx,'#2a2018',x-22,y-14,14,14);R(ctx,'#2a2018',x+10,y-14,14,14);break;
   case 'logs':for(let i=0;i<3;i++){R(ctx,'#6a4a2e',x-30,y-10-i*10,60,10);R(ctx,'#c9a46a',x+26,y-10-i*10,6,10);}break;

@@ -3,7 +3,7 @@
 // or it strays too far from home, walks back and heals. The art reads state, time and direction; it never moves anything.
 import {damage} from './combat.js';
 import {moveAnimal,animalGround} from './wildlife.js';
-import {areaFor,SPAWN} from './wilds.js';
+import {areaFor,SPAWN,isWater} from './wilds.js';
 // How long Eli stays down before he wakes at the area's arrival point, and how long monsters then leave him be.
 export const DEFEAT_SECONDS=3;
 export const RESPAWN_GRACE=4;
@@ -21,15 +21,29 @@ function stepToward(a,x,y,speed,dt){
  return false;
 }
 function setState(a,state){a.state=state;a.time=0;}
+const HUNTING=['notice','chase','attack','strike'];
+// The swing lands: a melee hit (a grab also slows Eli), or for an archer an arrow loosed toward him.
+function strike(world,a,target,angle,distance){
+ if(a.ranged){
+  world.projectiles.push({x:a.x+Math.cos(angle)*18,y:a.y-14+Math.sin(angle)*18,angle,owner:a,travel:0,kind:'arrow',spriteId:'ash-arrow',hostile:true,
+   speed:a.arrowSpeed,range:a.attackRange+90,damage:a.attackDamage,knockback:60,radius:5,hit:new Set()});
+  return;
+ }
+ if(target&&distance<=a.attackRange&&damage(world,target,a.attackDamage,a,angle,a.knockback??160)&&a.grab)target.slowRemaining=a.grab;
+}
 export function updateMonster(world,a,dt){
  const target=monsterTarget(world),p=world.player;
  const distance=Math.hypot(p.x-a.x,p.y-a.y),fromHome=Math.hypot(a.x-a.home.x,a.y-a.home.y);
  a.attackCooldownRemaining=Math.max(0,(a.attackCooldownRemaining||0)-dt);
+ // A Whisperer is barely there until it is hunting; the art reads visibility.
+ if(a.fade){const want=HUNTING.includes(a.state)?1:.14;a.visibility=want>(a.visibility??want)?Math.min(want,a.visibility+dt*2.5):Math.max(want,(a.visibility??want)-dt*.8);}
+ if(a.wades)a.wading=isWater(a.x,a.y,a.areaId);
+ a.backing=false;
  // A swing that has started always finishes; it only lands if Eli is still in reach and not dashing.
  if(a.state==='attack'){
   const angle=face(a,p.x,p.y);a.attackRemaining=Math.max(0,a.attackRemaining-dt);
   if(a.attackRemaining===0){
-   if(target&&distance<=a.attackRange)damage(world,target,a.attackDamage,a,angle,160);
+   strike(world,a,target,angle,distance);
    setState(a,'strike');a.recoverRemaining=a.attackRecover;a.attackCooldownRemaining=a.attackCooldown;
   }
   return;
@@ -39,6 +53,13 @@ export function updateMonster(world,a,dt){
   if(!target||fromHome>a.leashRange||distance>a.loseRange){setState(a,'return');a.still=false;return;}
   face(a,p.x,p.y);
   if(a.state==='notice'){if(a.time>=a.noticeDelay)setState(a,'chase');return;}
+  // An archer backs away from Eli when he gets close, and shoots from where it stands.
+  if(a.ranged&&distance<a.keepAway){
+   const away=Math.atan2(a.y-p.y,a.x-p.x),moved=stepToward(a,a.x+Math.cos(away)*40,a.y+Math.sin(away)*40,a.chaseSpeed*.8,dt);
+   face(a,p.x,p.y);a.still=!moved;a.backing=moved;
+   if(!moved&&a.attackCooldownRemaining===0){setState(a,'attack');a.attackRemaining=a.attackWindup;}
+   return;
+  }
   if(distance<=a.attackRange){
    a.still=true;
    if(a.attackCooldownRemaining===0){setState(a,'attack');a.attackRemaining=a.attackWindup;}

@@ -1,5 +1,6 @@
 import {drawEntitySprite} from './sprites.js';
-import {BEHAVIOR_LABELS} from './entities.js';
+import {BEHAVIOR_LABELS,facingFor} from './entities.js';
+import {SPRITES} from './sprite-definitions.js';
 import {drawShiny,SHINY_GOLD} from './shiny-art.js';
 // Monsters: the axe goes up through the windup and comes down on the strike; a chase walks unless it is standing in reach.
 const MONSTER_STATES={attack:'raise',strike:'swing',chase:'walk',return:'walk',notice:'idle'};
@@ -10,16 +11,38 @@ export function animalPose(a){
   if(a.state==='attack')return {state:'raise',time:t,duration:a.attackWindup};
   // The swing clip starts with the two raised frames, so the strike begins on its third.
   if(a.state==='strike')return {state:'swing',time:.25+t};
-  return {state:a.state==='chase'&&a.still?'idle':MONSTER_STATES[a.state]||a.state,time:t};
+  const clips=SPRITES[a.spriteId]?.animations||{},roaming=['idle','walk','return'].includes(a.state);
+  // A Mire Walker roams as a ripple under the water and rises as it notices Eli; a Whisperer fades in.
+  if(a.hidden&&roaming)return {state:'submerged',time:t};
+  if(a.state==='notice'&&clips.appear)return {state:'appear',time:t,duration:a.noticeDelay};
+  if(a.backing&&clips.back)return {state:'back',time:t};
+  let state=a.state==='chase'&&a.still?'idle':MONSTER_STATES[a.state]||a.state;
+  // The Hollow Stag gallops after Eli; a Drowned Soldier in the water wades.
+  if(a.state==='chase'&&state==='walk'&&clips['run:right'])state='run';
+  if(a.wading&&clips['wade:right'])state=state==='walk'||state==='run'?'wade':state==='idle'?'wade-idle':state;
+  return {state,time:t};
  }
  if(a.hurtRemaining>0)return {state:'hurt',time:.25-a.hurtRemaining};
- return {state:a.state==='flee'?'walk':a.state==='attack'?'idle':a.state,time:t};
+ // A sheet with a run row (the fox, the boar) runs away, or after Eli once it is angry; the others walk.
+ const clips=SPRITES[a.spriteId]?.animations||{};
+ if(a.state==='flee'||a.state==='walk'&&a.anger>0){
+  // Without a run row the walk plays faster to match the flight, so the feet keep up instead of sliding.
+  const run=!!clips['run:right'],pace=a.state==='flee'&&!run?Math.min(3,Math.max(1,a.fleeSpeed/a.speed)):1;
+  return {state:run?'run':'walk',time:t*pace};
+ }
+ // An attack clip, where there is one, plays across the windup so the hit lands on its last frame.
+ // The bear's roar plays across its rearing time.
+ if(a.state==='roar')return clips.roar?{state:'roar',time:t,duration:a.roar}:{state:'idle',time:t};
+ if(a.state==='attack')return clips.attack?{state:'attack',time:t,duration:a.attackWindup}:{state:'idle',time:t};
+ return {state:a.state,time:t};
 }
 export function drawWildlife(c,a){
  if(a.shiny&&!a.plain){drawShiny(c,a,(globalThis.performance?.now()??0)/1000,l=>drawWildlife(l,{...a,plain:true}));return;}
  const {x,y}=a,t=a.time||0;
  c.save();if(a.health<=0)c.globalAlpha=Math.min(1,a.deathRemaining);else if(a.hurtRemaining>0)c.globalAlpha=.55;
- if(drawEntitySprite(c,a.spriteId,{x,y,...animalPose(a),facingX:a.direction.x})){c.restore();return;}
+ // A Whisperer is faint until it hunts.
+ if(a.visibility!==undefined&&a.health>0)c.globalAlpha*=a.visibility;
+ if(drawEntitySprite(c,a.spriteId,{x,y,...animalPose(a),facingX:a.direction.x,direction:facingFor(a.direction.x,a.direction.y)})){c.restore();return;}
  c.translate(Math.round(x),Math.round(y));if(a.species==='turtle'?a.direction.x>0:a.direction.x<0)c.scale(-1,1);
  if(a.health<=0){c.scale(1,.35);c.translate(0,10);}
  const r=(color,x,y,w,h)=>{c.fillStyle=color;c.fillRect(x,y,w,h);};
@@ -39,12 +62,16 @@ export function drawWildlife(c,a){
  }else{for(let i=0;i<7;i++)r(i===6?'#d3efdc':'#90c6b4',i*4-12,Math.sin(t*5+i*.7)*4,5,3);r('#243b37',13,Math.sin(t*5+4.2)*4,1,1);}
  c.restore();
 }
+// How high the health bar sits above each shadow walker kind's feet.
+const STATUS_HEIGHT={'hollow-stag':98,'gloam-boar':42,stoneshade:96,whisperer:76,'mire-walker':64,'drowned-soldier':64,'ash-archer':62,inkeel:44};
 export function drawAnimalStatus(c,world){
  for(const a of world.animals){
   if(a.health<=0||a.areaId!==world.areaId)continue;
   const near=Math.hypot(a.x-world.player.x,a.y-world.player.y)<150;
-  if(a.health===a.maxHealth&&!a.shiny&&!['notice','chase','attack','strike'].includes(a.state)&&(!near||world.inventory.selected===1))continue;
-  const y=a.y-(a.spriteId==='nightwalker'?66:a.species==='deer'?51:a.species==='rabbit'?42:33);
+  // A hidden Mire Walker or a faded Whisperer shows no tag until it is hunting.
+  if((a.hidden||a.fade)&&['idle','walk','return'].includes(a.state)&&a.health===a.maxHealth)continue;
+  if(a.health===a.maxHealth&&!a.shiny&&!['notice','chase','attack','strike','roar'].includes(a.state)&&(!near||world.inventory.selected===1))continue;
+  const y=a.y-(STATUS_HEIGHT[a.species]??(a.spriteId==='nightwalker'?66:a.species==='deer'?51:a.species==='rabbit'?42:a.species==='fox'?40:a.species==='boar'?46:a.species==='elk'?96:a.species==='bear'?62:a.species==='heron'?56:a.species==='crab'?30:a.species==='goat'?48:a.species==='otter'?30:a.species==='duck'?38:a.species==='pike'?28:a.species==='seal'?40:33));
   c.fillStyle='#19362de8';c.fillRect(a.x-23,y,46,6);c.fillStyle='#c8d78a';c.fillRect(a.x-22,y+1,44*a.health/a.maxHealth,4);
   c.font='12px monospace';c.textAlign='center';const tag=`${a.name} · ${BEHAVIOR_LABELS[a.behavior]||a.behavior}`;
   // A shiny's tag is gold with a dark edge so it reads on bright grass.

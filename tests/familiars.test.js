@@ -15,14 +15,17 @@ const give=(w,id,n)=>{for(let i=0;i<n;i++)absorbShard(w,id);};
 
 test('every creature with a loot table drops its own familiar shard, and none fill the backpack categories by accident',()=>{
  const hunted=Object.entries(FAMILIARS).filter(([,f])=>!f.wellOnly);
- assert.deepEqual(hunted.map(([id])=>id).sort(),Object.keys(LOOT_TABLES).sort());
+ // The shadow walker kinds have no familiar yet (familiar:false).
+ const kinds=Object.entries(ANIMAL_TYPES).filter(([,spec])=>spec.familiar===false).map(([id])=>id);
+ assert.deepEqual(kinds.sort(),['ash-archer','drowned-soldier','gloam-boar','hollow-stag','inkeel','mire-walker','stoneshade','whisperer']);
+ assert.deepEqual(hunted.map(([id])=>id).sort(),Object.keys(LOOT_TABLES).filter(id=>!kinds.includes(id)).sort());
  for(const [id,f] of hunted){
   const entry=LOOT_TABLES[id].find(e=>e.item===f.shard);assert.ok(entry,`${id} shard is in its table`);
   assert.equal(entry.chance,SHARD_CHANCES[id]);assert.ok(entry.chance>0&&entry.chance<1);
   assert.equal(LOOT_ITEMS[f.shard].familiar,id);
   assert.equal(familiarPassives(id).length,3);
  }
- for(const spec of Object.values(ANIMAL_TYPES))assert.ok(FAMILIARS[spec.loot]);
+ for(const spec of Object.values(ANIMAL_TYPES))if(spec.familiar!==false)assert.ok(FAMILIARS[spec.loot]);
 });
 
 test('tiers unlock at 5, 25 and 100 shards; the second rank replaces the first and the third adds a new passive',()=>{
