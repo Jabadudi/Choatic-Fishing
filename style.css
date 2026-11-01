@@ -379,6 +379,124 @@ body.exploring #side-objective{font:11px/1.5 monospace;color:#f6d27a;margin:6px 
 .quest-done-list .quest-check{background:#2f5b3b;color:#c9f0cf}.quest-done-list small{color:#9fb3ab}
 @media(max-width:760px){#quest-sheet{overflow-y:auto}#quest-sheet[open]{display:block}.quest-body{overflow:visible;padding:12px}.quest-card{padding:12px}.quest-card h3{font-size:20px}.quest-quote{font-size:15px}#quest-sheet .backpack-heading{flex-wrap:wrap;gap:8px 12px;padding:12px 14px}#quest-sheet .backpack-heading h2{font-size:26px}#quest-sheet .backpack-capacity{order:3;flex-basis:100%;margin:0}}
 @media(max-height:560px){#quest-sheet{overflow-y:auto;max-height:calc(100dvh - 16px)}#quest-sheet[open]{display:block}#quest-sheet .backpack-heading{flex-wrap:nowrap;gap:10px;padding:8px 12px}#quest-sheet .backpack-emblem svg{width:26px;height:26px}#quest-sheet .backpack-heading h2{display:block;font-size:22px}#quest-sheet .backpack-capacity{order:0;flex-basis:auto;margin:0;font-size:12px}#quest-sheet .backpack-close{margin-left:auto;width:44px;height:44px}.quest-body{overflow:visible;padding:10px 12px}.quest-card{padding:10px 12px;gap:8px}.quest-card h3{font-size:19px}.quest-quote{font-size:14px}.quest-thought{font-size:13px}.quest-note{font-size:12px;padding:8px 12px}}
+/* The full quest log: section tabs, a list of chapters and missions, and the picked one in detail. Same frame as the backpack. */
+#quest-sheet[data-mode="log"]{width:min(1180px,calc(100vw - 24px));height:min(780px,calc(100dvh - 32px))}
+#quest-sheet[data-mode="log"][open]{display:flex;flex-direction:column;overflow:hidden}
+#quest-sheet[data-mode="log"] .backpack-frame{flex:1;min-height:0}
+#quest-sheet[data-mode="log"] .backpack-heading{gap:12px;padding:10px 14px 10px 18px;flex-wrap:nowrap}
+#quest-sheet[data-mode="log"] .backpack-emblem svg{width:28px;height:28px}
+#quest-sheet[data-mode="log"] .backpack-heading h2{font:600 22px/1 Georgia,serif;white-space:nowrap}
+#quest-sheet[data-mode="log"] .backpack-capacity{flex:1;margin:0;text-align:right;font:13px Arial,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#quest-sheet[data-mode="log"] .backpack-close{width:44px;height:44px;border-radius:50%;background:var(--bp-ink);color:#1b2a22;border-color:var(--bp-ink)}
+#quest-sheet[data-mode="log"] .quest-body{flex:1;padding:0;overflow:hidden;display:flex}
+#quest-sheet[data-mode="log"] .quest-note{display:none}
+.quest-log{flex:1;display:grid;grid-template-columns:72px 300px minmax(0,1fr);min-height:0;border-top:1px solid var(--bp-line)}
+.quest-rail{display:flex;flex-direction:column;align-items:center;gap:10px;padding:14px 0;border-right:1px solid var(--bp-line)}
+.quest-tab{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;width:62px;padding:0;border:0;background:none;color:var(--bp-muted);font:11px Arial,sans-serif;cursor:pointer}
+.quest-tab .quest-icon{display:grid;place-items:center;width:46px;height:46px;border-radius:50%}
+.quest-tab[aria-pressed="true"] .quest-icon{background:var(--bp-ink);color:#1b2a22}.quest-tab[aria-pressed="true"]{color:var(--bp-ink)}
+.quest-tab:hover .quest-icon{background:#ffffff14}.quest-tab[aria-pressed="true"]:hover .quest-icon{background:var(--bp-ink)}
+.quest-tab-count{position:absolute;top:-2px;right:4px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:#d2564a;color:#fff;font:700 11px/18px Arial,sans-serif}
+.quest-list{overflow-y:auto;padding:4px 14px 14px;border-right:1px solid var(--bp-line);display:flex;flex-direction:column;gap:8px}
+.quest-list .quest-section{margin:12px 0 0;font-size:11px;letter-spacing:.16em;color:var(--bp-gold-dim)}
+.quest-entry{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;padding:9px 12px;border:1px solid #c9a85f33;border-radius:8px;background:#12322a99;color:var(--bp-ink);text-align:left;cursor:pointer}
+.quest-entry:hover{border-color:#c9a85f88}
+.quest-entry[aria-pressed="true"]{border-color:var(--bp-gold);background:linear-gradient(90deg,#e6c77f26,#12322a);box-shadow:inset 0 0 0 1px #e6c77f33}
+.quest-entry-mark{flex:none;width:11px;height:11px;transform:rotate(45deg);border:2px solid var(--bp-gold-dim)}
+.quest-entry[data-state="current"] .quest-entry-mark{background:#ffd76a;border-color:#ffd76a;box-shadow:0 0 8px #ffd76a}
+.quest-entry[data-state="ready"] .quest-entry-mark{background:#7fc4d8;border-color:#7fc4d8}
+.quest-entry[data-state="done"]{opacity:.72}.quest-entry[data-state="done"] .quest-entry-mark{background:#6fbf5f;border-color:#6fbf5f}
+.quest-entry-text{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.quest-entry-text strong{font:700 15px/1.25 Georgia,serif}.quest-entry-text small{font:12px/1.3 Arial,sans-serif;color:var(--bp-muted)}
+.quest-entry-tag{flex:none;padding:3px 8px;border-radius:9px;background:var(--bp-gold);color:#1b2a22;font:700 10px Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase}
+.quest-entry-tally{flex:none;font:700 13px Arial,sans-serif;font-variant-numeric:tabular-nums}
+.quest-more{opacity:.7}.quest-more .quest-entry-text{font:14px Georgia,serif}
+.quest-main{display:flex;flex-direction:column;min-width:0;min-height:0;overflow-y:auto}
+.quest-picker{display:none}
+.quest-detail{display:flex;flex-direction:column;flex:1;min-height:0}
+.quest-side{padding:16px 20px}.quest-blank{display:grid;place-items:center;padding:20px}
+.quest-banner{padding:18px 22px 16px;background:linear-gradient(100deg,#6b5a2f,#3b4a33 55%,#1a3a2e);border-bottom:2px solid var(--bp-gold)}
+.quest-banner[data-done="true"]{background:linear-gradient(100deg,#34503a,#22392e 60%,#18322a)}
+.quest-banner small{font:700 11px Arial,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#f6e3a8}
+.quest-banner h3{margin:4px 0 0;font:700 32px/1.1 Georgia,serif;color:#fff0cb}
+.quest-columns{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px;padding:16px 20px;flex:1}
+.quest-col{display:flex;flex-direction:column;gap:10px;min-width:0}
+.quest-label{margin:4px 0 0;font:700 11px Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--bp-gold-dim)}
+.quest-recap{margin:0;font:italic 15px/1.55 Georgia,serif;color:#dcd3b4}
+.quest-now{display:flex;flex-direction:column;gap:6px;padding:14px 16px;border:1px solid var(--bp-gold);border-radius:10px;background:linear-gradient(180deg,#e6c77f1f,#12322a)}
+.quest-now-kicker{display:flex;align-items:center;gap:8px;font:700 11px Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#ffd76a}
+.quest-now-kicker::before{content:'';width:9px;height:9px;transform:rotate(45deg);background:#ffd76a;box-shadow:0 0 8px #ffd76a}
+.quest-now[data-finished="true"] .quest-now-kicker{color:#9fdc8f}.quest-now[data-finished="true"] .quest-now-kicker::before{background:#6fbf5f;box-shadow:none}
+.quest-now h4{margin:0;font:700 20px/1.25 Georgia,serif;color:#fff0cb}
+.quest-now p{margin:0;font:15px/1.45 Arial,sans-serif;color:#e2e7d6}
+.quest-pips{display:flex;align-items:center;gap:5px;margin-top:4px}
+.quest-pips i{flex:0 1 22px;height:8px;border-radius:4px;background:#0a1a14;border:1px solid #c9a85f66}
+.quest-pips i.on{background:#ffd76a;border-color:#ffd76a}.quest-pips i.next{border-color:#ffd76a;box-shadow:0 0 0 2px #ffd76a44}
+.quest-pips b{margin-left:6px;font:700 13px Arial,sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--bp-ink)}
+.quest-pip-bar{flex:1;height:8px;border-radius:4px;background:#0a1a14;border:1px solid #c9a85f66;overflow:hidden}.quest-pip-bar i{display:block;height:100%;background:linear-gradient(90deg,#c99b46,#ffd76a)}
+.quest-now .quest-next{display:flex;align-items:flex-start;gap:8px;margin-top:4px;padding:8px 10px;border-radius:7px;background:#0a1a14b3;font:600 14px/1.4 Arial,sans-serif;color:var(--bp-ink)}
+.quest-next .quest-icon{flex:none;color:#ffd76a;margin-top:1px}
+.quest-steps{list-style:none;margin:0;padding:0}
+.quest-steps li{display:flex;align-items:center;gap:11px;padding:8px 0;border-bottom:1px solid #c9a85f22;font:14px/1.35 Arial,sans-serif}
+.quest-step-mark{flex:none;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;font:700 12px Arial,sans-serif}
+.quest-steps [data-state="done"]{color:var(--bp-muted)}.quest-steps [data-state="done"] .quest-step-mark{background:#6fbf5f;color:#10241a}
+.quest-steps [data-state="current"]{font-weight:700;color:#fff0cb}.quest-steps [data-state="current"] .quest-step-mark{background:#ffd76a;color:#1b2a22;box-shadow:0 0 8px #ffd76a88}
+.quest-steps [data-state="locked"]{font-style:italic;color:#8c9888}.quest-steps [data-state="locked"] .quest-step-mark{border:1.5px dashed #8c9888}
+.quest-foot{display:flex;gap:10px;padding:12px 20px;border-top:1px solid var(--bp-line)}
+.quest-foot .quest-action{flex:1}
+.quest-map{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.quest-action:disabled{opacity:.45;cursor:default;filter:none}
+/* The journal drawer slides in from the left; the game stays in view to its right. */
+#quest-drawer{--bp-gold:#e6c77f;--bp-gold-dim:#b7995a;--bp-line:#c9a85f99;--bp-ink:#f3e6bf;--bp-muted:#c2cdb6;position:fixed;inset:0 auto 0 0;margin:0;width:min(400px,calc(100vw - 64px));height:100dvh;max-height:100dvh;max-width:none;box-sizing:border-box;padding:max(16px,var(--safe-t,0px)) 18px max(14px,var(--safe-b,0px)) max(18px,calc(var(--safe-l,0px) + 10px));border:0;border-right:1.5px solid var(--bp-gold-dim);background:#0c2119;color:var(--bp-ink);box-shadow:12px 0 40px #0008;font-family:Georgia,'Times New Roman',serif;overflow:hidden}
+#quest-drawer[open]{display:flex;flex-direction:column;gap:12px;animation:quest-drawer-in .22s ease-out}
+#quest-drawer::backdrop{background:#04100c55}
+@keyframes quest-drawer-in{from{transform:translateX(-30px);opacity:0}}
+@media(prefers-reduced-motion:reduce){#quest-drawer[open]{animation:none}}
+.quest-drawer-head{display:flex;align-items:center;gap:10px}
+.quest-drawer-head .quest-icon{color:var(--bp-gold)}
+.quest-drawer-head h2{display:block;margin:0;flex:1;font:600 20px Georgia,serif}
+.quest-drawer-tabs{display:flex;gap:3px;padding:3px;border:1px solid #c9a85f44;border-radius:20px;background:#0a1a14}
+.quest-drawer-tabs button{padding:6px 12px;border:0;border-radius:16px;background:none;color:var(--bp-muted);font:700 12px Arial,sans-serif;cursor:pointer}
+.quest-drawer-tabs button[aria-pressed="true"]{background:var(--bp-ink);color:#1b2a22}
+.quest-drawer-close{display:grid;place-items:center;width:36px;height:36px;padding:0;border:0;border-radius:50%;background:var(--bp-ink);color:#1b2a22;cursor:pointer}
+.quest-drawer-body{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+.quest-drawer-kicker{font:700 11px Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--bp-gold-dim)}
+.quest-drawer-body .quest-now{padding:12px 14px}.quest-drawer-body .quest-now h4{font-size:18px}.quest-drawer-body .quest-now p{font-size:14px}
+.quest-drawer-recap{font-size:14px}
+.quest-drawer-foot{display:flex;flex-direction:column;gap:8px}
+.quest-drawer-foot .quest-action{width:100%}
+.quest-drawer-full{display:flex;align-items:center;gap:6px;min-height:40px;padding:0;border:0;background:none;color:var(--bp-gold);font:14px Arial,sans-serif;cursor:pointer}
+:is(.quest-tab,.quest-entry,.quest-drawer-tabs button,.quest-drawer-close,.quest-drawer-full,.quest-picker):focus-visible{outline:2px solid #fff0cb;outline-offset:2px}
+/* Phones and narrow windows: the list folds into a picker, and the tabs shrink to a slim rail. */
+@media(max-width:960px),(max-height:560px){
+ #quest-sheet[data-mode="log"]{height:calc(100dvh - 2 * var(--sheet-gap-y,12px));max-height:calc(100dvh - 2 * var(--sheet-gap-y,12px));padding:4px}
+ #quest-sheet[data-mode="log"][open]{display:flex}
+ #quest-sheet[data-mode="log"] .backpack-heading{padding:6px 8px 6px 12px;gap:10px;position:static;background:none}
+ #quest-sheet[data-mode="log"] .backpack-emblem svg{width:22px;height:22px}
+ #quest-sheet[data-mode="log"] .backpack-heading h2{font-size:18px}
+ #quest-sheet[data-mode="log"] .backpack-capacity{font-size:12px;order:0;flex-basis:auto}
+ #quest-sheet[data-mode="log"] .backpack-close{width:36px;height:36px}
+ .quest-log{grid-template-columns:58px minmax(0,1fr)}
+ .quest-list{display:none}
+ .quest-rail{gap:6px;padding:8px 0}.quest-tab{width:52px;font-size:10px}.quest-tab .quest-icon{width:40px;height:40px}
+ .quest-picker{display:block;margin:8px 12px 0;min-height:40px;padding:6px 10px;border:1px solid var(--bp-gold-dim);border-radius:8px;background:#12322a;color:var(--bp-ink);font:700 14px Georgia,serif}
+ .quest-picker[hidden]{display:none}
+ .quest-banner{padding:8px 14px 8px;margin-top:8px}.quest-banner h3{font-size:22px}.quest-banner small{font-size:10px}
+ .quest-columns{gap:12px;padding:10px 12px}
+ .quest-now{padding:10px 12px}.quest-now h4{font-size:17px}.quest-now p{font-size:13.5px}.quest-now .quest-next{font-size:13px;padding:6px 8px}
+ .quest-recap{font-size:13.5px;line-height:1.45}.quest-steps li{padding:6px 0;font-size:13px}
+ .quest-foot{padding:8px 12px;position:sticky;bottom:0;background:#0f281f}
+ .quest-foot .quest-action{min-height:40px;font-size:14px}
+ .quest-side{padding:10px 12px}
+}
+@media(max-width:620px){.quest-columns{grid-template-columns:1fr}}
+@media(max-height:560px){
+ #quest-drawer{width:min(340px,calc(100vw - 120px));padding:8px 12px max(8px,var(--safe-b,0px)) max(14px,calc(var(--safe-l,0px) + 8px));gap:7px}
+ .quest-drawer-head h2{font-size:16px}.quest-drawer-close{width:30px;height:30px}.quest-drawer-tabs button{padding:4px 10px}
+ .quest-drawer-body{gap:7px}.quest-drawer-body .quest-now{padding:9px 11px;gap:4px}.quest-drawer-body .quest-now h4{font-size:15px}.quest-drawer-body .quest-now-body{display:none}
+ .quest-drawer-recap{display:none}.quest-drawer-body .quest-steps li{padding:4px 0}
+ .quest-drawer-foot{flex-direction:row;align-items:center;gap:10px}.quest-drawer-foot .quest-action{width:auto;flex:1;min-height:36px;font-size:13px}.quest-drawer-full{font-size:12px;min-height:36px}
+}
 /* Player health: the fill drops at once, the pale trail catches up so each hit reads clearly. */
 #player-hp{margin:4px 0 6px}
 #player-hp .hp-row{display:flex;justify-content:space-between;align-items:baseline;font:600 10px monospace;color:#f3d9c6;text-shadow:0 1px 0 #0009}
