@@ -4,7 +4,8 @@ import {World} from '../src/world.js';
 import {CODEX_ENTRIES} from '../src/codex.js';
 import {CODEX_IDS,STORY_REVEALS,ENCOUNTER_RANGE,codexRevealed,revealedCount,noteEncounters,storyRevealed} from '../src/codex-discovery.js';
 import {captureSave,restoreSave} from '../src/save-format.js';
-import {SCENES} from '../src/story.js';
+import {SCENES,STORY_STAGES} from '../src/story.js';
+import {monstersAwake} from '../src/spawns.js';
 const fresh=(story=true)=>{const w=new World(()=>.2,{adventure:true,story});w.journeyId='codex-test';return w;};
 
 test('discovery covers every index entry and only real story scenes',()=>{
@@ -52,4 +53,11 @@ test('encounters are saved, and older saves without them still load',async()=>{
  const restored=restoreSave(JSON.parse(JSON.stringify(save)));assert.deepEqual([...restored.codex],['deer','gardener']);
  const legacy=JSON.parse(JSON.stringify(save));delete legacy.state.codex;assert.equal(restoreSave(legacy).codex.size,0);
  const bad=JSON.parse(JSON.stringify(save));bad.state.codex=['dragon'];assert.throws(()=>restoreSave(bad),/creature index/);
+});
+
+test('every later chapter keeps the earlier reveals, so shadow walkers keep spawning',()=>{
+ const w=fresh();w.story.scene=null;
+ for(const stage of STORY_STAGES.slice(STORY_STAGES.indexOf('awakening'))){
+  w.story.stage=stage;assert.equal(storyRevealed(w,'shadow-walker'),true,stage);assert.equal(monstersAwake(w),true,stage);
+ }
 });

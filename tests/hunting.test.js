@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {World} from '../src/world.js';
 import {damage,attack,special,updateProjectiles,combatTargets} from '../src/combat.js';
-import {BEHAVIORS,ENTITY_TYPES,reactionFor} from '../src/entities.js';
+import {ANIMAL_TYPES,BEHAVIORS,ENTITY_TYPES,reactionFor} from '../src/entities.js';
+import {animalPose} from '../src/wildlife-art.js';
 import {animalGround,damageAnimal,updateWildlife} from '../src/wildlife.js';
 import {neutralInput} from '../src/protocol.js';
 import {visibleRabbits} from '../src/rabbits.js';
@@ -63,7 +64,7 @@ test('only animals in the active area can be hit; area travel clears lingering p
  Object.assign(w.player,{x:1700,y:4});w.move(0,-12,false);assert.equal(w.areaId,'windchime');assert.equal(w.projectiles.length,0);
 });
 
-test('deer ignore nearby players, retaliate only after injury, and stop after a bounded pursuit',()=>{
+test('deer ignore nearby players, retaliate only after injury, and keep fighting until Eli leaves the area',()=>{
  const w=fresh(),deer=w.wildlife.find(a=>a.species==='deer'&&a.areaId==='landing');
  Object.assign(w.player,{x:deer.x-35,y:deer.y});const x=deer.x;
  for(let i=0;i<60;i++)updateWildlife(w,1/120);
@@ -74,8 +75,40 @@ test('deer ignore nearby players, retaliate only after injury, and stop after a 
  const health=w.player.health;
  for(let i=0;i<12;i++)updateWildlife(w,1/120);
  assert.equal(w.player.health,health);
+ // Backing off does not end the fight: the deer comes after him.
  Object.assign(w.player,{x:deer.x-400,y:deer.y});updateWildlife(w,1/120);
+ assert.ok(deer.anger>0);assert.equal(deer.attackerId,w.player.id);assert.equal(deer.state,'walk');
+ // Only leaving the area does.
+ w.areaId='windchime';updateWildlife(w,1/120);
  assert.equal(deer.anger,0);assert.equal(deer.attackerId,null);
+});
+
+test('a provoked defensive animal keeps attacking, quickly, until Eli is down',()=>{
+ const w=fresh(),deer=w.wildlife.find(a=>a.species==='deer'&&a.areaId==='landing');
+ Object.assign(w.player,{x:deer.x-35,y:deer.y});
+ damageAnimal(w,deer,1,w.player,0);
+ let hits=0,last=w.player.health;
+ for(let i=0;i<120*20&&w.player.health>0;i++){updateWildlife(w,1/120);w.player.health=Math.max(0,w.player.health);if(w.player.health<last)hits++;last=w.player.health;}
+ assert.equal(w.player.health,0,'the deer never gave up');assert.ok(hits>=8,`${hits} hits`);
+ updateWildlife(w,1/120);assert.equal(deer.anger,0);
+});
+
+test('every defensive animal attacks at least once a second and a half; elk and bears outrun Eli',()=>{
+ for(const [species,spec] of Object.entries(ANIMAL_TYPES).filter(([,s])=>s.behavior==='defensive'))assert.ok(spec.attackWindup+spec.attackCooldown<=1.65,species);
+ // Eli walks at 195.
+ assert.ok(ANIMAL_TYPES.elk.chaseSpeed>195);assert.ok(ANIMAL_TYPES.bear.chaseSpeed>195);
+});
+
+test("Eli's hits cannot stop a defensive animal's swing",()=>{
+ const w=fresh(),deer=w.wildlife.find(a=>a.species==='deer'&&a.areaId==='landing');
+ Object.assign(w.player,{x:deer.x-35,y:deer.y});
+ damageAnimal(w,deer,1,w.player,0);updateWildlife(w,.01);assert.equal(deer.state,'attack');
+ const {x,y}=deer,windup=deer.attackRemaining,health=w.player.health;
+ // Heavy hits mid-swing: no knockback, the windup keeps counting down, and the swing still plays.
+ damageAnimal(w,deer,1,w.player,Math.PI,340);damageAnimal(w,deer,1,w.player,Math.PI,340);
+ assert.equal(deer.vx,0);assert.equal(deer.attackRemaining,windup);assert.notEqual(animalPose(deer).state,'hurt');
+ for(let i=0;i<60;i++)updateWildlife(w,1/120);
+ assert.equal(deer.x,x);assert.equal(deer.y,y);assert.ok(w.player.health<health,'the swing landed');
 });
 
 test('deer windup can be dodged and dashing prevents retaliation damage',()=>{

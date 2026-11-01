@@ -55,11 +55,14 @@ export function damageAnimal(world,animal,amount,source,angle,knockback=0){
  if(world.matchState!=='playing'||source.health<=0||!huntableInArea(world,animal)||!Number.isFinite(amount)||amount<=0)return false;
  const taken=amount*(source.progression?.damageMultiplier??1)*(1+(source.progression?.passive('hunting.damage')??0));
  animal.health=Math.max(0,animal.health-taken);animal.hurtRemaining=.25;animal.alert=3;
+ // A defensive animal that is already fighting stands its ground: hits do not push it back, so they cannot spoil its swing.
+ const fighting=animal.behavior==='defensive'&&animal.anger>0;
  if(animal.behavior==='defensive'){
   // A bear rears and roars the first time it is hurt, before it comes after its attacker.
-  if(animal.roar&&!(animal.anger>0)&&animal.health>0){animal.roarRemaining=animal.roar;animal.time=0;}
-  animal.attackerId=source.id;animal.anger=6;
- }animal.threat={x:source.x,y:source.y};animal.vx+=Math.cos(angle)*knockback*.45;animal.vy+=Math.sin(angle)*knockback*.45;
+  if(animal.roar&&!fighting&&animal.health>0){animal.roarRemaining=animal.roar;animal.time=0;}
+  animal.attackerId=source.id;animal.anger=1;
+ }animal.threat={x:source.x,y:source.y};
+ if(!fighting){animal.vx+=Math.cos(angle)*knockback*.45;animal.vy+=Math.sin(angle)*knockback*.45;}
  if(animal.species==='rabbit'){animal.state='idle';animal.time=0;}
  world.effects.push({name:'animal-hit',label:`-${Math.round(taken)}`,x:animal.x,y:animal.y-25,angle:0,life:.6,duration:.6});
  if(animal.health===0){
@@ -117,10 +120,13 @@ function runAway(world,a,dt,threat){
   const look=Math.atan2(p.y-a.y,p.x-a.x);a.direction={x:Math.cos(look),y:Math.sin(look)};
  }
 }
+function calmDown(a){a.anger=0;a.attackerId=null;a.attackRemaining=0;a.roarRemaining=0;a.state='idle';a.time=0;a.wait=.8;}
 export function updateWildlife(world,dt){
  if(!world.adventure||world.matchState!=='playing')return;
  const p=world.player;
  for(const a of world.wildlife){
+  // Escaping to another area ends a fight; the animal has settled by the time Eli comes back.
+  if(a.areaId!==world.areaId&&a.anger>0)calmDown(a);
   if(a.areaId!==world.areaId||a.health<=0)continue;
   a.time+=dt;a.alert=Math.max(0,a.alert-dt);a.calm=Math.max(0,(a.calm||0)-dt);
   const distance=Math.hypot(a.x-p.x,a.y-p.y),alive=p.health>0;
@@ -132,12 +138,13 @@ export function updateWildlife(world,dt){
   if(reaction==='pursue'){updateMonster(world,a,dt);continue;}
   if(reaction==='retaliate'){
    const target=world.actors.find(actor=>actor.id===a.attackerId),range=target?Math.hypot(target.x-a.x,target.y-a.y):Infinity;
-   a.anger=Math.max(0,a.anger-dt);a.attackCooldownRemaining=Math.max(0,(a.attackCooldownRemaining||0)-dt);
-   if(!target||target.health<=0||range>a.leashRange||Math.hypot(a.x-a.home.x,a.y-a.home.y)>a.leashRange||a.anger<=0){
-    a.anger=0;a.attackerId=null;a.attackRemaining=0;a.state='idle';a.time=0;a.wait=.8;
+   a.attackCooldownRemaining=Math.max(0,(a.attackCooldownRemaining||0)-dt);
+   // Once provoked it fights to the end: it only lets go when its attacker falls or leaves the area.
+   if(!target||target.health<=0||(target.areaId??world.areaId)!==a.areaId){
+    calmDown(a);
    }else{
     const angle=Math.atan2(target.y-a.y,target.x-a.x);a.direction={x:Math.cos(angle),y:Math.sin(angle)};
-    if(a.roarRemaining>0){a.state='roar';a.roarRemaining=Math.max(0,a.roarRemaining-dt);a.anger=6;continue;}
+    if(a.roarRemaining>0){a.state='roar';a.roarRemaining=Math.max(0,a.roarRemaining-dt);continue;}
     if(a.attackRemaining>0){
      a.state='attack';a.attackRemaining=Math.max(0,a.attackRemaining-dt);
      if(a.attackRemaining===0){
