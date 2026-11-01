@@ -40,7 +40,8 @@ export const WORLD_DATA=Object.freeze({
   "abandoned-quarry":{cap:10,chance:0.45,respawnSeconds:120,tables:{land:{"ash-archer":10,fox:10,goat:35,"shadow-walker":25,stoneshade:20},water:{eel:50,inkeel:20,turtle:30}}},
   "broken-watch":{cap:9,chance:0.45,respawnSeconds:120,tables:{land:{"ash-archer":30,fox:10,goat:20,"shadow-walker":40}}},
   "tidecave-coast":{cap:9,chance:0.45,respawnSeconds:120,tables:{land:{crab:45,"drowned-soldier":25,"shadow-walker":30},water:{eel:35,inkeel:35,seal:30}}},
-  "outer-shallows":{cap:6,chance:0.45,respawnSeconds:120,tables:{land:{crab:40,"drowned-soldier":40,"shadow-walker":20},water:{eel:35,inkeel:40,seal:25}}}
+  "outer-shallows":{cap:6,chance:0.45,respawnSeconds:120,tables:{land:{crab:40,"drowned-soldier":40,"shadow-walker":20},water:{eel:35,inkeel:40,seal:25}}},
+  "listening-glade":{cap:6,chance:0.5,respawnSeconds:90,tables:{land:{deer:30,elk:30,fox:15,rabbit:25}}}
  },
  spawnSlots:[
   {id:"rabbit-0",areaId:"landing",habitat:"land",x:1460,y:1540,start:"rabbit"},
@@ -512,7 +513,16 @@ export const WORLD_DATA=Object.freeze({
   {id:"outer-shallows-land-5",areaId:"outer-shallows",habitat:"land",x:2160,y:534},
   {id:"outer-shallows-water-1",areaId:"outer-shallows",habitat:"water",x:2747,y:1149},
   {id:"outer-shallows-water-2",areaId:"outer-shallows",habitat:"water",x:1931,y:864},
-  {id:"outer-shallows-water-3",areaId:"outer-shallows",habitat:"water",x:1681,y:757}
+  {id:"outer-shallows-water-3",areaId:"outer-shallows",habitat:"water",x:1681,y:757},
+  {id:"listening-glade-land-1",areaId:"listening-glade",habitat:"land",x:1404,y:951},
+  {id:"listening-glade-land-2",areaId:"listening-glade",habitat:"land",x:700,y:1293},
+  {id:"listening-glade-land-3",areaId:"listening-glade",habitat:"land",x:1349,y:204},
+  {id:"listening-glade-land-4",areaId:"listening-glade",habitat:"land",x:1743,y:1380},
+  {id:"listening-glade-land-5",areaId:"listening-glade",habitat:"land",x:775,y:643},
+  {id:"listening-glade-land-6",areaId:"listening-glade",habitat:"land",x:389,y:584},
+  {id:"listening-glade-land-7",areaId:"listening-glade",habitat:"land",x:1404,y:1489},
+  {id:"listening-glade-land-8",areaId:"listening-glade",habitat:"land",x:1107,y:914},
+  {id:"listening-glade-land-9",areaId:"listening-glade",habitat:"land",x:1720,y:206}
  ],
  npcs:[
   {id:"village-fisher",name:"Fisher",areaId:"village-port",x:700,y:640,greeting:"The boats are sound. We were lucky last night.",spriteId:"villager-fisher"},
