@@ -43,8 +43,27 @@ export const ANIMAL_TYPES=Object.freeze({
  eel:{name:'Eel',maxHealth:24,radius:12,habitat:'water',speed:36,fleeSpeed:100,fearRange:110,huntXp:12,loot:'eel'},
  // Monster: hunts Eli on sight (src/monsters.js). Slower than Eli at a run, so he can always break away.
  'shadow-walker':{behavior:BEHAVIORS.AGGRESSIVE,spriteId:'nightwalker',name:'Shadow Walker',maxHealth:80,radius:16,habitat:'land',speed:38,fearRange:0,
-  noticeRange:240,noticeDelay:.6,loseRange:460,leashRange:620,chaseSpeed:122,attackDamage:16,attackRange:58,attackWindup:.55,attackRecover:.4,attackCooldown:1.5,huntXp:40,loot:'shadow-walker'}
+  noticeRange:240,noticeDelay:.6,loseRange:460,leashRange:620,chaseSpeed:122,attackDamage:16,attackRange:58,attackWindup:.55,attackRecover:.4,attackCooldown:1.5,huntXp:40,loot:'shadow-walker'},
+ // The shadow walker kinds: the same hunt, each with its own strengths. All stay slower than Eli at a run.
+ // Hollow Stag: an infected deer or elk. Gallops after Eli (its sheet has a run row), low health, antler swing.
+ 'hollow-stag':{...monster('Hollow Stag'),maxHealth:60,radius:18,speed:48,noticeRange:260,chaseSpeed:165,attackDamage:14,attackRange:64,attackWindup:.45,attackRecover:.35,attackCooldown:1.3,huntXp:45,loot:'hollow-stag'},
+ // Gloam Boar: an infected boar. Less health than a boar, a harder hit that throws Eli back.
+ 'gloam-boar':{...monster('Gloam Boar'),maxHealth:55,radius:16,speed:42,chaseSpeed:150,attackDamage:20,attackRange:56,attackWindup:.5,attackRecover:.45,attackCooldown:1.6,knockback:240,huntXp:40,loot:'gloam-boar'},
+ // Stoneshade: shadow in quarry stone. Very slow, very tough, a long windup into a big slam.
+ stoneshade:{...monster('Stoneshade'),maxHealth:220,radius:22,speed:22,noticeRange:200,chaseSpeed:64,attackDamage:32,attackRange:72,attackWindup:1,attackRecover:.8,attackCooldown:2.4,knockback:260,huntXp:90,loot:'stoneshade'},
+ // Whisperer: faint and hard to see (fade) until it notices Eli, then it fades in and lunges.
+ whisperer:{...monster('Whisperer'),fade:true,maxHealth:70,radius:16,speed:34,noticeRange:170,noticeDelay:.5,chaseSpeed:138,attackDamage:18,attackRange:68,attackWindup:.5,attackRecover:.45,attackCooldown:1.6,huntXp:55,loot:'whisperer'},
+ // Mire Walker: lies hidden under the water by the path until Eli comes close, rises, and its grab slows him (seconds).
+ 'mire-walker':{...monster('Mire Walker'),hidden:true,grab:2,maxHealth:90,radius:18,speed:26,noticeRange:150,noticeDelay:1,chaseSpeed:84,attackDamage:10,attackRange:62,attackWindup:.6,attackRecover:.5,attackCooldown:2,huntXp:50,loot:'mire-walker'},
+ // Drowned Soldier: wades into the shallows (wades: how far from the shore, in pixels) where Eli cannot follow.
+ 'drowned-soldier':{...monster('Drowned Soldier'),wades:150,maxHealth:100,radius:16,speed:32,chaseSpeed:108,attackDamage:18,attackRange:60,attackWindup:.6,attackRecover:.45,attackCooldown:1.6,huntXp:55,loot:'drowned-soldier'},
+ // Ash Archer: keeps its distance (keepAway) and shoots arrows from range. Eli can dash through an arrow.
+ 'ash-archer':{...monster('Ash Archer'),ranged:true,keepAway:170,arrowSpeed:330,maxHealth:60,radius:15,speed:36,noticeRange:300,chaseSpeed:112,attackDamage:14,attackRange:290,attackWindup:.7,attackRecover:.4,attackCooldown:2,huntXp:50,loot:'ash-archer'},
+ // Inkeel: the first hostile water creature. It swims up to the bank and strikes at Eli on docks and ledges.
+ inkeel:{...monster('Inkeel'),habitat:'water',maxHealth:80,radius:18,speed:40,noticeRange:220,chaseSpeed:132,attackDamage:20,attackRange:96,attackWindup:.55,attackRecover:.5,attackCooldown:1.8,huntXp:60,loot:'inkeel'}
 });
+// familiar:false — the kinds have no familiar or shard of their own yet.
+function monster(name){return {behavior:BEHAVIORS.AGGRESSIVE,familiar:false,name,habitat:'land',fearRange:0,noticeRange:240,noticeDelay:.6,loseRange:460,leashRange:620};}
 export function animalTraits(species){
  const spec=ANIMAL_TYPES[species];if(!spec)throw Error(`Unknown animal species: ${species}`);
  return {entityType:ENTITY_TYPES.ANIMAL,species,spriteId:species,behavior:BEHAVIORS.PASSIVE,huntable:true,...spec,health:spec.maxHealth,vx:0,vy:0,hurtRemaining:0,deathRemaining:0};

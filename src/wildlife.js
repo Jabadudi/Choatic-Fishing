@@ -12,7 +12,9 @@ export function animalGround(animal,x,y){
  const area=areaFor(animal.areaId),margin=animal.species==='rabbit'?80:Math.max(30,animal.radius+10);
  if(x<margin||y<margin||x>area.width-margin||y>area.height-margin)return false;
  if(animal.species==='rabbit'&&(y<110||y>area.height-100||waterDistance(x,y,animal.areaId)<=22))return false;
- return animal.habitat==='water'?isWater(x,y,animal.areaId)&&waterDistance(x,y,animal.areaId)<-animal.radius:walkable(x,y,animal.areaId);
+ if(animal.habitat==='water')return isWater(x,y,animal.areaId)&&waterDistance(x,y,animal.areaId)<-animal.radius;
+ // A wader (the Drowned Soldier) can also walk out into the water, up to its reach from the shore.
+ return walkable(x,y,animal.areaId)||!!animal.wades&&isWater(x,y,animal.areaId)&&waterDistance(x,y,animal.areaId)>-animal.wades;
 }
 export function moveAnimal(animal,dx,dy){
  const steps=Math.max(1,Math.ceil(Math.hypot(dx,dy)/4)),sx=dx/steps,sy=dy/steps;

@@ -35,6 +35,12 @@ export const LOOT_ITEMS=Object.freeze({
  'Eel Oil':{name:'Eel Oil',category:'upgrade-materials',description:'A small flask of oil. It keeps leather and lamps going.'},
  'Shadow Ichor':{name:'Shadow Ichor',category:'upgrade-materials',description:'Black, cold and slow to pour. It drinks the light around it.'},
  'Rusted Axe Head':{name:'Rusted Axe Head',category:'upgrade-materials',description:'Pitted iron from a shadow walker’s axe. A smith could rework it.'},
+ 'Hollow Antler':{name:'Hollow Antler',category:'upgrade-materials',description:'A Hollow Stag’s antler, black at the core and light as dry reed. Shadow still creeps along the tines.'},
+ 'Gloam Hide':{name:'Gloam Hide',category:'upgrade-materials',description:'Coarse hide from a Gloam Boar, stiff with dried shadow. It turns a blade better than any boar hide.'},
+ 'Shadowstone':{name:'Shadowstone',category:'upgrade-materials',description:'A chip of quarry stone from a Stoneshade, heavy and faintly warm, with dark veins that move when you look away.'},
+ 'Mire Moss':{name:'Mire Moss',category:'upgrade-materials',description:'Wet, dark moss pulled off a Mire Walker. It never dries out, and it smells of the deep reeds.'},
+ 'Ash Arrowhead':{name:'Ash Arrowhead',category:'upgrade-materials',description:'A black iron arrowhead from an Ash Archer’s quiver, still flaking ash.'},
+ 'Ink Sac':{name:'Ink Sac',category:'upgrade-materials',description:'An Inkeel’s ink sac. The ink inside is black enough to swallow lamplight.'},
  'Black Light Shard':{name:'Black Light Shard',category:'trophies',description:'A sliver of darkness that moves when you are not looking at it.'},
  // Artifacts drop at a rolled rarity (see artifacts.js).
  ...Object.fromEntries(Object.entries(ARTIFACTS).map(([id,a])=>[a.name,{name:a.name,category:'artifacts',artifact:id,description:a.description}])),
@@ -60,7 +66,16 @@ export const LOOT_TABLES=Object.freeze({
  seal:[{item:'Seal Blubber',chance:1},{item:'Seal Pelt',chance:0.4},{item:FAMILIARS['seal'].shard,chance:SHARD_CHANCES['seal']}],
  turtle:[{item:'Turtle Meat',chance:1},{item:'Turtle Shell',chance:.4},{item:'River Pearl',chance:.05},artifactEntry('mossback-scute'),{item:FAMILIARS['turtle'].shard,chance:SHARD_CHANCES['turtle']}],
  eel:[{item:'Eel Fillet',chance:1},{item:'Eel Skin',chance:.35},{item:'Eel Oil',chance:.2},artifactEntry('lodestone'),{item:FAMILIARS['eel'].shard,chance:SHARD_CHANCES['eel']}],
- 'shadow-walker':[{item:'Shadow Ichor',chance:1},{item:'Rusted Axe Head',chance:.3},{item:'Black Light Shard',chance:.05},artifactEntry('black-light-heart'),{item:FAMILIARS['shadow-walker'].shard,chance:SHARD_CHANCES['shadow-walker']}]
+ 'shadow-walker':[{item:'Shadow Ichor',chance:1},{item:'Rusted Axe Head',chance:.3},{item:'Black Light Shard',chance:.05},artifactEntry('black-light-heart'),{item:FAMILIARS['shadow-walker'].shard,chance:SHARD_CHANCES['shadow-walker']}],
+ // The shadow walker kinds: ichor always, and something of whatever the shadow took.
+ 'hollow-stag':[{item:'Shadow Ichor',chance:1},{item:'Hollow Antler',chance:.35},{item:'Black Light Shard',chance:.05}],
+ 'gloam-boar':[{item:'Shadow Ichor',chance:1},{item:'Gloam Hide',chance:.35},{item:'Black Light Shard',chance:.05}],
+ stoneshade:[{item:'Shadow Ichor',chance:1},{item:'Shadowstone',chance:.5},{item:'Black Light Shard',chance:.1}],
+ whisperer:[{item:'Shadow Ichor',chance:1},{item:'Black Light Shard',chance:.15}],
+ 'mire-walker':[{item:'Shadow Ichor',chance:1},{item:'Mire Moss',chance:.4},{item:'Black Light Shard',chance:.05}],
+ 'drowned-soldier':[{item:'Shadow Ichor',chance:1},{item:'Rusted Axe Head',chance:.4},{item:'Black Light Shard',chance:.05}],
+ 'ash-archer':[{item:'Shadow Ichor',chance:1},{item:'Ash Arrowhead',chance:.4},{item:'Black Light Shard',chance:.05}],
+ inkeel:[{item:'Shadow Ichor',chance:1},{item:'Ink Sac',chance:.35},{item:'Black Light Shard',chance:.05}]
 });
 export function rollLoot(table,random,luck=1){
  return (LOOT_TABLES[table]||[]).flatMap(entry=>entry.chance>=1||random()<Math.min(1,entry.chance*luck)?[entry.artifact?artifactItem(entry.artifact,rollRarity(random,luck)):{...LOOT_ITEMS[entry.item]}]:[]);

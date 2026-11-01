@@ -18,6 +18,16 @@ export function walkClips(frames,cycle,{layout='rows'}={}){
  const at=(d,i)=>layout==='columns'?i*4+d:d*8+i;
  return Object.fromEntries(['right','left','down','up'].map((dir,d)=>[`walk:${dir}`,{frames:Array.from({length:counts[d]},(_,i)=>at(d,i)),cycle}]));
 }
+// A shadow walker kind's sheet: walk rows 0-3, then the attack and hurt rows (first frame index of each).
+function shadowKind(id,frameSize,offset,{attack,hurt,cycle,extra={}}){
+ return {asset:`${id}-sheet.png`,frameSize,columns:8,scale:.5,anchor:[.5,1],offset:[0,offset],mirror:'right',mirrorDirections:{left:'right'},animations:{
+  idle:{frames:[0]},'idle:right':{frames:[0]},'idle:down':{frames:[16]},'idle:up':{frames:[24]},
+  ...walkClips(8,cycle),
+  raise:{frames:[attack,attack+1,attack+2,attack+3],loop:false},swing:{frames:[attack+2,attack+3,attack+4,attack+5,attack+6,attack+7],fps:8,loop:false},
+  hurt:{frames:[hurt,hurt+1],fps:8,loop:false},death:{frames:[hurt+1,hurt+2,hurt+3,hurt+4,hurt+5,hurt+6,hurt+7],fps:6,loop:false},
+  ...extra
+ }};
+}
 // How long Brume's bow and lying down take, in seconds. The familiar times them from these.
 export const BRUME_TIMING=Object.freeze({bow:1.6,lieDown:2.4,restBeforeSleep:6});
 export const VILLAGER_LOOKS=[
@@ -201,6 +211,26 @@ export const SPRITES={
   'run:right':{frames:[0,1,2,3,4,5,6,7],cycle:.6},'run:down':{frames:[16,17,18,19,20,21,22,23],cycle:.6},'run:up':{frames:[24,25,26,27,28,29,30,31],cycle:.6},
   hurt:{frames:[72,73,74],fps:10,loop:false},death:{frames:[75,76,77,78,79],fps:5,loop:false}
  }},
+ // The shadow walker kinds, cut by scripts/prepare-shadow-walker-sprites.py from art/sprites/mobs/<id>/. Rows 0-3 walk; then one
+ // row of 8 per action, facing right. raise plays across the windup and swing starts on the windup's last two frames (the
+ // strike begins .25 s in, src/wildlife-art.js); the defeat row is the hit (its first frame) and then breaking up into ash.
+ 'hollow-stag':shadowKind('hollow-stag',[560,214],12,{attack:32,hurt:48,cycle:1.1,extra:{'run:right':{frames:[40,41,42,43,44,45,46,47],cycle:.6}}}),
+ 'gloam-boar':shadowKind('gloam-boar',[248,103],10,{attack:32,hurt:40,cycle:.9}),
+ stoneshade:shadowKind('stoneshade',[394,209],14,{attack:32,hurt:40,cycle:1.6}),
+ // The Whisperer's row 4 fades out and back in; it fades in (36-39) as it notices Eli.
+ whisperer:shadowKind('whisperer',[548,187],20,{attack:40,hurt:48,cycle:1.3,extra:{appear:{frames:[36,37,38,39],loop:false}}}),
+ // The Mire Walker lies under the water as a ripple (32) and rises (32-39) when it notices Eli; row 5 the grab.
+ 'mire-walker':shadowKind('mire-walker',[278,130],6,{attack:40,hurt:48,cycle:1.3,extra:{submerged:{frames:[32]},appear:{frames:[32,33,34,35,36,37,38,39],loop:false}}}),
+ // The Drowned Soldier's rows 4-7 are the wading walk, used while it stands in water.
+ 'drowned-soldier':shadowKind('drowned-soldier',[248,131],5,{attack:64,hurt:72,cycle:1.2,extra:{
+  ...Object.fromEntries(Object.entries(walkClips(8,1.4)).map(([k,c])=>[k.replace('walk','wade'),{...c,frames:c.frames.map(f=>f+32)}])),
+  'wade-idle':{frames:[32]},'wade-idle:right':{frames:[32]},'wade-idle:down':{frames:[48]},'wade-idle:up':{frames:[56]}}}),
+ // The Ash Archer draws (32-35) and looses (36-39); row 5 stepping back, played while it backs away from Eli.
+ 'ash-archer':shadowKind('ash-archer',[232,134],7,{attack:32,hurt:48,cycle:1.1,extra:{back:{frames:[40,41,42,43,44,45,46,47],cycle:.9}}}),
+ // The arrow's 4 flight frames, pointing right; the renderer turns it to its heading.
+ 'ash-arrow':{asset:'ash-arrow.png',frameSize:[56,23],columns:4,scale:.5,anchor:[.5,.5],offset:[0,0],animations:{idle:{frames:[0,1,2,3],fps:12}}},
+ // The Inkeel's walk set is its swim; row 4 the strike up out of the water.
+ inkeel:shadowKind('inkeel',[268,167],28,{attack:32,hurt:40,cycle:1.2}),
  // 4×4 grid of 64px cells: stand, walk, leap, graze. Cells keep ~5px below the hooves.
  deer:{asset:'deer-sheet.png',frameSize:[64,64],columns:4,scale:1,anchor:[.5,1],offset:[0,25],mirror:'left',animations:{
   idle:{frames:[0,1,2,3],fps:3},walk:{frames:[4,5,6,7],fps:8},
