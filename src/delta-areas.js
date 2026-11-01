@@ -231,5 +231,348 @@ area({id:'long-boardwalk',num:'9.2',name:'Long Boardwalk',frame:[288,438,136,206
   {edge:'south',from:325,to:335,target:'marsh',label:'Shellback Marsh'}
  ]});
 
+// 10.1 North Shallows: below the Great Bridge the river slows around Reed Isle. Stepping stones reach the Bridge Pool
+// ledge under the arches; fords hop east to the islets, where the trail from Lookout Heights comes down the bank.
+area({id:'north-shallows',num:'10.1',name:'North Shallows',frame:[428,592,86,146],size:[2600,950],base:'water',ground:'meadow',
+ shapes:[
+  ['land',[[428,86],[472,86],[468,96],[456,104],[440,108],[428,112]],{zone:'forest'}],
+  ['land',[[504,86],[592,86],[592,118],[578,116],[560,114],[540,112],[522,104],[508,96]],{zone:'forest'}],
+  ['land',[[455,98],[469,98],[469,104],[455,104]],{zone:'rock'}],
+  ['land',[[442,124],[450,114],[466,112],[486,114],[500,122],[498,132],[482,138],[460,138],[446,134]],{zone:'sand'}],
+  ['land',[[496,100],[506,98],[512,104],[506,110],[496,108]],{zone:'sand'}],
+  ['land',[[508,118],[520,112],[536,116],[540,124],[528,130],[512,128]],{zone:'sand'}]
+ ],
+ zones:[['meadow',[[450,124],[456,117],[470,116],[486,118],[494,124],[484,132],[464,134],[452,130]]],['meadow',[[512,120],[522,116],[534,120],[530,126],[516,126]]]],
+ cliffs:[[[540,86],[592,86],[592,100],[560,102],[544,96]]],
+ walks:[[[428,130],[436,129],[444,128]]],
+ fords:[[[462,113],[462,103]],[[499,123],[509,122]],[[503,109],[510,117]],[[530,115],[532,109]],[[524,129],[524,146]]],
+ roads:[[[532,86],[528,94],[534,102],[532,110]]],
+ props:[{kind:'arch',at:[474,88]},{kind:'arch',at:[488,88]},{kind:'arch',at:[502,88]},{kind:'heron',at:[468,117]},{kind:'heron',at:[473,119]},{kind:'stone',at:[566,112]}],
+ places:[
+  {id:'bridge-pool',name:'Bridge Pool',at:[462,101],text:'A stone ledge under the arches of the Great Bridge. The water below is deep and fast, and the big river fish hold in it.'},
+  {id:'reed-isle',name:'Reed Isle',at:[472,126],text:'A big islet of reeds and grass in the middle of the river. White birds rest on its tip and do not mind you much.'},
+  {id:'north-islet',name:'North Islet',at:[503,104],text:'A small sandy islet, one step off the ford. Good for casting into the current.'},
+  {id:'east-islet',name:'East Islet',at:[525,122],text:'A grassy islet where the trail from the heights meets the fords. The middle channel runs south from here.'},
+  {id:'creek-mouth',name:'Creek Mouth',at:[562,113],text:'Spring Creek tumbles in from the east, cold and clear from Springmouth Cave. Fish here that live nowhere else in the delta.'}
+ ],
+ exits:[
+  {edge:'north',from:527,to:537,target:'lookout-heights',label:'Lookout Heights'},
+  {edge:'west',from:125,to:135,target:'long-boardwalk',label:'Long Boardwalk'},
+  {edge:'south',from:519,to:529,target:'egret-isles',label:'Egret Isles'}
+ ]});
+
+// 10.2 Egret Isles: calm, warm water around Egret Isle, where the great egret roosts. Wooded isles to the south, the
+// main channel bending down the east, and an old boat at a landing where a path leads off toward the quarry.
+area({id:'egret-isles',num:'10.2',name:'Egret Isles',frame:[434,586,138,200],size:[2600,1060],base:'water',ground:'meadow',
+ shapes:[
+  ['land',[[476,148],[500,142],[530,141],[548,148],[552,164],[540,174],[518,172],[496,164],[480,158]]],
+  ['land',[[462,170],[478,164],[496,168],[500,186],[488,196],[466,194],[456,182]],{zone:'forest'}],
+  ['land',[[434,174],[450,176],[454,190],[440,198],[434,198]],{zone:'forest'}],
+  ['land',[[504,182],[516,178],[528,184],[524,198],[506,200]],{zone:'forest'}],
+  ['land',[[566,138],[586,138],[586,200],[546,200],[550,188],[560,174],[566,160],[566,148]],{zone:'forest'}],
+  ['land',[[434,138],[478,138],[470,144],[446,146],[434,144]],{zone:'sand'}]
+ ],
+ zones:[['sand',[[476,148],[500,142],[530,141],[548,148],[552,164],[540,174],[518,172],[496,164],[480,158],[484,154],[500,147],[528,146],[544,152],[546,163],[538,169],[520,168],[498,160],[486,156]]]],
+ walks:[[[487,159],[485,168]],[[462,184],[451,186]],[[474,190],[472,200]],[[498,184],[507,184]]],
+ fords:[[[524,138],[524,146]],[[551,158],[567,156]],[[522,196],[532,200]]],
+ roads:[[[566,155],[576,157],[586,160]]],
+ props:[{kind:'heron',at:[526,152]},{kind:'nest',at:[530,150]},{kind:'boat',at:[561,150]},{kind:'dock',at:[566,152]}],
+ places:[
+  {id:'egret-isle',name:'Egret Isle',at:[524,156],text:'The long middle islet. The great egret roosts here, tall and white, and watches the water for hours without moving.'},
+  {id:'old-boat-landing',name:'Old Boat Landing',at:[568,156],text:'An old boat tied at a landing on the east bank. A path leads off east toward the quarry.'},
+  {id:'wooded-isle',name:'Wooded Isle',at:[480,180],text:'A small isle under alders. Plank walks join it to Egret Isle and to Stilt Reach in the south.'}
+ ],
+ exits:[
+  {edge:'north',from:519,to:529,target:'north-shallows',label:'North Shallows'},
+  {edge:'south',from:466,to:478,target:'stilt-reach',label:'Stilt Reach'},
+  {edge:'south',from:526,to:536,target:'heron-islands',label:'Heron Islands'},
+  {edge:'east',from:154,to:164,target:'abandoned-quarry',label:'Abandoned Quarry'}
+ ]});
+
+// 6.1 The Great Bridge: the Silverflow comes down a gorge from the north-west and passes under the Great Bridge's
+// arches. A broken older bridge stands upstream; a branch drops off the south-west edge as the Silverfall.
+area({id:'great-bridge',num:'6.1',name:'The Great Bridge',frame:[416,506,0,100],size:[1700,1890],base:'land',ground:'meadow',
+ shapes:[
+  ['water',[[416,8],[428,12],[440,22],[456,30],[468,42],[476,56],[484,68],[500,80],[506,86],[506,100],[476,100],[476,86],[470,76],[462,62],[450,48],[436,38],[424,32],[416,30]]],
+  ['water','line',[[476,88],[460,92],[444,95],[430,98],[416,100]],5]
+ ],
+ zones:[['forest',[[456,0],[506,0],[506,60],[490,56],[478,40],[462,24],[440,8],[440,0]]],['forest',[[416,76],[430,80],[446,84],[470,82],[470,100],[416,100]]],['rock',[[416,30],[424,32],[436,38],[450,48],[462,62],[470,76],[476,86],[466,86],[456,72],[446,60],[434,48],[422,40],[416,40]]]],
+ bridges:[{pts:[[424,72],[450,72],[476,73],[500,74],[506,74]],width:4.5},[[422,90],[428,96],[433,100]]],
+ roads:[[[416,44],[422,56],[426,66],[424,72]],[[424,72],[422,82],[422,90]]],
+ props:[{kind:'arch',at:[466,78]},{kind:'arch',at:[488,80]},{kind:'pillar',at:[442,26]},{kind:'pillar',at:[448,30]},{kind:'ruin',at:[434,18]},{kind:'sign',at:[420,58]}],
+ places:[
+  {id:'great-bridge-span',name:'The Great Bridge',at:[462,72],text:'A long stone bridge on tall arches, high over the gorge. The Silverflow roars underneath, fast and silver-white.'},
+  {id:'broken-bridge',name:'Broken Bridge',at:[430,44],text:'An older, smaller bridge, long since broken. Two pillars still stand in the river where its span used to be.'},
+  {id:'silverfall-head',name:'Silverfall Head',at:[426,90],text:'A rock stair winds down beside the Silverfall, where a branch of the river drops off the edge toward the channels.'}
+ ],
+ exits:[
+  {edge:'west',from:38,to:50,target:'old-roads',label:'Old Roads'},
+  {edge:'south',from:428,to:438,target:'falls-channels',label:'Falls Channels'},
+  {edge:'east',from:68,to:80,target:'lookout-heights',label:'Lookout Heights'}
+ ]});
+
+// 6.2 Lookout Heights: high ground east of the river under a ruined lookout tower. The road from the bridge forks
+// north-east to Springmouth Cave, and a trail runs south down to the shallows.
+area({id:'lookout-heights',num:'6.2',name:'Lookout Heights',frame:[500,586,0,100],size:[1600,1860],base:'land',ground:'meadow',
+ shapes:[['water',[[500,80],[506,84],[510,100],[500,100]]]],
+ zones:[['forest',[[540,0],[586,0],[586,22],[560,36],[544,46],[540,30]]],['forest',[[550,60],[586,44],[586,100],[540,100],[544,84]]],['rock',[[510,14],[532,12],[536,34],[526,44],[512,40]]],['forest',[[500,0],[530,0],[510,12],[500,30]]],['forest',[[500,40],[512,44],[520,60],[500,64]]]],
+ roads:[[[500,74],[518,72],[532,68]],[[532,68],[546,52],[560,40],[574,34],[586,30]],[[532,68],[531,80],[530,90],[532,100]],[[532,68],[528,52],[524,40]]],
+ props:[{kind:'tower',at:[521,26]},{kind:'ruin',at:[530,30]},{kind:'sign',at:[536,72]},{kind:'cairn',at:[514,36]}],
+ places:[
+  {id:'ruined-lookout',name:'Ruined Lookout',at:[522,36],text:'A ruined stone lookout tower. From its foot you can see the whole delta: the bridge, the shallows, and the sea far to the south.'},
+  {id:'road-fork',name:'Road Fork',at:[534,70],text:'The bridge road splits here. North-east to Springmouth Cave, south down the trail to the shallows.'}
+ ],
+ exits:[
+  {edge:'west',from:68,to:80,target:'great-bridge',label:'The Great Bridge'},
+  {edge:'east',from:24,to:36,target:'springmouth-cave',label:'Springmouth Cave'},
+  {edge:'south',from:526,to:536,target:'north-shallows',label:'North Shallows'}
+ ]});
+
+// 5.1 Aqueduct Ruins: an old waterworks. The aqueduct's arches cross from south-west to north-east, two of them
+// fallen; water spills through the first gap into the Spill Pool. The Sluice Wall sends channels south to 9.
+area({id:'aqueduct-ruins',num:'5.1',name:'Aqueduct Ruins',frame:[260,422,40,102],size:[2600,1300],base:'land',ground:'meadow',
+ shapes:[
+  ['water','line',[[260,60],[272,64],[284,72],[292,78]],2],
+  ['water','line',[[272,102],[280,92],[288,82],[292,78]],2],
+  ['water','line',[[292,78],[304,78],[318,78],[332,76]],2.6],
+  ['water',[[330,70],[346,66],[354,72],[350,80],[334,82],[326,77]]],
+  ['water','line',[[338,82],[340,92],[342,102]],2],
+  ['water','line',[[366,84],[368,92],[372,102]],2],
+  ['water','line',[[352,80],[380,82],[396,86],[404,94],[406,102]],2]
+ ],
+ zones:[['forest',[[260,40],[300,40],[296,50],[290,60],[272,54],[260,50]]],['forest',[[260,84],[276,86],[270,102],[260,102]]],['forest',[[300,94],[330,96],[336,102],[300,102]]],['forest',[[410,60],[422,58],[422,102],[408,102],[406,90]]],
+  ['rock',[[316,74],[372,66],[404,62],[410,80],[380,90],[320,90]]],['dirt',[[298,66],[330,60],[370,52],[408,44],[418,52],[410,58],[372,62],[330,68],[300,72]]]],
+ roads:[[[260,56],[272,58],[286,64],[296,72],[304,80]],[[266,102],[270,94],[276,88],[286,84],[296,82],[304,80]],[[304,80],[318,86],[334,88],[352,88],[378,90],[396,92],[400,102]],[[300,74],[298,64],[298,52],[300,40]]],
+ bridges:[[[286,80],[290,87]],[[302,74],[305,84]],[[336,88],[344,88]],[[364,90],[372,90]]],
+ props:[{kind:'pillar',at:[310,63]},{kind:'pillar',at:[320,61]},{kind:'pillar',at:[329,60]},{kind:'pillar',at:[358,55]},{kind:'pillar',at:[368,53]},{kind:'pillar',at:[387,50]},{kind:'pillar',at:[397,48]},{kind:'pillar',at:[406,47]},{kind:'pillar',at:[416,45]},{kind:'ruin',at:[342,60]},{kind:'ruin',at:[381,53]},{kind:'wheel',at:[340,84]},{kind:'wheel',at:[367,86]},{kind:'wheel',at:[388,84]},{kind:'statue',at:[392,72]},{kind:'pillar',at:[400,68]},{kind:'pillar',at:[322,92],solid:0}],
+ places:[
+  {id:'the-aqueduct',name:'The Aqueduct',at:[362,62],text:'A long row of stone arches, taller than any house in Willowback. Two have fallen. Water still runs along the top and spills through the first gap.'},
+  {id:'spill-pool',name:'Spill Pool',at:[338,64],text:'Water from the broken arch pours into a round pool. Something square and dark lies on the bottom, too regular to be a rock.'},
+  {id:'sluice-wall',name:'Sluice Wall',at:[386,89],text:'An old wall with three wooden gates and their wheels. They still send water south toward the channels.'},
+  {id:'arch-court',name:'Arch Court',at:[394,66],text:'An old paved yard under the arches, scattered with fallen blocks and lone pillars.'},
+  {id:'two-streams',name:'Two Streams',at:[277,62],text:'Elk Brook and the stream from the Stone Clearing meet here and run east together toward the pool.'}
+ ],
+ exits:[
+  {edge:'west',from:51,to:61,target:'elk-run',label:'Elk Run'},
+  {edge:'south',from:261,to:271,target:'stone-clearing',label:'Stone Clearing'},
+  {edge:'north',from:295,to:305,target:'old-roads',label:'Old Roads'},
+  {edge:'south',from:395,to:405,target:'falls-channels',label:'Falls Channels'}
+ ]});
+
+// 4.3 Stone Clearing: an open clearing ringed by forest with an old Stone Circle at its heart. Greyback Ridge and
+// Echo Rock rise to the north-east; a spring at the ridge's foot runs east, and a branch tumbles south into the river.
+area({id:'stone-clearing',num:'4.3',name:'Stone Clearing',frame:[214,292,100,176],size:[1800,1750],base:'land',ground:'forest',
+ shapes:[
+  ['water',[[250,176],[262,170],[276,166],[292,164],[292,176]]],
+  ['water','line',[[266,138],[272,140],[280,142],[286,143],[292,143]],1.6],
+  ['water','line',[[280,143],[281,150],[282,158],[283,167]],1.6],
+  ['land',[[214,150],[232,138],[248,140],[256,152],[258,166],[244,176],[214,176]],{zone:'meadow'}],
+  ['land',[[250,122],[262,118],[276,124],[278,138],[272,152],[258,156],[250,146],[248,132]],{zone:'rock'}],
+  ['land',[[268,156],[280,156],[280,164],[268,166]],{zone:'rock'}]
+ ],
+ roads:[[[214,172],[224,167],[234,161],[242,155],[246,150]],[[246,150],[247,140],[252,130],[260,124],[270,114],[280,106],[290,100]],[[246,150],[258,156],[266,154],[276,150],[286,149],[292,148]],[[266,154],[270,158],[274,160]]],
+ bridges:[[[277,150],[285,149]]],
+ props:[{kind:'stone',at:[241.0,163.0],solid:14},{kind:'stone',at:[239.8,165.9],solid:14},{kind:'stone',at:[236.9,167.4],solid:14},{kind:'stone',at:[233.5,166.9],solid:14},{kind:'stone',at:[231.3,164.5],solid:14},{kind:'stone',at:[231.3,161.5],solid:14},{kind:'stone',at:[233.5,159.1],solid:14},{kind:'stone',at:[236.9,158.6],solid:14},{kind:'stone',at:[239.8,160.1],solid:14},{kind:'stone',at:[264,131],solid:34,size:2},{kind:'cairn',at:[256,124]}],
+ places:[
+  {id:'stone-circle',name:'Stone Circle',at:[236,159],text:'Nine standing stones in a ring, older than anyone can say. The grass inside is greener than the grass outside.'},
+  {id:'echo-rock',name:'Echo Rock',at:[258,126],text:'A great grey stone split down the middle, on top of Greyback Ridge. Shout into the crack and it shouts back, a little late.'},
+  {id:'ridge-spring',name:'The Spring',at:[264,141],text:'A small spring bubbles out at the foot of the ridge and runs off east as a stream.'},
+  {id:'rapids-ledge',name:'Rapids Ledge',at:[274,161],text:'A rocky ledge where the stream tumbles into the village river. The water is fast and full of bubbles.'}
+ ],
+ exits:[
+  {edge:'west',from:164,to:175,target:'forest-edge',label:'Forest Edge'},
+  {edge:'north',from:283,to:292,target:'aqueduct-ruins',label:'Aqueduct Ruins'},
+  {edge:'east',from:143,to:153,target:'falls-channels',label:'Falls Channels'}
+ ]});
+
+// 4.1 Forest Edge: the fringe of the forest behind the village fence. The track climbs through the Woodcutters' Glade
+// into the Whispering Woods; a side path runs east past Mirror Pond toward the Stone Clearing.
+area({id:'forest-edge',num:'4.1',name:'Forest Edge',frame:[128,218,142,194],size:[1900,1100],base:'land',ground:'forest',
+ shapes:[
+  ['land',[[160,180],[164,166],[176,160],[188,162],[190,176],[176,182]],{zone:'meadow'}],
+  ['land',[[184,150],[218,148],[218,170],[188,168]],{zone:'meadow'}],
+  ['water',[[192,154],[204,152],[214,155],[215,162],[206,165],[195,163]]]
+ ],
+ roads:[[[146,194],[150,187],[158,180],[168,174],[176,170],[182,163],[185,155],[186,148],[186,142]],[[180,166],[190,168],[200,170],[210,172],[218,174]]],
+ walks:[[[186,158],[195,159]]],
+ props:[{kind:'hut',at:[170,157]},{kind:'logs',at:[162,179]},{kind:'sign',at:[181,168]},{kind:'bench',at:[178,172]}],
+ places:[
+  {id:'woodcutters-glade',name:'Woodcutters’ Glade',at:[174,172],text:'An open clearing of stumps and sawdust. Someone has been cutting here for years and stacking the logs very neatly.'},
+  {id:'woodcutters-hut',name:'Woodcutter’s Hut',at:[172,163],text:'A small hut with an axe by the door and smoke from the chimney. Nobody answers, but the kettle is warm.'},
+  {id:'mirror-pond',name:'Mirror Pond',at:[194,160],text:'A still pond ringed with reeds and lily pads. On a calm day the trees stand upside down in it.'},
+  {id:'berry-bushes',name:'Berry Bushes',at:[156,186],text:'Bramble bushes along the track, heavy with berries. A few are ripe enough to eat.'}
+ ],
+ exits:[
+  {edge:'north',from:181,to:191,target:'whispering-woods',label:'Whispering Woods'},
+  {edge:'east',from:169,to:179,target:'stone-clearing',label:'Stone Clearing'}
+ ]});
+
+// 4.2 Whispering Woods: a dark, close forest where the wind sounds like voices. Narrow trails open into three
+// clearings: the Whispering Hollow at the centre, Fernglade in the west, the Sunspot Glade across Whisper Brook.
+area({id:'whispering-woods',num:'4.2',name:'Whispering Woods',frame:[122,222,96,150],size:[2000,1080],base:'land',ground:'forest',
+ shapes:[
+  ['water','line',[[212,96],[210,104],[206,112],[203,120],[204,130],[206,140],[205,150]],2],
+  ['land',[[156,112],[170,110],[178,118],[176,128],[164,131],[154,124]],{zone:'clear'}],
+  ['land',[[126,128],[140,126],[150,134],[146,146],[132,148],[124,142]],{zone:'meadow'}],
+  ['land',[[196,110],[212,108],[218,118],[210,126],[198,124]],{zone:'meadow'}]
+ ],
+ roads:[[[186,150],[184,142],[182,134],[180,126],[182,118],[185,108],[186,96]],[[182,130],[172,130],[164,131],[156,134],[146,137],[134,140],[122,140]],[[140,136],[136,126],[132,116],[127,106],[122,100]],[[181,122],[172,121]],[[185,116],[196,116],[201,117]]],
+ bridges:[[[200,117],[209,116]]],
+ props:[{kind:'big-tree',at:[160,114],glow:'#cfe8ff',solid:26},{kind:'big-tree',at:[174,113],glow:'#cfe8ff',solid:26},{kind:'stone',at:[166,121],solid:12},{kind:'cave',at:[129,131]},{kind:'logs',at:[212,114]}],
+ places:[
+  {id:'whispering-hollow',name:'Whispering Hollow',at:[168,124],text:'A ring of old hollow trunks around a mossy stump. The whispers are loudest here. If you stand still they almost make words.'},
+  {id:'fernglade',name:'Fernglade',at:[137,139],text:'Ferns up to your shoulders and mushrooms that glow faintly blue. Something has made a den under the roots.'},
+  {id:'sunspot-glade',name:'Sunspot Glade',at:[206,118],text:'A patch of sunlight around a great fallen tree beside Whisper Brook. Warm, bright, and full of butterflies.'}
+ ],
+ exits:[
+  {edge:'south',from:181,to:191,target:'forest-edge',label:'Forest Edge'},
+  {edge:'north',from:181,to:191,target:'listening-glade',label:'The Listening Tree'},
+  {edge:'west',from:135,to:145,target:'upper-falls',label:'Glasswater Pools'},
+  {edge:'west',from:96,to:105,target:'trailhead',label:'Deepwood Trailhead'}
+ ]});
+
+// 2.1 Listening Glade: the end of the Chapter 4 road. A wide, quiet glade of moss, and the Listening Tree filling the
+// whole north side, its roots reaching into the glade and a dark doorway in its south face.
+area({id:'listening-glade',num:'2.1',name:'Listening Glade',frame:[110,210,0,100],size:[2000,1800],base:'land',ground:'forest',
+ shapes:[
+  ['land',[[122,62],[140,58],[170,58],[196,54],[206,60],[206,74],[198,86],[188,92],[170,94],[146,92],[128,86],[118,76]],{zone:'meadow'}],
+  ['land',[[116,58],[130,48],[150,44],[170,46],[186,52],[196,58],[176,64],[130,66]],{zone:'clear'}],
+  ['water',[[176,70],[184,67],[191,70],[190,76],[182,78],[175,75]]]
+ ],
+ roads:[[[186,100],[186,94],[183,88],[176,82],[166,78],[156,74]],[[110,92],[114,86],[119,80],[125,75],[133,73]],[[186,74],[194,68],[200,64],[206,62],[210,62]]],
+ props:[{kind:'big-tree',at:[155,44],scale:3,solid:120,clear:260,glow:'#ffe7a8'},{kind:'logs',at:[134,62],solid:0},{kind:'logs',at:[170,64],solid:0},{kind:'stone',at:[197,68]},{kind:'lantern',at:[150,72]},{kind:'lantern',at:[160,72]}],
+ places:[
+  {id:'listening-tree',name:'The Listening Tree',at:[155,55],text:'A trunk wider than a house and roots as thick as logs. In its south face is a dark doorway into the hollow. Everything is very quiet here.'},
+  {id:'listening-ring',name:'Listening Ring',at:[155,74],text:'A half-circle of glowing mushrooms in front of the door. Stand inside it and the forest seems to hold its breath.'},
+  {id:'elk-stone',name:'Elk Stone',at:[195,73],text:'A pale flat rock on the east side of the glade. Hoofprints all around it, and a few white hairs caught on the edge.'},
+  {id:'root-pool',name:'Root Pool',at:[183,81],text:'A small still pool caught between two roots. The water is so clear it looks empty.'}
+ ],
+ exits:[
+  {edge:'south',from:181,to:191,target:'whispering-woods',label:'Whispering Woods'},
+  {edge:'west',from:87,to:97,target:'trailhead',label:'Deepwood Trailhead'},
+  {edge:'east',from:57,to:67,target:'elk-run',label:'Elk Run'}
+ ]});
+
+// 2.2 Elk Run: the elk's own woods. The Elk Path winds from the glade up to the Grey Spire; halfway along, a trail
+// crosses Elk Brook on a plank bridge and leads down to the Aqueduct Ruins.
+area({id:'elk-run',num:'2.2',name:'Elk Run',frame:[204,268,0,100],size:[1600,1800],base:'land',ground:'forest',
+ shapes:[
+  ['water','line',[[220,0],[223,16],[228,30],[234,42],[242,52],[252,60],[260,64],[268,65]],2],
+  ['water',[[240,52],[248,50],[252,56],[246,61],[239,58]]],
+  ['land',[[234,68],[248,66],[258,72],[258,84],[246,88],[234,82]],{zone:'clear'}],
+  ['land',[[208,76],[220,74],[226,82],[218,90],[208,88]],{zone:'meadow'}],
+  ['land',[[254,14],[264,12],[267,24],[262,32],[254,28]],{zone:'rock'}]
+ ],
+ roads:[[[204,62],[212,58],[222,53],[232,49]],[[241,45],[250,40],[256,32],[259,24]],[[248,42],[253,52],[256,58]],[[260,67],[263,70],[268,73]],[[232,50],[236,60],[240,68]],[[214,57],[214,68],[216,76]]],
+ fords:[[[233,49],[241,45]]],
+ bridges:[[[256,58],[260,67]]],
+ props:[{kind:'pillar',at:[260,26],scale:3,solid:34},{kind:'big-tree',at:[244,78],glow:'#ffd36a',solid:26},{kind:'big-tree',at:[252,74],glow:'#ffd36a',solid:26},{kind:'nest',at:[214,84]},{kind:'nest',at:[219,86]}],
+ places:[
+  {id:'grey-spire',name:'Grey Spire',at:[256,31],text:'An old weathered standing stone, taller than three men. From its foot you can see over the trees to the river.'},
+  {id:'goldleaf-stand',name:'Goldleaf Stand',at:[240,72],text:'A grove of golden trees that stays autumn-coloured all year. The leaves never seem to fall.'},
+  {id:'elk-beds',name:'Elk Beds',at:[216,80],text:'A hollow of flattened ferns where the elk herd rests. Still warm.'},
+  {id:'brook-pool',name:'Brook Pool',at:[241,63],text:'Elk Brook widens into a clear little pool. Trout hold in the shade of the bank.'}
+ ],
+ exits:[
+  {edge:'west',from:57,to:67,target:'listening-glade',label:'Listening Glade'},
+  {edge:'east',from:68,to:78,target:'aqueduct-ruins',label:'Aqueduct Ruins'}
+ ]});
+
+// 1.1 Trailhead: a crossroads in the deep woods. Trails meet at the Crossing beside an old woodsman's camp; a path
+// runs west past the Mossrock boulders to the Falls Overlook, where rock steps go down to Glasswater.
+area({id:'trailhead',num:'1.1',name:'Trailhead',frame:[8,122,36,112],size:[2000,1400],base:'land',ground:'forest',
+ shapes:[
+  ['water','line',[[22,36],[26,48],[32,62],[36,74],[40,86],[42,98],[42,112]],2.4],
+  ['land',[[88,64],[104,62],[110,70],[106,80],[92,84],[84,76]],{zone:'clear'}],
+  ['land',[[72,74],[84,72],[88,82],[80,90],[70,86]],{zone:'meadow'}],
+  ['land',[[38,94],[56,92],[66,98],[62,108],[44,110],[36,104]],{zone:'rock'}],
+  ['land',[[64,84],[80,88],[84,98],[74,104],[64,100]],{zone:'rock'}]
+ ],
+ roads:[[[84,36],[85,44],[88,52],[94,60],[97,68]],[[104,72],[110,76],[116,80],[122,82]],[[100,78],[106,88],[112,96],[118,104],[122,108]],[[92,74],[84,80],[76,86],[66,90],[56,96],[50,100]],[[50,100],[53,105],[54,112]],[[97,68],[100,78]],[[92,74],[97,68],[104,72]]],
+ props:[{kind:'sign',at:[96,70]},{kind:'tent',at:[76,77]},{kind:'logs',at:[82,86]},{kind:'stone',at:[68,94]},{kind:'stone',at:[78,98]},{kind:'stone',at:[72,102]},{kind:'bench',at:[46,98]}],
+ places:[
+  {id:'the-crossing',name:'The Crossing',at:[99,73],text:'A mossy clearing where three trails meet. An old wooden signpost points to the Listening Tree, Willowback and Deepwood.'},
+  {id:'woodsmans-camp',name:'Woodsman’s Camp',at:[80,82],text:'A lean-to, a fire ring with log seats, a chopping block and a woodpile. The ashes are cold, but not very old.'},
+  {id:'mossrock',name:'Mossrock Boulders',at:[64,92],text:'Grey boulders furred with moss, some taller than Eli. Something small lives under the biggest one.'},
+  {id:'falls-overlook',name:'Falls Overlook',at:[50,101],text:'A rocky ledge with a wooden rail at the lip of the falls. Far below, the Glasswater pools shine turquoise.'}
+ ],
+ exits:[
+  {edge:'north',from:80,to:90,target:'deep-trail',label:'Deep Trail'},
+  {edge:'east',from:77,to:87,target:'listening-glade',label:'Listening Glade'},
+  {edge:'east',from:102,to:111,target:'whispering-woods',label:'Whispering Woods'},
+  {edge:'south',from:49,to:59,target:'upper-falls',label:'Upper Falls'}
+ ]});
+
+// 1.2 Deep Trail: the oldest, darkest part of the forest. The Goldleaf Trail climbs north-west to the Fallen Giant,
+// a trunk taller than Eli that closes the way deeper into the Whispering Forest for now.
+area({id:'deep-trail',num:'1.2',name:'Deep Trail',frame:[2,122,2,92],size:[2000,1600],base:'land',ground:'forest',
+ shapes:[
+  ['land',[[4,20],[24,17],[30,30],[25,44],[6,44]],{zone:'meadow'}],
+  ['water',[[8,26],[18,23],[24,30],[20,38],[10,38]]],
+  ['water','line',[[18,36],[20,48],[22,60],[24,74],[26,92]],2],
+  ['land',[[34,50],[54,46],[62,56],[52,68],[36,66]],{zone:'marsh'}],
+  ['land',[[92,14],[108,12],[114,24],[104,32],[92,28]],{zone:'clear'}]
+ ],
+ roads:[[[82,92],[82,72],[80,56],[76,46],[68,40],[56,34],[44,29],[34,22],[29,16]],[[66,39],[78,32],[90,26],[98,22]],[[42,28],[34,30],[27,32]],[[56,34],[50,42],[46,48]]],
+ props:[{kind:'logs',at:[25,10],scale:3.5,solid:60},{kind:'stilt-hut',at:[104,20]},{kind:'nest',at:[44,58]},{kind:'nest',at:[52,62]},{kind:'big-tree',at:[70,52],glow:'#ffd36a',solid:26},{kind:'big-tree',at:[62,28],glow:'#ffd36a',solid:26}],
+ places:[
+  {id:'fallen-giant',name:'Fallen Giant',at:[31,19],text:'A tree trunk taller than Eli lies across the trail. Beyond it the forest goes on, deeper and darker. There is no way over it. Not yet.'},
+  {id:'spring-pond',name:'Spring Pond',at:[26,33],text:'A small pond fed by a spring. Fallsrun begins here and slips off south through the trees.'},
+  {id:'hunters-lookout',name:'Hunter’s Lookout',at:[99,24],text:'An old platform up in a tree, with a ladder. From the top you can see over the whole forest.'},
+  {id:'thornbrake',name:'Thornbrake',at:[47,49],text:'A tangle of brambles with dens dug underneath. Something growls, then thinks better of it.'}
+ ],
+ exits:[{edge:'south',from:77,to:87,target:'trailhead',label:'Trailhead'}]});
+
+// 3.1 Upper Falls: Fallsrun pours over the Top Falls into the Upper Pool, where a heron stands on a rock island.
+// Rock steps come down from the overlook; a cascade tumbles south-east toward Glasswater.
+area({id:'upper-falls',num:'3.1',name:'Upper Falls',frame:[2,128,100,166],size:[2200,1300],base:'land',ground:'forest',
+ shapes:[
+  ['water','line',[[43,100],[43,110],[44,120],[46,127]],3],
+  ['land',[[40,122],[72,120],[96,128],[96,146],[72,150],[46,146]],{zone:'sand'}],
+  ['water',[[46,126],[70,124],[90,130],[88,141],[70,144],[50,140]]],
+  ['land',[[60,131],[66,130],[68,135],[62,137]],{zone:'rock'}],
+  ['water','line',[[80,141],[80,148],[82,154],[83,160],[83,166]],2],
+  ['land',[[84,140],[100,140],[100,166],[76,166]],{zone:'meadow'}]
+ ],
+ cliffs:[[[2,100],[36,100],[40,112],[38,126],[44,140],[40,152],[30,166],[2,166]]],
+ roads:[[[54,100],[57,104],[52,108],[57,112],[52,116],[56,120],[58,124]],[[58,124],[70,122],[86,126],[92,132],[92,140]],[[92,140],[93,148],[92,156],[90,166]],[[92,133],[104,136],[116,138],[128,140]]],
+ props:[{kind:'heron',at:[64,133]},{kind:'cave',at:[37,112]},{kind:'bench',at:[78,122]}],
+ places:[
+  {id:'top-falls',name:'Top Falls',at:[52,111],text:'Fallsrun pours over the lip above into the pool, in a curtain of white water. Behind it, the rock looks darker, almost like an opening.'},
+  {id:'upper-pool',name:'Upper Pool',at:[72,123],text:'A clear, deep pool full of mist and rainbows. A heron stands on the rock in the middle, ignoring you completely.'},
+  {id:'the-cascade',name:'The Cascade',at:[88,148],text:'The pool spills out of its south-east corner and tumbles down a short rocky cascade toward Glasswater.'}
+ ],
+ exits:[
+  {edge:'north',from:50,to:58,target:'trailhead',label:'Trailhead'},
+  {edge:'east',from:135,to:145,target:'whispering-woods',label:'Whispering Woods'},
+  {edge:'south',from:85,to:95,target:'glasswater',label:'Glasswater Basin'}
+ ]});
+
+// 3.2 Glasswater Basin: the widest, clearest water in the north. The Middle Falls spread into Glasswater, a turquoise
+// pool around Willow Isle, with a jetty and an empty fishing hut on the east shore and the Lower Falls in the south.
+area({id:'glasswater',num:'3.2',name:'Glasswater Basin',frame:[2,130,158,214],size:[2200,1100],base:'land',ground:'forest',
+ shapes:[
+  ['land',[[14,176],[50,166],[78,164],[104,168],[116,180],[112,198],[90,208],[60,210],[30,210],[14,204]],{zone:'sand'}],
+  ['water',[[20,184],[36,178],[56,172],[74,168],[92,168],[106,176],[108,188],[98,198],[80,202],[62,200],[46,204],[30,204],[20,198]]],
+  ['water','line',[[83,158],[83,164],[84,170]],3],
+  ['water','line',[[48,203],[50,208],[51,214]],2],
+  ['land',[[58,176],[70,175],[72,183],[60,184]],{zone:'meadow'}]
+ ],
+ cliffs:[[[2,158],[14,158],[16,175],[10,190],[12,214],[2,214]]],
+ roads:[[[90,158],[94,164],[98,170]],[[98,170],[108,178],[110,188],[104,198],[90,204],[74,206],[60,206],[56,207]],[[56,207],[57,211],[58,214]]],
+ walks:[[[104,190],[98,190]]],
+ props:[{kind:'hut',at:[117,183]},{kind:'big-tree',at:[65,180],solid:0},{kind:'dock',at:[100,190]}],
+ places:[
+  {id:'glasswater-jetty',name:'Glasswater',at:[100,190],text:'A turquoise pool so clear you can see the fish from the jetty. In the west the Clearwater Shallows are sandy and knee-deep.'},
+  {id:'fishing-hut',name:'Fishing Hut',at:[112,190],text:'An empty fishing hut. A net on the wall, a stool by the door, and a kettle that someone meant to come back for.'},
+  {id:'willow-isle',name:'Willow Isle',at:[96,168],text:'A small isle with a single willow in the middle of Glasswater. You would need a boat to reach it.'},
+  {id:'middle-falls',name:'Middle Falls',at:[91,164],text:'The water from the Upper Pool drops in here and spreads out into Glasswater.'},
+  {id:'lower-falls',name:'Lower Falls',at:[56,206],text:'At the south end the water slips over the Lower Falls toward Western Falls. A path goes down beside them.'}
+ ],
+ exits:[
+  {edge:'north',from:87,to:95,target:'upper-falls',label:'Upper Falls'},
+  {edge:'south',from:53,to:63,target:'western-falls',label:'Western Falls'}
+ ]});
+
 export const DELTA_DEFS=DEFS;
 export const DELTA=Object.fromEntries(DEFS.map(def=>[def.id,defineArea(def)]));

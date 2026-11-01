@@ -22,8 +22,13 @@ export function drawAtlasGround(ctx,built,left,top,width,height){
 const R=(ctx,c,x,y,w,h)=>{ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),w,h);};
 function shadow(ctx,x,y,rx,ry){ctx.fillStyle='rgba(20,40,40,.28)';ctx.beginPath();ctx.ellipse(x+4,y+4,rx,ry,0,0,Math.PI*2);ctx.fill();}
 function roof(ctx,x,y,w,h,c,d){ctx.fillStyle=d;ctx.beginPath();ctx.moveTo(x-w/2-6,y);ctx.lineTo(x,y-h);ctx.lineTo(x+w/2+6,y);ctx.closePath();ctx.fill();ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(x-w/2-2,y-2);ctx.lineTo(x,y-h+2);ctx.lineTo(x+w/2+2,y-2);ctx.closePath();ctx.fill();}
+// A prop with `scale` is drawn bigger or smaller around its foot.
 export function drawAtlasProp(ctx,p,t=0){
- const x=Math.round(p.x),y=Math.round(p.y),s=p.scale||1;
+ const s=p.scale||1;if(s===1)return drawProp(ctx,p,t);
+ ctx.save();ctx.translate(p.x*(1-s),p.y*(1-s));ctx.scale(s,s);drawProp(ctx,p,t);ctx.restore();
+}
+function drawProp(ctx,p,t){
+ const x=Math.round(p.x),y=Math.round(p.y);
  switch(p.kind){
   case 'hut':shadow(ctx,x,y,52,14);R(ctx,'#6a4a2e',x-42,y-48,84,48);R(ctx,'#8a6440',x-40,y-46,80,4);for(let i=0;i<5;i++)R(ctx,'#5a3e26',x-40,y-38+i*8,80,1);R(ctx,'#2d2018',x-9,y-28,18,28);roof(ctx,x,y-46,84,34,p.roof||'#8f5a3c','#5a3524');break;
   case 'stilt-hut':for(const dx of [-30,-10,10,30])R(ctx,'#3e2b1c',x+dx-3,y-20,6,34);R(ctx,'#7a5a3a',x-40,y-26,80,8);R(ctx,'#6a4a2e',x-32,y-66,64,40);R(ctx,'#2d2018',x-7,y-50,14,24);roof(ctx,x,y-64,64,30,p.roof||'#a0703c','#634126');break;
