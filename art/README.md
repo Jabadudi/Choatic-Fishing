@@ -38,6 +38,14 @@ Sheet rows are idle, walk or fly, run where present, attack, then extras (howl, 
 
 `scripts/prepare-animal-sprites.py` cuts the art of the spawn plan's eleven new animals (fox, boar, elk, bear, heron, crab, goat, otter, duck, pike, seal) in `sprites/creatures/` into `assets/<id>-sheet.png` (rows 0-3 walk, then one row per action column) and their poses into `assets/codex/<id>.png`. The fox runs away on its run row, the boar rushes Eli on its charge frames once hurt, the elk grazes when idle and sweeps its antlers, and the bear rears up and roars the first time it is hurt before it comes after Eli with claw swipes. The heron spears fish when idle and flies off when Eli gets close; the drawn landmark herons in the delta use its sheet too. Their Index entries, loot and familiars are in `src/codex.js`, `src/loot.js` and `src/familiars.js`; where they spawn is in `src/world-data.js`. The otter and seal live in the water, so their swim sets are their walks and their land sets follow in the sheet; the pike lunges at Eli from the water once hurt, and the goat's headbutt throws him back (`knockback`). `scripts/prepare-shard-icons.py` cuts their familiar shard icons from `sprites/items/new-animal-shards.png`.
 
+## Shadow walker kinds
+
+`sprites/mobs/<id>/` holds the eight kinds (Hollow Stag, Gloam Boar, Stoneshade, Whisperer, Mire Walker, Drowned Soldier, Ash Archer, Inkeel): a column-layout walk sheet, one column per action and a pose for the Index. `python3 scripts/prepare-shadow-walker-sprites.py` packs them into `assets/<id>-sheet.png`, the arrow into `assets/ash-arrow.png`, and the poses into `assets/codex/`.
+
+## Reedwater Delta atlas art
+
+`ground/` holds the eleven ground and water textures; `python3 scripts/prepare-ground-textures.py` shrinks them into `assets/ground/`. `sprites/props/atlas/` holds the tree, plant, rock, prop, walkway and landmark sheets, and `sprites/props/water-motion/` the waterfall and shoreline foam loops; `python3 scripts/prepare-atlas-props.py` cuts them into `assets/props/atlas/` and `assets/waterfall-sheet.png`. The shoreline foam strip is not used yet.
+
 ## Furniture and props
 
 `scripts/prepare-prop-sprites.py OUT_DIR` cuts the six prop sheets into single sprites with the green removed. The pieces the game uses are resized to at most 320 px, saved as WebP in `assets/props/` and listed in `PROPS` in `src/sprite-definitions.js`. Scenes call `drawProp(ctx,id,{x,y,w,h})`, which fits the image inside the box with its bottom centre at `x,y`. Until an image loads, or if it is missing, the scene draws its original shapes, and collision never depends on the artwork. The training yard, blacksmith, inn and home pieces are cut and approved but not used yet.
