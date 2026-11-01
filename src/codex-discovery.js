@@ -5,7 +5,7 @@ import {CHAPTER_THREE_STAGES} from './chapter3.js';
 import {CHAPTER_FOUR_STAGES} from './chapter4.js';
 import {CHAPTER_FIVE_STAGES} from './chapter5.js';
 import {CHAPTER_SIX_STAGES} from './chapter6.js';
-export const CODEX_IDS=Object.freeze(['rabbit','fox','deer','boar','elk','turtle','eel','shadow-walker','croshelda','moonfang','rimejaw','flitlynx','elk-spirit','ocelot','mara','emilia','drayfus','blacksmith','fisher','gardener']);
+export const CODEX_IDS=Object.freeze(['rabbit','fox','deer','boar','elk','bear','turtle','eel','shadow-walker','croshelda','moonfang','rimejaw','flitlynx','elk-spirit','ocelot','mara','emilia','drayfus','blacksmith','fisher','gardener']);
 const STAGES=['arrival','explore','fish','rest','storm','awakening','complete',...CHAPTER_TWO_STAGES,...CHAPTER_THREE_STAGES,...CHAPTER_FOUR_STAGES,...CHAPTER_FIVE_STAGES,...CHAPTER_SIX_STAGES];
 // Each scene that introduces entries, and the first stage the story reaches once that scene has played.
 export const STORY_REVEALS=Object.freeze([

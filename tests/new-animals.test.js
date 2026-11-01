@@ -52,10 +52,24 @@ test('elk graze in Elk Run and the deep woods, and sweep their antlers once hurt
  damageAnimal(w,elk,1e4,w.player,0);assert.ok(w.drops.some(d=>d.item.name==='Elk Meat'));
 });
 
-for(const id of ['fox','boar','elk'])test(`every ${id} clip points at a frame inside its sheet`,()=>{
+test('bears roam the deep trails, rear up and roar when first hurt, then swipe',()=>{
+ for(const id of ['trailhead','deep-trail'])assert.ok(spawnWeights(id,'land').some(([s])=>s==='bear'),id);
+ const w=fresh(),slot=Object.values(SLOTS).find(s=>s.areaId==='deep-trail'&&s.habitat==='land'),bear=createCreature(slot,'bear',{id:'bear-1',seed:4});
+ w.wildlife.push(bear);w.areaId='deep-trail';Object.assign(w.player,{x:bear.x+50,y:bear.y});
+ updateWildlife(w,1/60);assert.notEqual(bear.state,'roar','a calm bear leaves Eli alone');
+ damageAnimal(w,bear,10,w.player,0);bear.hurtRemaining=0;updateWildlife(w,1/60);
+ assert.equal(bear.state,'roar');assert.equal(animalPose(bear).state,'roar');
+ const x=bear.x;for(let i=0;i<30;i++)updateWildlife(w,1/60);assert.equal(bear.x,x,'it stands its ground while it roars');
+ damageAnimal(w,bear,10,w.player,0);bear.hurtRemaining=0;assert.ok(bear.roarRemaining<bear.roar,'a second hit does not start the roar over');
+ for(let i=0;i<60;i++)updateWildlife(w,1/60);
+ assert.equal(bear.state,'attack');assert.equal(animalPose(bear).state,'attack');
+ damageAnimal(w,bear,1e4,w.player,0);assert.ok(w.drops.some(d=>d.item.name==='Bear Meat'));
+});
+
+for(const id of ['fox','boar','elk','bear'])test(`every ${id} clip points at a frame inside its sheet`,()=>{
  const def=SPRITES[id],[w,h]=pngSize(`assets/${def.asset}`),[cw,ch]=def.frameSize;
  assert.equal(w%cw,0);assert.equal(h%ch,0);
  const count=(w/cw)*(h/ch);
  for(const clip of Object.values(def.animations))for(const f of clip.frames)assert.ok(f>=0&&f<count,`frame ${f}`);
- if(id!=='elk')assert.equal(frameIndex(def,'run','',{direction:'right'}),id==='fox'?32:34);
+ if(id==='fox'||id==='boar')assert.equal(frameIndex(def,'run','',{direction:'right'}),id==='fox'?32:34);
 });

@@ -18,6 +18,8 @@ export function animalPose(a){
  const clips=SPRITES[a.spriteId]?.animations||{};
  if(a.state==='flee'||a.state==='walk'&&a.anger>0)return {state:clips['run:right']?'run':'walk',time:t};
  // An attack clip, where there is one, plays across the windup so the hit lands on its last frame.
+ // The bear's roar plays across its rearing time.
+ if(a.state==='roar')return clips.roar?{state:'roar',time:t,duration:a.roar}:{state:'idle',time:t};
  if(a.state==='attack')return clips.attack?{state:'attack',time:t,duration:a.attackWindup}:{state:'idle',time:t};
  return {state:a.state,time:t};
 }
@@ -49,8 +51,8 @@ export function drawAnimalStatus(c,world){
  for(const a of world.animals){
   if(a.health<=0||a.areaId!==world.areaId)continue;
   const near=Math.hypot(a.x-world.player.x,a.y-world.player.y)<150;
-  if(a.health===a.maxHealth&&!a.shiny&&!['notice','chase','attack','strike'].includes(a.state)&&(!near||world.inventory.selected===1))continue;
-  const y=a.y-(a.spriteId==='nightwalker'?66:a.species==='deer'?51:a.species==='rabbit'?42:a.species==='fox'?40:a.species==='boar'?46:a.species==='elk'?96:33);
+  if(a.health===a.maxHealth&&!a.shiny&&!['notice','chase','attack','strike','roar'].includes(a.state)&&(!near||world.inventory.selected===1))continue;
+  const y=a.y-(a.spriteId==='nightwalker'?66:a.species==='deer'?51:a.species==='rabbit'?42:a.species==='fox'?40:a.species==='boar'?46:a.species==='elk'?96:a.species==='bear'?62:33);
   c.fillStyle='#19362de8';c.fillRect(a.x-23,y,46,6);c.fillStyle='#c8d78a';c.fillRect(a.x-22,y+1,44*a.health/a.maxHealth,4);
   c.font='12px monospace';c.textAlign='center';const tag=`${a.name} · ${BEHAVIOR_LABELS[a.behavior]||a.behavior}`;
   // A shiny's tag is gold with a dark edge so it reads on bright grass.

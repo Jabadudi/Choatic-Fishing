@@ -10,6 +10,7 @@ prepare-chapter6-sprites.py, so every sheet follows the house row layout: rows 0
   boar-sheet.png  rows 0-3 walk (7 frames each; the 8th cell is empty), row 4 the charge, row 5 hurt (frames 0-2) and
                   defeat (frames 3-7).
   elk-sheet.png   rows 0-3 walk, row 4 the antler swing, row 5 grazing (idle), row 6 hurt (frames 0-1) and defeat (2-7).
+  bear-sheet.png  rows 0-3 walk, row 4 rearing up to roar, row 5 the claw swipe, row 6 hurt (frames 0-1) and defeat (2-7).
 
 Run from the repository root: python3 scripts/prepare-animal-sprites.py
 Requires Pillow and NumPy.
@@ -65,3 +66,12 @@ if __name__=='__main__':
   mid=ch6.height(frames)
   ch6.pack('elk-sheet.png',[([f],72*2/np.sqrt(ch6.height([f])*mid)) for f in frames]+[(s,k*side/width(s[:1])) for s in strips])
   portrait(d+'elk_pose.png','assets/codex/elk.png')
+  # The bear: a heavy brown bear, about 46 px tall at the shoulder hump walking side-on, so its head is level with Eli's.
+  # Every strip starts on all fours side-on, so each is matched to the walk by its first frame's length.
+  d=SRC+'bear/'
+  frames=ch6.walk(d+'bear_walk-sheet.png',(8,8,8,8),'columns','body');k=46*2/ch6.height(frames[:8]);side=width(frames[:8])
+  # The rearing frames nearly touch (one empty line between the roar's paws and the next frame's head), so that strip
+  # is split on any gap at all.
+  strips=[ch6.strip_column(d+f'bear_{name}-column.png',1 if name=='rear' else 4) for name in ('rear','swipe','hurt')]
+  ch6.pack('bear-sheet.png',[(frames,k)]+[(s,k*side/width(s[:1])) for s in strips])
+  portrait(d+'bear_pose.png','assets/codex/bear.png')

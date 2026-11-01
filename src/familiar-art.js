@@ -5,7 +5,7 @@ import {FAMILIARS} from './familiars.js';
 import {BRUME_TIMING} from './sprite-definitions.js';
 import {drawVillageCreature} from './village-creature-art.js';
 // Familiars reuse their species' artwork, drawn smaller over a spirit glow. Nothing here moves the follower.
-const GLOW={rabbit:'#cfe6ff',fox:'#ffb37a',boar:'#e0b48a',elk:'#e6edc0',deer:'#ffe3a0',turtle:'#a8f0c8',eel:'#9ee6ff','shadow-walker':'#b9a0ff',moonfang:'#dde3ff',rimejaw:'#a6e4ff',flitlynx:'#ffbf8a'};
+const GLOW={rabbit:'#cfe6ff',fox:'#ffb37a',boar:'#e0b48a',elk:'#e6edc0',bear:'#ffc46b',deer:'#ffe3a0',turtle:'#a8f0c8',eel:'#9ee6ff','shadow-walker':'#b9a0ff',moonfang:'#dde3ff',rimejaw:'#a6e4ff',flitlynx:'#ffbf8a'};
 // Guardians run on their sheets' run rows. Stand-ins until each has the standard 4-direction walk set.
 const GUARDIAN_RUN={moonfang:'run',rimejaw:'walk',flitlynx:'walk'};
 // Guardians that have it walk on the 4-direction set instead: the Moonfang is drawn as Brume.

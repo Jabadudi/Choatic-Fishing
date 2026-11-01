@@ -137,6 +137,16 @@ export const SPRITES={
   attack:{frames:[32,33,34,35,36,37],loop:false},
   hurt:{frames:[48,49],fps:8,loop:false},death:{frames:[50,51,52,53,54,55],fps:5,loop:false}
  }},
+ // Brown bear, cut by the same script from art/sprites/creatures/bear/. Rows 0-3 walk; row 4 rearing up to roar (the roar
+ // itself 35-37); row 5 the claw swipe (paw up 41-42, the sweep 43-45); row 6 hurt (48-49) then slumping onto its side (50-55).
+ // A bear that has just been hurt rears and roars before it comes after Eli; the attack lifts the paw and lands on the sweep.
+ bear:{asset:'bear-sheet.png',frameSize:[208,140],columns:8,scale:.5,anchor:[.5,1],offset:[0,3],mirror:'right',mirrorDirections:{left:'right'},animations:{
+  idle:{frames:[0]},'idle:right':{frames:[0]},'idle:down':{frames:[16]},'idle:up':{frames:[24]},
+  ...walkClips(8,1.4),
+  roar:{frames:[32,33,34,35,36,37,38,39],loop:false},
+  attack:{frames:[40,41,42,43,44],loop:false},
+  hurt:{frames:[48,49],fps:8,loop:false},death:{frames:[50,51,52,53,54,55],fps:5,loop:false}
+ }},
  // 4×4 grid of 64px cells: stand, walk, leap, graze. Cells keep ~5px below the hooves.
  deer:{asset:'deer-sheet.png',frameSize:[64,64],columns:4,scale:1,anchor:[.5,1],offset:[0,25],mirror:'left',animations:{
   idle:{frames:[0,1,2,3],fps:3},walk:{frames:[4,5,6,7],fps:8},
@@ -170,4 +180,4 @@ export const STORY_ART={
 // Each scene keeps its drawn shape as the fallback, and collision never depends on this artwork.
 export const PROPS=Object.fromEntries(['cook-stove','lure-box-shelf','photo-side-table','dining-table','chair','bed-green','fishing-rod-rack','oil-lamp','door-mat','rain-barrel','firewood-stack','bed-straw-violet','stool-waterskin','chest-brass','chamber-pot','rug-rust-red','stone-hearth','pot-herb-shelf','carved-post','window-evening','rug-red-blue','round-table','fur-stool','wall-bench','chief-cabinet','tea-set','barrel','lantern-post','well','produce-stall','fish-stall','plank-bench','bench-backrest','net-rack','rope-coils','rowing-boat','rest-shelter','fire-ring-cold','apple-crate','fishing-seat','fish-trap','flower-box','campfire','training-dummy','training-dummy-worn','archery-target','weapon-rack','weapon-barrel','water-trough','water-bucket','hay-bale','spear-crate','willow-tree','log-fence','log-fence-side','training-gate-posts','fence-corner-post','training-wall','dirt-ground','glowing-sword','water-bucket-full','training-gate-arch',...['cabin','chief','lodge'].flatMap(room=>['floor','wall','wall-top','wall-side'].map(part=>`${room}-${part}`))].map(id=>[id,`props/${id}.webp`]));
 // Familiar shards on the ground reuse their inventory icons.
-for(const id of ['rabbit','fox','deer','boar','elk','turtle','eel','shadow-walker','moonfang','rimejaw','flitlynx'])PROPS[`shard-${id}`]=`items/shard-${id}.webp`;
+for(const id of ['rabbit','fox','deer','boar','elk','bear','turtle','eel','shadow-walker','moonfang','rimejaw','flitlynx'])PROPS[`shard-${id}`]=`items/shard-${id}.webp`;

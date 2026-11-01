@@ -21,6 +21,9 @@ export const ANIMAL_TYPES=Object.freeze({
  boar:{behavior:BEHAVIORS.DEFENSIVE,attackDamage:18,attackRange:54,attackWindup:.55,attackCooldown:1.7,chaseSpeed:128,leashRange:300,name:'Bristleback Boar',maxHealth:95,radius:20,habitat:'land',speed:40,fleeSpeed:150,fearRange:150,huntXp:35,loot:'boar'},
  // Grey elk: the Elk Spirit's herd. Calm until hurt, then a long antler sweep with a lot of health behind it.
  elk:{behavior:BEHAVIORS.DEFENSIVE,attackDamage:22,attackRange:68,attackWindup:.65,attackCooldown:1.9,chaseSpeed:118,leashRange:340,name:'Grey Elk',maxHealth:150,radius:26,habitat:'land',speed:46,fleeSpeed:170,fearRange:160,huntXp:50,loot:'elk'},
+ // Brown bear: the strongest animal in the woods. Calm until hurt, then it rears up and roars (roar: seconds) before
+ // coming after Eli, and every claw swipe hits hard. Slow, so Eli can still walk away from it.
+ bear:{behavior:BEHAVIORS.DEFENSIVE,attackDamage:30,attackRange:62,attackWindup:.75,attackCooldown:2.2,chaseSpeed:108,leashRange:320,roar:1.2,name:'Brown Bear',maxHealth:240,radius:26,habitat:'land',speed:36,fleeSpeed:140,fearRange:160,huntXp:75,loot:'bear'},
  turtle:{name:'Turtle',maxHealth:45,radius:14,habitat:'water',speed:18,fleeSpeed:42,fearRange:85,huntXp:15,loot:'turtle'},
  eel:{name:'Eel',maxHealth:24,radius:12,habitat:'water',speed:36,fleeSpeed:100,fearRange:110,huntXp:12,loot:'eel'},
  // Monster: hunts Eli on sight (src/monsters.js). Slower than Eli at a run, so he can always break away.
