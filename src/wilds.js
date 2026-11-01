@@ -277,7 +277,9 @@ function staticArea(ctx,left,top,width,height,id){
 const chunks=new Map(),CHUNK=512,SEAM=2,MAX_CHUNKS=40,AHEAD=CHUNK/2;
 export const clearTerrainCache=()=>chunks.clear();
 // Image loads arrive in bursts, so they mark the cache stale and the next frame repaints once instead of once per image.
-let stale=false;const markStale=()=>{stale=true;};
+let stale=false;const staleListeners=new Set(),markStale=()=>{stale=true;for(const fn of staleListeners)fn();};
+// Other caches of painted ground (the area maps) listen so they repaint once late images arrive.
+export const onTerrainStale=fn=>staleListeners.add(fn);
 onPropLoad(markStale);
 export const cachedChunkCount=()=>chunks.size;
 function buildChunk(key,cx,cy,id){
@@ -331,21 +333,22 @@ function fadeCanopy(key,x,y,big,p,step){
  if(next>.999)fades.delete(key);else fades.set(key,next);
 }
 function pushTree(it,x,y,key,sway,big,near){it.kind='tree';it.x=x;it.oy=y;it.y=y;it.key=key;it.sway=sway;it.big=big;it.near=near;}
-export function drawDepthSorted(ctx,world,view,actors,drawActor){
- const id=world.areaId||'landing',p=world.player,sprite=crownSprite(),bigSprite=crownSprite(true),t=world.elapsed||0,step=Math.min(1,Math.max(0,t-fadeTime)*8);fadeTime=t;
+// still: a one-off picture (the area maps): canopies stay solid and the live fade state is left alone.
+export function drawDepthSorted(ctx,world,view,actors,drawActor,{still=false}={}){
+ const id=world.areaId||'landing',p=world.player,sprite=crownSprite(),bigSprite=crownSprite(true),t=world.elapsed||0,step=Math.min(1,Math.max(0,t-fadeTime)*8);if(!still)fadeTime=t;
  let n=0;
  for(const a of actors){const it=slot(n++);it.kind='actor';it.y=a.y;it.ref=a.ref;}
  for(let gy=Math.floor(view.top/72)-1;gy<=Math.ceil((view.bottom+100)/72);gy++)for(let gx=Math.floor(view.left/72)-1;gx<=Math.ceil(view.right/72)+1;gx++){
   const o=sceneryAt(gx,gy,id);if(!o)continue;
   const near=nearActor(o.x,o.y,actors);if(o.kind!=='tree'&&!near)continue;if(o.kind==='tree'&&!near&&!sprite)continue;
   const it=slot(n++);
-  if(o.kind==='tree'){const key=`${gx},${gy}`;pushTree(it,o.x,o.y,key,hash(gx,gy,21)*6,false,near);if(sprite)fadeCanopy(key,o.x,o.y,false,p,step);}
+  if(o.kind==='tree'){const key=`${gx},${gy}`;pushTree(it,o.x,o.y,key,hash(gx,gy,21)*6,false,near);if(sprite&&!still)fadeCanopy(key,o.x,o.y,false,p,step);}
   else{it.kind=o.kind;it.x=o.x;it.oy=o.y;it.y=o.y+(o.kind==='rock'?8:4);}
   it.art=o.art;
  }
  // Landmark trees (the Hollow Tree) sort the same way; their trunk base stays in the landmark layer.
  if(bigSprite)for(const place of placesFor(id))if(place.kind==='tree'&&place.x>view.left-120&&place.x<view.right+120&&place.y>view.top-40&&place.y<view.bottom+240){
-  const key=`landmark:${place.id}`;pushTree(slot(n++),place.x,place.y,key,hash(place.x,place.y,21)*6,true,nearActor(place.x,place.y,actors));fadeCanopy(key,place.x,place.y,true,p,step);
+  const key=`landmark:${place.id}`;pushTree(slot(n++),place.x,place.y,key,hash(place.x,place.y,21)*6,true,nearActor(place.x,place.y,actors));if(!still)fadeCanopy(key,place.x,place.y,true,p,step);
  }
  if(id==='marsh')for(const object of MARSH_OBJECTS)if(object.x>view.left-180&&object.x<view.right+180&&object.y>view.top-30&&object.y<view.bottom+200){const it=slot(n++);it.kind='marsh';it.y=object.y+12;it.ref=object;}
  if(DISTRICTS[id])for(const object of [...DISTRICTS[id].buildings,...DISTRICTS[id].props])if(object.x>view.left-200&&object.x<view.right+200&&object.y>view.top-30&&object.y<view.bottom+220){const it=slot(n++);it.kind='village';it.y=object.y+18;it.ref=object;}
@@ -369,7 +372,7 @@ export function drawDepthSorted(ctx,world,view,actors,drawActor){
   else{
    const crown=it.big?bigSprite:sprite,k=it.big?2:1;
    if(it.near)leafyTree(ctx,it.x,it.oy,it.big,'stem');
-   if(crown){const sway=Math.round(Math.sin(t*1.2+it.sway)*1.5);ctx.globalAlpha=fades.get(it.key)??1;ctx.drawImage(crown,Math.round(it.x)-48*k+sway,Math.round(it.oy)-100*k);ctx.globalAlpha=1;}
+   if(crown){const sway=Math.round(Math.sin(t*1.2+it.sway)*1.5);ctx.globalAlpha=still?1:fades.get(it.key)??1;ctx.drawImage(crown,Math.round(it.x)-48*k+sway,Math.round(it.oy)-100*k);ctx.globalAlpha=1;}
   }
  }
 }
@@ -432,9 +435,10 @@ function drawLandmark(ctx,p,t=0){
   for(let i=0;i<4;i++){const k=(t/2+i/4)%1;ctx.fillStyle=`rgba(225,250,240,${.8*(1-k)})`;ctx.fillRect(Math.round(x-15+i*10+Math.sin(t*3+i)*2),Math.round(y+4-k*22),3,3);}
  }
 }
-export function drawWilds(ctx,world,view={left:world.player.x-700,right:world.player.x+700,top:world.player.y-500,bottom:world.player.y+500}){
+// still: paint the ground straight onto ctx without the chunk cache (the area maps use it, so they never evict the live chunks).
+export function drawWilds(ctx,world,view={left:world.player.x-700,right:world.player.x+700,top:world.player.y-500,bottom:world.player.y+500},{still=false}={}){
  const id=world.areaId||'landing',area=areaFor(id);ctx.imageSmoothingEnabled=false;
- if(typeof document!=='undefined')drawChunks(ctx,view,id);else staticArea(ctx,view.left,view.top,view.right-view.left,view.bottom-view.top,id);
+ if(typeof document!=='undefined'&&!still)drawChunks(ctx,view,id);else staticArea(ctx,view.left,view.top,view.right-view.left,view.bottom-view.top,id);
  if(id==='guest-lodge'){const stage=world.story?.stage;drawGuestLodge(ctx,{night:['ch5-night','ch5-sleep','ch6-night','ch6-complete'].includes(stage),morning:['ch5-morning','ch6-door'].includes(stage)});if(stage==='ch5-morning'&&!world.story.scene)drawFloatingWriting(ctx,world.player,world.elapsed||0);}
  // The training yard in the farm, drawn each frame because its light and props follow the story.
  if(id===FARM_ID&&view.right>YARD.x&&view.left<YARD.x+YARD.w&&view.bottom>YARD.y&&view.top<YARD.y+YARD.h+60){ctx.save();ctx.translate(YARD.x,YARD.y);drawTrainingGround(ctx,{t:world.elapsed||0,sword:['ch6-buckets'].includes(world.story?.stage)});ctx.restore();}
@@ -472,14 +476,25 @@ export function drawExplorer(ctx,p,time=0){
  ctx.fillStyle=art.shirt||'#71885f';ctx.fillRect(x-11,y-8,22,17);ctx.fillStyle='#a2b580';ctx.fillRect(x-8,y-8,7,10);ctx.fillStyle='#c6a276';ctx.fillRect(x-7,y-20,14,12);ctx.fillStyle=art.hair||'#554739';ctx.fillRect(x-9,y-23,18,6);ctx.fillStyle='#d0b77e';if(art.hat!==false)ctx.fillRect(x-13,y-22,26,4);ctx.fillStyle='#775b44';ctx.fillRect(x-6,y-5,13,14);ctx.fillStyle='#c78066';ctx.fillRect(x-8,y-8,17,3);ctx.fillRect(x-11,y-5,5,8);
  ctx.strokeStyle='#c6ae78';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+10,y);ctx.lineTo(x+Math.cos(p.angle)*30,y+Math.sin(p.angle)*30);ctx.stroke();
 }
-export function paintAtlas(ctx,width,height,player,discovered=new Set(),id='landing'){
+// The blocky map: one colour per ground cell. The area maps show it while the real art is still being painted.
+export function paintAtlasGround(ctx,width,height,id='landing'){
  const area=areaFor(id),sx=width/area.width,sy=height/area.height,step=24;ctx.clearRect(0,0,width,height);
  for(let y=0;y<area.height;y+=step)for(let x=0;x<area.width;x+=step){const surface=surfaceAt(x+12,y+12,id);ctx.fillStyle=surface==='sea'?'#29596d':surface==='water'?(id==='marsh'?'#547e75':'#65a8af'):surface==='sand'?'#c9b78a':surface==='path'?'#c3ac79':paletteAt(x,y,id)[1];ctx.fillRect(x*sx,y*sy,step*sx+1,step*sy+1);}
  if(id==='village')paintVillageBuildings(ctx,sx,sy);
  if(DISTRICTS[id])paintBuildings(ctx,DISTRICTS[id].buildings,sx,sy);
+}
+// Place names, exits and doors over an area map of width × height.
+export function paintAtlasLabels(ctx,width,height,discovered=new Set(),id='landing'){
+ const area=areaFor(id),sx=width/area.width,sy=height/area.height;
  for(const p of placesFor(id)){ctx.fillStyle=discovered.has(p.id)?'#e6bd65':'#e3e1c9';ctx.fillRect(p.x*sx-2,p.y*sy-2,4,4);if(width>400){ctx.font='bold 12px monospace';ctx.textAlign='center';ctx.fillStyle='#203c38';ctx.fillText(p.name,p.x*sx+1,p.y*sy-9);ctx.fillStyle='#fff0c9';ctx.fillText(p.name,p.x*sx,p.y*sy-10);}}
- for(const e of area.exits){const horizontal=e.edge==='east'||e.edge==='west',x=horizontal?(e.edge==='east'?width-8:8):(e.from+e.to)/2*sx,y=horizontal?(e.from+e.to)/2*sy:e.edge==='north'?18:height-10;ctx.fillStyle='#f0d68b';ctx.textAlign=horizontal?(e.edge==='east'?'right':'left'):'center';ctx.font=`bold ${width>400?12:8}px monospace`;ctx.fillText(`${{north:'↑',south:'↓',west:'←',east:'→'}[e.edge]} ${e.label}`,x,y);}
- for(const q of area.portals||[]){ctx.fillStyle='#f0d68b';ctx.textAlign='center';ctx.font=`bold ${width>400?12:8}px monospace`;ctx.fillText(`◆ ${q.label}`,q.x*sx,q.y*sy-6);}
+ for(const e of area.exits){const horizontal=e.edge==='east'||e.edge==='west',x=horizontal?(e.edge==='east'?width-8:8):(e.from+e.to)/2*sx,y=horizontal?(e.from+e.to)/2*sy:e.edge==='north'?18:height-10;ctx.fillStyle='#f0d68b';ctx.textAlign=horizontal?(e.edge==='east'?'right':'left'):'center';ctx.font=`bold ${width>400?12:8}px monospace`;edgeText(ctx,`${{north:'↑',south:'↓',west:'←',east:'→'}[e.edge]} ${e.label}`,x,y);}
+ for(const q of area.portals||[]){ctx.fillStyle='#f0d68b';ctx.textAlign='center';ctx.font=`bold ${width>400?12:8}px monospace`;edgeText(ctx,`◆ ${q.label}`,q.x*sx,q.y*sy-6);}
+}
+// Exit and door signs sit on busy art, so they get a dark outline.
+function edgeText(ctx,text,x,y){ctx.save();ctx.lineWidth=3;ctx.lineJoin='round';ctx.strokeStyle='#14262a';ctx.strokeText(text,x,y);ctx.restore();ctx.fillText(text,x,y);}
+export function paintAtlas(ctx,width,height,player,discovered=new Set(),id='landing'){
+ paintAtlasGround(ctx,width,height,id);paintAtlasLabels(ctx,width,height,discovered,id);
+ const area=areaFor(id),sx=width/area.width,sy=height/area.height;
  if(player){ctx.fillStyle='#fff4be';ctx.beginPath();ctx.arc(player.x*sx,player.y*sy,5,0,Math.PI*2);ctx.fill();}
 }
 
