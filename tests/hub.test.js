@@ -105,7 +105,7 @@ test('only friends see each other; strangers in the same place stay invisible',a
  assert.deepEqual(seen.map(o=>[o.name,o.x,o.y,o.facing]),[['Kestrel',500,410,'left']]);
  assert.equal(seen[0].spriteId,'eli');
  assert.deepEqual(c.others(journey('village',320,400)),[]);
- assert.deepEqual(a.roster().map(p=>[p.nick,p.online,p.area,p.me]),[['Reedling',true,'Willowback Village',true],['Kestrel',true,'Willowback Village',false]]);
+ assert.deepEqual(a.roster().map(p=>[p.nick,p.online,p.area,p.me]),[['Reedling',true,'Willowback Town Square',true],['Kestrel',true,'Willowback Town Square',false]]);
 });
 
 test('friends in other areas are listed but not drawn, and appear when they walk in',async()=>{
@@ -115,7 +115,7 @@ test('friends in other areas are listed but not drawn, and appear when they walk
  for(const hub of [a,b,c])await hub.goOnline();
  a.sync(journey('village',300,400));b.sync(journey('village',500,400));c.sync(journey('marsh',100,100));await settle();
  assert.deepEqual(a.others(journey('village',300,400)).map(o=>o.name),['Kestrel']);
- assert.deepEqual(a.roster().slice(1).map(p=>[p.nick,p.area]),[['Kestrel','Willowback Village'],['Wren','Shellback Marsh']]);
+ assert.deepEqual(a.roster().slice(1).map(p=>[p.nick,p.area]),[['Kestrel','Willowback Town Square'],['Wren','Shellback Marsh']]);
  tick(1);c.sync(journey('village',600,600));b.sync(journey('crossroads',50,50));await settle();
  assert.deepEqual(a.others(journey('village',300,400)).map(o=>o.name),['Wren']);
  assert.equal(b.others(journey('crossroads',50,50)).length,0);

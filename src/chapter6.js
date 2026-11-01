@@ -1,6 +1,6 @@
 import {script,say,think,narrate} from './scene-script.js';
 // Story dialogue only. Chapter 6 opens in Eli's room the morning after he swallows the Region Core,
-// moves to the training ground behind the chief's house, and ends back in his room that night.
+// moves to the guard's training yard out past the Willowback Gate, and ends back in his room that night.
 export const CORE='Region Core',OCELOT='The ocelot';
 export const CHAPTER_SIX_STAGES=['ch6-door','ch6-circle','ch6-spar','ch6-confession','ch6-rack','ch6-cast','ch6-buckets','ch6-night','ch6-complete'];
 export const chapterSix=s=>!!s&&CHAPTER_SIX_STAGES.includes(s.stage);
@@ -9,10 +9,10 @@ export const BUCKET_TRIPS=3;
 const eli=text=>say('Eli',text),mara=text=>say('Mara',text),emilia=text=>say('Emilia',text),drayfus=text=>say('Drayfus',text),ocelot=text=>say(OCELOT,text),core=text=>say(CORE,text);
 export const CHAPTER6_OBJECTIVES={
  'ch6-door':'Chapter 6 · Mara is pounding on the door. Answer it.',
- 'ch6-circle':'Chapter 6 · Take the path north out of the village, past the back of the chief’s house, to the training ground, and meet Drayfus.',
+ 'ch6-circle':'Chapter 6 · Walk east through the Merchant Quarter and out of the Willowback Gate to the training yard on the farm road, and meet Drayfus.',
  'ch6-spar':'Chapter 6 · Talk to Drayfus to spar with him.',
  'ch6-confession':'Chapter 6 · Tell them what you did last night.',
- 'ch6-rack':'Chapter 6 · Choose a weapon from the rack at the back of the training ground.',
+ 'ch6-rack':'Chapter 6 · Choose a weapon from the rack by the north fence of the training yard.',
  'ch6-cast':'Chapter 6 · Stand at the edge of the circle and cast at Drayfus’s sword.',
  'ch6-night':'Chapter 6 · Rest.',
  'ch6-complete':'Chapter 6 complete · Drayfus will wake Eli before the sun.'
@@ -38,10 +38,10 @@ export const CHAPTER6_SCENES={
  'ch6-door':script([
   {title:'Sleepyhead',lines:[narrate('Eli gets his jeans on, mostly, and opens the door. Mara is dressed for training: leather vest, sleeves rolled to the elbow, hair pulled back so tight it looks painful.'),mara('Finally. Come on, sleepyhead. Grandma’s waiting, and Drayfus hates waiting even more.'),mara('Why are you sweating? Why were you on the floor? I could hear you yelling all the way from the house.'),eli('Bad dream.'),think('Eli','True. Just not the whole truth.')]},
   {title:'Do you see the cat?',lines:[eli('Hey. Quick question. Totally normal question. Do you see the cat?'),narrate('Mara looks at the corner. The ocelot looks at Mara. Mara looks at Eli.'),mara('What cat?'),ocelot('Ocelot.'),narrate('She does not react. Not even a flicker.'),mara('There’s no cat, Eli.'),eli('Right. No. Of course. There’s no cat.'),mara('Are you sure you’re okay?'),eli('I’m great. Never been better. Really.')]},
-  {title:'Only you',lines:[narrate('The ocelot stands, stretches and walks straight toward him. As it steps into the patch of sunlight on the floor it thins, like a reflection in a pond when someone drags a finger through the water. Then it is a scatter of blue motes. Then it is nothing at all.'),narrate('Something warm settles low in Eli’s stomach, right where the lure went.'),ocelot('Only you. Only ever you. Do try to keep up.'),think('Eli','A problem for future me. Future me is really starting to pile up.'),mara('The training ground is through the gate beside Grandma’s house. Come on.')]}
+  {title:'Only you',lines:[narrate('The ocelot stands, stretches and walks straight toward him. As it steps into the patch of sunlight on the floor it thins, like a reflection in a pond when someone drags a finger through the water. Then it is a scatter of blue motes. Then it is nothing at all.'),narrate('Something warm settles low in Eli’s stomach, right where the lure went.'),ocelot('Only you. Only ever you. Do try to keep up.'),think('Eli','A problem for future me. Future me is really starting to pile up.'),mara('The training yard is out past the village gate, on the farm road. Come on.')]}
  ]),
  'ch6-drayfus':script([
-  {title:'The training ground',lines:[narrate('A circle of packed dirt behind the chief’s house, fenced by a low ring of split logs. A weapon rack, a row of straw dummies in various states of having been murdered, and a water trough Eli suspects will be very important to him in about twenty minutes.'),narrate('Emilia sits on a bench in the shade with a cup of tea, like she came out to watch a play. In the middle of the circle, arms folded, stands the man from yesterday. The one with the scars, and the sword that is taller than Mara.')]},
+  {title:'The training ground',lines:[narrate('A circle of packed dirt out past the village gate, between the barley and the river road, fenced by a low ring of split logs. A weapon rack, a row of straw dummies in various states of having been murdered, and a water trough Eli suspects will be very important to him in about twenty minutes.'),narrate('Emilia sits on a bench in the shade with a cup of tea, like she came out to watch a play. In the middle of the circle, arms folded, stands the man from yesterday. The one with the scars, and the sword that is taller than Mara.')]},
   {title:'Sunrise was some time ago',lines:[drayfus('Sunrise was some time ago.'),eli('Sorry. I had a, uh. Rough night.'),drayfus('So did the Rimejaw we buried yesterday.'),think('Eli','Okay. So that’s how this is going to go.'),emilia('Drayfus.')]},
   {title:'You are nothing like him',lines:[drayfus('Drayfus. I lead the village guard. I fought my first shadow walker when I was younger than her.'),narrate('He tips his head at Mara.'),drayfus('Your grandfather taught me how to hold a blade. So the chief tells me I owe him.'),eli('You knew him?'),drayfus('I knew him. And you are nothing like him. Pick up a sword.')]}
  ]),

@@ -5,30 +5,32 @@ import {CORE,OCELOT} from './chapter6.js';
 // training circle until Drayfus freezes at the word "grandmother", runs again, and ends on the grass behind the lodge.
 export const CHAPTER_SEVEN_STAGES=['ch7-run','ch7-breakfast','ch7-squat','ch7-hold','ch7-laps','ch7-rest','ch7-complete'];
 export const chapterSeven=s=>!!s&&CHAPTER_SEVEN_STAGES.includes(s.stage);
-// The guard posts on the path around Willowback, in running order: down the west side, along the river and up the
-// east side to the watchtower just outside the village gate, where the sun comes up.
+// The guard posts on the path around Willowback, in running order. The run leaves the lodge door, climbs the forest
+// track on the north side of the square, swings east past the Willow Hearth into the Merchant Quarter (its north lane,
+// the Willowback Gate, the Stonefall lane), comes back across the square and down the lane to the Port, runs the
+// length of the upper deck and finishes at the watchtower over the lagoon, where the sun comes up.
 export const PERIMETER=[
- {x:300,y:200,place:'the north-west corner'},
- {x:330,y:650,place:'the west lanes'},
- {x:560,y:1050,place:'the boathouse'},
- {x:760,y:1100,place:'the docks'},
- {x:1050,y:1090,place:'the river road'},
- {x:1370,y:1080,place:'the kitchen gardens'},
- {x:1640,y:1050,place:'the east gardens'},
- {x:1715,y:790,place:'the watchtower',tower:true}
+ {areaId:'village',x:740,y:220,place:'the forest track'},
+ {areaId:'village',x:1840,y:340,place:'the Willow Hearth'},
+ {areaId:'village-market',x:420,y:150,place:'the north lane'},
+ {areaId:'village-market',x:1470,y:530,place:'the Willowback Gate'},
+ {areaId:'village-market',x:890,y:1260,place:'the Stonefall lane'},
+ {areaId:'village-port',x:1580,y:300,place:'the east sheds'},
+ {areaId:'village-port',x:240,y:300,place:'the west sheds'},
+ {areaId:'village',x:150,y:850,place:'the watchtower',tower:true}
 ];
-// The watchtower itself stands just north of its post, beside the east road at the gate; Drayfus watches from the platform.
-export const WATCHTOWER={x:1715,y:740};
-export const TOWER_PLATFORM={x:1715,y:630};
+// The watchtower stands at the west end of the square, over the lagoon; Drayfus watches from the platform.
+export const WATCHTOWER={x:150,y:800};
+export const TOWER_PLATFORM={x:150,y:690};
 // Eli squats in the middle of the training circle, just in front of Drayfus.
 export const HOLD_SECONDS=20;
-// Where Eli lies down at the end of the day: the grass on the river side of the guest lodge, out of sight of the lanes.
-export const REST_SPOT={x:290,y:300};
+// Where Eli lies down at the end of the day: the grass behind the guest lodge, out of sight of the square.
+export const REST_SPOT={x:520,y:440};
 const eli=text=>say('Eli',text),mara=text=>say('Mara',text),drayfus=text=>say('Drayfus',text),ocelot=text=>say(OCELOT,text),core=text=>say(CORE,text);
 export const CHAPTER7_OBJECTIVES={
  'ch7-breakfast':'Chapter 7 · Breakfast. Mara is waiting in the chief’s kitchen.',
- 'ch7-squat':'Chapter 7 · Go to the training ground and report to Drayfus.',
- 'ch7-rest':'Chapter 7 · Lie down on the grass on the river side of the guest lodge.',
+ 'ch7-squat':'Chapter 7 · Go to the training yard, past the Willowback Gate, and report to Drayfus.',
+ 'ch7-rest':'Chapter 7 · Lie down on the grass behind the guest lodge.',
  'ch7-complete':'Chapter 7 complete · Not my grandmother. Then who?'
 };
 export const runObjective=(stage,posts)=>stage==='ch7-laps'
@@ -54,7 +56,7 @@ export const CHAPTER7_SCENES={
  ]),
  // When Eli reaches the watchtower at the end of the dawn run.
  'ch7-sunrise':script([
-  {title:'Sunrise',lines:[narrate('The sun comes up while Eli is bent over with his hands on his knees, trying very hard not to throw up on a flower bed. A thin line of gold at the edge of the world, then a bar, then a rush of light over the roofs and the river, and every window in the village goes bright at once.'),think('Eli','It’s kind of beautiful. I hate it.')]},
+  {title:'Sunrise',lines:[narrate('The sun comes up while Eli is bent over with his hands on his knees, trying very hard not to throw up on a flower bed. A thin line of gold at the edge of the world, then a bar, then a rush of light over the roofs and the lagoon, and every window in the village goes bright at once.'),think('Eli','It’s kind of beautiful. I hate it.')]},
   {title:'Eleven laps',lines:[drayfus('Eleven laps.'),eli('I thought it was one.'),drayfus('It was until you stopped counting.'),narrate('He is crouched on the edge of the watchtower platform, one boot on the rail. In the new light the scar across his jaw looks paler, and there is something almost like tiredness in his face. He has probably been up all night.'),drayfus('Water.'),narrate('A waterskin drops into Eli’s hands. He drinks half of it before he realizes he has stopped breathing to do it.')]},
   {title:'Still alive',lines:[drayfus('You didn’t stop.'),eli('I wanted to.'),drayfus('That wasn’t the question.'),narrate('He comes down the ladder in three quick steps and lands lightly for a man his size.'),drayfus('Mara has been running that path since she was nine.'),eli('Is that why she’s so fast?'),drayfus('That is why she is still alive.')]},
   {title:'Did you throw up?',lines:[narrate('Mara comes around the corner at a jog. She isn’t out of breath. Her hair is tied back tight and she moves like running is just walking with ambitions. She looks at the flower bed, then at Eli.'),mara('Did you throw up?'),eli('No.'),mara('You’re about to.'),eli('I’m not.'),mara('You’re green. Okay, fine, I’ll be nice. You did better than I thought.')]},

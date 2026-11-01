@@ -26,16 +26,17 @@ const out=process.env.SHOTS||'screenshots';
  const finishScene=async()=>{const s=await q(()=>window.__storyQA.world.story.scene);while(await q(()=>window.__storyQA.world.story.scene)===s)await next();await page.waitForTimeout(300);};
  const stand=(x,y)=>q(([x,y])=>Object.assign(window.__storyQA.world.player,{x,y,vx:0,vy:0}),[x,y]);
  const {PERIMETER,REST_SPOT}=await q(async()=>{const m=await import('/src/chapter7.js');return {PERIMETER:m.PERIMETER,REST_SPOT:m.REST_SPOT};});
+ const post=(i,dx=0,dy=0)=>q(([p,dx,dy])=>{const w=window.__storyQA.world;w.areaId=p.areaId;Object.assign(w.player,{x:p.x+dx,y:p.y+dy,vx:0,vy:0});},[PERIMETER[i],dx,dy]);
  await page.waitForTimeout(500);
  await page.keyboard.press('Space');await until(/\| Up\./);assert.equal(await page.locator('#story-name').innerText(),'Drayfus');await page.screenshot({path:`${out}/01-up.png`});
  await until(/Reserves: recovering/);await page.waitForTimeout(800);await page.screenshot({path:`${out}/02-reserves.png`});
  await finishScene();assert.equal(await stage(),'ch7-run');assert.equal(await q(()=>window.__storyQA.world.areaId),'village');
  await page.waitForTimeout(400);await page.screenshot({path:`${out}/03-dark-start.png`});
- await stand(PERIMETER[0].x,PERIMETER[0].y);await page.waitForTimeout(400);await page.screenshot({path:`${out}/04-first-guard.png`});
- for(let i=1;i<6;i++){await stand(PERIMETER[i].x,PERIMETER[i].y);await page.waitForTimeout(200);}
- await stand(PERIMETER[6].x,PERIMETER[6].y);await page.waitForTimeout(300);
- await stand(PERIMETER[7].x-90,PERIMETER[7].y+20);await page.waitForTimeout(500);await page.screenshot({path:`${out}/05-watchtower.png`});
- await stand(PERIMETER[7].x,PERIMETER[7].y);await until(/Did you throw up\?/);await page.screenshot({path:`${out}/06-sunrise-mara.png`});
+ await post(0);await page.waitForTimeout(400);await page.screenshot({path:`${out}/04-first-guard.png`});
+ for(let i=1;i<6;i++){await post(i);await page.waitForTimeout(200);}
+ await post(6);await page.waitForTimeout(300);
+ await post(7,-90+120,20);await page.waitForTimeout(500);await page.screenshot({path:`${out}/05-watchtower.png`});
+ await post(7);await until(/Did you throw up\?/);await page.screenshot({path:`${out}/06-sunrise-mara.png`});
  await finishScene();assert.equal(await stage(),'ch7-breakfast');
  // Breakfast in the chief's kitchen.
  await q(async()=>{const {CHIEF_HOUSE}=await import('/src/chief-house.js');const w=window.__storyQA.world;w.areaId=CHIEF_HOUSE.id;const m=w.npcs.find(n=>n.id==='mara');Object.assign(w.player,{x:m.x,y:m.y+30});});
@@ -48,10 +49,9 @@ const out=process.env.SHOTS||'screenshots';
  await page.waitForFunction(()=>window.__storyQA.world.story.scene==='ch7-cat',null,{timeout:20000});
  await until(/my grandmother/);await page.screenshot({path:`${out}/09-grandmother.png`});
  await finishScene();assert.equal(await stage(),'ch7-laps');
- await q(()=>{window.__storyQA.world.areaId='village';});
- for(let i=0;i<8;i++){await stand(PERIMETER[i].x,PERIMETER[i].y);await page.waitForTimeout(200);}
+ for(let i=0;i<8;i++){await post(i);await page.waitForTimeout(200);}
  assert.equal(await stage(),'ch7-rest');
- await stand(REST_SPOT.x,REST_SPOT.y);await page.waitForTimeout(300);await page.screenshot({path:`${out}/10-grass.png`});
+ await q(()=>{window.__storyQA.world.areaId='village';});await stand(REST_SPOT.x,REST_SPOT.y);await page.waitForTimeout(300);await page.screenshot({path:`${out}/10-grass.png`});
  await page.keyboard.press('Space');await until(/Then who\?/);await page.screenshot({path:`${out}/11-then-who.png`});
  await until(/Still Water/);await page.waitForTimeout(800);await page.screenshot({path:`${out}/12-still-water.png`});
  await finishScene();assert.equal(await stage(),'ch7-complete');await page.screenshot({path:`${out}/13-complete.png`});

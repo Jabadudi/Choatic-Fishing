@@ -5,7 +5,7 @@ import {damage} from '../src/combat.js';
 import {World} from '../src/world.js';
 import {neutralInput} from '../src/protocol.js';
 import {createStoryNpcs,GUIDE_ROUTE,currentScene,cabinDamaged,storyPrompt} from '../src/story.js';
-import {chapter3Route,CHAPTER3_ROUTES} from '../src/chapter3.js';
+import {chapter3Route,CHAPTER3_ROUTES,GUARDIAN_SPOT} from '../src/chapter3.js';
 import {captureSave,restoreSave,SAVE_VERSION} from '../src/save-format.js';
 import {walkable} from '../src/wilds.js';
 import {SPRITES} from '../src/sprite-definitions.js';
@@ -25,19 +25,24 @@ function follow(w,until,max=10000){
 function throughForest(w){
  assert.equal(storyPrompt(w),'Continue toward the village');w.inspect();finish(w);
  follow(w,()=>!!currentScene(w));assert.equal(w.story.scene,'ch3-chimes');finish(w);
- for(const area of ['landing','windchime','crossroads']){
+ // North up the Landing and Windchime Path, west at the crossroads and along the farm road to the Willowback Gate.
+ for(const area of ['landing','windchime','crossroads','village-farm']){
   follow(w,()=>w.story.guide.waypoint===CHAPTER3_ROUTES[area].length);
   if(area==='crossroads'){Object.assign(w.player,{x:1,y:460});w.move(-8,0,false);}
-  else {Object.assign(w.player,{x:area==='landing'?1400:600,y:1});w.move(0,-8,false);}
+  else if(area==='village-farm'){Object.assign(w.player,{x:1,y:1150});w.move(-8,0,false);}
+  else {Object.assign(w.player,{x:area==='landing'?1400:1150,y:1});w.move(0,-8,false);}
   assert.equal(w.story.guide.areaId,w.areaId);assert.ok(walkable(w.player.x,w.player.y,w.areaId));
  }
  follow(w,()=>!!currentScene(w));assert.equal(w.story.scene,'ch3-arrival');finish(w);
 }
 test('Chapter 3 follows connected maps, discovers the village creatures and ends at the chief’s house',()=>{
- const w=atTrail(),items=structuredClone(w.inventory.allItems);throughForest(w);assert.equal(w.areaId,'village');assert.equal(w.story.stage,'ch3-creatures');
- follow(w,()=>w.story.guide.waypoint===chapter3Route(w.story).length);Object.assign(w.player,{x:1220,y:500});assert.equal(storyPrompt(w),'Examine the frost-scaled guardian');w.inspect();finish(w);
+ const w=atTrail(),items=structuredClone(w.inventory.allItems);throughForest(w);assert.equal(w.areaId,'village-market');assert.equal(w.story.stage,'ch3-creatures');
+ follow(w,()=>w.story.guide.waypoint===chapter3Route(w.story).length);Object.assign(w.player,{x:GUARDIAN_SPOT.x,y:GUARDIAN_SPOT.y+40});assert.equal(storyPrompt(w),'Examine the frost-scaled guardian');w.inspect();finish(w);
  assert.equal(w.story.stage,'ch3-lore');assert.equal(storyPrompt(w),'Ask about shadow walkers');w.inspect();finish(w);
- assert.equal(w.story.stage,'ch3-chief');follow(w,()=>!!currentScene(w));assert.equal(w.story.scene,'ch3-end');finish(w);
+ // She leads him west along the main street to the Town Square, then across the commons to the chief's porch.
+ assert.equal(w.story.stage,'ch3-chief');follow(w,()=>w.story.guide.waypoint===chapter3Route(w.story).length);
+ Object.assign(w.player,{x:1,y:590});w.move(-8,0,false);assert.equal(w.areaId,'village');assert.equal(w.story.guide.areaId,'village');
+ follow(w,()=>!!currentScene(w));assert.equal(w.story.scene,'ch3-end');finish(w);
  assert.equal(w.story.stage,'ch3-complete');assert.deepEqual(w.inventory.allItems,items);assert.equal(w.progression.totalXp,0);assert.ok(cabinDamaged(w.story));
  assert.equal(w.npcs.find(n=>n.id==='mara').name,'The girl');assert.equal(w.npcs.length,1+createVillageResidents().length);
  const restored=restoreSave(captureSave(w));assert.equal(restored.story.stage,'ch3-complete');assert.deepEqual(restored.story.guide,w.story.guide);assert.equal(restored.npcs.length,1+createVillageResidents().length);
@@ -53,7 +58,7 @@ test('version 3 Chapter 2 checkpoints migrate guide geography without replay or 
  restored.inspect();assert.equal(restored.story.scene,'ch3-start');assert.equal(restored.inventory.allItems.length,1);
 });
 test('save/resume preserves each map’s guide, creature scene page and village residents',()=>{
- let w=atTrail();throughForest(w);follow(w,()=>w.story.guide.waypoint===chapter3Route(w.story).length);Object.assign(w.player,{x:1220,y:500});w.inspect();w.advanceStory();
+ let w=atTrail();throughForest(w);follow(w,()=>w.story.guide.waypoint===chapter3Route(w.story).length);Object.assign(w.player,{x:GUARDIAN_SPOT.x,y:GUARDIAN_SPOT.y+40});w.inspect();w.advanceStory();
  w=restoreSave(captureSave(w));assert.equal(currentScene(w).art,'blacksmith');assert.equal(w.story.page,1);assert.equal(w.npcs.length,1+createVillageResidents().length);
  const before=w.npcs.filter(n=>n.origin).map(n=>[n.id,n.x,n.y]);const again=restoreSave(captureSave(w));assert.deepEqual(again.npcs.filter(n=>n.origin).map(n=>[n.id,n.x,n.y]),before);
  finish(w);w.inspect();w.advanceStory();assert.equal(restoreSave(captureSave(w)).story.page,1);
@@ -61,7 +66,7 @@ test('save/resume preserves each map’s guide, creature scene page and village 
 test('village creatures and residents stay outside hunting, and their patrols remain walkable',()=>{
  const list=createVillageResidents();for(const n of list){assert.equal(n.entityType,'npc');assert.equal(n.huntable,false);assert.equal(damage({},n,999,{},0),false);}
  for(let t=0;t<100;t+=.7){updateVillageResidents(list,t);for(const n of list.filter(n=>!n.creature))assert.ok(walkable(n.x,n.y,n.areaId),`${n.id} patrol blocked`);}
- const cat=list.find(n=>n.spriteId==='flitlynx');assert.ok(cat.sortY>390,'roof creature must draw over the blacksmith roof');
+ const cat=list.find(n=>n.spriteId==='flitlynx');assert.ok(cat.sortY>290,'roof creature must draw over the blacksmith roof');
  const c=new Proxy({},{get:()=>()=>{},set:()=>true});const before=JSON.stringify(list);for(const n of list)drawNpc(c,n,10);assert.equal(JSON.stringify(list),before,'drawing cannot move residents');
 });
 test('creature artwork crops and idle animation mappings fit the supplied sheets',()=>{

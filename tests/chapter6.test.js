@@ -7,7 +7,7 @@ import {createStoryNpcs,currentScene,storyPrompt,storyObjective,chapterHeading,S
 import {BUCKET_TRIPS,CHAPTER6_SCENES,CORE,OCELOT} from '../src/chapter6.js';
 import {GUEST_LODGE,LODGE_MORNING_SPOT,LODGE_WAKE_SPOT} from '../src/guest-lodge.js';
 import {CHIEF_HOUSE} from '../src/chief-house.js';
-import {TRAINING_GROUND,TRAINING_GATE,RACK_SPOT,CAST_SPOT,YARD_WELL,TROUGH,DRAYFUS_SPOT,FENCE_MARA_SPOT,TRAINING_EMILIA_SPOT} from '../src/training-ground.js';
+import {TRAINING_GROUND,YARD,TRAINING_GATE,RACK_SPOT,CAST_SPOT,YARD_WELL,TROUGH,DRAYFUS_SPOT,FENCE_MARA_SPOT,TRAINING_EMILIA_SPOT} from '../src/training-ground.js';
 import {captureSave,restoreSave} from '../src/save-format.js';
 import {walkable,transitionAt,AREAS} from '../src/wilds.js';
 import {wellLedger} from '../src/wishing-well.js';
@@ -38,7 +38,7 @@ function playTo(stage){
  const steps=[
   ['ch6-door',()=>{w.inspect();finish(w);}],
   ['ch6-circle',()=>{const m=npc(w,'mara');stand(w,m.x,m.y-30);w.inspect();finish(w);}],
-  ['ch6-spar',()=>{stand(w,TRAINING_GATE.x,TRAINING_GATE.y+20);w.areaId='village';w.inspect();const d=npc(w,'drayfus');stand(w,d.x,d.y+50);w.inspect();finish(w);}],
+  ['ch6-spar',()=>{w.areaId=TRAINING_GROUND.id;const d=npc(w,'drayfus');stand(w,d.x,d.y+50);w.inspect();finish(w);}],
   ['ch6-rack',()=>{w.inspect();finish(w);winSpar(w);finish(w);finish(w);}],
   ['ch6-cast',()=>{stand(w,RACK_SPOT.x,RACK_SPOT.y+40);w.inspect();finish(w);}],
   ['ch6-buckets',()=>{stand(w,CAST_SPOT.x,CAST_SPOT.y);w.inspect();finish(w);}]
@@ -59,19 +59,18 @@ test('reading the writing introduces the ocelot, and Mara cannot see it',()=>{
  assert.ok(SCENES['ch6-door'].some(p=>p.speaker==='Mara'&&p.text==='What cat?'));
  finish(w);
  assert.equal(w.story.stage,'ch6-circle');assert.equal(npc(w,'ocelot'),undefined,'the ocelot fades into Eli');
- assert.equal(npc(w,'mara').areaId,TRAINING_GROUND.id);assert.match(storyObjective(w),/training ground/);
+ assert.equal(npc(w,'mara').areaId,TRAINING_GROUND.id);assert.match(storyObjective(w),/training yard/);
 });
-test('the training ground opens at the end of the path north out of the village and leads back',()=>{
+test('the training yard sits on the farm road past the Willowback Gate, with its gate in the north fence',()=>{
  const w=playTo('ch6-circle');
- w.areaId='village';stand(w,TRAINING_GATE.x,TRAINING_GATE.y+20);assert.ok(walkable(w.player.x,w.player.y,'village'));
- assert.equal(storyPrompt(w),'Go to the training ground');w.inspect();
- assert.equal(w.areaId,TRAINING_GROUND.id);assert.ok(walkable(w.player.x,w.player.y,w.areaId));
- for(const [x,y] of [[DRAYFUS_SPOT.x,DRAYFUS_SPOT.y+50],[RACK_SPOT.x,RACK_SPOT.y+40],[CAST_SPOT.x,CAST_SPOT.y],[YARD_WELL.x,YARD_WELL.y+50],[TROUGH.x,TROUGH.y-40],[FENCE_MARA_SPOT.x,FENCE_MARA_SPOT.y]])assert.ok(walkable(x,y,TRAINING_GROUND.id),`${x},${y}`);
- for(const [x,y] of [[RACK_SPOT.x,RACK_SPOT.y],[YARD_WELL.x,YARD_WELL.y],[TROUGH.x,TROUGH.y],[10,300],[100,830],[300,20]])assert.equal(walkable(x,y,TRAINING_GROUND.id),false,`${x},${y}`);
- assert.deepEqual(transitionAt(540,TRAINING_GROUND.height+4,TRAINING_GROUND.id),{areaId:'village',x:TRAINING_GATE.x,y:TRAINING_GATE.y+60});
- assert.ok(walkable(TRAINING_GATE.x,TRAINING_GATE.y+60,'village'));
- // The north side is fenced all the way across.
- assert.equal(walkable(540,20,TRAINING_GROUND.id),false);assert.equal(transitionAt(540,-4,TRAINING_GROUND.id),null);
+ assert.equal(TRAINING_GROUND.id,'village-farm');
+ for(const [x,y] of [[DRAYFUS_SPOT.x,DRAYFUS_SPOT.y+50],[RACK_SPOT.x,RACK_SPOT.y+40],[CAST_SPOT.x,CAST_SPOT.y],[YARD_WELL.x,YARD_WELL.y+50],[TROUGH.x,TROUGH.y-40],[FENCE_MARA_SPOT.x,FENCE_MARA_SPOT.y],[TRAINING_GATE.x,TRAINING_GATE.y]])assert.ok(walkable(x,y,TRAINING_GROUND.id),`${x},${y}`);
+ // The rack, the well, the trough and the fences are solid; only the north gate lets Eli in.
+ for(const [x,y] of [[RACK_SPOT.x,RACK_SPOT.y],[YARD_WELL.x,YARD_WELL.y],[TROUGH.x,TROUGH.y],[YARD.x+10,YARD.y+300],[YARD.x+100,YARD.y+YARD.h-10],[YARD.x+300,YARD.y+20],[YARD.x+YARD.w-10,YARD.y+400]])assert.equal(walkable(x,y,TRAINING_GROUND.id),false,`${x},${y}`);
+ // Walking from the Willowback Gate along the farm road finds the circle.
+ const start=AREAS[TRAINING_GROUND.id].spawn,goal=DRAYFUS_SPOT,queue=[[start.x,start.y]],seen=new Set([`${start.x},${start.y}`]);let found=false;
+ for(let at=0;at<queue.length&&!found;at++){const [x,y]=queue[at];if(Math.hypot(x-goal.x,y-goal.y)<40)found=true;for(const [dx,dy] of [[20,0],[-20,0],[0,20],[0,-20]]){const nx=x+dx,ny=y+dy,key=`${nx},${ny}`;if(seen.has(key)||!walkable(nx,ny,TRAINING_GROUND.id))continue;seen.add(key);queue.push([nx,ny]);}}
+ assert.ok(found,'the circle can be walked to from the gate');
  assert.equal(npc(w,'drayfus').areaId,TRAINING_GROUND.id);assert.equal(npc(w,'emilia').areaId,TRAINING_GROUND.id);
  assert.deepEqual({x:npc(w,'emilia').x,y:npc(w,'emilia').y},TRAINING_EMILIA_SPOT);
 });
@@ -152,14 +151,13 @@ test('the ocelot breaks into motes after the door scene, and Drayfus waves Eli o
  assert.equal(npc(w,'drayfus').animationState,'beckon');
  assert.equal(npc(playTo('ch6-rack'),'drayfus').animationState,'idle');
 });
-test('the path north out of the village walks into the training ground once training has started',()=>{
- const w=playTo('ch6-circle');w.areaId='village';stand(w,TRAINING_GATE.x,10);
- w.update(.2,{...neutralInput(),up:true});
- assert.equal(w.areaId,TRAINING_GROUND.id);assert.deepEqual({x:w.player.x,y:w.player.y},TRAINING_GROUND.spawn);
- // Before Chapter 6 the path is there but nobody is expecting Eli.
- const early=playTo('ch6-door');early.areaId='village';stand(early,TRAINING_GATE.x,10);
- early.update(.2,{...neutralInput(),up:true});
- assert.equal(early.areaId,'village');assert.match(early.message,/Nobody is expecting you/);
+test('the way to the training yard runs east through the Merchant Quarter and out of the Willowback Gate',()=>{
+ const w=playTo('ch6-circle');w.areaId='village';stand(w,1915,590);
+ w.update(.2,{...neutralInput(),right:true});assert.equal(w.areaId,'village-market');
+ stand(w,1595,530);w.update(.2,{...neutralInput(),right:true});assert.equal(w.areaId,TRAINING_GROUND.id);
+ assert.ok(walkable(w.player.x,w.player.y,w.areaId));
+ // Before Chapter 6 the farm is open too; the yard is simply empty.
+ const early=playTo('ch6-door');assert.equal(npc(early,'drayfus'),undefined);
 });
 test('the use button swings the practice sword while sparring, and full buckets are heavy from the first trip',()=>{
  const w=playTo('ch6-spar');w.inspect();finish(w);assert.ok(w.spar);

@@ -1,4 +1,5 @@
-import {restoreStory,createStoryNpcs,pageForBeat,LURE,REGION_CORE} from './story.js';
+import {restoreStory,createStoryNpcs,pageForBeat,relocateGuide,LURE,REGION_CORE} from './story.js';
+import {YARD} from './training-ground.js';
 import {World} from './world.js';
 import {AREAS,walkable} from './wilds.js';
 import {animalGround} from './wildlife.js';
@@ -14,7 +15,7 @@ import {MARKS_LIMIT} from './trade.js';
 import {SIDE_QUEST_IDS,restoreSideQuests} from './side-quests.js';
 import {restoreWell} from './wishing-well.js';
 import {ARTIFACTS,ARTIFACT_SLOT_COUNT,RARITIES,artifactIdFor,normalizeArtifact} from './artifacts.js';
-export const SAVE_VERSION=7;
+export const SAVE_VERSION=8;
 export const SAVE_FORMAT='the-wilds-save';
 const clone=value=>JSON.parse(JSON.stringify(value));
 const fail=message=>{throw Error(message);};
@@ -68,6 +69,26 @@ function progressionFrom(data,target){
   target.skillTrees[id]=Object.fromEntries(Object.entries(ranks).filter(([,rank])=>rank>0));}
  if(target.xp>=target.xpToNextLevel)fail('Experience exceeds the level threshold.');
 }
+// Willowback's Commons, Upper Lanes, Millside and Training Ground became the Town Square, the Merchant Quarter and the
+// Farm & Training Grounds (with the training yard inside the farm), and Windchime Path was redrawn. Old positions on
+// those maps mean nothing on the new ones: Eli, dropped items and the guide move to their area's new places, and the
+// training yard keeps its layout, so anything in it just shifts into the farm.
+const RENAMED={'village-north':'village-market','village-mill':'village-farm','training-ground':'village-farm'};
+const REDRAWN=['village','village-north','village-mill','windchime'];
+function moveToNewMaps(s){
+ if(!s||typeof s!=='object')return;
+ const move=thing=>{
+  const old=thing.areaId,area=AREAS[RENAMED[old]||old];if(!area)return;
+  if(old==='training-ground'&&typeof thing.x==='number'&&typeof thing.y==='number'){thing.x+=YARD.x;thing.y+=YARD.y;}
+  else if(REDRAWN.includes(old)){thing.x=area.spawn.x;thing.y=area.spawn.y;}
+  thing.areaId=area.id;
+ };
+ if(typeof s.areaId==='string'&&s.player&&typeof s.player==='object'){const p={areaId:s.areaId,x:s.player.x,y:s.player.y};move(p);s.areaId=p.areaId;s.player.x=p.x;s.player.y=p.y;}
+ for(const drop of Array.isArray(s.drops)?s.drops:[])if(drop&&typeof drop==='object')move(drop);
+ // Animals on the redrawn path go back to their spawn slot.
+ for(const animal of Array.isArray(s.animals)?s.animals:[])if(animal&&SLOTS[animal.slotId]?.areaId==='windchime'){animal.x=SLOTS[animal.slotId].x;animal.y=SLOTS[animal.slotId].y;}
+ if(s.story?.guide&&typeof s.story.guide==='object'){if(RENAMED[s.story.guide.areaId]){const g={...s.story.guide};move(g);s.story.guide=g;}relocateGuide(s.story);}
+}
 export function restoreSave(input){
  const save=clone(input);inspect(save);
  if(save?.format!==SAVE_FORMAT)fail('This is not a The Wilds save file.');
@@ -84,6 +105,8 @@ export function restoreSave(input){
  if(save.version===5){save.version=6;for(const animal of save.state?.animals||[])if(animal&&typeof animal==='object'){animal.slotId=animal.id;delete animal.respawnRemaining;}}
  // Version 7 stacks identical items in one backpack slot. Older backpacks hold one item per entry and are folded into stacks once restored.
  const restack=save.version===6;if(restack)save.version=7;
+ // Version 8 redraws Willowback as four areas and Windchime Path on a new trail. See moveToNewMaps.
+ if(save.version===7){save.version=8;moveToNewMaps(save.state);}
  if(save.version!==SAVE_VERSION)fail('This save version is not supported. Your existing save was not changed.');
  if(!number(save.savedAt,0,1e16)||typeof save.journeyId!=='string'||save.journeyId.length>120)fail('Invalid save header.');
  const s=save.state;if(!s||!Object.hasOwn(AREAS,s.areaId))fail('Unknown saved area.');

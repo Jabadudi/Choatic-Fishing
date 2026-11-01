@@ -1,7 +1,7 @@
 // The atlas fork between Windchime Path, Willowbank and Shellback Marsh.
 import {drawProp} from './sprites.js';
 // Both sides of the atlas fork now connect to playable areas.
-export const CROSSROADS={id:'crossroads',name:'Willowbank Crossroads',width:1600,height:1280,seed:7327,spawn:{x:800,y:1130},exits:[{edge:'south',from:680,to:920,target:'windchime',entry:{x:600,y:130},label:'Windchime Path'},{edge:'west',from:410,to:510,target:'village',entry:{x:1800,y:530},label:'Willowback Village'},{edge:'east',from:610,to:710,target:'marsh',entry:{x:140,y:760},label:'Shellback Marsh'}]};
+export const CROSSROADS={id:'crossroads',name:'Willowbank Crossroads',width:1600,height:1280,seed:7327,spawn:{x:800,y:1130},exits:[{edge:'south',from:680,to:920,target:'windchime',entry:{x:1150,y:80},label:'Windchime Path'},{edge:'west',from:410,to:510,target:'village-farm',entry:{x:1930,y:830},label:'Willowback'},{edge:'east',from:610,to:710,target:'marsh',entry:{x:140,y:760},label:'Shellback Marsh'}]};
 export const CROSSROADS_ROADS=[
  [[800,1280],[800,1080],[760,870],[800,680]],
  [[800,680],[610,630],[400,490],[170,460],[0,460]],
@@ -10,8 +10,8 @@ export const CROSSROADS_ROADS=[
  [[1220,660],[1220,850],[1360,930]]
 ];
 export const CROSSROADS_PLACES=[
- {id:'crossroads-sign',name:'The Fork',x:800,y:590,kind:'waypost',text:'The weathered arrows point west to Willowback Village and east to Shellback Marsh. South, the chimes lead back to Reedwater Landing. Follow the western trail into the village. The eastern boardwalk leads into Shellback Marsh.'},
- {id:'village-approach',name:'Willowback Approach',x:230,y:460,kind:'village-marker',text:'Cart tracks bend west toward Willowback. Apple baskets and a low stone wall mark the village approach. Follow the cart tracks west through the opening to enter Willowback Village.'},
+ {id:'crossroads-sign',name:'The Fork',x:800,y:590,kind:'waypost',text:'The weathered arrows point west to Willowback, past its farms, and east to Shellback Marsh. South, the chimes lead back to Reedwater Landing. Follow the western trail into the village. The eastern boardwalk leads into Shellback Marsh.'},
+ {id:'village-approach',name:'Willowback Approach',x:230,y:460,kind:'village-marker',text:'Cart tracks bend west toward Willowback. Apple baskets and a low stone wall mark the village approach. Follow the cart tracks west, past the farms and the training yard, to the Willowback Gate.'},
  {id:'marsh-approach',name:'Shellback Crossing',x:1410,y:660,kind:'marsh-marker',text:'The dry trail gives way to a timber boardwalk. Beyond the lantern posts lie Shellback Marsh and its many waterways. Follow the eastern boardwalk through the map edge to explore the wetlands.'},
  {id:'travellers-rest',name:"Travellers’ Rest",x:580,y:760,kind:'rest',text:'A bench beneath the trees, a cold campfire and a little shelter for the rain. Someone has left a coil of fishing line beside the seat.'},
  {id:'reed-pool',name:'Reedside Pool',x:1350,y:930,kind:'pool-marker',text:'Reeds whisper around a quiet pool fed by the marsh. Fish gather beside the bank. It is a good place to cast before choosing a road.'},

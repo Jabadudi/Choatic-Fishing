@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {World} from '../src/world.js';
 import {Inventory,STACK_SIZE,backpackItems} from '../src/inventory.js';
-import {captureSave,restoreSave} from '../src/save-format.js';
+import {captureSave,restoreSave,SAVE_VERSION} from '../src/save-format.js';
 import {nearbyDrop} from '../src/drops.js';
 const fresh=()=>{const w=new World(()=>.1,{adventure:true});w.journeyId='stack-journey';return w;};
 const copy=value=>JSON.parse(JSON.stringify(value));
@@ -51,5 +51,5 @@ test('stacks save with their counts and older one-per-slot backpacks fold into s
  const migrated=restoreSave(old),inv=migrated.inventory;
  assert.deepEqual(inv.allItems.map(item=>[item.name,item.count]),[['Sardine',2],['Reed Spear',undefined],['Deer Meat',STACK_SIZE]]);
  assert.equal(inv.slots[1],inv.allItems[0]);assert.equal(inv.item.name,'Sardine');assert.equal(inv.slots[2].name,'Reed Spear');
- assert.equal(captureSave(migrated).version,7);
+ assert.equal(captureSave(migrated).version,SAVE_VERSION);
 });

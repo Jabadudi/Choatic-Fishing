@@ -16,9 +16,9 @@ import {SLOTS} from '../src/spawn-tables.js';
 function village(){
  const w=new World(()=>.5,{adventure:true,story:true});w.journeyId='quests';
  Object.assign(w.story,{stage:'ch4-complete',scene:null,page:0,lureSeen:true,photoSeen:true,rod:true,bow:true,guide:{...MARA_SPOT,areaId:CHIEF_HOUSE.id,waypoint:0}});
- w.areaId='village';w.npcs=createStoryNpcs(w.story,w.elapsed);return w;
+ w.areaId='village';Object.assign(w.player,{x:1300,y:800});w.npcs=createStoryNpcs(w.story,w.elapsed);return w;
 }
-const goTo=(w,id)=>{const n=w.npcs.find(n=>n.id===id);w.areaId='village';Object.assign(w.player,{x:n.x+20,y:n.y});return n;};
+const goTo=(w,id)=>{const n=w.npcs.find(n=>n.id===id);w.areaId=n.areaId;Object.assign(w.player,{x:n.x+20,y:n.y});return n;};
 function hunt(w,species,times){
  for(let i=0;i<times;i++){
   // The same creature stands in for a fresh one each time; respawning is the spawner's business, not this test's.

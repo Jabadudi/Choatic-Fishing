@@ -1,4 +1,5 @@
 import {currentScene,cabinDamaged} from './story.js';
+import {inWillowback} from './village-districts.js';
 // Visual clock only. No simulation state or randomness is consumed here.
 export function drawStoryWeather(c,w,v,time){
  if(!w.story||!v)return;
@@ -10,7 +11,7 @@ export function drawStoryWeather(c,w,v,time){
   c.fillStyle=w.areaId==='landing'?'#1020368c':'#102036c9';c.fillRect(v.left,v.top,v.right-v.left,v.bottom-v.top);
   c.strokeStyle='#bacdda66';c.lineWidth=1.5;
   for(let i=0;i<120;i++){const x=v.left+((i*83+time*160)%(v.right-v.left+60))-30,y=v.top+((i*137+time*430)%(v.bottom-v.top+80))-40;c.beginPath();c.moveTo(x,y);c.lineTo(x-12,y+30);c.stroke();}
- }else if(w.story.stage==='ch7-run'&&w.areaId==='village'){
+ }else if(w.story.stage==='ch7-run'&&inWillowback(w.areaId)){
   // Chapter 7's run starts in the dark before dawn and the sky greys as Eli works round the posts.
   const left=1-Math.min(1,(w.story.run||0)/8);c.fillStyle=`rgba(10,18,40,${(.25+.45*left).toFixed(3)})`;c.fillRect(v.left,v.top,v.right-v.left,v.bottom-v.top);
   const glow=c.createLinearGradient(0,v.bottom,0,v.top);glow.addColorStop(0,`rgba(255,196,140,${(.18*(1-left)).toFixed(3)})`);glow.addColorStop(1,'rgba(255,196,140,0)');c.fillStyle=glow;c.fillRect(v.left,v.top,v.right-v.left,v.bottom-v.top);

@@ -57,7 +57,7 @@ test('minimap dots come from real spawn slots and NPC positions',()=>{
  assert.deepEqual(codexSpawnRates(deer).map(r=>[r.areaId,r.label]),[['landing','common'],['windchime','common'],['crossroads','uncommon'],['marsh','uncommon']]);
  assert.deepEqual(codexSpawnRates(codexEntry('shadow-walker')).map(r=>[r.areaId,r.label]),[['landing','rare'],['windchime','rare'],['crossroads','uncommon'],['marsh','common']]);
  assert.deepEqual(codexSpawnRates(codexEntry('eel')).map(r=>r.areaId),['landing','crossroads','marsh']);
- assert.deepEqual(codexRegions(codexEntry('blacksmith')),['Willowback Village']);
+ assert.deepEqual(codexRegions(codexEntry('blacksmith')),['Willowback Merchant Quarter']);
  assert.deepEqual(codexRegions(codexEntry('emilia')),['The Chief’s House']);
  assert.deepEqual(codexLocations(codexEntry('croshelda')),[]);
  for(const entry of CODEX_ENTRIES)for(const dot of codexLocations(entry)){assert.ok(dot.x>=0&&dot.x<=1&&dot.y>=0&&dot.y<=1,entry.id);}

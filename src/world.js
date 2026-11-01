@@ -172,8 +172,8 @@ export class World {
    for(let i=0;i<steps;i++){if(Wilds.walkable(p.x+sx,p.y,this.areaId)&&(!shoreOnly||Wilds.nearWater(p.x+sx,p.y,this.areaId)))p.x+=sx;if(Wilds.walkable(p.x,p.y+sy,this.areaId)&&(!shoreOnly||Wilds.nearWater(p.x,p.y+sy,this.areaId)))p.y+=sy;}
    let next=Wilds.transitionAt(p.x,p.y,this.areaId);
    if(next&&this.story&&!inlandUnlocked(this.story)&&this.areaId==='landing'){next=null;p.y=Math.max(25,p.y);this.message=storyObjective(this);}
-   if(next&&!storyTransitionAllowed(this,next)){const training=next.areaId==='training-ground';next=null;const a=Wilds.areaFor(this.areaId);p.x=Math.max(25,Math.min(a.width-25,p.x));p.y=Math.max(25,Math.min(a.height-25,p.y));this.message=training?'The path north leads to the guard’s training ground. Nobody is expecting you there yet.':'Your guide is still on the trail. Stay with her before moving on.';}
-   if(next){const previous=this.areaId;this.projectiles=[];this.effects=[];this.dialogue=null;this.areaId=next.areaId;p.x=next.x;p.y=next.y;p.vx=0;p.vy=0;this.cancel();this.message=this.areaId==='crossroads'?'Willowbank Crossroads · West: Willowback Village · East: Shellback Marsh · South: Windchime Path.':`${Wilds.areaFor(this.areaId).name} · Follow the trail; walk back through the edge to return.`;onStoryAreaChange(this,previous);}
+   if(next&&!storyTransitionAllowed(this,next)){next=null;const a=Wilds.areaFor(this.areaId);p.x=Math.max(25,Math.min(a.width-25,p.x));p.y=Math.max(25,Math.min(a.height-25,p.y));this.message='Your guide is still on the trail. Stay with her before moving on.';}
+   if(next){const previous=this.areaId;this.projectiles=[];this.effects=[];this.dialogue=null;this.areaId=next.areaId;p.x=next.x;p.y=next.y;p.vx=0;p.vy=0;this.cancel();this.message=this.areaId==='crossroads'?'Willowbank Crossroads · West: Willowback · East: Shellback Marsh · South: Windchime Path.':`${Wilds.areaFor(this.areaId).name} · Follow the trail; walk back through the edge to return.`;onStoryAreaChange(this,previous);}
    p.walkTime=(p.walkTime||0)+Math.hypot(dx,dy)*.14;return;
   }
   let x=Math.max(LAND.left+15,Math.min(LAND.right-15,p.x+dx));

@@ -3,31 +3,31 @@ import {CABIN_AREA,CABIN_PLACES,cabinInteriorBlocked,cabinBlocked,cabinClearing,
 import {cabinDamaged} from './story.js';
 import {CHIEF_HOUSE,CHIEF_HOUSE_PLACES,chiefHouseBlocked,drawChiefHouse} from './chief-house.js';
 import {GUEST_LODGE,GUEST_LODGE_PLACES,guestLodgeBlocked,drawGuestLodge} from './guest-lodge.js';
-import {TRAINING_GROUND,TRAINING_GROUND_PLACES,trainingGroundBlocked,drawTrainingGround,drawCastGuide} from './training-ground.js';
+import {YARD,drawTrainingGround,drawCastGuide} from './training-ground.js';
 import {MARSH,MARSH_ROADS,MARSH_PLACES,MARSH_OBJECTS,marshWaterDistance,onMarshDeck,marshBlocked} from './marsh.js';
 import {drawMarshGround,drawMarshObject} from './marsh-art.js';
-import {VILLAGE,VILLAGE_ROADS,VILLAGE_PLACES,VILLAGE_PROPS,villageWaterDistance,onVillageDeck,villageBlocked,villageClear} from './village.js';
+import {VILLAGE,VILLAGE_ROADS,VILLAGE_PLACES,villageWaterDistance,onVillageDeck,villageBlocked,villageClear} from './village.js';
 import {drawVillageGround,drawVillageObject,villageObjects,paintVillageBuildings,drawDistrictGround,paintBuildings} from './village-art.js';
 import {DISTRICTS} from './village-districts.js';
+const FARM_ID='village-farm';
 import {BUCKET_TRIPS} from './chapter6.js';
 import {drawEntitySprite,drawProp,onPropLoad} from './sprites.js';
 import {CROSSROADS,CROSSROADS_ROADS,CROSSROADS_PLACES,crossroadsWaterDistance,crossroadsBlocked,onCrossroadsDeck,drawCrossroads,drawCrossroadsLabels} from './crossroads.js';
 import {leafyTree,meadowRock,meadowBush,grassDetail,wildflower} from './plains-art.js';
 import {drawGrassBase} from './grass-texture.js';
 import {pathPattern} from './path-texture.js';
+export const WINDCHIME_ENTRY={x:330,y:1120};
 // Original, repeatable pixel-art areas. Exit coordinates connect actual map edges.
 export const AREAS={
  cabin:CABIN_AREA,
  'chief-house':CHIEF_HOUSE,
  'guest-lodge':GUEST_LODGE,
- 'training-ground':TRAINING_GROUND,
- landing:{id:'landing',name:'Reedwater Landing',width:2800,height:2200,seed:7319,spawn:{x:1250,y:1650},exits:[{edge:'north',from:1280,to:1520,target:'windchime',entry:{x:600,y:1510},label:'Windchime Path'}]},
+ landing:{id:'landing',name:'Reedwater Landing',width:2800,height:2200,seed:7319,spawn:{x:1250,y:1650},exits:[{edge:'north',from:1280,to:1520,target:'windchime',entry:{x:WINDCHIME_ENTRY.x,y:WINDCHIME_ENTRY.y},label:'Windchime Path'}]},
  crossroads:CROSSROADS,
  village:VILLAGE,
- 'village-north':DISTRICTS['village-north'].area,
- 'village-mill':DISTRICTS['village-mill'].area,
+ ...Object.fromEntries(Object.entries(DISTRICTS).map(([id,d])=>[id,d.area])),
  marsh:MARSH,
- windchime:{id:'windchime',name:'Windchime Path',width:1200,height:1800,seed:7321,spawn:{x:600,y:1510},exits:[{edge:'north',from:480,to:720,target:'crossroads',entry:{x:800,y:1130},label:'Willowbank Crossroads'},{edge:'south',from:480,to:720,target:'landing',entry:{x:1400,y:120},label:'Reedwater Landing'}]}
+ windchime:{id:'windchime',name:'Windchime Path',width:1600,height:1200,seed:7321,spawn:{...WINDCHIME_ENTRY},exits:[{edge:'north',from:1080,to:1220,target:'crossroads',entry:{x:800,y:1130},label:'Willowbank Crossroads'},{edge:'south',from:260,to:400,target:'landing',entry:{x:1400,y:120},label:'Reedwater Landing'}]}
 };
 export const WORLD=AREAS.landing;
 export const SPAWN=WORLD.spawn;
@@ -39,18 +39,28 @@ const LANDING_PLACES=[
  {id:'spring',name:'Reedwater Spring',x:1820,y:980,kind:'spring',text:'Warm water bubbles beneath the reeds. Tiny silver fish gather at the edge of the spring.'},
  {id:'tree',name:'The Hollow Tree',x:1010,y:600,kind:'tree',text:'A deer pauses beside the hollow trunk. Your footsteps echo from somewhere deeper in the roots.'}
 ];
-const PATH_PLACES=[{id:'path-chimes',name:'Windchime Path',x:600,y:1330,kind:'chimes',text:'Behind you lies Reedwater Landing. The chimes carry the sound of the shore into the trees.'},{id:'trail-end',name:'The Old Trail',x:600,y:320,kind:'sign',text:'The trail continues north to Willowbank Crossroads. There, the road divides: west toward the village, east toward Shellback Marsh.'}];
+// 18.1 Windchime Path (v2): one dirt trail climbing from the Landing in the south-west to the Crossroads in the north-east,
+// through thick woods. Halfway up, the Fork Stones signpost points west to Stonefall Creek; near the top a spur runs east
+// into Chimewood. Neither is open yet, so both forks end in the trees. A short side path opens into a quiet glade.
+const PATH_PLACES=[
+ {id:'path-chimes',name:'The Chime Arch',x:350,y:1060,kind:'chimes',text:'Behind you lies Reedwater Landing. Chimes hang from a bent-wood arch over the trail, and the sound of the shore turns into chimes.'},
+ {id:'fork-stones',name:'The Fork Stones',x:640,y:420,kind:'sign',text:'Three mossy stones and a signpost. West: Stonefall Creek. North-east: Willowbank Crossroads, where the road divides for the village and the marsh.'},
+ {id:'quiet-glade',name:'The Quiet Glade',x:1110,y:720,kind:'glade',text:'A fallen log in a ring of trees. The chimes are faint here. A good place to sit for a minute.'},
+ {id:'trail-end',name:'Stonefall Fork',x:110,y:240,kind:'sign',text:'The west fork runs on toward Stonefall Creek, but a fallen trunk blocks it. Not yet.'},
+ {id:'chimewood-spur',name:'Chimewood Spur',x:1500,y:400,kind:'sign',text:'The spur east disappears into Chimewood. The trees close in, and the chimes in there sound wrong. Not yet.'}
+];
+const GLADE={x:1110,y:700,rx:150,ry:110};
+const WINDCHIME_TREES=[[470,300],[384,520],[250,640],[200,800],[190,960],[1000,150],[1080,300]];
 export const LANDMARKS=LANDING_PLACES;
 // Walk-in rooms: no water, scenery, weather or open-air atmosphere.
-// The training ground is open air, but walled in like a room: no wild animals, water or weather.
-export const INTERIOR_AREAS=['cabin','chief-house','guest-lodge','training-ground'];
+export const INTERIOR_AREAS=['cabin','chief-house','guest-lodge'];
 const interior=id=>INTERIOR_AREAS.includes(id);
-export const placesFor=id=>DISTRICTS[id]?DISTRICTS[id].places:id==='cabin'?CABIN_PLACES:id==='guest-lodge'?GUEST_LODGE_PLACES:id==='training-ground'?TRAINING_GROUND_PLACES:id==='chief-house'?CHIEF_HOUSE_PLACES:id==='marsh'?MARSH_PLACES:id==='village'?VILLAGE_PLACES:id==='crossroads'?CROSSROADS_PLACES:id==='windchime'?PATH_PLACES:LANDING_PLACES;
+export const placesFor=id=>DISTRICTS[id]?DISTRICTS[id].places:id==='cabin'?CABIN_PLACES:id==='guest-lodge'?GUEST_LODGE_PLACES:id==='chief-house'?CHIEF_HOUSE_PLACES:id==='marsh'?MARSH_PLACES:id==='village'?VILLAGE_PLACES:id==='crossroads'?CROSSROADS_PLACES:id==='windchime'?PATH_PLACES:LANDING_PLACES;
 export const areaFor=id=>AREAS[id]||WORLD;
 export const LAKES=[{x:2020,y:1050,rx:130,ry:150},{x:650,y:1910,rx:390,ry:190}];
 export const RIVERS=[[[2370,-100],[2290,500],[2320,1000],[2440,1500],[2310,2300]]];
 export const ROADS=[[[1400,1600],[1510,1570],[1630,1550]],[[1250,1650],[1400,1500],[1380,1180],[1350,800],[1400,0]],[[1380,1180],[1620,1000],[1820,980]],[[1350,800],[1100,700],[1010,600]],[[1250,1650],[960,1610],[620,1640]]];
-const PATH_ROADS=[[[600,1800],[600,1330],[520,1000],[650,650],[600,320],[600,0]]];
+const PATH_ROADS=[[[330,1200],[348,1060],[303,928],[366,692],[511,510],[711,382],[892,291],[1128,164],[1150,0]],[[711,382],[530,291],[294,264],[40,250]],[[1128,164],[1382,273],[1560,390]],[[784,346],[983,600],[1060,680]]];
 const pathsFor=id=>DISTRICTS[id]?DISTRICTS[id].roads:id==='marsh'?MARSH_ROADS:id==='village'?VILLAGE_ROADS:id==='crossroads'?CROSSROADS_ROADS:id==='windchime'?PATH_ROADS:ROADS;
 export function hash(x,y,s=0){let h=Math.imul(x+WORLD.seed,374761393)^Math.imul(y+s,668265263);h=Math.imul(h^(h>>>13),1274126177);return ((h^(h>>>16))>>>0)/4294967296;}
 export function ellipseDistance(x,y,l){return (Math.hypot((x-l.x)/l.rx,(y-l.y)/l.ry)-1)*Math.min(l.rx,l.ry);}
@@ -70,9 +80,8 @@ export function regionAt(x,y,id='landing'){
  if(id==='cabin')return 'Grandpa’s Cabin';
  if(id==='chief-house')return 'The Chief’s House';
  if(id==='guest-lodge')return 'The Guest Lodge';
- if(id==='training-ground')return 'The Training Ground';
  if(id==='marsh')return 'Shellback Marsh';
- if(id==='village')return y>1020?'Willow Docks':'Willowback Village';
+ if(id==='village')return VILLAGE.name;
  if(DISTRICTS[id])return DISTRICTS[id].area.name;
  if(id==='crossroads')return 'Willowbank Crossroads';
  if(id==='windchime')return 'Windchime Path';
@@ -82,7 +91,7 @@ export function regionAt(x,y,id='landing'){
  if(x<960&&y>1450)return 'The Drowned Road';
  return 'Reedwater Landing';
 }
-const COLORS={'Grandpa’s Cabin':['#a17b50','#ae8756','#b18b59'],'The Training Ground':['#b99662','#a8844f','#c8a872'],'The Chief’s House':['#8a5e3c','#9a6a43','#a0714a'],'The Guest Lodge':['#7f5e3d','#8f6a45','#987350'],'Shellback Marsh':['#6f854e','#748b53','#7a9057'],'Willowback Village':['#88b447','#8bb748','#90ba4b'],'Willowback Upper Lanes':['#88b447','#8bb748','#90ba4b'],'Willowback Millside':['#8db84a','#91bb4c','#96be50'],'Willow Docks':['#88b447','#8bb748','#90ba4b'],'Willowbank Crossroads':['#87ad4c','#8cb452','#93b958'],'Reedwater Shore':['#247b9a','#2989a4','#3193ac'],'Reedwater Landing':['#88b447','#8bb748','#90ba4b'],'Forest Approach':['#7aa344','#7ea846','#82ad47'],'Windchime Path':['#7aa344','#7ea846','#82ad47'],'Springbank':['#88b447','#8bb748','#90ba4b'],'The Drowned Road':['#88b447','#8bb748','#90ba4b']};
+const COLORS={'Grandpa’s Cabin':['#a17b50','#ae8756','#b18b59'],'The Chief’s House':['#8a5e3c','#9a6a43','#a0714a'],'The Guest Lodge':['#7f5e3d','#8f6a45','#987350'],'Shellback Marsh':['#6f854e','#748b53','#7a9057'],'Willowback Town Square':['#88b447','#8bb748','#90ba4b'],'Willowback Port':['#88b447','#8bb748','#90ba4b'],'Willowback Merchant Quarter':['#88b447','#8bb748','#90ba4b'],'Willowback Farm & Training Grounds':['#8db84a','#91bb4c','#96be50'],'Willowbank Crossroads':['#87ad4c','#8cb452','#93b958'],'Reedwater Shore':['#247b9a','#2989a4','#3193ac'],'Reedwater Landing':['#88b447','#8bb748','#90ba4b'],'Forest Approach':['#7aa344','#7ea846','#82ad47'],'Windchime Path':['#7aa344','#7ea846','#82ad47'],'Springbank':['#88b447','#8bb748','#90ba4b'],'The Drowned Road':['#88b447','#8bb748','#90ba4b']};
 export function surfaceAt(x,y,id='landing'){
  if(id==='marsh'&&onMarshDeck(x,y))return 'path';
  if(id==='village'&&onVillageDeck(x,y))return 'path';
@@ -106,7 +115,8 @@ function findScenery(gx,gy,id){
  if(id==='marsh')return null;
  const x=gx*72+12+hash(gx,gy)*48,y=gy*72+12+hash(gx,gy,3)*48,r=hash(gx,gy,9),region=regionAt(x,y,id);
  if(DISTRICTS[id]?.clear(x,y))return null;
- if(id==='village'&&(villageClear(x,y)||VILLAGE_PROPS.some(p=>p.kind==='watchtower'&&Math.hypot(x-p.x,y-p.y)<110)))return null;
+ if(id==='village'&&villageClear(x,y))return null;
+ if(id==='windchime'&&ellipseDistance(x,y,GLADE)<0)return null;
  if(id==='crossroads'&&((x>475&&x<900&&y>440&&y<860)||(x>1200&&y>570&&y<1000)||(x<430&&y>340&&y<530)))return null;
  if(waterDistance(x,y,id)<95||roadDistance(x,y,id)<65||placesFor(id).some(p=>Math.hypot(x-p.x,y-p.y)<100))return null;
  let kind=region==='Windchime Path'||region==='Forest Approach'?(r<.78?'tree':r<.87?'bush':null):r<.13?'tree':r<.21?'rock':r<.35?'bush':null;
@@ -120,7 +130,6 @@ export function walkable(x,y,id='landing'){
  if(id==='cabin')return !cabinInteriorBlocked(x,y);
  if(id==='chief-house')return !chiefHouseBlocked(x,y);
  if(id==='guest-lodge')return !guestLodgeBlocked(x,y);
- if(id==='training-ground')return !trainingGroundBlocked(x,y);
  if(id==='landing'&&cabinBlocked(x,y))return false;
  if(id==='landing'&&x>=1225&&x<=1275&&y>=1730&&y<=1935)return true;
  if(id==='marsh'){if(marshBlocked(x,y))return false;if(onMarshDeck(x,y))return true;}
@@ -190,7 +199,7 @@ function staticArea(ctx,left,top,width,height,id){
  if(id==='cabin'){drawCabinInterior(ctx);return;}
  if(id==='chief-house'){drawChiefHouse(ctx);return;}
  // The lodge's light follows the story, so drawWilds paints it each frame instead of caching it.
- if(id==='guest-lodge'||id==='training-ground')return;
+ if(id==='guest-lodge')return;
  const texturedGrass=id!=='marsh'&&drawGrassBase(ctx,left,top,width,height,markStale);
  const dirt=pathPattern(ctx,markStale);
  for(let y=Math.floor(top/8)*8;y<top+height;y+=8)for(let x=Math.floor(left/8)*8;x<left+width;x+=8){
@@ -359,6 +368,7 @@ function drawLandmark(ctx,p,t=0){
  const {x,y,kind}=p;
  if(kind==='tree')tree(ctx,x,y,true,crownSprite(true)?'trunk':'all');
  else if(kind==='landing'||kind==='chimes')chimes(ctx,x,y,t);
+ else if(kind==='glade'){ctx.fillStyle='#20352c44';ctx.fillRect(x-62,y+4,124,8);ctx.fillStyle='#5c3b22';ctx.fillRect(x-60,y-14,116,18);ctx.fillStyle='#8a6038';ctx.fillRect(x-60,y-14,116,5);ctx.fillStyle='#c9a46a';ctx.beginPath();ctx.ellipse(x+58,y-5,8,9,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#8a6640';ctx.beginPath();ctx.ellipse(x+58,y-5,4,5,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#4f7a32';ctx.fillRect(x-30,y-18,10,5);ctx.fillRect(x+10,y-17,8,4);}
  else if(kind==='sign'){ctx.fillStyle='#7d6244';ctx.fillRect(x-4,y-10,8,33);ctx.fillStyle='#c2a878';ctx.fillRect(x-40,y-23,80,23);}
  else if(kind==='training-gate'){if(drawProp(ctx,'training-gate-arch',{x,y:y+6,w:100,h:66}))return;ctx.fillStyle='#4a301c';ctx.fillRect(x-30,y-40,7,44);ctx.fillRect(x+23,y-40,7,44);ctx.fillStyle='#8a6038';ctx.fillRect(x-34,y-44,68,7);for(const dy of [-26,-12])ctx.fillRect(x-23,y+dy,46,5);ctx.fillStyle='#5c3b22';ctx.fillRect(x-23,y-24,46,1);ctx.fillRect(x-23,y-10,46,1);}
  else if(kind==='spring'){
@@ -375,9 +385,11 @@ export function drawWilds(ctx,world,view={left:world.player.x-700,right:world.pl
  const id=world.areaId||'landing',area=areaFor(id);ctx.imageSmoothingEnabled=false;
  if(typeof document!=='undefined')drawChunks(ctx,view,id);else staticArea(ctx,view.left,view.top,view.right-view.left,view.bottom-view.top,id);
  if(id==='guest-lodge'){const stage=world.story?.stage;drawGuestLodge(ctx,{night:['ch5-night','ch5-sleep','ch6-night','ch6-complete'].includes(stage),morning:['ch5-morning','ch6-door'].includes(stage)});if(stage==='ch5-morning'&&!world.story.scene)drawFloatingWriting(ctx,world.player,world.elapsed||0);}
- if(id==='training-ground'){const stage=world.story?.stage;drawTrainingGround(ctx,{t:world.elapsed||0,evening:stage==='ch6-buckets'&&world.story.buckets>=BUCKET_TRIPS-1,sword:['ch6-buckets'].includes(stage)});}
+ // The training yard in the farm, drawn each frame because its light and props follow the story.
+ if(id===FARM_ID&&view.right>YARD.x&&view.left<YARD.x+YARD.w&&view.bottom>YARD.y&&view.top<YARD.y+YARD.h+60){ctx.save();ctx.translate(YARD.x,YARD.y);drawTrainingGround(ctx,{t:world.elapsed||0,sword:['ch6-buckets'].includes(world.story?.stage)});ctx.restore();}
+ if(id===FARM_ID&&world.story?.stage==='ch6-buckets'&&world.story.buckets>=BUCKET_TRIPS-1){ctx.fillStyle='rgba(120,50,30,.28)';ctx.fillRect(view.left,view.top,view.right-view.left,view.bottom-view.top);}
  // Where to stand to cast at Drayfus's sword: a glowing patch of dirt with an arrow over it, and one by Eli pointing the way.
- if(id==='training-ground'&&world.story?.stage==='ch6-cast'&&!world.story.scene)drawCastGuide(ctx,world.elapsed||0,world.player);
+ if(id===FARM_ID&&world.story?.stage==='ch6-cast'&&!world.story.scene)drawCastGuide(ctx,world.elapsed||0,world.player);
  if(id==='cabin')drawWeaponRack(ctx,world.story);
  drawWater(ctx,world,view,id);
  if(id==='landing'&&cabinDamaged(world.story)&&world.story.stage!=='storm')drawCamp(ctx,world.elapsed||0);
@@ -385,6 +397,8 @@ export function drawWilds(ctx,world,view={left:world.player.x-700,right:world.pl
  if(id==='landing'&&view.right>1220&&view.left<1370&&view.bottom>1660&&view.top<1810)lantern(ctx);
  if(id==='landing'&&view.right>520&&view.left<590&&view.bottom>1660&&view.top<1730)milestoneGlyph(ctx,world.elapsed||0);
  if(id==='crossroads')drawCrossroads(ctx,world.elapsed||0);
+ // Chime trees along the west side of the trail.
+ if(id==='windchime')for(const [x,y] of WINDCHIME_TREES)if(x>view.left-60&&x<view.right+60&&y>view.top-20&&y<view.bottom+80)chimes(ctx,x,y,(world.elapsed||0)+x*.01);
 
 }
 // Labels go last so canopies and characters never cover a place name or exit sign.
