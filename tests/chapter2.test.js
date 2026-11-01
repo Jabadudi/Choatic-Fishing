@@ -11,7 +11,7 @@ import {SPRITES} from '../src/sprite-definitions.js';
 import {readFileSync} from 'node:fs';
 const finish=w=>{const scene=w.story.scene;assert.ok(scene);for(let i=0;i<30&&w.story.scene===scene;i++)w.advanceStory();assert.notEqual(w.story.scene,scene);};
 function atCamp(){
- const w=new World(()=>.2,{adventure:true,story:true});w.journeyId='chapter2-test';
+ const w=new World(()=>.2,{adventure:true,story:true});w.journeyId='chapter2-test';w.areaId='landing';
  w.story={stage:'complete',lureSeen:true,photoSeen:true,scene:null,page:0,guide:null};
  w.npcs=createStoryNpcs(w.story);Object.assign(w.player,{x:1770,y:1660});
  w.inventory.receive({name:'Mysterious Lure',category:'quest-items'});return w;

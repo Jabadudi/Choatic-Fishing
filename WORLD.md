@@ -4,8 +4,11 @@ The game covers the whole Reedwater Delta regional atlas (`assets/codex/reedwate
 
 ## Playable areas
 
-- **Reedwater Landing** (2,800 × 2,200 world units): southern beach, wooden dock and
-  boat, submerged road and pillars, three wind chimes, spring, hollow tree, and
+- **Reedwater Landing** (17, 2,800 × 2,200 world units, built from the atlas in `src/delta-areas.js`): a
+  turquoise lagoon in the west with islets and drowned pillars, the old road's causeway west through the
+  shallows to the Drowned Road, the trail north past the chime posts to Windchime Path, the warm spring and
+  the hollow tree in the east woods, and one long beach in the south that runs on to the pier at Arrival Bay
+  (22), where every new journey starts. Grandpa's cabin stands at the top of the beach. The Landing also has
   defensive deer and passive turtle and eel entities with persistent health and movement.
   Five rabbits use the supplied `assets/bunny-sheet.png`: they rest, graze, hop,
   and flee when approached. Their movement respects water, trees, rocks and area
@@ -30,7 +33,7 @@ discovery counts switch with the active area; prior discoveries remain in memory
 
 WASD moves, mouse aims, left click uses the equipped item, E casts or abandons fishing,
 Space examines landmarks and reels, Left Shift dashes, R and T use the Region Core's powers once the story wakes them, and M opens/closes the area map. On phones the main attack sits in the bottom-right corner with the powers and Dash ringed around it and Examine just to their left (`src/core-abilities.js`). Fishing, inventory,
-regeneration and timed upgrades remain available. The dock can be walked on.
+regeneration and timed upgrades remain available. Piers, boardwalks and fords can be walked on.
 
 Scenery and explorer artwork are original; rabbits use the user-supplied sprite
 sheet. Nearby terrain is cached in 512-unit sections,

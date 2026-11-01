@@ -14,7 +14,7 @@ import {createVillageResidents,updateVillageResidents} from '../src/village-life
 import {drawNpc} from '../src/npcs.js';
 const finish=w=>{const scene=w.story.scene;assert.ok(scene);for(let i=0;i<30&&w.story.scene===scene;i++)w.advanceStory();assert.notEqual(w.story.scene,scene);};
 function atTrail(){
- const w=new World(()=>.2,{adventure:true,story:true});w.journeyId='chapter3-test';
+ const w=new World(()=>.2,{adventure:true,story:true});w.journeyId='chapter3-test';w.areaId='landing';
  w.story={stage:'ch2-complete',scene:null,page:0,lureSeen:true,photoSeen:true,guide:{...GUIDE_ROUTE.at(-1),waypoint:GUIDE_ROUTE.length,areaId:'landing'}};
  w.npcs=createStoryNpcs(w.story);Object.assign(w.player,{x:1390,y:1450});w.inventory.receive({name:'Mysterious Lure',category:'quest-items'});return w;
 }
@@ -30,7 +30,7 @@ function throughForest(w){
   follow(w,()=>w.story.guide.waypoint===CHAPTER3_ROUTES[area].length);
   if(area==='crossroads'){Object.assign(w.player,{x:1,y:460});w.move(-8,0,false);}
   else if(area==='village-farm'){Object.assign(w.player,{x:1,y:1150});w.move(-8,0,false);}
-  else {Object.assign(w.player,{x:area==='landing'?1400:1150,y:1});w.move(0,-8,false);}
+  else {Object.assign(w.player,{x:area==='landing'?1700:1150,y:1});w.move(0,-8,false);}
   assert.equal(w.story.guide.areaId,w.areaId);assert.ok(walkable(w.player.x,w.player.y,w.areaId));
  }
  follow(w,()=>!!currentScene(w));assert.equal(w.story.scene,'ch3-arrival');finish(w);
@@ -48,7 +48,7 @@ test('Chapter 3 follows connected maps, discovers the village creatures and ends
  const restored=restoreSave(captureSave(w));assert.equal(restored.story.stage,'ch3-complete');assert.deepEqual(restored.story.guide,w.story.guide);assert.equal(restored.npcs.length,1+createVillageResidents().length);
 });
 test('guide waits across exploration detours and forward exits wait for the guide',()=>{
- const w=atTrail();w.inspect();finish(w);Object.assign(w.player,{x:1400,y:1});w.move(0,-8,false);assert.equal(w.areaId,'landing');assert.match(w.message,/guide/);
+ const w=atTrail();w.inspect();finish(w);Object.assign(w.player,{x:1700,y:1});w.move(0,-8,false);assert.equal(w.areaId,'landing');assert.match(w.message,/guide/);
  const previous=structuredClone(w.story.guide);w.areaId='windchime';w.update(1,neutralInput());assert.deepEqual(w.story.guide,previous);
  w.areaId='landing';Object.assign(w.player,{x:500,y:500});w.update(1,neutralInput());assert.deepEqual(w.story.guide,previous);
 });

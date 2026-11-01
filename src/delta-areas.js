@@ -635,7 +635,41 @@ area({id:'drowned-road',num:'16',name:'The Drowned Road',frame:[0,235,265,395],s
 
 // 22 Arrival Bay: a walkable beach along the north (tide pools, driftwood, the wrecked dinghy) and the bay Eli rowed
 // across in Chapter 1. The Mistline in the south stops every boat.
-area({id:'arrival-bay',num:'22',name:'Arrival Bay',frame:[180,300,385,470],size:[2400,1700],base:'water',ground:'sand',sea:true,spawn:[256,392],
+// 17 Reedwater Landing: where Grandpa's cabin stands. The west third is a turquoise lagoon with islets and drowned
+// pillars; the old road's paving runs out through the shallows as a causeway to the Drowned Road. The middle is open
+// meadow where the trail climbs north past the chimes to Windchime Path, the east is thick woods with the warm spring
+// and the hollow tree, and the south is one long beach that runs on to the pier at Arrival Bay.
+// Same size as the hand-built Landing it replaces, so the cabin and the Chapter 1 and 2 staging stay where they were.
+area({id:'landing',num:'17',name:'Reedwater Landing',frame:[195,335,272,400],size:[2800,2200],base:'land',ground:'meadow',seed:7319,spawn:[256,377],
+ shapes:[
+  ['water',[[195,272],[246,272],[250,285],[244,300],[250,318],[246,334],[236,346],[222,352],[207,356],[195,358]]],
+  ['land','ellipse',[215,295],5,3.5],['land','ellipse',[230,326],3.5,2.5],['land','ellipse',[206,316],3,2.2],
+  ['water','ellipse',[296,333],6.5,8.7]
+ ],
+ zones:[['sand',[[195,356],[210,354],[225,352],[240,356],[255,358],[262,360],[290,361],[310,357],[335,354],[335,400],[195,400]]],
+  ['forest',[[250,272],[274,272],[271,290],[262,300],[252,296]]],
+  ['forest',[[298,272],[335,272],[335,350],[318,352],[304,344],[300,320],[302,296]]],
+  ['forest',[[236,344],[252,345],[254,352],[240,354]]]],
+ roads:[[[258,400],[258,370],[260,356],[266,345],[276,336],[287,324],[292,312],[289,298],[281,286],[280,272]],
+  [[266,345],[256,340],[248,338]],[[259,364],[268,363],[276.5,362]],[[287,324],[286,329]],[[290,303],[300,301],[308,300]]],
+ fords:[{pts:[[248,338],[238,338],[226,337.5],[212,338],[195,338]],width:2.6}],
+ props:[{kind:'boat',at:[306,379]},{kind:'stone',at:[322,368]},{kind:'stone',at:[327,374]},{kind:'stone',at:[200,364]},
+  {kind:'pillar',at:[212,333.5]},{kind:'pillar',at:[224,342.5]},{kind:'pillar',at:[203,342.5]},
+  {kind:'logs',at:[236,367],solid:0},{kind:'logs',at:[293,368],solid:0}],
+ places:[
+  {id:'landing',name:'Reedwater Landing',at:[256,380],kind:'shore',text:'The beach below Grandpa’s cabin. South, the sand runs on to the pier at Arrival Bay. North, a worn trail climbs toward the chimes.'},
+  {id:'drowned',name:'The Drowned Road',at:[249,343],kind:'drowned',text:'Through the shallows, squared stones lead west under the water. This shore was once a street.'},
+  {id:'chimes',name:'The Three Chimes',at:[268,338],kind:'chimes',text:'Three hollow wooden notes drift inland. Follow the worn trail north past the chime posts to enter Windchime Path.'},
+  {id:'spring',name:'Reedwater Spring',at:[286,329],kind:'spring',text:'Warm water bubbles beneath the reeds. Tiny silver fish gather at the edge of the spring.'},
+  {id:'tree',name:'The Hollow Tree',at:[311,299],kind:'tree',text:'A deer pauses beside the hollow trunk. Your footsteps echo from somewhere deeper in the roots.'}
+ ],
+ exits:[
+  {edge:'north',from:274,to:286,target:'windchime',entry:{x:330,y:1120},label:'Windchime Path'},
+  {edge:'west',from:333,to:343,target:'drowned-road',label:'The Drowned Road'},
+  {edge:'south',from:205,to:300,target:'arrival-bay',label:'Arrival Bay'}
+ ]});
+
+area({id:'arrival-bay',num:'22',name:'Arrival Bay',frame:[180,300,385,470],size:[2400,1700],base:'water',ground:'sand',sea:true,spawn:[251,402],
  shapes:[
   ['land',[[180,385],[300,385],[300,398],[284,400],[262,396],[240,401],[214,397],[196,400],[180,397]],{zone:'sand'}],
   ['land',[[180,385],[300,385],[300,387],[180,387]],{zone:'meadow'}],
@@ -643,6 +677,7 @@ area({id:'arrival-bay',num:'22',name:'Arrival Bay',frame:[180,300,385,470],size:
   ['land','ellipse',[194,414],5,4],['land','ellipse',[286,410],3,4],['land','ellipse',[291,414],2.5,3]
  ],
  zones:[['rock',[[188,410],[200,410],[200,418],[188,418]]],['rock',[[282,405],[295,405],[295,418],[282,418]]]],
+ roads:[[[251,396],[254,391],[258,385]]],
  walks:[{pts:[[251,396],[251,412]],width:3.5},{pts:[[245,412],[258,412]],width:3}],
  props:[{kind:'wreck',at:[226,395]},{kind:'logs',at:[208,393],solid:0},{kind:'logs',at:[280,392],solid:0},{kind:'shell',at:[238,393],solid:0},{kind:'raft',at:[262,414]}],
  places:[

@@ -49,7 +49,7 @@ export const SCENES={...CHAPTER1_SCENES,...CHAPTER2_SCENES,...CHAPTER3_SCENES,..
 export const LURE='Mysterious Lure',REGION_CORE='Region Core';
 export const pageForBeat=(scene,beat)=>SCENES[scene]?.findIndex(p=>p.beat===beat)??-1;
 export const createStory=()=>({stage:'arrival',lureSeen:false,photoSeen:false,scene:'arrival',page:0,guide:null,rod:false,bow:false,coreIngested:false,callAwakened:false});
-// Chapter 1 supper: two Sardines from the dock, then three Deer Meat from the meadow, all cooked at the stove.
+// Chapter 1 supper: two Sardines from the pier, then three Deer Meat from the meadow, all cooked at the stove.
 export const SUPPER=Object.freeze({Sardine:2,'Deer Meat':3});
 export const RACK={x:320,y:96};
 const PRE_STORM=['arrival','explore','fish'];
@@ -59,7 +59,7 @@ export const bowAvailable=w=>w.story?.stage==='fish'&&w.story.rod&&carried(w,'Sa
 export function supperObjective(w){
  const s=w.story,fish=Math.min(SUPPER.Sardine,carried(w,'Sardine')),meat=Math.min(SUPPER['Deer Meat'],carried(w,'Deer Meat'));
  if(!s.rod)return 'Chapter 1 · Take Grandpa’s fishing rod from the weapon rack in the cabin.';
- if(!s.bow&&fish<SUPPER.Sardine)return `Chapter 1 · Fish 2 Sardines from the dock (${fish}/2).`;
+ if(!s.bow&&fish<SUPPER.Sardine)return `Chapter 1 · Fish 2 Sardines from the pier (${fish}/2).`;
  if(!s.bow)return 'Chapter 1 · Take the hunting bow from the weapon rack in the cabin.';
  if(fish<SUPPER.Sardine||meat<SUPPER['Deer Meat'])return `Chapter 1 · Hunt deer in the meadow and collect 3 Deer Meat (${meat}/3)${fish<SUPPER.Sardine?` · Sardines ${fish}/2`:''}.`;
  return 'Chapter 1 · Bring 2 Sardines and 3 Deer Meat to the cabin stove and cook dinner.';
@@ -76,9 +76,9 @@ export function storyObjective(world){
  if(s.stage==='ch6-spar'&&world.spar)return sparObjective(world.spar);
  if(['ch7-run','ch7-laps'].includes(s.stage))return runObjective(s.stage,s.run||0);
  if(s.stage==='ch7-hold')return holdObjective(s.hold||0);
- return ({...CHAPTER3_OBJECTIVES,...CHAPTER4_OBJECTIVES,...CHAPTER5_OBJECTIVES,...CHAPTER6_OBJECTIVES,...CHAPTER7_OBJECTIVES,arrival:'Chapter 1 · Follow the path to Grandpa’s cabin.',explore:'Chapter 1 · Examine the lure box and the photograph inside the cabin.',rest:'Chapter 1 · When you are ready, rest in the cabin bed.',storm:'Chapter 1 · Survive the storm.',awakening:'Chapter 1 · A new morning.',complete:'Chapter 2 · Talk to the girl beside the campfire at Reedwater Landing.',
+ return ({...CHAPTER3_OBJECTIVES,...CHAPTER4_OBJECTIVES,...CHAPTER5_OBJECTIVES,...CHAPTER6_OBJECTIVES,...CHAPTER7_OBJECTIVES,arrival:'Chapter 1 · Walk up the beach from the pier to Grandpa’s cabin.',explore:'Chapter 1 · Examine the lure box and the photograph inside the cabin.',rest:'Chapter 1 · When you are ready, rest in the cabin bed.',storm:'Chapter 1 · Survive the storm.',awakening:'Chapter 1 · A new morning.',complete:'Chapter 2 · Talk to the girl beside the campfire at Reedwater Landing.',
  'ch2-camp':'Chapter 2 · Talk with your rescuer about last night.',
- 'ch2-cabin':'Chapter 2 · Ask the girl about the cabin. You can examine the ruins and dock first.',
+ 'ch2-cabin':'Chapter 2 · Ask the girl about the cabin. You can examine the ruins and the beach first.',
  'ch2-home':'Chapter 2 · Ask the girl how to get home.',
  'ch2-ready':'Chapter 2 · Talk to the girl when you are ready to leave the shore.',
  'ch2-follow':'Chapter 2 · Follow the girl toward the inland trail. She waits if you fall behind.',
@@ -201,7 +201,7 @@ export function inspectStory(w){
   }
   show(w,'rack-bow');
  }
- else if(prompt==='Examine the weapon rack')w.message=s.bow?'Empty pegs where the rod and bow hung. A spare rod still waits for someone else.':s.stage==='fish'?'An old recurve bow hangs on the rack. Supper starts with two Sardines from the dock.':'Two fishing rods and an old recurve bow. Grandpa kept everything oiled and ready.';
+ else if(prompt==='Examine the weapon rack')w.message=s.bow?'Empty pegs where the rod and bow hung. A spare rod still waits for someone else.':s.stage==='fish'?'An old recurve bow hangs on the rack. Supper starts with two Sardines from the pier.':'Two fishing rods and an old recurve bow. Grandpa kept everything oiled and ready.';
  else if(prompt==='Examine the lure box')show(w,'lure');
  else if(prompt==='Examine the photograph')show(w,'photo');
  else if(prompt==='Cook dinner'){

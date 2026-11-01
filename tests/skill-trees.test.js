@@ -9,7 +9,7 @@ import {Fishing} from '../src/fishing.js';
 import {skillXpToNext,SKILL_IDS} from '../src/skills.js';
 import {SKILL_TREES,treePassives,validTree} from '../src/skill-trees.js';
 import {sumPassives,PASSIVES} from '../src/passives.js';
-const fresh=(random=()=>.2)=>{const w=new World(random,{adventure:true,story:true});w.journeyId='tree-test';return w;};
+const fresh=(random=()=>.2)=>{const w=new World(random,{adventure:true,story:true});w.journeyId='tree-test';w.areaId='landing';return w;};
 const levelTo=(p,id,level)=>{while(p.skills[id].level<level)p.train(id,skillXpToNext(p.skills[id].level));};
 const learnAll=(p,id,talent,times)=>{for(let i=0;i<times;i++)assert.ok(p.learn(id,talent),`${talent} rank ${i+1}`);};
 
@@ -56,9 +56,9 @@ test('passive sources add up by key and reductions are capped',()=>{
 
 test('fishing talents shorten the wait, speed the meter, slow the drain and can land a second fish',()=>{
  const w=fresh(()=>0);w.story=null;const p=w.progression;levelTo(p,'fishing',12);
- w.areaId='landing';Object.assign(w.player,{x:1250,y:1850});w.inventory.selected=1;
- assert.ok(w.cast({x:1250,y:2000}));const base=w.fishing.wait;w.cancel();
- learnAll(p,'fishing','patient-line',3);assert.ok(w.cast({x:1250,y:2000}));assert.ok(Math.abs(w.fishing.wait-base*.7)<1e-9);w.cancel();
+ w.areaId='landing';Object.assign(w.player,{x:1855,y:1050});w.inventory.selected=1;
+ assert.ok(w.cast({x:2020,y:1050}));const base=w.fishing.wait;w.cancel();
+ learnAll(p,'fishing','patient-line',3);assert.ok(w.cast({x:2020,y:1050}));assert.ok(Math.abs(w.fishing.wait-base*.7)<1e-9);w.cancel();
  const meter=perks=>{const f=new Fishing(()=>.5);f.cast();f.update(10,false);f.update(1.5,false,perks);return f.progress;};
  assert.ok(meter({slack:.4})>meter({}),'slack slows the drain');
  const held=perks=>{const f=new Fishing(()=>.5);f.cast();f.update(10,false);f.bar=.4;f.update(.1,false,perks);return f.progress;};

@@ -10,7 +10,7 @@ test('exploration begins on accessible land without an opponent or countdown',()
  assert.deepEqual({x:world.player.x,y:world.player.y},SPAWN);
  assert.ok(walkable(SPAWN.x,SPAWN.y));assert.equal(world.bots.length,0);assert.equal(world.matchState,'playing');
  world.update(1,neutralInput());assert.equal(world.matchState,'playing');
- assert.equal(world.inspect(),true);assert.ok(world.discovered.has('landing'));assert.match(world.message,/boat/);
+ assert.equal(world.inspect(),true);assert.ok(world.discovered.has('landing'));assert.match(world.message,/pier/);
 });
 test('landing landmarks and connecting trails are accessible',()=>{
  for(const p of LANDMARKS)assert.ok(walkable(p.x,p.y),p.name);
@@ -25,12 +25,12 @@ test('fishing at the spring uses real shoreline geometry and water blocks walkin
 });
 test('walking over connected map edges changes areas and returns without a menu',()=>{
  const world=new World(()=>.1,{adventure:true});world.discovered.add('landing');
- Object.assign(world.player,{x:1400,y:4});world.move(0,-12,false);
+ Object.assign(world.player,{x:1700,y:4});world.move(0,-12,false);
  assert.equal(world.areaId,'windchime');assert.deepEqual({x:world.player.x,y:world.player.y},{x:330,y:1120});assert.ok(walkable(world.player.x,world.player.y,world.areaId));
  world.inventory.receive({name:'Sardine'});world.inventory.assignHotbar(world.inventory.allItems.at(-1).id,2);world.progression.pendingUpgrades=1;world.chooseUpgrade('hermes');
- world.move(0,320,false);assert.equal(world.areaId,'landing');assert.equal(world.player.x,1400);assert.equal(world.player.y,120);assert.ok(world.discovered.has('landing'));
+ world.move(0,320,false);assert.equal(world.areaId,'landing');assert.equal(world.player.x,1680);assert.equal(world.player.y,120);assert.ok(world.discovered.has('landing'));
  assert.equal(world.inventory.item.name,'Sardine');assert.equal(world.progression.upgrades.hermes,1);
- Object.assign(world.player,{x:800,y:30});world.move(0,-100,false);assert.equal(world.areaId,'landing');assert.ok(world.player.y>=24);assert.equal(transitionAt(800,-1),null);
+ Object.assign(world.player,{x:2400,y:30});world.move(0,-100,false);assert.equal(world.areaId,'landing');assert.ok(world.player.y>=24);assert.equal(transitionAt(2400,-1),null);
  for(const area of Object.values(AREAS))for(const exit of area.exits)assert.ok(walkable(exit.entry.x,exit.entry.y,exit.target));
 });
 test('scenery is deterministic and rendering keeps a bounded chunk cache',()=>{
@@ -57,7 +57,7 @@ test('tree crowns use one cached sprite per variant and leafyTree supports parts
 
 import {shorePoints} from '../src/wilds.js';
 test('shore points are cached per area and empty in Windchime Path',()=>{
- const a=shorePoints('landing',1,3);assert.ok(a.foam.length>0);assert.ok(a.sparkle.length>0);assert.equal(shorePoints('landing',1,3),a);
+ const a=shorePoints('landing',1,2);assert.ok(a.foam.length>0);assert.ok(a.sparkle.length>0);assert.equal(shorePoints('landing',1,2),a);
  assert.equal(shorePoints('windchime',1,3).foam.length,0);
 });
 
@@ -73,8 +73,8 @@ test('labels and exit signs draw above swaying crowns',()=>{
   assert.ok(ops.includes('text'));const scene=ops.slice(0,ops.indexOf('atmosphere'));assert.ok(scene.lastIndexOf('img')<scene.indexOf('text'));
  }finally{globalThis.document=original;clearTerrainCache();}
 });
-test('shore foam and sparkles skip the pier and use the coarse grid',()=>{
- const {foam,sparkle}=shorePoints('landing',2,3),onDock=([x,y])=>x>=1200&&x<=1300&&y>=1725&&y<=1955;
+test('shore foam and sparkles skip the causeway and use the coarse grid',()=>{
+ const {foam,sparkle}=shorePoints('landing',1,2),onDock=([x,y])=>DELTA.landing.deck(x,y);
  assert.ok(foam.length>0);assert.equal(foam.filter(onDock).length,0);assert.equal(sparkle.filter(onDock).length,0);
  assert.ok(foam.every(([x,y])=>x%8===0&&y%8===0));
 });
@@ -89,11 +89,12 @@ test('the captain leaves no wrecked arrival boat on the shore',()=>{
 });
 
 import {milestoneBreath} from '../src/wilds.js';
+import {DELTA} from '../src/delta-areas.js';
 test('the Drowned Road entrance is an overgrown causeway with a milestone instead of the old pillars',()=>{
  const rects=[],styles=[];
  const c=new Proxy({fillRect(...a){rects.push(a.join());},createLinearGradient:()=>({addColorStop(){}}),createRadialGradient:()=>({addColorStop(){}})},{get:(t,k)=>k in t?t[k]:()=>{},set:(t,k,v)=>{if(k==='fillStyle')styles.push(v);t[k]=v;return true;}});
  const world=new World(()=>0,{adventure:true});world.rabbits=[];
- drawWilds(c,world,{left:500,top:1640,right:720,bottom:1880});
+ drawWilds(c,world,{left:880,top:1040,right:1100,bottom:1200});
  assert.ok(!rects.includes('480,1760,12,36')&&!rects.includes('750,1850,12,36'),'old pillars are gone');
  assert.ok(styles.includes('#b8b39a'),'causeway cobbles are painted');
  assert.ok(styles.includes('#7ff0e0'),'milestone glyph is painted');

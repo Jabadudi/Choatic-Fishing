@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {AREAS,walkable,placesFor,transitionAt,EXAMINE_RANGE} from '../src/wilds.js';
+import {AREAS,walkable,placesFor,transitionAt,EXAMINE_RANGE,INTERIOR_AREAS} from '../src/wilds.js';
 import {DELTA} from '../src/delta-areas.js';
 import {World} from '../src/world.js';
 
@@ -21,16 +21,26 @@ for(const id of Object.keys(DELTA))test(`${AREAS[id].name}: every landmark and e
 });
 test('every exit into an atlas area has a way back',()=>{
  const ways=id=>[...AREAS[id].exits,...(AREAS[id].portals||[]),...placesFor(id).filter(p=>p.travel).map(p=>p.travel)];
- for(const a of Object.values(AREAS))for(const e of ways(a.id))if(DELTA[e.target])assert.ok(ways(e.target).some(b=>b.target===a.id),`${e.target} leads back to ${a.id}`);
+ // Rooms open from a door prompt, not an exit.
+ for(const a of Object.values(AREAS))if(!INTERIOR_AREAS.includes(a.id))for(const e of ways(a.id))if(DELTA[e.target])assert.ok(ways(e.target).some(b=>b.target===a.id),`${e.target} leads back to ${a.id}`);
 });
 test('Eli walks from Windchime Path into Chimewood and back',()=>{
  const w=new World(()=>.1,{adventure:true});w.areaId='windchime';Object.assign(w.player,{x:1590,y:400});w.move(20,0,false);
  assert.equal(w.areaId,'chimewood');assert.ok(walkable(w.player.x,w.player.y,'chimewood'));
  Object.assign(w.player,{x:10,y:120});w.move(-20,0,false);assert.equal(w.areaId,'windchime');
 });
-test('Eli walks west from the Landing into the Drowned Road, and rows from the pier to Arrival Bay',()=>{
- const w=new World(()=>.1,{adventure:true});w.areaId='landing';Object.assign(w.player,{x:10,y:1600});w.move(-20,0,false);
+test('Eli walks west from the Landing over the causeway into the Drowned Road, and south down the beach to Arrival Bay',()=>{
+ const w=new World(()=>.1,{adventure:true});w.areaId='landing';Object.assign(w.player,{x:10,y:1134});w.move(-20,0,false);
  assert.equal(w.areaId,'drowned-road');assert.ok(walkable(w.player.x,w.player.y,'drowned-road'));
- const pier=placesFor('landing').find(p=>p.id==='pier');assert.ok(walkable(pier.x,pier.y,'landing'));
- assert.equal(pier.travel.target,'arrival-bay');assert.ok(walkable(pier.travel.entry.x,pier.travel.entry.y,'arrival-bay'));
+ w.areaId='landing';Object.assign(w.player,{x:1260,y:2190});w.move(0,20,false);
+ assert.equal(w.areaId,'arrival-bay');assert.ok(walkable(w.player.x,w.player.y,'arrival-bay'));
+ assert.equal(placesFor('landing').some(p=>p.travel),false,'the pier and its rowboat are in Arrival Bay now');
+});
+test('a new journey starts on the Arrival Bay pier, and Chapter 1 keeps Eli on the shore',()=>{
+ const w=new World(()=>.1,{adventure:true,story:true});
+ assert.equal(w.areaId,'arrival-bay');assert.deepEqual({x:w.player.x,y:w.player.y},AREAS['arrival-bay'].spawn);assert.ok(walkable(w.player.x,w.player.y,'arrival-bay'));
+ const pier=placesFor('arrival-bay').find(p=>p.id==='arrival-pier');Object.assign(w.player,{x:pier.x,y:pier.y});w.story.scene=null;
+ assert.ok(w.inspect());assert.equal(w.areaId,'arrival-bay','no rowing away before Chapter 2 ends');
+ Object.assign(w.player,{x:1300,y:30});w.move(0,-40,false);assert.equal(w.areaId,'landing');
+ Object.assign(w.player,{x:10,y:1134});w.move(-20,0,false);assert.equal(w.areaId,'landing','the Drowned Road waits until Chapter 2 ends');
 });

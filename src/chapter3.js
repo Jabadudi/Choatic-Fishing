@@ -9,7 +9,7 @@ export const TRAVEL_AREAS=['landing','windchime','crossroads','village-farm','vi
 export const CHIEF_AREAS=['village-market','village'];
 export const travelAreas=s=>['ch3-chief','ch3-complete'].includes(s?.stage)?CHIEF_AREAS:TRAVEL_AREAS;
 export const CHAPTER3_ROUTES={
- landing:[{x:1380,y:1180},{x:1350,y:800},{x:1400,y:50}],
+ landing:[{x:1460,y:1134},{x:1620,y:1100},{x:1840,y:894},{x:1940,y:688},{x:1880,y:447},{x:1720,y:241},{x:1680,y:50}],
  windchime:[{x:348,y:1060},{x:303,y:928},{x:366,y:692},{x:511,y:510},{x:711,y:382},{x:892,y:291},{x:1128,y:164},{x:1150,y:50}],
  crossroads:[{x:800,y:1080},{x:760,y:1000},{x:700,y:880},{x:667,y:821},{x:476,y:688},{x:248,y:554},{x:50,y:462}],
  'village-farm':[{x:1800,y:840},{x:1300,y:905},{x:900,y:1015},{x:500,y:1115},{x:50,y:1150}],

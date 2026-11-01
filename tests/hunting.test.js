@@ -60,7 +60,7 @@ test('only animals in the active area can be hit; area travel clears lingering p
  Object.assign(w.player,{x:deer.x-40,y:deer.y,angle:0});attack(w,w.player,{name:'Anchor'});assert.equal(deer.health,60);
  assert.equal(damageAnimal(w,deer,60,w.player,0),false);
  attack(w,w.player,{name:'Harpoon Gun'});assert.ok(w.projectiles.length);
- Object.assign(w.player,{x:1400,y:4});w.move(0,-12,false);assert.equal(w.areaId,'windchime');assert.equal(w.projectiles.length,0);
+ Object.assign(w.player,{x:1700,y:4});w.move(0,-12,false);assert.equal(w.areaId,'windchime');assert.equal(w.projectiles.length,0);
 });
 
 test('deer ignore nearby players, retaliate only after injury, and stop after a bounded pursuit',()=>{

@@ -29,6 +29,8 @@ export const SHORE_DEPTH=110;
 export const DASH_RECHARGE=2;
 export const INLAND={left:LAND.left+SHORE_DEPTH,right:LAND.right-SHORE_DEPTH,top:LAND.top+SHORE_DEPTH,bottom:LAND.bottom-SHORE_DEPTH};
 export function createActor(id,name,x,y,random){return {id,name,entityType:'player',x,y,angle:0,health:100,vx:0,vy:0,cooldown:0,dashCharges:1,dashRemaining:0,dashCooldown:0,dashDirection:{x:0,y:0},message:'',catches:[],inventory:new Inventory(),progression:new Progression(),fishing:new Fishing(random),bobber:null,retreat:0,intent:'TO SHORE'};}
+// Chapter 1 and 2 happen on the shore: the Landing and the Arrival Bay beach below it.
+const SHORE_AREAS=['landing','arrival-bay'];
 export class World {
  constructor(random=Math.random,{botCount=1,countdownSeconds=5,humans=null,adventure=false,story=false}={}){
   this.random=random;this.player=createActor('player','YOU',480,365,random);
@@ -50,7 +52,8 @@ export class World {
   this.npcs=adventure?createNpcs():[];this.dialogue=null;this.quests=createQuests();
   if(adventure){this.areaId='landing';Object.assign(this.player,Wilds.SPAWN);this.bots=[];this.actors=[this.player];this.humans=[this.player];this.chests=[];this.countdownRemaining=0;this.matchState='playing';this.discovered=new Set();this.message='Welcome to Reedwater Landing. Follow the north trail to walk into Windchime Path. M opens the area map.';}
   if(adventure)this.player.progression.characterStats=true;
-  if(this.story){this.player.name='Eli';this.player.spriteId='eli';this.npcs=[];this.message=storyObjective(this);}
+  // A new journey starts on the Arrival Bay pier, where the captain's boat puts Eli ashore.
+  if(this.story){this.player.name='Eli';this.player.spriteId='eli';this.npcs=[];this.areaId='arrival-bay';Object.assign(this.player,Wilds.AREAS['arrival-bay'].spawn);this.message=storyObjective(this);}
  }
  advanceStory(){return advanceStory(this);}
  skipStory(){return skipStory(this);}
@@ -131,6 +134,7 @@ export class World {
   if(!place)return false;
   this.discovered.add(place.id);
   // A boat or a ferry rope: examining it takes Eli across to another area.
+  if(place.travel?.entry&&this.story&&!inlandUnlocked(this.story)&&!SHORE_AREAS.includes(place.travel.target)){this.message=`${place.name}: not yet. ${storyObjective(this)}`;return true;}
   if(place.travel?.entry&&Wilds.AREAS[place.travel.target]){this.enterArea({areaId:place.travel.target,...place.travel.entry},this.player,`${place.text} · ${Wilds.areaFor(place.travel.target).name}`);return true;}
   this.message=place.text;return true;
  }
@@ -174,7 +178,8 @@ export class World {
    const steps=Math.max(1,Math.ceil(Math.hypot(dx,dy)/5)),sx=dx/steps,sy=dy/steps;
    for(let i=0;i<steps;i++){if(Wilds.walkable(p.x+sx,p.y,this.areaId)&&(!shoreOnly||Wilds.nearWater(p.x+sx,p.y,this.areaId)))p.x+=sx;if(Wilds.walkable(p.x,p.y+sy,this.areaId)&&(!shoreOnly||Wilds.nearWater(p.x,p.y+sy,this.areaId)))p.y+=sy;}
    let next=Wilds.transitionAt(p.x,p.y,this.areaId);
-   if(next&&this.story&&!inlandUnlocked(this.story)&&this.areaId==='landing'){next=null;p.y=Math.max(25,p.y);this.message=storyObjective(this);}
+   // Until Chapter 2 ends, Eli stays between the Landing and the Arrival Bay beach.
+   if(next&&this.story&&!inlandUnlocked(this.story)&&!SHORE_AREAS.includes(next.areaId)){next=null;const a=Wilds.areaFor(this.areaId);p.x=Math.max(25,Math.min(a.width-25,p.x));p.y=Math.max(25,Math.min(a.height-25,p.y));this.message=storyObjective(this);}
    if(next&&!storyTransitionAllowed(this,next)){next=null;const a=Wilds.areaFor(this.areaId);p.x=Math.max(25,Math.min(a.width-25,p.x));p.y=Math.max(25,Math.min(a.height-25,p.y));this.message='Your guide is still on the trail. Stay with her before moving on.';}
    if(next)this.enterArea(next,p);
    p.walkTime=(p.walkTime||0)+Math.hypot(dx,dy)*.14;return;
