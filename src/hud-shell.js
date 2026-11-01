@@ -8,6 +8,7 @@ import {regionAt} from './wilds.js';
 import {FAMILIARS} from './familiars.js';
 import {wishstonesLabel} from './wishing-well.js';
 import {coreWheel,RESERVES_MAX,abilityUnlocked} from './core-abilities.js';
+import {dashMeter} from './hud.js';
 const svg=(body,size=24)=>`<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
 const el=(tag,className,text)=>{const node=document.createElement(tag);if(className)node.className=className;if(text!==undefined)node.textContent=text;return node;};
 const ICONS={
@@ -45,7 +46,7 @@ export function mountHudShell({act,openHelp,examine,openAtlas,openQuests,openWel
  <button class="hud-act ring core" style="--a:135deg" data-act="reeds-call" data-core="reeds-call" aria-label="Reedwater’s Call">${svg(ICONS['reeds-call'])}<i class="hud-cd"></i><kbd></kbd><small>Call</small></button>
  <button class="hud-act ring core" style="--a:90deg" data-act="sealed" data-core="sealed-3" aria-label="Sealed power">${svg(ICONS.sealed)}<small>???</small></button>
  <button class="hud-act ring core" style="--a:45deg" data-act="sealed" data-core="sealed-4" aria-label="Sealed power">${svg(ICONS.sealed)}<small>???</small></button>
- <button class="hud-act ring dash" style="--a:0deg" data-act="dash" aria-label="Dash">${svg(ICONS.dash)}<kbd></kbd><small>Dash</small></button>
+ <button class="hud-act ring dash" style="--a:0deg" data-act="dash" aria-label="Dash">${svg(ICONS.dash)}<i class="hud-cd"></i><b class="hud-charges" hidden></b><kbd></kbd><small>Dash</small></button>
  <button class="hud-act use desk" data-act="use" aria-label="Attack with the selected item"><span class="hud-use-icon"></span><kbd></kbd><small></small></button>
 </div>
 <div id="hud-banner" aria-hidden="true"><small></small><b></b><i></i></div>
@@ -139,6 +140,13 @@ export function mountHudShell({act,openHelp,examine,openAtlas,openQuests,openWel
     if(!row.sealed){const name=row.unlocked?row.name:'???';setText(b.querySelector('small'),row.id==='reeds-call'&&row.unlocked?'Call':name);b.setAttribute('aria-label',row.unlocked?row.name:'Sealed power');b.title=row.unlocked?row.name:'Not yet awakened';
      const cd=b.querySelector('.hud-cd'),sweep=`${Math.round(row.cooldownFraction*360)}deg`;if(cd.style.getPropertyValue('--cd')!==sweep)cd.style.setProperty('--cd',sweep);}
    }
+   // Dash: a sweep drains clockwise as the spent charge comes back, the button dims while no charge is left, and it flashes once when ready.
+   const dash=actions.querySelector('.dash'),dm=dashMeter(world),dashSweep=`${Math.round(dm.remaining*360)}deg`,dashCd=dash.querySelector('.hud-cd');
+   if(dashCd.style.getPropertyValue('--cd')!==dashSweep)dashCd.style.setProperty('--cd',dashSweep);
+   if(dash.classList.contains('waiting')&&dm.ready){dash.classList.remove('flash');void dash.offsetWidth;dash.classList.add('flash');}
+   dash.classList.toggle('waiting',!dm.ready);
+   const charges=dash.querySelector('.hud-charges');charges.hidden=dm.max<2;if(!charges.hidden)setText(charges,String(dm.charges));
+   const dashLabel=dm.ready?(dm.remaining>0?`Dash, ${dm.charges} of ${dm.max} ready`:'Dash'):`Dash recharging, ${dm.seconds.toFixed(1)} seconds`;if(dash.getAttribute('aria-label')!==dashLabel)dash.setAttribute('aria-label',dashLabel);
    const reserves=actions.querySelector('.hud-reserves');reserves.hidden=!abilityUnlocked(world,'reeds-call');
    if(!reserves.hidden){const w=`${Math.round((world.core?.reserves??RESERVES_MAX)/RESERVES_MAX*100)}%`;if(reserves.firstElementChild.style.width!==w)reserves.firstElementChild.style.width=w;}
    const keys={'still-water':'tidal','reeds-call':'whirlpool',talk:'inspect',use:rod?'fish':'use',dash:'dash'};

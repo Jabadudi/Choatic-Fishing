@@ -25,6 +25,8 @@ import {createWell,updateWell,nearWell,findWishstone} from './wishing-well.js';
 import {artifactBonus,combineArtifacts,isArtifact,itemLabel,slotArtifact,unslotArtifact,withArticle} from './artifacts.js';
 export {LAND} from './terrain.js';
 export const SHORE_DEPTH=110;
+// Seconds for one spent dash charge to come back. Each charge recharges in turn, so two spent charges take twice this.
+export const DASH_RECHARGE=2;
 export const INLAND={left:LAND.left+SHORE_DEPTH,right:LAND.right-SHORE_DEPTH,top:LAND.top+SHORE_DEPTH,bottom:LAND.bottom-SHORE_DEPTH};
 export function createActor(id,name,x,y,random){return {id,name,entityType:'player',x,y,angle:0,health:100,vx:0,vy:0,cooldown:0,dashCharges:1,dashRemaining:0,dashCooldown:0,dashDirection:{x:0,y:0},message:'',catches:[],inventory:new Inventory(),progression:new Progression(),fishing:new Fishing(random),bobber:null,retreat:0,intent:'TO SHORE'};}
 export class World {
@@ -246,10 +248,10 @@ export class World {
    const step=Math.min(dt,this.dashRemaining);
    this.move(this.dashDirection.x*850*step,this.dashDirection.y*850*step,this.fishing.state!=='idle');
    this.dashRemaining=Math.max(0,this.dashRemaining-dt);
-   if(this.dashRemaining<1e-9){this.dashRemaining=0;if(this.dashCooldown===0)this.dashCooldown=2;}
+   if(this.dashRemaining<1e-9){this.dashRemaining=0;if(this.dashCooldown===0)this.dashCooldown=DASH_RECHARGE;}
   }else if(this.dashCooldown>0){
    this.dashCooldown-=dt;
-   while(this.dashCooldown<=1e-9&&this.player.dashCharges<this.progression.maxDashes){this.player.dashCharges++;if(this.player.dashCharges<this.progression.maxDashes)this.dashCooldown+=2;else this.dashCooldown=0;}
+   while(this.dashCooldown<=1e-9&&this.player.dashCharges<this.progression.maxDashes){this.player.dashCharges++;if(this.player.dashCharges<this.progression.maxDashes)this.dashCooldown+=DASH_RECHARGE;else this.dashCooldown=0;}
   }
   const p=this.player;p.angle=Math.atan2(input.aim.y-p.y,input.aim.x-p.x);
   if(!dashing&&p.health>0&&(this.fishing.state==='idle'||this.fishing.state==='reeling')){const analog=Number.isFinite(input.moveX)&&Number.isFinite(input.moveY),x=analog?input.moveX:Number(input.right)-Number(input.left),y=analog?input.moveY:Number(input.down)-Number(input.up),len=Math.max(1,Math.hypot(x,y)),speed=195*this.progression.speedMultiplier*storySpeed(this);if(x||y){p.facing=facingFor(x,y);p.steppedAt=this.elapsed;}this.move(x/len*speed*dt,y/len*speed*dt,this.fishing.state==='reeling');}
