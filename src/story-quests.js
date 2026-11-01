@@ -4,7 +4,8 @@ import {storyObjective,CABIN,STORY_STAGES} from './story.js';
 import {PERIMETER,REST_SPOT} from './chapter7.js';
 import {CHIEF_DOOR,CHIEF_HOUSE,MARA_SPOT} from './chief-house.js';
 import {GUEST_LODGE,LODGE_DOOR,LODGE_BED} from './guest-lodge.js';
-import {TRAINING_GROUND,TRAINING_GATE,DRAYFUS_SPOT,RACK_SPOT,YARD_WELL,TROUGH,CAST_SPOT} from './training-ground.js';
+import {TRAINING_GROUND,DRAYFUS_SPOT,RACK_SPOT,YARD_WELL,TROUGH,CAST_SPOT} from './training-ground.js';
+import {AREAS} from './wilds.js';
 
 // Each chapter lists its steps in order. A step can cover more than one stage. A chapter can open on the last stage
 // of the chapter before it (Chapter 4 starts on the chief's porch, which is still stage ch3-complete), and `end` is the
@@ -29,9 +30,9 @@ const chapterOf=stage=>STORY_CHAPTERS.find(c=>c.end===stage||c.steps.some(([stag
 // Every story stage belongs to exactly one chapter; the tests hold this as chapters are added.
 export const unplacedStages=()=>STORY_STAGES.filter(stage=>!chapterOf(stage));
 
-// Interiors are entered from the village, so from outside the target is the door.
-const DOORS={[GUEST_LODGE.id]:{...LODGE_DOOR,label:'the guest lodge door'},[CHIEF_HOUSE.id]:{...CHIEF_DOOR,label:'the chief’s house door'},[TRAINING_GROUND.id]:{...TRAINING_GATE,label:'the training ground gate, north of the chief’s house'}};
-const AREA_NAMES={landing:'Reedwater Landing',cabin:'Grandpa’s cabin',windchime:'Windchime Path',crossroads:'Willowbank Crossroads',village:'Willowback Village',[CHIEF_HOUSE.id]:'the chief’s house',[GUEST_LODGE.id]:'the guest lodge',[TRAINING_GROUND.id]:'the training ground'};
+// Interiors are entered from the Town Square, so from outside the target is the door.
+const DOORS={[GUEST_LODGE.id]:{...LODGE_DOOR,label:'the guest lodge door'},[CHIEF_HOUSE.id]:{...CHIEF_DOOR,label:'the chief’s house door'}};
+const AREA_NAMES={landing:'Reedwater Landing',cabin:'Grandpa’s cabin',windchime:'Windchime Path',crossroads:'Willowbank Crossroads',village:'the Town Square','village-port':'the Port','village-market':'the Merchant Quarter',[TRAINING_GROUND.id]:'the farm and training yard',marsh:'Shellback Marsh',[CHIEF_HOUSE.id]:'the chief’s house',[GUEST_LODGE.id]:'the guest lodge'};
 export const areaLabel=id=>AREA_NAMES[id]||id;
 const at=(areaId,spot,label,short)=>({areaId,x:spot.x,y:spot.y,label,...(short?{short}:{})});
 // Where the current step happens, before it is turned into a door for players who are outside.
@@ -46,7 +47,7 @@ function rawTarget(world){
   case 'ch6-rack':return at(TRAINING_GROUND.id,RACK_SPOT,'the weapon rack');
   case 'ch6-cast':return at(TRAINING_GROUND.id,CAST_SPOT,'the edge of the circle');
   case 'ch6-buckets':return s.carrying?at(TRAINING_GROUND.id,TROUGH,'the trough'):at(TRAINING_GROUND.id,YARD_WELL,'the yard well');
-  case 'ch7-run':case 'ch7-laps':{const post=PERIMETER[Math.min(s.run||0,PERIMETER.length-1)];return at('village',post,`the guard post at ${post.place}`,post.place);}
+  case 'ch7-run':case 'ch7-laps':{const post=PERIMETER[Math.min(s.run||0,PERIMETER.length-1)];return at(post.areaId,post,`the guard post at ${post.place}`,post.place);}
   case 'ch7-breakfast':return at(CHIEF_HOUSE.id,MARA_SPOT,'Mara, in the chief’s kitchen');
   case 'ch7-rest':return at('village',REST_SPOT,'the grass beside the guest lodge');
   case 'awakening':case 'ch5-morning':case 'ch7-complete':case 'storm':return null;
@@ -55,10 +56,21 @@ function rawTarget(world){
 }
 const COMPASS=['east','south-east','south','south-west','west','north-west','north','north-east'];
 // The next place to go, as seen from where Eli stands: the spot itself, or the door to the building it is in.
+// The first exit on the shortest walk from one area to another, following the area edges (interiors leave by their
+// door). Null when the other area cannot be walked to.
+export function exitToward(from,to){
+ if(!AREAS[from]||!AREAS[to]||from===to)return null;
+ const first=new Map(AREAS[from].exits.filter(e=>AREAS[e.target]).map(e=>[e.target,e])),queue=[...first.keys()],seen=new Set([from,...queue]);
+ while(queue.length){const id=queue.shift();if(id===to)return first.get(id);for(const e of AREAS[id].exits)if(AREAS[e.target]&&!seen.has(e.target)){seen.add(e.target);first.set(e.target,first.get(id));queue.push(e.target);}}
+ return null;
+}
+const exitPoint=(area,e)=>{const mid=(e.from+e.to)/2;return e.edge==='north'?{x:mid,y:40}:e.edge==='south'?{x:mid,y:area.height-40}:e.edge==='west'?{x:40,y:mid}:{x:area.width-40,y:mid};};
 export function storyTarget(world){
  const target=rawTarget(world);if(!target)return null;
  let goal=target;
- if(world.areaId!==target.areaId&&world.areaId==='village'&&DOORS[target.areaId])goal={areaId:'village',...DOORS[target.areaId],inside:target};
+ if(world.areaId!==target.areaId&&DOORS[target.areaId])goal={areaId:'village',...DOORS[target.areaId],inside:target};
+ // In another area, the next stop is the edge that leads there.
+ if(world.areaId!==goal.areaId){const exit=exitToward(world.areaId,goal.areaId);if(exit){const name=areaLabel(exit.target);goal={areaId:world.areaId,...exitPoint(AREAS[world.areaId],exit),label:`the way to ${name}`,short:`the way to ${name}`,toward:goal};}}
  const here=world.areaId===goal.areaId,p=world.player;
  if(!here)return {...goal,here:false,where:areaLabel(goal.areaId)};
  const dx=goal.x-p.x,dy=goal.y-p.y,dist=Math.hypot(dx,dy);

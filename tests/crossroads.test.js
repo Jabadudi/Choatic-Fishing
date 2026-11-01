@@ -7,13 +7,17 @@ import {CROSSROADS_ROADS,CROSSROADS_PLACES} from '../src/crossroads.js';
 test('Windchime north opens into the crossroads and south returns with equipment and discoveries',()=>{
  const w=new World(()=>.1,{adventure:true});w.areaId='windchime';
  w.inventory.receive({name:'Reed Spear'});w.inventory.assignHotbar(w.inventory.allItems.at(-1).id,2);w.discovered.add('landing');
- Object.assign(w.player,{x:600,y:4});w.move(0,-12,false);
+ Object.assign(w.player,{x:1150,y:4});w.move(0,-12,false);
  assert.equal(w.areaId,'crossroads');assert.equal(w.player.x,800);assert.equal(w.player.y,1130);
  assert.ok(walkable(w.player.x,w.player.y,w.areaId));assert.match(w.message,/West.*East/);
  Object.assign(w.player,{x:800,y:1276});w.move(0,12,false);
- assert.equal(w.areaId,'windchime');assert.equal(w.player.y,130);
+ assert.equal(w.areaId,'windchime');assert.equal(w.player.y,80);
  assert.equal(w.inventory.item.name,'Reed Spear');assert.ok(w.discovered.has('landing'));
- for(let y=0;y<=320;y+=4)assert.ok(walkable(600,y,'windchime'));
+ // Windchime Path v2: the trail climbs diagonally from the Chime Arch to the north-east exit, with its forks walkable.
+ for(const road of [[[330,1170],[348,1060],[303,928],[366,692],[511,510],[711,382],[892,291],[1128,164],[1150,0]],[[711,382],[530,291],[294,264],[60,250]],[[1128,164],[1382,273],[1550,390]]])
+  for(let i=1;i<road.length;i++)for(let k=0;k<=40;k++){const t=k/40,x=road[i-1][0]+(road[i][0]-road[i-1][0])*t,y=road[i-1][1]+(road[i][1]-road[i-1][1])*t;if(y<4)continue;assert.ok(walkable(x,y,'windchime'),`${x},${y}`);}
+ // The forks to Stonefall Creek and Chimewood are not open yet.
+ assert.equal(transitionAt(-4,250,'windchime'),null);assert.equal(transitionAt(1604,390,'windchime'),null);
 });
 
 test('every crossroads walking route is continuous and its six landmarks can be approached',()=>{
@@ -34,7 +38,7 @@ test('marsh water blocks walking, the boardwalk is safe, and the pool accepts re
  assert.ok(isWater(1570,1020,'crossroads'));assert.equal(walkable(1570,1020,'crossroads'),false);
  assert.ok(walkable(1465,660,'crossroads'));assert.equal(walkable(1500,660,'crossroads'),true);
  assert.equal(walkable(120,460,'crossroads'),true);
- assert.equal(transitionAt(-1,460,'crossroads').areaId,'village');assert.equal(transitionAt(1601,660,'crossroads').areaId,'marsh');
+ assert.equal(transitionAt(-1,460,'crossroads').areaId,'village-farm');assert.equal(transitionAt(1601,660,'crossroads').areaId,'marsh');
  const w=new World(()=>0,{adventure:true});w.areaId='crossroads';Object.assign(w.player,{x:1350,y:930});
  assert.ok(walkable(1350,930,'crossroads'));assert.ok(w.cast({x:1480,y:1000}));
  const bobber={...w.bobber};w.move(10,0,true);assert.deepEqual(w.bobber,bobber);

@@ -1,11 +1,11 @@
 // Eli's room in Willowback's guest lodge. Geometry and collision only; story.js decides who stands here.
 import {drawRoomShell,roomWalls} from './room-shell.js';
 import {drawProp} from './sprites.js';
-export const LODGE_DOOR={x:410,y:330};
-export const GUEST_LODGE={id:'guest-lodge',name:'The Guest Lodge',width:560,height:400,seed:7357,spawn:{x:280,y:330},exits:[{edge:'south',from:230,to:330,target:'village',entry:{x:LODGE_DOOR.x,y:390},label:'Willowback Village'}]};
+export const LODGE_DOOR={x:400,y:560};
+export const GUEST_LODGE={id:'guest-lodge',name:'The Guest Lodge',width:560,height:400,seed:7357,spawn:{x:280,y:330},exits:[{edge:'south',from:230,to:330,target:'village',entry:{x:LODGE_DOOR.x,y:LODGE_DOOR.y+60},label:'Town Square'}]};
 export const LODGE_MARA_SPOT={x:330,y:250};
 // Outside the lodge door in the village, where Mara waits at sunrise.
-export const LODGE_MORNING_SPOT={x:470,y:395};
+export const LODGE_MORNING_SPOT={x:LODGE_DOOR.x+60,y:LODGE_DOOR.y+65};
 export const LODGE_BED={x:96,y:205},LODGE_STOOL={x:196,y:150},LODGE_WINDOW={x:300,y:96},LODGE_POT={x:500,y:320};
 // Where Eli finds himself after the vision, on the floor beside the stool.
 export const LODGE_WAKE_SPOT={x:230,y:200};

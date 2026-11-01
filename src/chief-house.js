@@ -1,8 +1,8 @@
 // Interior of the chief's red house in Willowback. Geometry and collision only; story.js decides who stands here.
 import {drawRoomShell,roomWalls} from './room-shell.js';
 import {drawProp} from './sprites.js';
-export const CHIEF_DOOR={x:780,y:352};
-export const CHIEF_HOUSE={id:'chief-house',name:'The Chief’s House',width:640,height:480,seed:7351,spawn:{x:320,y:410},exits:[{edge:'south',from:270,to:370,target:'village',entry:{x:CHIEF_DOOR.x,y:420},label:'Willowback Village'}]};
+export const CHIEF_DOOR={x:1250,y:342};
+export const CHIEF_HOUSE={id:'chief-house',name:'The Chief’s House',width:640,height:480,seed:7351,spawn:{x:320,y:410},exits:[{edge:'south',from:270,to:370,target:'village',entry:{x:CHIEF_DOOR.x,y:CHIEF_DOOR.y+68},label:'Town Square'}]};
 export const EMILIA_SPOT={x:178,y:196};
 export const MARA_SPOT={x:428,y:300};
 export const CHIEF_HOUSE_PLACES=[

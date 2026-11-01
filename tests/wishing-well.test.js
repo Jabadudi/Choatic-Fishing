@@ -93,7 +93,7 @@ test('pools keep their own pity, and stones can be bought for marks',()=>{
 });
 
 test('Eli opens the well from the commons once it is awake',()=>{
- const w=fresh();w.areaId='village';Object.assign(w.player,{x:1000,y:760});
+ const w=fresh();w.areaId='village';Object.assign(w.player,{x:1300,y:750});
  assert.equal(explorationHud(w,20).prompt,'Examine The Willow Commons');
  updateWell(w);
  assert.equal(explorationHud(w,20).prompt,'Look into the Wishing Well');

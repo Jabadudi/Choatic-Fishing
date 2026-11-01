@@ -26,7 +26,7 @@ test('fishing at the spring uses real shoreline geometry and water blocks walkin
 test('walking over connected map edges changes areas and returns without a menu',()=>{
  const world=new World(()=>.1,{adventure:true});world.discovered.add('landing');
  Object.assign(world.player,{x:1400,y:4});world.move(0,-12,false);
- assert.equal(world.areaId,'windchime');assert.deepEqual({x:world.player.x,y:world.player.y},{x:600,y:1510});assert.ok(walkable(world.player.x,world.player.y,world.areaId));
+ assert.equal(world.areaId,'windchime');assert.deepEqual({x:world.player.x,y:world.player.y},{x:330,y:1120});assert.ok(walkable(world.player.x,world.player.y,world.areaId));
  world.inventory.receive({name:'Sardine'});world.inventory.assignHotbar(world.inventory.allItems.at(-1).id,2);world.progression.pendingUpgrades=1;world.chooseUpgrade('hermes');
  world.move(0,320,false);assert.equal(world.areaId,'landing');assert.equal(world.player.x,1400);assert.equal(world.player.y,120);assert.ok(world.discovered.has('landing'));
  assert.equal(world.inventory.item.name,'Sardine');assert.equal(world.progression.upgrades.hermes,1);

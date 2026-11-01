@@ -38,9 +38,9 @@ test('every merchant lists coin prices, and the creature index shows them',()=>{
 });
 test('talking to a merchant greets you and asks the interface to open the stall',()=>{
  const w=fresh();w.npcs=createVillageResidents();w.areaId='village';
- const smith=w.npcs.find(n=>n.id==='village-smith');Object.assign(w.player,{x:smith.x+20,y:smith.y});
+ const smith=w.npcs.find(n=>n.id==='village-smith');w.areaId=smith.areaId;Object.assign(w.player,{x:smith.x+20,y:smith.y});
  assert.ok(w.inspect());assert.equal(w.tradeRequest,'blacksmith');assert.match(w.message,/^Blacksmith:/);assert.equal(w.dialogue,null);
- w.tradeRequest=null;const child=w.npcs.find(n=>n.id==='child-one');w.npcs=[child];Object.assign(w.player,{x:child.x,y:child.y});
+ w.tradeRequest=null;const child=w.npcs.find(n=>n.id==='child-one');w.npcs=[child];w.areaId=child.areaId;Object.assign(w.player,{x:child.x,y:child.y});
  assert.ok(w.inspect());assert.equal(w.tradeRequest,null);assert.equal(w.dialogue.npcId,'child-one');
 });
 test('bought food heals and is eaten, and the hunting knife fights like a weapon',()=>{

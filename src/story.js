@@ -1,13 +1,14 @@
-import {CHAPTER_THREE_STAGES,chapterThree,CHAPTER3_SCENES,CHAPTER3_OBJECTIVES,CHAPTER3_ROUTES,CHAPTER3_ENTRIES,TRAVEL_AREAS,CREATURE_ROUTE,CHIEF_ROUTE,chapter3Route} from './chapter3.js';
+import {CHAPTER_THREE_STAGES,chapterThree,CHAPTER3_SCENES,CHAPTER3_OBJECTIVES,CHAPTER3_ROUTES,CHAPTER3_ENTRIES,travelAreas,CREATURE_ROUTE,CHIEF_ROUTE,CHIEF_LEAVE_ROUTE,GUARDIAN_SPOT,chapter3Route} from './chapter3.js';
 import {CHAPTER_FOUR_STAGES,chapterFour,CHAPTER4_SCENES,CHAPTER4_OBJECTIVES,CHAPTER4_SEQUENCE} from './chapter4.js';
 import {CHAPTER1_SCENES,CHAPTER2_SCENES} from './chapter1.js';
 import {CHAPTER_FIVE_STAGES,chapterFive,CHAPTER5_SCENES,CHAPTER5_OBJECTIVES,CHAPTER5_MARA_GREETING} from './chapter5.js';
 import {CHIEF_DOOR,CHIEF_HOUSE,EMILIA_SPOT,MARA_SPOT} from './chief-house.js';
 import {CHAPTER_SIX_STAGES,chapterSix,CHAPTER6_SCENES,CHAPTER6_OBJECTIVES,BUCKET_TRIPS,BUCKET_NOTES,bucketObjective} from './chapter6.js';
 import {CHAPTER_SEVEN_STAGES,chapterSeven,CHAPTER7_SCENES,CHAPTER7_OBJECTIVES,PERIMETER,TOWER_PLATFORM,HOLD_SECONDS,REST_SPOT,runObjective,holdObjective,POST_LINES,IDLE_NAG,HOLD_NOTES,HOLD_RESET} from './chapter7.js';
-import {TRAINING_GROUND,TRAINING_GATE,DRAYFUS_SPOT,TRAINING_EMILIA_SPOT,FENCE_MARA_SPOT,RACK_SPOT,YARD_WELL,TROUGH,CAST_SPOT} from './training-ground.js';
+import {TRAINING_GROUND,DRAYFUS_SPOT,TRAINING_EMILIA_SPOT,FENCE_MARA_SPOT,RACK_SPOT,YARD_WELL,TROUGH,CAST_SPOT} from './training-ground.js';
 import {GUEST_LODGE,LODGE_DOOR,LODGE_MARA_SPOT,LODGE_MORNING_SPOT,LODGE_BED,LODGE_STOOL,LODGE_WINDOW,LODGE_POT,LODGE_WAKE_SPOT} from './guest-lodge.js';
 import {createVillageResidents,updateVillageResidents} from './village-life.js';
+import {inWillowback} from './village-districts.js';
 import {createNpcs} from './npcs.js';
 import {NPC_TYPES} from './entities.js';
 import {practise} from './skills.js';
@@ -69,7 +70,7 @@ export const pendingScene=world=>world?.story?.scene?SCENES[world.story.scene]?.
 export const currentScene=world=>world?.storySuspended?null:pendingScene(world);
 export function storyObjective(world){
  const s=world.story;if(!s)return null;
- if(villageStory(s)&&s.stage!=='ch4-complete'&&!chapterFive(s)&&!training(s)&&s.guide?.areaId!==world.areaId){const names={landing:'Reedwater Landing',windchime:'Windchime Path',crossroads:'Willowbank Crossroads',village:'Willowback Village','chief-house':'the chief’s house'};return `Chapter ${chapterFour(s)?4:3} · ${chapterFour(s)?'Mara':'Your guide'} is waiting in ${names[s.guide.areaId]}. Return to her to continue.`;}
+ if(villageStory(s)&&s.stage!=='ch4-complete'&&!chapterFive(s)&&!training(s)&&s.guide?.areaId!==world.areaId){const names={landing:'Reedwater Landing',windchime:'Windchime Path',crossroads:'Willowbank Crossroads','village-farm':'the Willowback farms','village-market':'the Merchant Quarter',village:'the Town Square','chief-house':'the chief’s house'};return `Chapter ${chapterFour(s)?4:3} · ${chapterFour(s)?'Mara':'Your guide'} is waiting in ${names[s.guide.areaId]}. Return to her to continue.`;}
  if(s.stage==='fish')return supperObjective(world);
  if(s.stage==='ch6-buckets')return bucketObjective(s.buckets||0,!!s.carrying);
  if(s.stage==='ch6-spar'&&world.spar)return sparObjective(world.spar);
@@ -96,7 +97,6 @@ export function storyPrompt(w){
  if(w.areaId==='village'&&(chapterFour(w.story)||chapterFive(w.story)||training(w.story))&&near(CHIEF_DOOR.x,CHIEF_DOOR.y+20,70))return 'Enter the chief’s house';
  if(w.areaId==='village'&&w.story.stage==='ch7-rest'&&near(REST_SPOT.x,REST_SPOT.y,60))return 'Lie down on the grass';
  if(w.areaId==='village'&&(chapterFive(w.story)||training(w.story))&&near(LODGE_DOOR.x,LODGE_DOOR.y+20,70))return 'Enter the guest lodge';
- if(w.areaId==='village'&&trainingOpen(w.story)&&near(TRAINING_GATE.x,TRAINING_GATE.y,70))return 'Go to the training ground';
  if(w.areaId===TRAINING_GROUND.id&&training(w.story)){const t=trainingPrompt(w,near);if(t)return t;}
  // The writing hangs in front of Eli wherever he stands in the room, until he reads it.
  if(w.areaId===GUEST_LODGE.id&&w.story.stage==='ch5-morning')return 'Read the floating writing';
@@ -106,7 +106,7 @@ export function storyPrompt(w){
   if(near(LODGE_WINDOW.x,LODGE_WINDOW.y+22,60))return 'Look out the window';
   if(near(LODGE_POT.x-36,LODGE_POT.y,50))return 'Examine the chamber pot';
  }
- if(w.areaId==='village'&&w.story.stage==='ch3-creatures'&&w.story.guide?.waypoint>=CREATURE_ROUTE.length&&near(1220,490,125))return 'Examine the frost-scaled guardian';
+ if(w.areaId==='village-market'&&w.story.stage==='ch3-creatures'&&w.story.guide?.waypoint>=CREATURE_ROUTE.length&&near(GUARDIAN_SPOT.x,GUARDIAN_SPOT.y,125))return 'Examine the frost-scaled guardian';
  if(w.areaId==='landing'){
   if(near(CABIN.x,CABIN.y+35,115))return cabinDamaged(w.story)?'Examine the damaged cabin':'Enter Grandpa’s cabin';
   if(cabinDamaged(w.story)&&near(1250,1810,115))return 'Look for a way off the shore';
@@ -120,8 +120,6 @@ export function storyPrompt(w){
  }
  return null;
 }
-// From the moment Mara takes him there, the training ground stays open.
-export const trainingOpen=story=>!!story&&STORY_STAGES.indexOf(story.stage)>=STORY_STAGES.indexOf('ch6-circle');
 function trainingPrompt(w,near){
  const s=w.story,d=w.npcs.find(n=>n.id==='drayfus'&&n.areaId===w.areaId);
  const byDrayfus=d&&near(d.x,d.y,NPC_TYPES.mara.talkRange);
@@ -164,7 +162,6 @@ export function inspectStory(w){
  if(prompt==='Enter the guest lodge'){w.cancel();w.areaId=GUEST_LODGE.id;Object.assign(w.player,GUEST_LODGE.spawn);w.message=s.stage==='ch5-morning'?'Sunlight through warped glass. The blanket is still on the floor, and blue writing hangs in the air.':'Eli’s room. Small, plain and quiet.';return true;}
  if(prompt==='Read the floating writing'){show(w,'ch6-wake');return true;}
  if(prompt==='Answer the door'){show(w,'ch6-door');return true;}
- if(prompt==='Go to the training ground'){w.cancel();w.areaId=TRAINING_GROUND.id;Object.assign(w.player,TRAINING_GROUND.spawn,{vx:0,vy:0});w.message=s.stage==='ch6-circle'?'Packed dirt, split-log fences and a man with a very large sword.':'The training ground. The dummies have not recovered.';return true;}
  if(prompt==='Have breakfast with Mara'){show(w,'ch7-breakfast');return true;}
  if(prompt==='Report to Drayfus'){show(w,'ch7-stance');return true;}
  if(prompt==='Lie down on the grass'){Object.assign(w.player,REST_SPOT,{vx:0,vy:0});show(w,'ch7-grass');return true;}
@@ -247,9 +244,9 @@ export function advanceStory(w){
  if(scene==='ch2-end'){s.stage='ch2-complete';w.npcs=createStoryNpcs(s);}
  if(scene==='ch3-start'){s.stage='ch3-chimes';s.guide={...CHAPTER3_ENTRIES.landing,areaId:'landing',waypoint:0};w.npcs=createStoryNpcs(s,w.elapsed);}
  if(scene==='ch3-chimes')s.stage='ch3-travel';
- if(scene==='ch3-arrival'){s.stage='ch3-creatures';s.guide={x:1290,y:580,areaId:'village',waypoint:0};w.npcs=createStoryNpcs(s,w.elapsed);}
+ if(scene==='ch3-arrival'){s.stage='ch3-creatures';s.guide={...CREATURE_ROUTE[0],areaId:'village-market',waypoint:0};w.npcs=createStoryNpcs(s,w.elapsed);}
  if(scene==='ch3-beasts')s.stage='ch3-lore';
- if(scene==='ch3-history'){s.stage='ch3-chief';s.guide={x:s.guide.x,y:s.guide.y,areaId:'village',waypoint:0};}
+ if(scene==='ch3-history'){s.stage='ch3-chief';s.guide={x:s.guide.x,y:s.guide.y,areaId:'village-market',waypoint:0};}
  if(scene==='ch3-end'){s.stage='ch3-complete';w.npcs=createStoryNpcs(s,w.elapsed);}
  // The meeting carries straight on; each finished scene is a checkpoint.
  const meeting=CHAPTER4_SEQUENCE.indexOf(scene);
@@ -298,8 +295,9 @@ export function skipStory(w){
  while(currentScene(w)&&!currentScene(w).action&&turned<1000){advanceStory(w);turned++;}
  return turned>0;
 }
-// The commons' regulars who stay out during Chapter 7's afternoon laps.
-const LAPS_COMMONS=['net-carrier','basket-carrier','village-smith','village-fisher','child-one','child-two'];
+// The regulars who stay out during Chapter 7's afternoon laps, in the areas the run passes through.
+const RUN_AREAS=[...new Set(PERIMETER.map(post=>post.areaId))];
+const LAPS_REGULARS=['net-carrier','village-fisher','village-smith','baker','child-one','child-two','commons-elder','lanes-child'];
 export function createStoryNpcs(story,elapsed=0){
  if(!cabinDamaged(story)||story.stage==='storm')return [];
  const position=story.guide||{x:1850,y:1640};
@@ -315,17 +313,17 @@ export function createStoryNpcs(story,elapsed=0){
   const tower=['ch7-run','ch7-laps'].includes(story.stage);
   list.push({id:'drayfus',name:'Drayfus',...(tower?{areaId:'village',...TOWER_PLATFORM,sortY:TOWER_PLATFORM.y+140,talkRange:-1}:{areaId:TRAINING_GROUND.id,...DRAYFUS_SPOT,talkRange:95}),...NPC_TYPES.villager,npc:true,spriteId:'drayfus-story',animationState:'idle',direction:'down',greeting:DRAYFUS_CH7[story.stage]||'Before the sun. Every day.'});
   // A guard at every post on the path round the village.
-  if(tower)PERIMETER.forEach((post,i)=>{if(!post.tower)list.push({id:`guard-${i}`,name:'Guard',areaId:'village',x:post.x+34,y:post.y-6,...NPC_TYPES.villager,npc:true,spriteId:'villager-fisher',talkRange:70,greeting:story.stage==='ch7-run'?'Morning, Oscar’s boy.':'Afternoon, Oscar’s boy. Keep going.'});});
+  if(tower)PERIMETER.forEach((post,i)=>{if(!post.tower)list.push({id:`guard-${i}`,name:'Guard',areaId:post.areaId,x:post.x+34,y:post.y-6,...NPC_TYPES.villager,npc:true,spriteId:'villager-fisher',talkRange:70,greeting:story.stage==='ch7-run'?'Morning, Oscar’s boy.':'Afternoon, Oscar’s boy. Keep going.'});});
  }
  // Only Eli can see the ocelot. It sits in his room in the morning, then lives in his stomach until night.
  if(['ch5-morning','ch6-door','ch6-night','ch6-complete','ch7-complete'].includes(story.stage))list.push({id:'ocelot',name:'The ocelot',areaId:GUEST_LODGE.id,...(story.stage.startsWith('ch5')||story.stage==='ch6-door'?OCELOT_CORNER:OCELOT_STOOL),...NPC_TYPES.flitlynx,npc:true,creature:true,spriteId:'ocelot',talkRange:80,
   greeting:story.stage==='ch5-morning'?'The ocelot watches you with core-blue eyes, and waits for you to read.':story.stage==='ch6-door'?'It flicks its tail toward the door. Somebody is about to break it down.':'Sleep. Drayfus will wake you before the sun.'});
- if(villageStory(story)&&(position.areaId==='village'||chapterFour(story)||chapterFive(story)||training(story))){
+ if(villageStory(story)&&(inWillowback(position.areaId)||chapterFour(story)||chapterFive(story)||training(story))){
   let people=createVillageResidents(elapsed);
   // Chapter 7's runs: before dawn the village is asleep, and on the afternoon laps the guards at the posts take the
   // place of most of the commons, so no area has more than 20 people in it.
   if(story.stage==='ch7-run')people=people.filter(n=>n.creature);
-  else if(story.stage==='ch7-laps')people=people.filter(n=>n.creature||n.areaId!=='village'||LAPS_COMMONS.includes(n.id));
+  else if(story.stage==='ch7-laps')people=people.filter(n=>n.creature||!RUN_AREAS.includes(n.areaId)||LAPS_REGULARS.includes(n.id));
   list.push(...people);
  }
  return list;
@@ -359,13 +357,13 @@ function updateChapterTwo(w,dt,walkable){
  if(Math.hypot(n.x-goal.x,n.y-goal.y)<1)g.waypoint++;
 }
 export function storyTransitionAllowed(w,next){
- const s=w.story;if(next.areaId===TRAINING_GROUND.id)return trainingOpen(s);if(!villageStory(s)||!s.guide||s.guide.areaId!==w.areaId||!TRAVEL_AREAS.includes(w.areaId))return true;
- const forward=TRAVEL_AREAS[TRAVEL_AREAS.indexOf(w.areaId)+1];
+ const s=w.story,areas=travelAreas(s);if(!villageStory(s)||!s.guide||s.guide.areaId!==w.areaId||!areas.includes(w.areaId))return true;
+ const forward=areas[areas.indexOf(w.areaId)+1];
  return next.areaId!==forward||s.guide.waypoint>=chapter3Route(s).length;
 }
 export function onStoryAreaChange(w,previous){
- const s=w.story;if(!villageStory(s)||!s.guide||s.guide.areaId!==previous||!TRAVEL_AREAS.includes(previous))return;
- const next=TRAVEL_AREAS[TRAVEL_AREAS.indexOf(previous)+1];
+ const s=w.story,areas=travelAreas(s);if(!villageStory(s)||!s.guide||s.guide.areaId!==previous||!areas.includes(previous))return;
+ const next=areas[areas.indexOf(previous)+1];
  if(w.areaId!==next||s.guide.waypoint<chapter3Route(s).length)return;
  s.guide={...CHAPTER3_ENTRIES[next],areaId:next,waypoint:0};w.npcs=createStoryNpcs(s,w.elapsed);
  w.message=storyObjective(w);
@@ -373,10 +371,10 @@ export function onStoryAreaChange(w,previous){
 // Chapter 7's two runs past the guard posts, and the squat in the circle.
 function updateChapterSeven(w,dt){
  const s=w.story,p=w.player;if(pendingScene(w)||p.health<=0)return;
- if(['ch7-run','ch7-laps'].includes(s.stage)&&w.areaId==='village'){
+ if(['ch7-run','ch7-laps'].includes(s.stage)&&inWillowback(w.areaId)){
   if(s.run>=PERIMETER.length){if(s.stage==='ch7-run')show(w,'ch7-sunrise');return;}
   const post=PERIMETER[s.run];
-  if(Math.hypot(p.x-post.x,p.y-post.y)<60){
+  if(post.areaId===w.areaId&&Math.hypot(p.x-post.x,p.y-post.y)<60){
    s.run++;
    if(post.tower){
     if(s.stage==='ch7-run'){show(w,'ch7-sunrise');return;}
@@ -413,8 +411,8 @@ export function updateStory(w,dt,walkable){
  const distance=Math.hypot(w.player.x-n.x,w.player.y-n.y),route=chapter3Route(s),config=NPC_TYPES.mara.guide;
  if(s.stage==='ch3-chimes'&&g.waypoint>=1){if(distance<=config.arrivalRange)show(w,'ch3-chimes');return;}
  if(g.waypoint>=route.length){
-  if(distance<=config.arrivalRange&&s.stage==='ch3-travel'&&g.areaId==='village')show(w,'ch3-arrival');
-  if(distance<=config.arrivalRange&&s.stage==='ch3-chief')show(w,'ch3-end');
+  if(distance<=config.arrivalRange&&s.stage==='ch3-travel'&&g.areaId==='village-market')show(w,'ch3-arrival');
+  if(distance<=config.arrivalRange&&s.stage==='ch3-chief'&&g.areaId==='village')show(w,'ch3-end');
   return;
  }
  if(distance>config.waitRange||w.fishing.state!=='idle')return;
@@ -425,6 +423,20 @@ export function updateStory(w,dt,walkable){
  const moved=Math.hypot(n.x-before.x,n.y-before.y);
  if(moved>0){n.animationState='walk';n.facingX=dx;n.direction=walkDirection(dx,dy);n.walkTime=(n.walkTime||0)+moved*.14;}
  g.x=n.x;g.y=n.y;if(Math.hypot(n.x-goal.x,n.y-goal.y)<1)g.waypoint++;
+}
+// Save version 8 moved Willowback onto four maps and redrew Windchime Path. A guide saved on the old maps moves to
+// where that stage now puts her: the fixed spots of Chapters 5 to 7, or the start or end of her Chapter 3 route.
+export function relocateGuide(data){
+ const g=data?.guide;if(!g||typeof g!=='object')return;
+ const stage=data.stage,fixed=CHAPTER5_GUIDE[stage]||CHAPTER6_GUIDE[stage]||CHAPTER7_GUIDE[stage];
+ if(fixed&&(chapterFive(data)||chapterSix(data)||chapterSeven(data))){data.guide={x:fixed.x,y:fixed.y,areaId:fixed.areaId,waypoint:0};return;}
+ const put=(areaId,route,done)=>{const p=done?route.at(-1):route[0];data.guide={x:p.x,y:p.y,areaId,waypoint:done?route.length:0};};
+ if(stage==='ch3-travel'&&g.areaId==='windchime')data.guide={...CHAPTER3_ENTRIES.windchime,areaId:'windchime',waypoint:0};
+ else if(stage==='ch3-travel'&&g.areaId==='village')put('village-market',data.scene==='ch3-arrival'?CHAPTER3_ROUTES['village-market']:[CHAPTER3_ENTRIES['village-market']],data.scene==='ch3-arrival');
+ else if(stage==='ch3-creatures')put('village-market',CREATURE_ROUTE,data.scene==='ch3-beasts');
+ else if(stage==='ch3-lore')put('village-market',CREATURE_ROUTE,true);
+ else if(stage==='ch3-chief')put('village',CHIEF_ROUTE,data.scene==='ch3-end');
+ else if(stage==='ch3-complete')put('village',CHIEF_ROUTE,true);
 }
 // Every story stage in the order Eli reaches them.
 export const STORY_STAGES=Object.freeze(['arrival','explore','fish','rest','storm','awakening','complete',...CHAPTER_TWO_STAGES,...CHAPTER_THREE_STAGES,...CHAPTER_FOUR_STAGES,...CHAPTER_FIVE_STAGES,...CHAPTER_SIX_STAGES,...CHAPTER_SEVEN_STAGES]);
@@ -439,7 +451,7 @@ export function restoreStory(data){
  let guide=null;
  if(['ch2-follow','ch2-complete'].includes(data.stage)||villageStory(data)){
   const g=data.guide;
-  const limits={landing:[2800,2200],windchime:[1200,1800],crossroads:[1600,1280],village:[1920,2000],'chief-house':[CHIEF_HOUSE.width,CHIEF_HOUSE.height],[GUEST_LODGE.id]:[GUEST_LODGE.width,GUEST_LODGE.height],[TRAINING_GROUND.id]:[TRAINING_GROUND.width,TRAINING_GROUND.height]},bounds=g&&Object.hasOwn(limits,g.areaId)?limits[g.areaId]:null;
+  const limits={landing:[2800,2200],windchime:[1600,1200],crossroads:[1600,1280],village:[1920,1160],'village-market':[1600,1400],'chief-house':[CHIEF_HOUSE.width,CHIEF_HOUSE.height],[GUEST_LODGE.id]:[GUEST_LODGE.width,GUEST_LODGE.height],[TRAINING_GROUND.id]:[TRAINING_GROUND.width,TRAINING_GROUND.height]},bounds=g&&Object.hasOwn(limits,g.areaId)?limits[g.areaId]:null;
   if(!g||!bounds||!Number.isFinite(g.x)||!Number.isFinite(g.y)||g.x<24||g.x>bounds[0]-24||g.y<24||g.y>bounds[1]-24||!Number.isInteger(g.waypoint)||g.waypoint<0)throw Error('Invalid story guide.');
   const route=villageStory(data)?chapter3Route(data):GUIDE_ROUTE;
   if(g.waypoint>route.length)throw Error('Invalid story guide.');
@@ -449,7 +461,7 @@ export function restoreStory(data){
   if(chapterSeven(data)){const spot=CHAPTER7_GUIDE[data.stage];if(g.areaId!==spot.areaId||g.waypoint!==0||Math.hypot(g.x-spot.x,g.y-spot.y)>2)throw Error('Invalid story guide destination.');}
   if(chapterSix(data)){const spot=CHAPTER6_GUIDE[data.stage];if(g.areaId!==spot.areaId||g.waypoint!==0||Math.hypot(g.x-spot.x,g.y-spot.y)>2)throw Error('Invalid story guide destination.');}
   if(chapterFive(data)){const spot=CHAPTER5_GUIDE[data.stage];if(g.areaId!==spot.areaId||g.waypoint!==0||Math.hypot(g.x-spot.x,g.y-spot.y)>2)throw Error('Invalid story guide destination.');}
-  if(['ch3-creatures','ch3-lore','ch3-chief','ch3-complete'].includes(data.stage)&&g.areaId!=='village'||data.stage==='ch3-chimes'&&g.areaId!=='landing')throw Error('Invalid story guide area.');
+  if(['ch3-creatures','ch3-lore'].includes(data.stage)&&g.areaId!=='village-market'||data.stage==='ch3-chief'&&!['village-market','village'].includes(g.areaId)||data.stage==='ch3-complete'&&g.areaId!=='village'||data.stage==='ch3-chimes'&&g.areaId!=='landing')throw Error('Invalid story guide area.');
   if((['ch2-complete','ch3-complete'].includes(data.stage)||['ch2-end','ch3-end','ch3-arrival','ch3-beasts'].includes(data.scene))&&(g.waypoint!==route.length||Math.hypot(g.x-route.at(-1).x,g.y-route.at(-1).y)>2))throw Error('Invalid story guide destination.');
   guide={x:g.x,y:g.y,waypoint:g.waypoint,areaId:g.areaId};
  }else if(data.guide!==null)throw Error('Invalid story guide.');

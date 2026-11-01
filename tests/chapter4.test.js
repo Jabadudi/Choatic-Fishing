@@ -16,7 +16,7 @@ const finish=w=>{const scene=w.story.scene;assert.ok(scene);for(let i=0;i<60&&w.
 function atPorch(){
  const w=new World(()=>.2,{adventure:true,story:true});w.journeyId='chapter4-test';w.areaId='village';
  w.story={stage:'ch3-complete',scene:null,page:0,lureSeen:true,photoSeen:true,guide:{...CHIEF_ROUTE.at(-1),waypoint:CHIEF_ROUTE.length,areaId:'village'}};
- w.npcs=createStoryNpcs(w.story,w.elapsed);Object.assign(w.player,{x:780,y:420});w.inventory.receive({name:'Mysterious Lure',category:'quest-items'});return w;
+ w.npcs=createStoryNpcs(w.story,w.elapsed);Object.assign(w.player,{x:1250,y:410});w.inventory.receive({name:'Mysterious Lure',category:'quest-items'});return w;
 }
 const npc=(w,id)=>w.npcs.find(n=>n.id===id);
 test('Chapter 4 goes inside the chief’s house and plays the meeting as checkpointed scenes',()=>{

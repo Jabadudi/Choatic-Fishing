@@ -3,23 +3,36 @@ import {script,say,think,narrate} from './scene-script.js';
 const eli=text=>say('Eli',text),girl=text=>say('The girl',text);
 export const CHAPTER_THREE_STAGES=['ch3-chimes','ch3-travel','ch3-creatures','ch3-lore','ch3-chief','ch3-complete'];
 export const chapterThree=s=>!!s&&CHAPTER_THREE_STAGES.includes(s.stage);
-export const TRAVEL_AREAS=['landing','windchime','crossroads','village'];
+// The walk to Willowback: up Windchime Path, west at the crossroads, along the farm road and through the Willowback
+// Gate into the Merchant Quarter, where the blacksmith's guardian sleeps. Then on to the chief's house on the square.
+export const TRAVEL_AREAS=['landing','windchime','crossroads','village-farm','village-market'];
+export const CHIEF_AREAS=['village-market','village'];
+export const travelAreas=s=>['ch3-chief','ch3-complete'].includes(s?.stage)?CHIEF_AREAS:TRAVEL_AREAS;
 export const CHAPTER3_ROUTES={
  landing:[{x:1380,y:1180},{x:1350,y:800},{x:1400,y:50}],
- windchime:[{x:600,y:1330},{x:520,y:1000},{x:650,y:650},{x:600,y:320},{x:600,y:50}],
+ windchime:[{x:348,y:1060},{x:303,y:928},{x:366,y:692},{x:511,y:510},{x:711,y:382},{x:892,y:291},{x:1128,y:164},{x:1150,y:50}],
  crossroads:[{x:800,y:1080},{x:760,y:870},{x:800,y:680},{x:610,y:630},{x:400,y:490},{x:170,y:460},{x:50,y:460}],
- village:[{x:1680,y:530},{x:1570,y:580},{x:1290,y:580}]
+ 'village-farm':[{x:1800,y:840},{x:1300,y:905},{x:900,y:1015},{x:500,y:1115},{x:50,y:1150}],
+ 'village-market':[{x:1450,y:540},{x:1300,y:520}]
 };
-export const CHAPTER3_ENTRIES={landing:{x:1390,y:1420},windchime:{x:600,y:1510},crossroads:{x:800,y:1130},village:{x:1800,y:530}};
-export const CREATURE_ROUTE=[{x:1290,y:580},{x:1220,y:520}];
-export const CHIEF_ROUTE=[{x:1140,y:580},{x:850,y:580},{x:850,y:420},{x:780,y:390}];
-export function chapter3Route(s){return s.stage==='ch3-creatures'?CREATURE_ROUTE:['ch3-chief','ch3-complete'].includes(s.stage)?CHIEF_ROUTE:s.stage==='ch3-lore'?CREATURE_ROUTE:CHAPTER3_ROUTES[s.guide?.areaId]||[];}
+export const CHAPTER3_ENTRIES={landing:{x:1390,y:1420},windchime:{x:330,y:1120},crossroads:{x:800,y:1130},'village-farm':{x:1930,y:830},'village-market':{x:1540,y:530},village:{x:1850,y:590}};
+// In the Merchant Quarter: up to the blacksmith's door, where the Rimejaw sleeps.
+export const CREATURE_ROUTE=[{x:1300,y:520},{x:1360,y:420}];
+export const GUARDIAN_SPOT={x:1420,y:390};
+// Then west along the main street to the square, and across the commons to the chief's porch.
+export const CHIEF_LEAVE_ROUTE=[{x:1100,y:550},{x:600,y:600},{x:300,y:592},{x:50,y:590}];
+export const CHIEF_ROUTE=[{x:1700,y:600},{x:1460,y:560},{x:1260,y:470},{x:1250,y:400}];
+export function chapter3Route(s){
+ if(['ch3-creatures','ch3-lore'].includes(s.stage))return CREATURE_ROUTE;
+ if(['ch3-chief','ch3-complete'].includes(s.stage))return s.guide?.areaId==='village-market'?CHIEF_LEAVE_ROUTE:CHIEF_ROUTE;
+ return CHAPTER3_ROUTES[s.guide?.areaId]||[];
+}
 export const CHAPTER3_OBJECTIVES={
  'ch3-chimes':'Chapter 3 · Follow the girl to the three wooden chimes.',
- 'ch3-travel':'Chapter 3 · Follow your guide north through Windchime Path, then west at the crossroads to Willowback Village.',
- 'ch3-creatures':'Chapter 3 · Follow the girl to the blacksmith’s shop. Examine the frost-scaled guardian from the lane.',
+ 'ch3-travel':'Chapter 3 · Follow your guide north through Windchime Path, then west at the crossroads, past the farms and through the Willowback Gate.',
+ 'ch3-creatures':'Chapter 3 · Follow the girl to the blacksmith’s house in the Merchant Quarter. Examine the frost-scaled guardian from the street.',
  'ch3-lore':'Chapter 3 · Ask the girl what shadow walkers really are.',
- 'ch3-chief':'Chapter 3 · Follow the girl to the chief’s red house.',
+ 'ch3-chief':'Chapter 3 · Follow the girl west to the Town Square and the chief’s red house.',
  'ch3-complete':'Chapter 4 · Talk to the girl on the chief’s porch when you are ready to go inside.'
 };
 export const CHAPTER3_SCENES={
@@ -30,7 +43,7 @@ export const CHAPTER3_SCENES={
   {title:'Three hollow notes',art:null,lines:[narrate('A crooked branch holds three old wooden chimes. The breeze off the water knocks them together, one low note after another. The sound follows them farther into the trees than sound should.'),think('Eli','I’m not going to ask. My collection of unanswered questions is growing.')]}
  ]),
  'ch3-arrival':script([
-  {title:'Willowback Village',art:null,lines:[narrate('The trees thin. A dirt road runs between timber-and-stone houses with steep roofs and smoking chimneys. A well anchors the square. Fields lie to the east; boats bump against the docks to the south. The village is alive.')]},
+  {title:'Willowback Village',art:null,lines:[narrate('The trees thin. The road runs between fields and a turning mill wheel, through a timber gate, and into a street of timber-and-stone houses with steep roofs and smoking chimneys. Market stalls, a forge, lanterns strung overhead. Somewhere to the west, boats bump against a dock. The village is alive.')]},
   {title:'Life after the storm',art:null,lines:[narrate('Nets, baskets, shouting across lanes. A hammer rings out from a workshop. Children chase each other around the well. Every shade and build of person seems to have found a place here. Then Eli notices the animals.'),think('Eli','None of them are normal.')]}
  ]),
  'ch3-beasts':script([

@@ -27,7 +27,7 @@ test('journey roundtrip restores progression, quest, inventory references, drops
  restored.update(1/120,neutralInput());assert.equal(restored.rabbits[0].health,0);
 });
 test('restore preserves area and protects against changed-map positions and unsupported or malicious saves',()=>{
- const w=fresh();w.areaId='windchime';Object.assign(w.player,{x:600,y:1510});const save=captureSave(w);
+ const w=fresh();w.areaId='windchime';Object.assign(w.player,{x:330,y:1120});const save=captureSave(w);
  assert.equal(restoreSave(save).areaId,'windchime');
  const bad=copy(save);bad.version=99;assert.throws(()=>restoreSave(bad),/newer/);
  bad.version=0;assert.throws(()=>restoreSave(bad),/not supported/);

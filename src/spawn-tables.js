@@ -14,7 +14,7 @@ export const SPAWN_AREAS=Object.freeze({
   ]},
  windchime:{cap:5,chance:.55,respawnSeconds:75,
   tables:{land:{deer:45,rabbit:40,'shadow-walker':15}},
-  slots:[['deer-windchime','land',850,950,'deer'],['windchime-north','land',800,500],['windchime-west','land',400,800],['windchime-glade','land',1000,1000],['windchime-south','land',300,1300]]},
+  slots:[['deer-windchime','land',1060,640,'deer'],['windchime-north','land',1000,260],['windchime-west','land',300,300],['windchime-glade','land',1180,760],['windchime-south','land',560,820]]},
  crossroads:{cap:4,chance:.5,respawnSeconds:90,
   tables:{land:{rabbit:45,deer:30,'shadow-walker':25},water:{eel:100}},
   slots:[['crossroads-north','land',1200,300],['crossroads-west','land',500,600],['crossroads-middle','land',1000,600],['crossroads-south','land',300,1100],['crossroads-pond','water',1500,1000]]},
@@ -24,7 +24,7 @@ export const SPAWN_AREAS=Object.freeze({
    ['marsh-pool-north','water',400,500],['marsh-reeds','water',700,1400],['marsh-channel','water',1300,1100],['marsh-pool-east','water',1600,500],['marsh-lagoon','water',1600,1600],['marsh-shallows','water',900,1900]]}
 });
 // Interiors belong to the area outside their door, so stepping indoors and back out is not a new visit.
-export const SPAWN_PARENT=Object.freeze({cabin:'landing','chief-house':'village','guest-lodge':'village','training-ground':'village'});
+export const SPAWN_PARENT=Object.freeze({cabin:'landing','chief-house':'village','guest-lodge':'village'});
 // An area only rolls on entry once Eli has been away this long, so walking back and forth cannot farm rolls.
 export const AWAY_SECONDS=30;
 // New creatures never appear within this distance of the player.

@@ -21,7 +21,7 @@ test('skipping stops at scripted action pages so they still play out',()=>{
 test('skipping the chief meeting runs every checkpoint and renames the lure',()=>{
  const w=fresh();w.journeyId='skip-ch4';w.areaId='village';
  w.story={stage:'ch3-complete',scene:null,page:0,lureSeen:true,photoSeen:true,guide:{...CHIEF_ROUTE.at(-1),waypoint:CHIEF_ROUTE.length,areaId:'village'}};
- w.npcs=createStoryNpcs(w.story,w.elapsed);Object.assign(w.player,{x:780,y:420});w.inventory.receive({name:'Mysterious Lure',category:'quest-items'});
+ w.npcs=createStoryNpcs(w.story,w.elapsed);Object.assign(w.player,{x:1250,y:410});w.inventory.receive({name:'Mysterious Lure',category:'quest-items'});
  w.inspect();assert.equal(w.story.scene,CHAPTER4_SEQUENCE[0]);
  w.skipStory();assert.equal(currentScene(w),null);assert.equal(w.story.stage,'ch4-complete');
  assert.ok(w.inventory.allItems.some(i=>i.name==='Region Core'));

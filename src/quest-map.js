@@ -4,16 +4,17 @@ import {PERIMETER} from './chapter7.js';
 const GOLD='#ffd76a',INK='#2d2414',DONE='#6fbf5f',PALE='#f3e6bf';
 export function runPosts(world,areaId){
  const s=world.story;
- if(!s||areaId!=='village'||!['ch7-run','ch7-laps'].includes(s.stage))return null;
+ if(!s||!['ch7-run','ch7-laps'].includes(s.stage)||!PERIMETER.some(post=>post.areaId===areaId))return null;
  const run=s.run||0;
- return PERIMETER.map((post,i)=>({...post,n:i+1,state:i<run?'done':i===run?'next':'ahead'}));
+ // The run crosses several areas; each map shows its own posts, numbered in running order.
+ return PERIMETER.map((post,i)=>({...post,n:i+1,state:i<run?'done':i===run?'next':'ahead'})).filter(post=>post.areaId===areaId);
 }
 function diamond(c,x,y,r,fill){c.save();c.translate(x,y);c.rotate(Math.PI/4);c.fillStyle=fill;c.strokeStyle=INK;c.lineWidth=Math.max(1.5,r/3);c.fillRect(-r,-r,r*2,r*2);c.strokeRect(-r,-r,r*2,r*2);c.restore();}
 // The full area map. t is seconds, for the pulse; label names the target under its marker.
 export function paintQuestMap(c,world,areaId,target,sx,sy,t=0){
  const posts=runPosts(world,areaId);
  if(posts){
-  c.save();c.setLineDash([7,6]);c.strokeStyle='#7a4a1ccc';c.lineWidth=3;c.beginPath();posts.forEach((p,i)=>i?c.lineTo(p.x*sx,p.y*sy):c.moveTo(p.x*sx,p.y*sy));c.stroke();c.restore();
+  c.save();c.setLineDash([7,6]);c.strokeStyle='#7a4a1ccc';c.lineWidth=3;c.beginPath();posts.forEach((p,i)=>i&&posts[i-1].n===p.n-1?c.lineTo(p.x*sx,p.y*sy):c.moveTo(p.x*sx,p.y*sy));c.stroke();c.restore();
   for(const p of posts){
    const x=p.x*sx,y=p.y*sy,r=p.state==='next'?11:9;
    c.fillStyle=p.state==='done'?DONE:p.state==='next'?GOLD:PALE;c.strokeStyle=INK;c.lineWidth=2;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();c.stroke();
