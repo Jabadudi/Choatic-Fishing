@@ -102,8 +102,19 @@ function atlasScenery(gx,gy,id){
  const b=DELTA[id],x=gx*72+12+hash(gx,gy)*48,y=gy*72+12+hash(gx,gy,3)*48,r=hash(gx,gy,9);
  if(b.clear(x,y)||waterDistance(x,y,id)<95||roadDistance(x,y,id)<65||b.places.some(p=>Math.hypot(x-p.x,y-p.y)<100))return null;
  const zone=b.zoneAt(x,y),kind=zone==='forest'?(r<.74?'tree':r<.84?'bush':null):zone==='cliff'?null:zone==='rock'?(r<.3?'rock':null):zone==='sand'||zone==='clear'||zone==='dirt'?(r<.04?'rock':null):zone==='marsh'?(r<.18?'bush':r<.24?'tree':null):(r<.13?'tree':r<.21?'rock':r<.35?'bush':null);
- return kind?{x,y,kind,r:kind==='tree'?12:kind==='rock'?15:0}:null;
+ return kind?{x,y,kind,r:kind==='tree'?12:kind==='rock'?15:0,art:atlasArt(id,zone,kind,hash(gx,gy,31))}:null;
 }
+// The painted tree, plant or rock (assets/props/atlas/) for a spot, with the box it fits in (game px).
+const DARK_WOODS=new Set(['whispering-woods','deep-trail']),COAST=new Set(['arrival-bay','delta-mouth','sandbar-spits','seal-skerries','tidecave-coast','heron-point','outer-shallows','heron-islands']);
+const ATLAS_ART={oak:[150,118],pine:[100,124],birch:[80,118],'dead-tree':[110,114],bush:[60,40],fern:[56,30],reeds:[56,38],'marsh-shrub':[60,26],
+ 'mossy-boulder':[50,38],'rock-cluster':[46,26],'mossy-log':[66,28],'sea-rock':[56,34]};
+function atlasArt(id,zone,kind,r){
+ const art=kind==='tree'?(zone==='marsh'?'dead-tree':zone==='forest'?(DARK_WOODS.has(id)?(r<.35?'dead-tree':'pine'):r<.4?'pine':r<.8?'oak':'birch'):r<.6?'oak':'birch')
+  :kind==='bush'?(zone==='marsh'?(r<.6?'reeds':'marsh-shrub'):zone==='forest'?(r<.5?'bush':'fern'):'bush')
+  :zone==='sand'&&COAST.has(id)?'sea-rock':zone==='forest'&&r<.3?'mossy-log':r<.55?'mossy-boulder':'rock-cluster';
+ return {id:`atlas/${art}`,w:ATLAS_ART[art][0],h:ATLAS_ART[art][1]};
+}
+const groundShadow=(ctx,x,y,rx)=>{ctx.fillStyle='rgba(20,40,30,.28)';ctx.beginPath();ctx.ellipse(x+3,y+2,rx,rx*.32,0,0,Math.PI*2);ctx.fill();};
 export function surfaceAt(x,y,id='landing'){
  if(DELTA[id]?.deck(x,y))return 'path';
  if(id==='marsh'&&onMarshDeck(x,y))return 'path';
@@ -247,7 +258,10 @@ function staticArea(ctx,left,top,width,height,id){
   else if(wet< -18&&wet> -110&&coastDistance(px,py)<0&&r>.8)lilyPad(ctx,Math.round(px),Math.round(py),r>.93);
   else if(wet< -2&&wet> -16&&r>.55)reeds(ctx,Math.round(px),Math.round(py),x);
  }
- for(let gy=Math.floor(top/72)-2;gy<Math.ceil((top+height)/72)+2;gy++)for(let gx=Math.floor(left/72)-2;gx<Math.ceil((left+width)/72)+2;gx++){const o=sceneryAt(gx,gy,id);if(!o)continue;if(o.kind==='tree')tree(ctx,o.x,o.y,false,typeof document!=='undefined'?'trunk':'all');else if(o.kind==='rock')rock(ctx,o.x,o.y);else meadowBush(ctx,o.x,o.y);}
+ for(let gy=Math.floor(top/72)-2;gy<Math.ceil((top+height)/72)+2;gy++)for(let gx=Math.floor(left/72)-2;gx<Math.ceil((left+width)/72)+2;gx++){const o=sceneryAt(gx,gy,id);if(!o)continue;
+  // Painted atlas scenery: the ground shadow here, rocks and plants too; trees stand in the depth-sorted layer.
+  if(o.art&&drawProp(ctx,o.art.id,{x:-1e4,y:-1e4,w:1,h:1})){groundShadow(ctx,o.x,o.y,o.art.w*(o.kind==='tree'?.24:.36));if(o.kind!=='tree')drawProp(ctx,o.art.id,{x:o.x,y:o.y+3,w:o.art.w,h:o.art.h});continue;}
+  if(o.kind==='tree')tree(ctx,o.x,o.y,false,typeof document!=='undefined'?'trunk':'all');else if(o.kind==='rock')rock(ctx,o.x,o.y);else meadowBush(ctx,o.x,o.y);}
  if(id==='marsh')drawMarshGround(ctx,left,top,width,height);
  if(id==='village')drawVillageGround(ctx);
  if(DISTRICTS[id])drawDistrictGround(ctx,id);
@@ -309,7 +323,7 @@ export function crownSprite(big=false){
 const fades=new Map(),slots=[],order=[];let fadeTime=0;
 export const canopyAlpha=(gx,gy)=>fades.get(`${gx},${gy}`)??1;
 export const landmarkCanopyAlpha=id=>fades.get(`landmark:${id}`)??1;
-const slot=i=>slots[i]??=({y:0,kind:'',x:0,oy:0,key:'',sway:0,big:false,near:false,ref:null});
+const slot=i=>{const it=slots[i]??=({y:0,kind:'',x:0,oy:0,key:'',sway:0,big:false,near:false,ref:null,art:null});it.art=null;return it;};
 const nearActor=(x,y,actors)=>actors.some(a=>Math.abs(a.ref.x-x)<70&&a.ref.y>y-130&&a.ref.y<y+40);
 // A canopy that stands in front of the player and overlaps them eases to 30% so they stay visible.
 function fadeCanopy(key,x,y,big,p,step){
@@ -327,6 +341,7 @@ export function drawDepthSorted(ctx,world,view,actors,drawActor){
   const it=slot(n++);
   if(o.kind==='tree'){const key=`${gx},${gy}`;pushTree(it,o.x,o.y,key,hash(gx,gy,21)*6,false,near);if(sprite)fadeCanopy(key,o.x,o.y,false,p,step);}
   else{it.kind=o.kind;it.x=o.x;it.oy=o.y;it.y=o.y+(o.kind==='rock'?8:4);}
+  it.art=o.art;
  }
  // Landmark trees (the Hollow Tree) sort the same way; their trunk base stays in the landmark layer.
  if(bigSprite)for(const place of placesFor(id))if(place.kind==='tree'&&place.x>view.left-120&&place.x<view.right+120&&place.y>view.top-40&&place.y<view.bottom+240){
@@ -344,6 +359,11 @@ export function drawDepthSorted(ctx,world,view,actors,drawActor){
   else if(it.kind==='village')drawVillageObject(ctx,it.ref,t);
   else if(it.kind==='atlas')drawAtlasProp(ctx,it.ref,t);
   else if(it.kind==='actor')drawActor(ctx,it.ref);
+  else if(it.art&&drawProp(ctx,it.art.id,{x:-1e4,y:-1e4,w:1,h:1})){
+   // A painted tree fades like a canopy when it stands in front of Eli.
+   if(it.kind==='tree')ctx.globalAlpha=fades.get(it.key)??1;
+   drawProp(ctx,it.art.id,{x:it.x,y:it.oy+3,w:it.art.w,h:it.art.h});ctx.globalAlpha=1;
+  }
   else if(it.kind==='rock')meadowRock(ctx,it.x,it.oy,false,false);
   else if(it.kind==='bush')meadowBush(ctx,it.x,it.oy,false);
   else{

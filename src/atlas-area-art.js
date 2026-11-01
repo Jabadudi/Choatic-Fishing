@@ -1,5 +1,5 @@
 // Art for the atlas-built areas (atlas-area.js): boardwalks, fords, stone bridges and props. Drawing only.
-import {drawEntitySprite} from './sprites.js';
+import {drawEntitySprite,drawProp as drawPropSprite} from './sprites.js';
 const each=(pts,step,fn)=>{for(let i=1;i<pts.length;i++){const [ax,ay]=pts[i-1],[bx,by]=pts[i],len=Math.hypot(bx-ax,by-ay),n=Math.max(1,Math.floor(len/step));for(let j=0;j<n;j++){const t=j/n;fn(ax+(bx-ax)*t,ay+(by-ay)*t,Math.atan2(by-ay,bx-ax),j);}}};
 function stroke(ctx,pts,width,color){ctx.strokeStyle=color;ctx.lineWidth=width;ctx.lineJoin='round';ctx.lineCap='round';ctx.beginPath();pts.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.stroke();}
 const near=(pts,half,left,top,width,height)=>pts.some(([x,y])=>x>left-400&&x<left+width+400&&y>top-400&&y<top+height+400);
@@ -28,8 +28,32 @@ export function drawAtlasProp(ctx,p,t=0){
  const s=p.scale||1;if(s===1)return drawProp(ctx,p,t);
  ctx.save();ctx.translate(p.x*(1-s),p.y*(1-s));ctx.scale(s,s);drawProp(ctx,p,t);ctx.restore();
 }
+// Which painted prop (assets/props/atlas/, scripts/prepare-atlas-props.py) stands for a prop kind, and the box it fits in
+// (game px, its foot on the prop's spot). Landmark pieces replace the plain kind where the area text names them.
+// Kinds without a painting here (lanterns, benches, boats, herons, the well) keep their drawn shapes.
+const PAINTED={hut:['fisher-hut',110,80],'stilt-hut':['stilt-hut',110,96],tower:['tower',120,175],ruin:['ruin-wall',100,76],arch:['arch',100,104],
+ pillar:['pillar',30,72],stone:['standing-stone',40,52],cairn:['cairn',40,40],raft:['raft',60,50],wheel:['water-wheel',80,92],cave:['cave',170,110],
+ tent:['tent',90,62],shell:['turtle-shell',150,92],sign:['signpost',44,56],crane:['crane',120,120],'big-tree':['oak',170,170],statue:['statue',44,96],
+ nest:['heron-nest',60,40],shrine:['shrine',60,70],cart:['cart',80,44],logs:['log-stack',64,42],mine:['mine',100,70],lighthouse:['lighthouse',80,185],
+ wreck:['wreck',190,80],gate:['gate',110,100],dock:['jetty',34,90],chimes:['chimes-post',60,72],spring:['spring-pool',110,96]};
+function painted(p){
+ const big=(p.scale||1)>=3;
+ if(p.kind==='tower'&&p.area==='broken-watch')return ['broken-watch',170,190];
+ if(p.kind==='cave'&&p.area==='chimewood')return ['hollow-rock',160,140];
+ if(p.kind==='pillar')return big?['grey-spire',34,80]:p.inWater?['pillar-water',40,76]:PAINTED.pillar;
+ if(p.kind==='logs'&&big)return ['fallen-giant',64,40];
+ if(p.kind==='wreck'&&p.area==='arrival-bay')return ['dinghy',110,48];
+ if(p.kind==='big-tree')return big?['listening-tree',110,110]:p.glow==='#ffd36a'?['goldleaf-tree',150,160]:p.glow==='#cfe8ff'?['hollow-tree',150,160]:PAINTED['big-tree'];
+ return PAINTED[p.kind];
+}
 function drawProp(ctx,p,t){
- const x=Math.round(p.x),y=Math.round(p.y);
+ const x=Math.round(p.x),y=Math.round(p.y),art=painted(p);
+ if(art){
+  // A jetty runs down from its spot into the water.
+  const [id,w,h]=art,foot=p.kind==='dock'?y+80:y;
+  if(!p.inWater&&p.kind!=='dock')shadow(ctx,x,foot,w*.36,Math.max(5,h*.07));
+  if(drawPropSprite(ctx,`atlas/${id}`,{x,y:foot,w,h}))return;
+ }
  switch(p.kind){
   case 'hut':shadow(ctx,x,y,52,14);R(ctx,'#6a4a2e',x-42,y-48,84,48);R(ctx,'#8a6440',x-40,y-46,80,4);for(let i=0;i<5;i++)R(ctx,'#5a3e26',x-40,y-38+i*8,80,1);R(ctx,'#2d2018',x-9,y-28,18,28);roof(ctx,x,y-46,84,34,p.roof||'#8f5a3c','#5a3524');break;
   case 'stilt-hut':for(const dx of [-30,-10,10,30])R(ctx,'#3e2b1c',x+dx-3,y-20,6,34);R(ctx,'#7a5a3a',x-40,y-26,80,8);R(ctx,'#6a4a2e',x-32,y-66,64,40);R(ctx,'#2d2018',x-7,y-50,14,24);roof(ctx,x,y-64,64,30,p.roof||'#a0703c','#634126');break;

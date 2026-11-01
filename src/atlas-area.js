@@ -45,7 +45,7 @@ export function defineArea(def){
  for(const c of def.cliffs||[])shapeZones.unshift(['cliff',c]);
  const zones=[...(def.zones||[]),...shapeZones].map(([kind,poly])=>{const p=Ps(poly);return {kind,poly:p,box:boxOf(p)};});
  const zoneAt=(x,y)=>{for(const z of zones)if(outside(x,y,z.box)===0&&inside(x,y,z.poly))return z.kind;return def.ground||'meadow';};
- const props=(def.props||[]).map((p,i)=>{const [x,y]=P(p.at);return {id:`${def.id}-${p.kind}-${i}`,...p,x,y,r:p.solid??PROP_SOLID[p.kind]??0};});
+ const props=(def.props||[]).map((p,i)=>{const [x,y]=P(p.at);return {id:`${def.id}-${p.kind}-${i}`,...p,x,y,r:p.solid??PROP_SOLID[p.kind]??0,area:def.id,inWater:water(x,y)<0};});
  const solidProps=props.filter(p=>p.r>0);
  const places=(def.places||[]).map(p=>{const [x,y]=P(p.at);const {at,...rest}=p;if(rest.travel)rest.travel={target:rest.travel.target,...entryOf(rest.travel.entry)};return {kind:'atlas',...rest,x:Math.round(x),y:Math.round(y)};});
  const roads=(def.roads||[]).map(Ps);
