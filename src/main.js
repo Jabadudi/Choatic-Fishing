@@ -29,7 +29,7 @@ import {setItemIcon} from './item-icons.js';
 import {TouchInput,mountMobileControls,gameScale} from './mobile.js';
 import {mountScreenControls} from './fullscreen.js';
 import {nearbyNpc} from './npcs.js';
-import {World} from './world.js';
+import {World,DASH_RECHARGE} from './world.js';
 import {render} from './renderer.js';
 import {preloadProps} from './sprites.js';
 import {titleArtReady} from './title-art.js';
@@ -171,7 +171,7 @@ function updateUI(){
  setText($('upgrade-heading'),`Choose an upgrade (${world.progression.pendingUpgrades} available)`);
  const stacks=world.progression.upgrades;setText($('upgrade-stacks'),`Boots ×${stacks.hermes} · Dash ×${stacks.dash} · Health ×${stacks.health}`);
  setText($('dash-status'),`${bindingLabel('dash')} · ${world.player.dashCharges}/${world.progression.maxDashes} DASHES`+(world.dashCooldown>0?` · +1 in ${world.dashCooldown.toFixed(1)}s`:''));
- setWidth($('dash-fill'),`${world.dashRemaining>0?0:(1-world.dashCooldown/2)*100}%`);
+ setWidth($('dash-fill'),`${world.dashRemaining>0?0:(1-world.dashCooldown/DASH_RECHARGE)*100}%`);
  setWidth($('health-fill'),`${world.player.health/world.progression.maxHealth*100}%`);
  setText($('alive-text'),`${world.actors.filter(actor=>actor.health>0).length} / ${world.actors.length} ALIVE`);
  $('countdown').hidden=world.matchState!=='countdown';setText($('countdown-number'),Math.ceil(world.countdownRemaining));

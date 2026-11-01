@@ -91,6 +91,11 @@
 .hud-act.core.active{border-color:#e8f7ff;box-shadow:0 0 16px #8fd4ff,0 2px 8px #0007}
 .hud-cd{position:absolute;inset:0;border-radius:50%;background:conic-gradient(#000a var(--cd,0deg),transparent 0);pointer-events:none}
 .hud-act.core.locked .hud-cd{display:none}
+/* Dash cooldown: the shared sweep plus a dim while no charge is left, a charge count once Extra Dash stacks, and a flash when it is back. */
+.hud-act.dash.waiting{border-color:#f3e6bf44}.hud-act.dash.waiting svg{opacity:.45}
+.hud-act.dash.flash{animation:hud-dash-ready .35s ease-out}
+@keyframes hud-dash-ready{0%{box-shadow:0 0 0 0 #f3e6bfcc,0 2px 8px #0007}100%{box-shadow:0 0 0 9px #f3e6bf00,0 2px 8px #0007}}
+.hud-charges{position:absolute;left:-3px;bottom:-3px;min-width:13px;font:bold 8px/13px monospace;text-align:center;border-radius:7px;background:#10272c;border:1px solid #f3e6bf99;color:var(--hud-cream);pointer-events:none}
 .hud-reserves{position:absolute;left:calc(var(--cx) - 46px);top:calc(var(--cy) + 46px);width:92px;height:4px;border-radius:2px;background:#0b1d1ecc;border:1px solid #9ad7ff66;overflow:hidden;pointer-events:none}
 .hud-reserves i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#59b9ff,#cdeeff);transition:width .2s}
 :root body.touch-mode #hud-actions .desk{display:none}

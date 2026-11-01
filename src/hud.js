@@ -8,6 +8,7 @@ import {nearbyNpc} from './npcs.js';
 import {MERCHANTS} from './trade.js';
 import {nearWell} from './wishing-well.js';
 import {storyJournal,trackerLine} from './story-quests.js';
+import {DASH_RECHARGE} from './world.js';
 // What the exploration HUD shows, derived from world state so it can be tested without a DOM.
 export function explorationHud(world,exploringSeconds){
  const id=world.areaId,place=examinableLandmark(world.player.x,world.player.y,id),npc=nearbyNpc(world),work=npc&&questFor(world,npc.id);
@@ -34,4 +35,11 @@ export function promptParts(prompt){
 export function playerHealth(player,max){
  const current=Math.max(0,Math.ceil(player.health)),fraction=max>0?Math.max(0,Math.min(1,player.health/max)):0;
  return {current:Math.min(current,max),max,fraction,low:fraction<.3};
+}
+
+// The dash button's cooldown: charges left, whether a dash can start, and how much of the current recharge is still to go (1 just spent, 0 back).
+export function dashMeter(world){
+ const charges=world.player.dashCharges,max=world.progression.maxDashes,recharging=world.dashRemaining>0||world.dashCooldown>0;
+ const remaining=world.dashRemaining>0&&world.dashCooldown===0?1:Math.min(1,Math.max(0,world.dashCooldown/DASH_RECHARGE));
+ return {charges,max,ready:charges>0&&!(world.dashRemaining>0),remaining:recharging?remaining:0,seconds:recharging?Math.max(0,world.dashCooldown||DASH_RECHARGE):0};
 }
