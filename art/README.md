@@ -7,6 +7,7 @@ Generated concept art, references, cutscenes and sprite sheets for Volume 1. The
 | `cutscenes/vol1/` | Story panels by chapter, numbered in the order they play (`ch01_01_…`). `_alts/` keeps earlier takes. |
 | `characters/` | Reference sheets (front, side, face) for Mara, Emilia, Eli, Drayfus, Croshelda, Brume and Corvane. |
 | `sprites/creatures/` | Rimejaw, Flitlynx and Moonfang: a single pose and an animation sheet each. The talking ocelot: a 4-direction walk sheet and a dissolve strip. |
+| `sprites/creatures/fox/`, `boar/`, `elk/` | The first new animals from the Reedwater Delta spawn plan: a pose (the Index portrait), a column-layout walk set and action columns each. |
 | `sprites/mobs/` | Nightwalker (shadow walker) enemy: reference sheet, pose and animation sheet. |
 | `sprites/characters/` | Playable and NPC character sprites: Eli (walk and throw sheets, the style and walk layout every moving entity follows), 4-direction walk sheets for Mara, Emilia and Drayfus, Drayfus's beckon strip, and his older side-view action sheet. |
 | `sprites/props/sheets/` | Six furniture and prop sheets (cabin and lodge, chief's house and shared pieces, village, training yard and blacksmith, inn and homes at 20 pieces each, and the training ground's tree, fences, gates, wall and dirt tiles, glowing sword and buckets at 10) on a green background. |
@@ -32,6 +33,18 @@ Sheet rows are idle, walk or fly, run where present, attack, then extras (howl, 
 ## Chapter 6 characters
 
 `scripts/prepare-chapter6-sprites.py` cuts the walk sheets for Mara, Emilia, Drayfus and the talking ocelot into `assets/story/<name>-sheet.png`, in the same layout as Eli's. Drayfus's sheet adds his beckon strip as a fifth row (he waits with his arms folded and waves Eli over), and the ocelot's adds its dissolve strip (its first frame is how it sits). The ocelot's side rows have 7 frames. It also cuts Brume's sheets in `sprites/creatures/moonfang/` (the walk set, drawn in the column layout every new walk set uses, and single columns for his bow and lying down to sleep) into `assets/story/brume-sheet.png`. The Moonfang familiar walks on it, bows when summoned and sleeps when Eli stands still. His reference sheet is in `characters/brume/`. Corvane's sheets in `sprites/characters/corvane/` (a column-layout walk set with a ground line under each frame, which the script leaves out, and single columns for his shadows-part entrance and his block) become `assets/story/corvane-sheet.png`. He is staged for Chapter 14 and does not appear in the game yet.
+
+## New animals
+
+`scripts/prepare-animal-sprites.py` cuts the art of the spawn plan's eleven new animals (fox, boar, elk, bear, heron, crab, goat, otter, duck, pike, seal) in `sprites/creatures/` into `assets/<id>-sheet.png` (rows 0-3 walk, then one row per action column) and their poses into `assets/codex/<id>.png`. The fox runs away on its run row, the boar rushes Eli on its charge frames once hurt, the elk grazes when idle and sweeps its antlers, and the bear rears up and roars the first time it is hurt before it comes after Eli with claw swipes. The heron spears fish when idle and flies off when Eli gets close; the drawn landmark herons in the delta use its sheet too. Their Index entries, loot and familiars are in `src/codex.js`, `src/loot.js` and `src/familiars.js`; where they spawn is in `src/world-data.js`. The otter and seal live in the water, so their swim sets are their walks and their land sets follow in the sheet; the pike lunges at Eli from the water once hurt, and the goat's headbutt throws him back (`knockback`). `scripts/prepare-shard-icons.py` cuts their familiar shard icons from `sprites/items/new-animal-shards.png`.
+
+## Shadow walker kinds
+
+`sprites/mobs/<id>/` holds the eight kinds (Hollow Stag, Gloam Boar, Stoneshade, Whisperer, Mire Walker, Drowned Soldier, Ash Archer, Inkeel): a column-layout walk sheet, one column per action and a pose for the Index. `python3 scripts/prepare-shadow-walker-sprites.py` packs them into `assets/<id>-sheet.png`, the arrow into `assets/ash-arrow.png`, and the poses into `assets/codex/`.
+
+## Reedwater Delta atlas art
+
+`ground/` holds the eleven ground and water textures; `python3 scripts/prepare-ground-textures.py` shrinks them into `assets/ground/`. `sprites/props/atlas/` holds the tree, plant, rock, prop, walkway and landmark sheets, and `sprites/props/water-motion/` the waterfall and shoreline foam loops; `python3 scripts/prepare-atlas-props.py` cuts them into `assets/props/atlas/` and `assets/waterfall-sheet.png`. The shoreline foam strip is not used yet.
 
 ## Furniture and props
 

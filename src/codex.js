@@ -9,6 +9,7 @@ import {createVillageResidents} from './village-life.js';
 import {WARES} from './trade.js';
 import {createNpcs} from './npcs.js';
 import {areaFor} from './wilds.js';
+import {ATLAS_SIZE} from './atlas-area.js';
 export const CODEX_CATEGORIES=Object.freeze([
  {id:'wildlife',label:'Wildlife',blurb:'Animals you can hunt for food and materials.'},
  {id:'monsters',label:'Monsters',blurb:'Things that want you dead.'},
@@ -28,9 +29,11 @@ export const AREA_BOUNDS=Object.freeze({
 const DOORS={cabin:['landing',1660,1440],'chief-house':['village',1250,350],'guest-lodge':['village',400,560]};
 // Landmarks beyond the playable areas, as fractions of each atlas image.
 const ATLAS_POINTS={'listening-tree':['delta',.21,.12,'The Listening Tree']};
+// Areas built from the atlas carry their own frame on it, in atlas pixels.
+const atlasBounds=area=>{if(!area.frame)return null;const [x0,x1,y0,y1]=area.frame;return [x0/ATLAS_SIZE.width,y0/ATLAS_SIZE.height,(x1-x0)/ATLAS_SIZE.width,(y1-y0)/ATLAS_SIZE.height];};
 export function atlasPoint(areaId,x,y){
  const place=areaId,door=DOORS[areaId];if(door)[areaId,x,y]=door;
- const bounds=AREA_BOUNDS[areaId],area=areaFor(areaId);if(!bounds||area.id!==areaId)return null;
+ const area=areaFor(areaId),bounds=AREA_BOUNDS[areaId]||atlasBounds(area);if(!bounds||area.id!==areaId)return null;
  const [left,top,width,height]=bounds;
  return {map:'delta',x:left+Math.min(1,Math.max(0,x/area.width))*width,y:top+Math.min(1,Math.max(0,y/area.height))*height,areaId:place};
 }
@@ -39,10 +42,37 @@ const resident=id=>createVillageResidents().find(n=>n.id===id);
 export const CODEX_ENTRIES=Object.freeze([
  animal('rabbit',{id:'rabbit',portrait:'codex/rabbit.png',firstSeen:'Chapter 1',description:'Grey meadow rabbits that graze around Reedwater Landing. They bolt the moment you get close, so a bow beats chasing them. Good meat, soft pelts and, very rarely, a lucky foot.'}),
  animal('deer',{id:'deer',portrait:'codex/deer.png',firstSeen:'Chapter 1',description:'Shy grazers of the landing meadow and Windchime Path. Leave them alone and they leave you alone. Wound one and it turns and fights back with its antlers. Venison is the heart of Grandpa’s supper.'}),
+ animal('fox',{id:'fox',portrait:'codex/fox.png',firstSeen:'Windchime Path',description:'A slim russet fox with black socks and a white-tipped brush. It hunts mice along the chime trails and bolts long before you get close, faster than any rabbit. Its pelt is prized for winter hoods.'}),
+ animal('boar',{id:'boar',portrait:'codex/boar.png',firstSeen:'Forest Edge',description:'A stocky wild boar with a ridge of black bristles and curved tusks, rooting through the northern forest. It ignores you until you hurt it, then lowers its head and charges. Get out of the way when it paws the ground.'}),
+ animal('elk',{id:'elk',portrait:'codex/elk.png',firstSeen:'Elk Run',description:'Tall grey elk with shaggy manes and wide pale racks. They are the Elk Spirit’s own herd, and Elk Run is named for them. Leave them be and they graze on. Hurt one and it lowers that rack and sweeps it at you, and it takes a lot of arrows to bring down.'}),
+ animal('bear',{id:'bear',portrait:'codex/bear.png',firstSeen:'Trailhead',description:'A huge shaggy brown bear with a heavy shoulder hump and long pale claws, roaming the deep trails past Elk Run. It wants nothing to do with you until you hurt it. Then it rears up on its hind legs, roars, and comes after you with claws that hit harder than anything else in the woods. It is slow, so walking away always works.'}),
+ animal('heron',{id:'heron',portrait:'codex/heron.png',firstSeen:'Heron Point',description:'A tall grey heron with a white neck, a black plume and a dagger of a beak. It stalks the shallows at Upper Falls, Glasswater, the Heron Islands and Heron Point, and stands so still between stabs that it looks carved. Get close and it is gone in two wingbeats, so bring a bow.'}),
+ animal('crab',{id:'crab',portrait:'codex/crab.png',firstSeen:'Arrival Bay',description:'A chunky orange-red shore crab with a speckled shell and one claw bigger than the other. It scuttles sideways along the tide pools and leaves you alone, but hit it and it raises both claws and nips back.'}),
+ animal('goat',{id:'goat',portrait:'codex/goat.png',firstSeen:'Lookout Heights',description:'A shaggy off-white goat with thick ridged horns, at home on the heights and the old quarry ledges. It ignores you until you hurt it. Then it rears up and headbutts hard enough to throw you off your feet.'}),
+ animal('otter',{id:'otter',portrait:'codex/otter.png',firstSeen:'Falls Channels',description:'A sleek dark-brown otter with a cream throat, playing in the channels and braids below the falls. It is fast in the water, and one dive is all it takes to lose you.'}),
+ animal('duck',{id:'duck',portrait:'codex/duck.png',firstSeen:'Glasswater Basin',description:'A mallard with a glossy green head, paddling the pools and marshes. It takes off at the first sign of trouble, but it is the easiest thing on the water to hunt.'}),
+ animal('pike',{id:'pike',portrait:'codex/pike.png',firstSeen:'Glasswater Basin',description:'A long silver-green pike with pale spots and a jaw full of needle teeth, hanging still in the deep pools. Hurt one and it lunges at you on the bank or the dock, so keep your distance.'}),
+ animal('seal',{id:'seal',portrait:'codex/seal.png',firstSeen:'Seal Skerries',description:'A spotted grey seal that basks off the skerries and the sandbars. It is big and slow on the rocks, but it slides into the sea the moment you come close.'}),
  animal('turtle',{id:'turtle',portrait:'codex/turtle.png',firstSeen:'Chapter 1',description:'A slow, moss-backed turtle that paddles around Reedwater Spring. It never fights back, but its shell soaks up a lot of punishment. Drops wash up on the bank.'}),
  animal('eel',{id:'eel',glyph:'≋',firstSeen:'Chapter 1',description:'Quick, slippery eels that hunt in the shallows over the Drowned Road. Hard to hit and quick to flee. Their skin and oil are prized by anyone who works leather.'}),
  {id:'shadow-walker',category:'monsters',species:'shadow-walker',spawns:'shadow-walker',title:'Remnant of the dark army',portrait:'codex/shadow-walker.png',firstSeen:'Chapter 1',loot:'shadow-walker',
   description:'Faceless, ragged things left over from Croshelda’s dark army. They come in every shape and size, and they take the power of whatever they infect and multiply it. One walked out of the storm with an axe to kill Eli at Grandpa’s cabin. They roam the wilder trails now and charge anyone they see. Watch for the raised axe and get out of reach.'},
+ {id:'hollow-stag',category:'monsters',species:'hollow-stag',spawns:'hollow-stag',title:'Infected deer and elk',portrait:'codex/hollow-stag.png',firstSeen:'Windchime Path',loot:'hollow-stag',
+  description:'A deer or elk the shadow got into. Its antlers have grown wild and black and its ribs show through the hide. It is faster than any shadow walker and gallops after you, but it does not take many hits to bring down. Watch for the lowered head before the antler swing.'},
+ {id:'gloam-boar',category:'monsters',species:'gloam-boar',spawns:'gloam-boar',title:'Infected boar',portrait:'codex/gloam-boar.png',firstSeen:'The northern forest',loot:'gloam-boar',
+  description:'A boar swallowed by shadow, bristling with black smoke. It has less in it than a living boar, but its gore hits much harder and throws you off your feet. They often hunt in twos.'},
+ {id:'stoneshade',category:'monsters',species:'stoneshade',spawns:'stoneshade',title:'Shadow in the quarry stone',portrait:'codex/stoneshade.png',firstSeen:'The Abandoned Quarry',loot:'stoneshade',
+  description:'Shadow that seeped into the old quarry stone and stood up. It is very slow and very hard to hurt. When it raises both fists, get out of reach before the slam comes down.'},
+ {id:'whisperer',category:'monsters',species:'whisperer',spawns:'whisperer',title:'The voices of the woods',portrait:'codex/whisperer.png',firstSeen:'Whispering Woods',loot:'whisperer',
+  description:'A tall hooded thing you can barely see until it is close. The wind carries voices where it walks. Once it notices you it fades in and lunges with long clawed hands.'},
+ {id:'mire-walker',category:'monsters',species:'mire-walker',spawns:'mire-walker',title:'Drowned in the reeds',portrait:'codex/mire-walker.png',firstSeen:'The marshes',loot:'mire-walker',
+  description:'A drowned body in reed and weed that lies under the water beside the paths. It rises when you pass, and its grab holds you back so you can barely run. A ripple where there should be none is the only warning.'},
+ {id:'drowned-soldier',category:'monsters',species:'drowned-soldier',spawns:'drowned-soldier',title:'Sunk with the old road',portrait:'codex/drowned-soldier.png',firstSeen:'The Drowned Road',loot:'drowned-soldier',
+  description:'A soldier of Croshelda’s army who went down with the old road. Still in rusted armour, it wades out into shallows you cannot cross and comes back with its sword.'},
+ {id:'ash-archer',category:'monsters',species:'ash-archer',spawns:'ash-archer',title:'Remnant that kept its bow',portrait:'codex/ash-archer.png',firstSeen:'The Old Roads',loot:'ash-archer',
+  description:'A shadow army remnant that still carries its bow. It keeps its distance and backs away when you close in. Dash straight through the arrows to reach it.'},
+ {id:'inkeel',category:'monsters',species:'inkeel',spawns:'inkeel',title:'Infected eel',portrait:'codex/inkeel.png',firstSeen:'The southern delta',loot:'inkeel',
+  description:'An eel the shadow turned into a hunter, long and black with a mouth full of teeth. The first creature in the water that comes for you: it strikes at you on docks and ledges while you fish.'},
  {id:'croshelda',category:'bosses',name:'Croshelda',title:'The Witch of Darkness',portrait:'codex/croshelda.png',firstSeen:'Chapter 3 (named), Chapter 5 (vision)',status:'Whereabouts unknown',map:'world',
   description:'The shadow walkers once served her as an army. In Eli’s vision she was a crying girl with long white hair and storm-purple eyes, and black light burst out of her and swallowed everything. Nobody knows where she is.',lootNote:'Unknown. Nobody has ever faced her and come back to say.'},
  {id:'moonfang',category:'guardians',name:'Moonfang',title:'Wolf guardians',portrait:'codex/moonfang.png',firstSeen:'Chapter 1',status:'Ally',places:[['cabin',0,0],['village',1500,600]],

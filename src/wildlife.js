@@ -12,7 +12,9 @@ export function animalGround(animal,x,y){
  const area=areaFor(animal.areaId),margin=animal.species==='rabbit'?80:Math.max(30,animal.radius+10);
  if(x<margin||y<margin||x>area.width-margin||y>area.height-margin)return false;
  if(animal.species==='rabbit'&&(y<110||y>area.height-100||waterDistance(x,y,animal.areaId)<=22))return false;
- return animal.habitat==='water'?isWater(x,y,animal.areaId)&&waterDistance(x,y,animal.areaId)<-animal.radius:walkable(x,y,animal.areaId);
+ if(animal.habitat==='water')return isWater(x,y,animal.areaId)&&waterDistance(x,y,animal.areaId)<-animal.radius;
+ // A wader (the Drowned Soldier) can also walk out into the water, up to its reach from the shore.
+ return walkable(x,y,animal.areaId)||!!animal.wades&&isWater(x,y,animal.areaId)&&waterDistance(x,y,animal.areaId)>-animal.wades;
 }
 export function moveAnimal(animal,dx,dy){
  const steps=Math.max(1,Math.ceil(Math.hypot(dx,dy)/4)),sx=dx/steps,sy=dy/steps;
@@ -53,7 +55,11 @@ export function damageAnimal(world,animal,amount,source,angle,knockback=0){
  if(world.matchState!=='playing'||source.health<=0||!huntableInArea(world,animal)||!Number.isFinite(amount)||amount<=0)return false;
  const taken=amount*(source.progression?.damageMultiplier??1)*(1+(source.progression?.passive('hunting.damage')??0));
  animal.health=Math.max(0,animal.health-taken);animal.hurtRemaining=.25;animal.alert=3;
- if(animal.behavior==='defensive'){animal.attackerId=source.id;animal.anger=6;}animal.threat={x:source.x,y:source.y};animal.vx+=Math.cos(angle)*knockback*.45;animal.vy+=Math.sin(angle)*knockback*.45;
+ if(animal.behavior==='defensive'){
+  // A bear rears and roars the first time it is hurt, before it comes after its attacker.
+  if(animal.roar&&!(animal.anger>0)&&animal.health>0){animal.roarRemaining=animal.roar;animal.time=0;}
+  animal.attackerId=source.id;animal.anger=6;
+ }animal.threat={x:source.x,y:source.y};animal.vx+=Math.cos(angle)*knockback*.45;animal.vy+=Math.sin(angle)*knockback*.45;
  if(animal.species==='rabbit'){animal.state='idle';animal.time=0;}
  world.effects.push({name:'animal-hit',label:`-${Math.round(taken)}`,x:animal.x,y:animal.y-25,angle:0,life:.6,duration:.6});
  if(animal.health===0){
@@ -98,10 +104,11 @@ export function updateWildlife(world,dt){
     a.anger=0;a.attackerId=null;a.attackRemaining=0;a.state='idle';a.time=0;a.wait=.8;
    }else{
     const angle=Math.atan2(target.y-a.y,target.x-a.x);a.direction={x:Math.cos(angle),y:Math.sin(angle)};
+    if(a.roarRemaining>0){a.state='roar';a.roarRemaining=Math.max(0,a.roarRemaining-dt);a.anger=6;continue;}
     if(a.attackRemaining>0){
      a.state='attack';a.attackRemaining=Math.max(0,a.attackRemaining-dt);
      if(a.attackRemaining===0){
-      if(range<=a.attackRange)damage(world,target,a.attackDamage,a,angle,90);
+      if(range<=a.attackRange)damage(world,target,a.attackDamage,a,angle,a.knockback??90);
       a.attackCooldownRemaining=a.attackCooldown;
      }
     }else if(range<=a.attackRange){

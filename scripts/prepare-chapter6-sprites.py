@@ -47,10 +47,11 @@ def runs(prof,gap,thr):
   if start is not None:out.append([start,last+1])
   return out
 
-def frame_slices(band,count):
-  """Ranges along axis 1 of the figures in one strip of frames, split where frames touch."""
+def frame_slices(band,count,gap=4):
+  """Ranges along axis 1 of the figures in one strip of frames, split where frames touch. Gaps of up to `gap` empty
+  lines join, so a frame broken by a stray empty line stays whole; tightly packed art can pass 1 (split on any empty line)."""
   prof=band.sum(0)
-  spans=[s for s in runs(prof,4,1) if band[:,s[0]:s[1]].sum()>200]
+  spans=[s for s in runs(prof,gap,1) if band[:,s[0]:s[1]].sum()>200]
   while len(spans)<count:
     widths=[b-a for a,b in spans];i=int(np.argmax(widths));a,b=spans[i]
     single=np.median(sorted(widths)[:max(1,len(widths)-1)]) if len(widths)>1 else (b-a)/2
@@ -119,12 +120,12 @@ def strip(path,fixed):
     out.append((img,ax,by))
   return out
 
-def strip_column(path):
+def strip_column(path,gap=4):
   """One column of 8 frames, top to bottom, found by the gaps between them. Each frame keeps its sideways place, so a
   figure that bows or lies down moves the way it was drawn; the anchor is frame 1's body centre, and each frame stands
   on its own lowest pixels (bowing and lying down both keep the paws on the ground)."""
   im,mask=load(path);xs=np.nonzero(mask.any(0))[0];l,r=xs.min(),xs.max()+1;out=[];ax=None
-  for y0,y1 in frame_slices(mask[:,l:r].T,8):
+  for y0,y1 in frame_slices(mask[:,l:r].T,8,gap):
     sub=mask[y0:y1,l:r];ys=np.nonzero(sub.any(1))[0];t=ys.min();top,bottom=body_rows(sub[t:])
     if ax is None:ax=np.nonzero(sub[t+top:t+bottom])[1].mean()
     m=sub[t:t+bottom];rgb=im[y0+t:y0+t+bottom,l:r].copy()
