@@ -37,11 +37,15 @@ checkpoints are described in [docs/STORY.md](docs/STORY.md).
 
 ## What's in the game
 
-- **A connected world.** Reedwater Landing (beach, dock, Grandpa's cabin), Windchime
-  Path, Willowbank Crossroads, Willowback Village and Shellback Marsh, joined by
-  walking off the map edge. Willowback itself spans three areas: the commons by the
-  river, the Upper Lanes to the north and Millside along the mill stream, with 15 to
-  20 villagers in each. Press **M** for the area map.
+- **The whole Reedwater Delta.** Every area on the regional atlas can be walked,
+  from the Deepwood Trailhead and the Listening Tree in the north-west forest to
+  the Great Bridge, the Abandoned Quarry and the Broken Watch in the east, and out
+  along the coast to the Drowned Road, Arrival Bay, the Seal Skerries and Heron
+  Point. Areas join by walking off the map edge, wading fords and portals, or
+  taking a rowboat. Willowback spans the port, the town square, the merchant
+  quarter and the farm. Press **M** for the area map; its **Reedwater Delta** tab
+  shows the atlas with every playable area outlined, and the minimap's **−/+**
+  button zooms out to it.
 - **Walk-in interiors.** Grandpa's cabin, the chief's house and the guest lodge,
   furnished with hand-made prop sprites on tiled walls and floors.
 - **Fishing.** Cast into the water and keep the catch inside the reeling bar.
@@ -109,7 +113,7 @@ These are the default keys. All of them can be rebound in Settings.
 | K | Skills |
 | I | Creature Index |
 | J | Quest log |
-| M | Area map |
+| M | Area map (and the Reedwater Delta world map) |
 | Q / Escape | Cancel the current action or close a menu |
 | H | Controls card listing every key |
 | F10 | Settings |
@@ -146,6 +150,9 @@ Pages ([DEPLOYMENT.md](DEPLOYMENT.md)).
   input, the 120 Hz loop and the HUD. `world.js` runs the simulation and
   `renderer.js` draws it. Story chapters live in `chapter1.js` to `chapter5.js` and
   `story.js`. Interiors are `story-map.js`, `chief-house.js` and `guest-lodge.js`.
+  The atlas areas are plain data in `delta-areas.js`, traced in atlas pixels from
+  the regional map; `atlas-area.js` turns each into terrain and `world-map.js`
+  draws the world map.
   `loot.js`, `spawn-tables.js`, `spawns.js`, `skills.js`, `skill-trees.js`, `familiars.js`, `side-quests.js` and `codex.js` hold the
   RPG systems, and `save-format.js` owns the versioned save contract.
 - `assets/` holds sprites, props, cutscene art, music and the vision video.
