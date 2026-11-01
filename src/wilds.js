@@ -34,7 +34,7 @@ export const AREAS={
  windchime:{id:'windchime',name:'Windchime Path',width:1600,height:1200,seed:7321,spawn:{...WINDCHIME_ENTRY},exits:[{edge:'north',from:1080,to:1220,target:'crossroads',entry:{x:800,y:1130},label:'Willowbank Crossroads'},{edge:'south',from:260,to:400,target:'landing',entry:{x:1400,y:120},label:'Reedwater Landing'},{edge:'west',from:190,to:310,target:'stonefall',label:'Stonefall Creek'},{edge:'east',from:340,to:460,target:'chimewood',label:'Chimewood'}]}
 };
 // Atlas areas only keep the exits whose target is built; then every exit without a fixed entry gets one.
-for(const a of Object.values(AREAS))if(a.atlas)a.exits=a.exits.filter(e=>AREAS[e.target]);
+for(const a of Object.values(AREAS))if(a.atlas){a.exits=a.exits.filter(e=>AREAS[e.target]);a.portals=a.portals.filter(e=>AREAS[e.target]);}
 linkEntries(AREAS);
 export const WORLD=AREAS.landing;
 export const SPAWN=WORLD.spawn;
@@ -101,12 +101,12 @@ export function regionAt(x,y,id='landing'){
 }
 const COLORS={'Grandpa’s Cabin':['#a17b50','#ae8756','#b18b59'],'The Chief’s House':['#8a5e3c','#9a6a43','#a0714a'],'The Guest Lodge':['#7f5e3d','#8f6a45','#987350'],'Shellback Marsh':['#6f854e','#748b53','#7a9057'],'Willowback Town Square':['#88b447','#8bb748','#90ba4b'],'Willowback Port':['#88b447','#8bb748','#90ba4b'],'Willowback Merchant Quarter':['#88b447','#8bb748','#90ba4b'],'Willowback Farm & Training Grounds':['#8db84a','#91bb4c','#96be50'],'Willowbank Crossroads':['#87ad4c','#8cb452','#93b958'],'Reedwater Shore':['#247b9a','#2989a4','#3193ac'],'Reedwater Landing':['#88b447','#8bb748','#90ba4b'],'Forest Approach':['#7aa344','#7ea846','#82ad47'],'Windchime Path':['#7aa344','#7ea846','#82ad47'],'Springbank':['#88b447','#8bb748','#90ba4b'],'The Drowned Road':['#88b447','#8bb748','#90ba4b']};
 // Atlas areas colour their ground by zone instead of by region name.
-const ZONE_COLORS={meadow:['#88b447','#8bb748','#90ba4b'],clear:['#88b447','#8bb748','#90ba4b'],forest:['#6f9a40','#739e42','#78a345'],sand:['#cdbf85','#d4c68e','#c9ba7f'],rock:['#8f8d7c','#979484','#8a8877'],marsh:['#6f854e','#748b53','#7a9057'],dirt:['#b59a68','#bca170','#b09462']};
+const ZONE_COLORS={meadow:['#88b447','#8bb748','#90ba4b'],clear:['#88b447','#8bb748','#90ba4b'],forest:['#6f9a40','#739e42','#78a345'],sand:['#cdbf85','#d4c68e','#c9ba7f'],rock:['#8f8d7c','#979484','#8a8877'],marsh:['#6f854e','#748b53','#7a9057'],dirt:['#b59a68','#bca170','#b09462'],cliff:['#6f6a5e','#77725f','#686456']};
 export const paletteAt=(x,y,id)=>DELTA[id]?ZONE_COLORS[DELTA[id].zoneAt(x,y)]||ZONE_COLORS.meadow:COLORS[regionAt(x,y,id)];
 function atlasScenery(gx,gy,id){
  const b=DELTA[id],x=gx*72+12+hash(gx,gy)*48,y=gy*72+12+hash(gx,gy,3)*48,r=hash(gx,gy,9);
  if(b.clear(x,y)||waterDistance(x,y,id)<95||roadDistance(x,y,id)<65||b.places.some(p=>Math.hypot(x-p.x,y-p.y)<100))return null;
- const zone=b.zoneAt(x,y),kind=zone==='forest'?(r<.74?'tree':r<.84?'bush':null):zone==='rock'?(r<.3?'rock':null):zone==='sand'||zone==='clear'||zone==='dirt'?(r<.04?'rock':null):zone==='marsh'?(r<.18?'bush':r<.24?'tree':null):(r<.13?'tree':r<.21?'rock':r<.35?'bush':null);
+ const zone=b.zoneAt(x,y),kind=zone==='forest'?(r<.74?'tree':r<.84?'bush':null):zone==='cliff'?null:zone==='rock'?(r<.3?'rock':null):zone==='sand'||zone==='clear'||zone==='dirt'?(r<.04?'rock':null):zone==='marsh'?(r<.18?'bush':r<.24?'tree':null):(r<.13?'tree':r<.21?'rock':r<.35?'bush':null);
  return kind?{x,y,kind,r:kind==='tree'?12:kind==='rock'?15:0}:null;
 }
 export function surfaceAt(x,y,id='landing'){
@@ -163,6 +163,7 @@ export function walkable(x,y,id='landing'){
  return true;
 }
 export function transitionAt(x,y,id='landing'){
+ const portal=areaFor(id).portals?.find(q=>Math.hypot(x-q.x,y-q.y)<=q.r);if(portal&&portal.entry)return {areaId:portal.target,x:portal.entry.x,y:portal.entry.y};
  const area=areaFor(id),exit=area.exits.find(e=>inExit(e.edge==='east'||e.edge==='west'?y:x,e)&&((e.edge==='north'&&y<0)||(e.edge==='south'&&y>area.height)||(e.edge==='west'&&x<0)||(e.edge==='east'&&x>area.width)));
  return exit?{areaId:exit.target,...exit.entry}:null;
 }
@@ -225,7 +226,7 @@ function staticArea(ctx,left,top,width,height,id){
  for(let y=Math.floor(top/8)*8;y<top+height;y+=8)for(let x=Math.floor(left/8)*8;x<left+width;x+=8){
   const px=x+4,py=y+4,wet=waterDistance(px,py,id),road=roadDistance(px,py,id),r=hash(x,y,4),palette=paletteAt(px,py,id);
   // Visual fringes soften the shoreline and trail without changing collision geometry.
-  const deck=id==='marsh'&&onMarshDeck(px,py)||id==='crossroads'&&onCrossroadsDeck(px,py)||id==='village'&&onVillageDeck(px,py)||!!DISTRICTS[id]?.deck(px,py),water=wet<0&&!deck,path=!water&&(deck||road<24+r*12),zone=DELTA[id]?.zoneAt(px,py),sand=!water&&!path&&(zone==='sand'||wet< (!DELTA[id]&&coastDistance(px,py)>-70?58:20)+r*8),ground=!water&&!path&&!sand&&(zone==='rock'||zone==='marsh'||zone==='dirt');
+  const deck=id==='marsh'&&onMarshDeck(px,py)||id==='crossroads'&&onCrossroadsDeck(px,py)||id==='village'&&onVillageDeck(px,py)||!!DISTRICTS[id]?.deck(px,py),water=wet<0&&!deck,path=!water&&(deck||road<24+r*12),zone=DELTA[id]?.zoneAt(px,py),sand=!water&&!path&&(zone==='sand'||wet< (DELTA[id]?30:coastDistance(px,py)>-70?58:20)+r*8),ground=!water&&!path&&!sand&&(zone==='rock'||zone==='marsh'||zone==='dirt'||zone==='cliff');
   if(water||path||sand||ground||!texturedGrass){ctx.fillStyle=water?waterColor(wet,id==='landing'&&coastDistance(px,py)>0,id==='marsh'):path?['#d6bd7a','#dfc885','#d9c17e'][Math.floor(r*3)]:sand?(id==='marsh'?['#8c8b60','#a2a074','#929469']:['#c5ba77','#d1c487','#cabe7d'])[Math.floor(r*3)]:palette[Math.floor(hash(Math.floor(x/48),Math.floor(y/48))*3)];ctx.fillRect(x,y,8,8);}
   if(path&&dirt){ctx.fillStyle=dirt;ctx.fillRect(x,y,8,8);}
   if(water)continue;
@@ -430,6 +431,7 @@ export function drawWildsLabels(ctx,world,view){
  for(const p of placesFor(id))if(p.x>view.left-120&&p.x<view.right+120&&p.y>view.top-100&&p.y<view.bottom+100)parchmentTag(ctx,p.x,p.y+34,p.name,labelAlpha(Math.hypot(world.player.x-p.x,world.player.y-p.y)));
  if(id==='crossroads')drawCrossroadsLabels(ctx);
  if(id==='landing'){parchmentTag(ctx,1630,1565,cabinDamaged(world.story)?'The Damaged Cabin':'Grandpa’s Cabin',labelAlpha(Math.hypot(world.player.x-1630,world.player.y-1545)));}
+ for(const q of area.portals||[])parchmentTag(ctx,q.x,q.y-q.r-30,`◆ ${q.label}`,labelAlpha(Math.hypot(world.player.x-q.x,world.player.y-q.y)-60));
  for(const exit of area.exits){const horizontal=exit.edge==='east'||exit.edge==='west',x=horizontal?(exit.edge==='east'?area.width-160:160):(exit.from+exit.to)/2,y=horizontal?(exit.from+exit.to)/2:exit.edge==='north'?110:(interior(id)?area.height-45:area.height-200);parchmentTag(ctx,x,y-12,`${{north:'↑',south:'↓',west:'←',east:'→'}[exit.edge]} ${exit.label}`,1);}
 }
 export function drawExplorer(ctx,p,time=0){
@@ -449,6 +451,7 @@ export function paintAtlas(ctx,width,height,player,discovered=new Set(),id='land
  if(DISTRICTS[id])paintBuildings(ctx,DISTRICTS[id].buildings,sx,sy);
  for(const p of placesFor(id)){ctx.fillStyle=discovered.has(p.id)?'#e6bd65':'#e3e1c9';ctx.fillRect(p.x*sx-2,p.y*sy-2,4,4);if(width>400){ctx.font='bold 12px monospace';ctx.textAlign='center';ctx.fillStyle='#203c38';ctx.fillText(p.name,p.x*sx+1,p.y*sy-9);ctx.fillStyle='#fff0c9';ctx.fillText(p.name,p.x*sx,p.y*sy-10);}}
  for(const e of area.exits){const horizontal=e.edge==='east'||e.edge==='west',x=horizontal?(e.edge==='east'?width-8:8):(e.from+e.to)/2*sx,y=horizontal?(e.from+e.to)/2*sy:e.edge==='north'?18:height-10;ctx.fillStyle='#f0d68b';ctx.textAlign=horizontal?(e.edge==='east'?'right':'left'):'center';ctx.font=`bold ${width>400?12:8}px monospace`;ctx.fillText(`${{north:'↑',south:'↓',west:'←',east:'→'}[e.edge]} ${e.label}`,x,y);}
+ for(const q of area.portals||[]){ctx.fillStyle='#f0d68b';ctx.textAlign='center';ctx.font=`bold ${width>400?12:8}px monospace`;ctx.fillText(`◆ ${q.label}`,q.x*sx,q.y*sy-6);}
  if(player){ctx.fillStyle='#fff4be';ctx.beginPath();ctx.arc(player.x*sx,player.y*sy,5,0,Math.PI*2);ctx.fill();}
 }
 

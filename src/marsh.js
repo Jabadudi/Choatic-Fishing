@@ -1,5 +1,6 @@
 // The atlas wetlands: dry hummocks linked by real, walkable timber crossings.
-export const MARSH={id:'marsh',name:'Shellback Marsh',width:2100,height:2400,seed:7357,spawn:{x:140,y:760},exits:[{edge:'west',from:700,to:820,target:'crossroads',entry:{x:1530,y:660},label:'Willowbank Crossroads'}]};
+export const MARSH={id:'marsh',name:'Shellback Marsh',width:2100,height:2400,seed:7357,spawn:{x:140,y:760},exits:[{edge:'west',from:700,to:820,target:'crossroads',entry:{x:1530,y:660},label:'Willowbank Crossroads'},
+ {edge:'north',from:110,to:250,target:'long-boardwalk',label:'Long Boardwalk'},{edge:'east',from:1340,to:1460,target:'stilt-reach',label:'Stilt Reach'}]};
 export const MARSH_ISLANDS=[{x:310,y:760,rx:260,ry:210},{x:940,y:980,rx:340,ry:300},{x:1040,y:440,rx:280,ry:190},{x:1580,y:1000,rx:240,ry:260},{x:1060,y:1620,rx:300,ry:230},{x:400,y:1370,rx:180,ry:230}];
 export const MARSH_BOARDS=[
  {width:86,points:[[0,760],[310,760],[540,810],[710,940],[860,1000]]},
@@ -7,7 +8,10 @@ export const MARSH_BOARDS=[
  {width:76,points:[[900,850],[1020,650],[1040,480]]},
  {width:80,points:[[1160,1000],[1390,1000],[1580,1040],[1650,1150],[1650,1380]]},
  {width:82,points:[[1000,1145],[1040,1390],[1170,1460],[1180,1580],[1060,1640]]},
- {width:74,points:[[880,1110],[760,1130],[620,1200],[440,1370],[340,1420]]}
+ {width:74,points:[[880,1110],[760,1130],[620,1200],[440,1370],[340,1420]]},
+ // North from the Reed Threshold to the Long Boardwalk (9.2), and east past Angler's Reach to Stilt Reach (13.2).
+ {width:76,points:[[300,620],[250,400],[190,180],[180,0]]},
+ {width:76,points:[[1650,1380],[1800,1400],[2100,1400]]}
 ];
 export const MARSH_ROADS=MARSH_BOARDS.map(board=>board.points);
 export function marshWaterDistance(x,y){let d=-Infinity;for(const island of MARSH_ISLANDS)d=Math.max(d,(1-Math.hypot((x-island.x)/island.rx,(y-island.y)/island.ry))*Math.min(island.rx,island.ry));return d;}
