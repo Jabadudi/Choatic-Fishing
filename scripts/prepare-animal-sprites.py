@@ -11,6 +11,8 @@ prepare-chapter6-sprites.py, so every sheet follows the house row layout: rows 0
                   defeat (frames 3-7).
   elk-sheet.png   rows 0-3 walk, row 4 the antler swing, row 5 grazing (idle), row 6 hurt (frames 0-1) and defeat (2-7).
   bear-sheet.png  rows 0-3 walk, row 4 rearing up to roar, row 5 the claw swipe, row 6 hurt (frames 0-1) and defeat (2-7).
+  heron-sheet.png rows 0-3 walk, row 4 taking off (frames 0-3) and flying (4-7), lifted off the ground; row 5 spearing a
+                  fish (idle); row 6 hurt (frames 0-2) and defeat (3-7).
 
 Run from the repository root: python3 scripts/prepare-animal-sprites.py
 Requires Pillow and NumPy.
@@ -37,6 +39,24 @@ def portrait(path,out,size=256):
 def width(frames):
   """Median nose-to-tail length of the drawn figures (column strips share one crop box, so the image width won't do)."""
   return np.median([np.ptp(np.nonzero(np.asarray(img)[...,3].any(0))[0])+1 for img,_,_ in [f for f in frames if f]])
+
+def drop_strays(frames,share=.04):
+  """Clear small specks along each frame's top edge: the feet of the frame above, where it overlaps this one's rows."""
+  out=[]
+  for img,ax,base in frames:
+    a=np.asarray(img).copy();m=a[...,3]>0;h,w=m.shape;seen=np.zeros_like(m);total=m.sum()
+    for x0 in np.nonzero(m[0])[0]:
+      if seen[0,x0]:continue
+      stack=[(0,x0)];seen[0,x0]=True;part=[]
+      while stack:
+        y,x=stack.pop();part.append((y,x))
+        for dy,dx in ((1,0),(-1,0),(0,1),(0,-1)):
+          v,u=y+dy,x+dx
+          if 0<=v<h and 0<=u<w and m[v,u] and not seen[v,u]:seen[v,u]=True;stack.append((v,u))
+      if len(part)<total*share:
+        for y,x in part:a[y,x,3]=0
+    out.append((Image.fromarray(a,'RGBA'),ax,base))
+  return out
 
 if __name__=='__main__':
   # The fox: a little bigger than a rabbit, about 26 px tall to the ear tips walking side-on (Eli is about 55).
@@ -75,3 +95,18 @@ if __name__=='__main__':
   strips=[ch6.strip_column(d+f'bear_{name}-column.png',1 if name=='rear' else 4) for name in ('rear','swipe','hurt')]
   ch6.pack('bear-sheet.png',[(frames,k)]+[(s,k*side/width(s[:1])) for s in strips])
   portrait(d+'bear_pose.png','assets/codex/bear.png')
+  # The heron: chest-high to Eli, about 42 px to the plume walking side-on.
+  d=SRC+'heron/'
+  frames=ch6.walk(d+'heron_walk-sheet.png',(8,8,8,8),'columns','body');k=42*2/ch6.height(frames[:8])
+  # Frames in the action strips nearly touch (a raised beak under the feet above), so they split on any empty line.
+  flight,fish,hurt=[drop_strays(ch6.strip_column(d+f'heron_{name}-column.png',1)) for name in ('flight','fish','hurt')]
+  # The fish and hurt strips start standing like the walk, so they are matched by height. The flight is matched by beak
+  # to tail length against its first frame, a crouch about as long as the stalk; each frame stands on its own lowest
+  # pixels, so the airborne frames are lifted (in source pixels) to fly about 18 px above the ground.
+  kf=k*ch6.height(frames[:8])/ch6.height(fish[:1]);kh=k*ch6.height(frames[:8])/ch6.height(hurt[:1])
+  kfl=k*width(frames[:8])*1.15/width(flight[:1])
+  lift=[0,0,.35,.7,1,1,1,1]
+  flight=[(img,ax,base+round(l*18*2/kfl)) for (img,ax,base),l in zip(flight,lift)]
+  # The generated walk shrinks down each column; a stalking heron stays upright, so every frame is scaled to full height.
+  ch6.pack('heron-sheet.png',[([f],42*2/ch6.height([f])) for f in frames]+[(flight,kfl),(fish,kf),(hurt,kh)])
+  portrait(d+'heron_pose.png','assets/codex/heron.png')

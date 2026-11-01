@@ -36,7 +36,7 @@ Sheet rows are idle, walk or fly, run where present, attack, then extras (howl, 
 
 ## New animals
 
-`scripts/prepare-animal-sprites.py` cuts the fox, boar, elk and bear art in `sprites/creatures/` into `assets/<id>-sheet.png` (rows 0-3 walk, then one row per action column) and their poses into `assets/codex/<id>.png`. The fox runs away on its run row, the boar rushes Eli on its charge frames once hurt, the elk grazes when idle and sweeps its antlers, and the bear rears up and roars the first time it is hurt before it comes after Eli with claw swipes. Their Index entries, loot and familiars are in `src/codex.js`, `src/loot.js` and `src/familiars.js`; where they spawn is in `src/world-data.js`.
+`scripts/prepare-animal-sprites.py` cuts the fox, boar, elk, bear and heron art in `sprites/creatures/` into `assets/<id>-sheet.png` (rows 0-3 walk, then one row per action column) and their poses into `assets/codex/<id>.png`. The fox runs away on its run row, the boar rushes Eli on its charge frames once hurt, the elk grazes when idle and sweeps its antlers, and the bear rears up and roars the first time it is hurt before it comes after Eli with claw swipes. The heron spears fish when idle and flies off when Eli gets close; the drawn landmark herons in the delta use its sheet too. Their Index entries, loot and familiars are in `src/codex.js`, `src/loot.js` and `src/familiars.js`; where they spawn is in `src/world-data.js`.
 
 ## Furniture and props
 

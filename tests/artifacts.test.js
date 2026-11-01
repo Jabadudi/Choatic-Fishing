@@ -14,10 +14,10 @@ const copy=value=>JSON.parse(JSON.stringify(value));
 const give=(w,id,rarity,count=1)=>{for(let i=0;i<count;i++)w.inventory.receive(artifactItem(id,rarity));return w.inventory.allItems.find(item=>item.artifact===id&&item.rarity===rarity);};
 const sequence=values=>{let i=0;return ()=>values[i++%values.length];};
 
-// The fox, boar, elk and bear, the first of the spawn plan's new animals, have no artifact yet.
+// The fox, boar, elk, bear and heron, the first of the spawn plan's new animals, have no artifact yet.
 test('each hunted creature carries one artifact, rolled before its familiar shard',()=>{
  const carriers=Object.entries(LOOT_TABLES).map(([table,entries])=>[table,entries.filter(entry=>entry.artifact).map(entry=>entry.artifact)]);
- assert.deepEqual(Object.fromEntries(carriers),{rabbit:['rabbits-foot'],fox:[],deer:['stag-crown'],boar:[],elk:[],bear:[],turtle:['mossback-scute'],eel:['lodestone'],'shadow-walker':['black-light-heart']});
+ assert.deepEqual(Object.fromEntries(carriers),{rabbit:['rabbits-foot'],fox:[],deer:['stag-crown'],boar:[],elk:[],bear:[],heron:[],turtle:['mossback-scute'],eel:['lodestone'],'shadow-walker':['black-light-heart']});
  for(const id of ARTIFACT_IDS)assert.ok(ARTIFACTS[id].chance>0&&ARTIFACTS[id].chance<1&&ARTIFACTS[id].values.length===RARITIES.length,id);
  // Hide, antlers, crown, crown rarity, shard.
  const [crown]=rollLoot('deer',sequence([.9,.9,0,.5,.9])).filter(item=>item.artifact);

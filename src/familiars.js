@@ -20,6 +20,8 @@ export const FAMILIARS=Object.freeze({
   passive:{name:'Antler Crown',ranks:[{strength:2,health:10},{strength:5,health:25}]},ultimate:{name:'Herd Leader',bonus:{huntingXp:.15,strength:2}}},
  bear:{name:'Bear',shard:'Bear Familiar Shard',spriteId:'bear',scale:.6,ring:1.3,
   passive:{name:'Thick Fur',ranks:[{health:15,strength:1},{health:35,strength:3}]},ultimate:{name:'Bear Hug',bonus:{damageReduction:.12,strength:2}}},
+ heron:{name:'Heron',shard:'Heron Familiar Shard',spriteId:'heron',scale:.8,
+  passive:{name:'Patient Eye',ranks:[{wisdom:2},{wisdom:5}]},ultimate:{name:'Still Hunter',bonus:{fishingXp:.25}}},
  turtle:{name:'Turtle',shard:'Turtle Familiar Shard',spriteId:'turtle',scale:.85,
   passive:{name:'Shell Ward',ranks:[{health:15},{health:40}]},ultimate:{name:'Ancient Shell',bonus:{damageReduction:.15}}},
  eel:{name:'Eel',shard:'Eel Familiar Shard',spriteId:'eel',scale:1,

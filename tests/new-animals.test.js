@@ -66,10 +66,18 @@ test('bears roam the deep trails, rear up and roar when first hurt, then swipe',
  damageAnimal(w,bear,1e4,w.player,0);assert.ok(w.drops.some(d=>d.item.name==='Bear Meat'));
 });
 
-for(const id of ['fox','boar','elk','bear'])test(`every ${id} clip points at a frame inside its sheet`,()=>{
+test('herons stalk the delta landmarks and fly off when Eli comes close',()=>{
+ for(const id of ['upper-falls','glasswater','heron-islands','heron-point'])assert.ok(spawnWeights(id,'land').some(([s])=>s==='heron'),id);
+ const w=fresh(),slot=Object.values(SLOTS).find(s=>s.areaId==='heron-point'&&s.habitat==='land'),heron=createCreature(slot,'heron',{id:'heron-1',seed:4});
+ w.wildlife.push(heron);w.areaId='heron-point';Object.assign(w.player,{x:heron.x+100,y:heron.y});
+ updateWildlife(w,1/60);assert.equal(heron.state,'flee');assert.equal(animalPose(heron).state,'run','it takes to the air');
+ damageAnimal(w,heron,1e4,w.player,0);assert.ok(w.drops.some(d=>d.item.name==='Heron Feather'));
+});
+
+for(const id of ['fox','boar','elk','bear','heron'])test(`every ${id} clip points at a frame inside its sheet`,()=>{
  const def=SPRITES[id],[w,h]=pngSize(`assets/${def.asset}`),[cw,ch]=def.frameSize;
  assert.equal(w%cw,0);assert.equal(h%ch,0);
  const count=(w/cw)*(h/ch);
  for(const clip of Object.values(def.animations))for(const f of clip.frames)assert.ok(f>=0&&f<count,`frame ${f}`);
- if(id==='fox'||id==='boar')assert.equal(frameIndex(def,'run','',{direction:'right'}),id==='fox'?32:34);
+ if(['fox','boar','heron'].includes(id))assert.equal(frameIndex(def,'run','',{direction:'right'}),{fox:32,boar:34,heron:36}[id]);
 });

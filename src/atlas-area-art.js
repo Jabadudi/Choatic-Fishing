@@ -1,4 +1,5 @@
 // Art for the atlas-built areas (atlas-area.js): boardwalks, fords, stone bridges and props. Drawing only.
+import {drawEntitySprite} from './sprites.js';
 const each=(pts,step,fn)=>{for(let i=1;i<pts.length;i++){const [ax,ay]=pts[i-1],[bx,by]=pts[i],len=Math.hypot(bx-ax,by-ay),n=Math.max(1,Math.floor(len/step));for(let j=0;j<n;j++){const t=j/n;fn(ax+(bx-ax)*t,ay+(by-ay)*t,Math.atan2(by-ay,bx-ax),j);}}};
 function stroke(ctx,pts,width,color){ctx.strokeStyle=color;ctx.lineWidth=width;ctx.lineJoin='round';ctx.lineCap='round';ctx.beginPath();pts.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.stroke();}
 const near=(pts,half,left,top,width,height)=>pts.some(([x,y])=>x>left-400&&x<left+width+400&&y>top-400&&y<top+height+400);
@@ -54,7 +55,8 @@ function drawProp(ctx,p,t){
   case 'statue':shadow(ctx,x,y,24,8);R(ctx,'#7d776b',x-20,y-16,40,16);R(ctx,'#9b9584',x-10,y-74,20,58);R(ctx,'#9b9584',x-7,y-88,14,14);break;
   case 'bench':R(ctx,'#5c3b22',x-40,y-14,80,8);R(ctx,'#3e2b1c',x-36,y-6,6,8);R(ctx,'#3e2b1c',x+30,y-6,6,8);break;
   case 'nest':ctx.fillStyle='#6b5034';ctx.beginPath();ctx.ellipse(x,y,26,12,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#e9e4d0';for(const dx of [-8,2,10])ctx.fillRect(x+dx,y-4,6,5);break;
-  case 'heron':ctx.fillStyle='#e9eef0';ctx.beginPath();ctx.ellipse(x,y-30,12,18,0,0,Math.PI*2);ctx.fill();R(ctx,'#e9eef0',x+4,y-62,4,22);R(ctx,'#e9eef0',x+4,y-64,12,5);R(ctx,'#e0a63a',x+16,y-63,10,3);R(ctx,'#3a3a32',x-4,y-12,2,14);R(ctx,'#3a3a32',x+2,y-12,2,14);break;
+  // The landmark herons stand fishing on the heron sheet; the shapes below draw until it loads.
+  case 'heron':if(drawEntitySprite(ctx,'heron',{x,y,state:'idle',time:t+x*.013,direction:'right',facingX:1}))break;ctx.fillStyle='#e9eef0';ctx.beginPath();ctx.ellipse(x,y-30,12,18,0,0,Math.PI*2);ctx.fill();R(ctx,'#e9eef0',x+4,y-62,4,22);R(ctx,'#e9eef0',x+4,y-64,12,5);R(ctx,'#e0a63a',x+16,y-63,10,3);R(ctx,'#3a3a32',x-4,y-12,2,14);R(ctx,'#3a3a32',x+2,y-12,2,14);break;
   case 'shrine':shadow(ctx,x,y,30,8);R(ctx,'#7d776b',x-26,y-60,52,60);R(ctx,'#a39d8d',x-30,y-66,60,8);R(ctx,'#2a2824',x-8,y-40,16,24);R(ctx,'#9fe3c8',x-3,y-34,6,6);break;
   case 'cart':R(ctx,'#6a4a2e',x-30,y-34,60,22);R(ctx,'#2a2018',x-22,y-14,14,14);R(ctx,'#2a2018',x+10,y-14,14,14);break;
   case 'logs':for(let i=0;i<3;i++){R(ctx,'#6a4a2e',x-30,y-10-i*10,60,10);R(ctx,'#c9a46a',x+26,y-10-i*10,6,10);}break;

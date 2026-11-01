@@ -49,14 +49,14 @@ test('the index lists every category, and every entry has a description, a map a
 
 test('minimap dots come from real spawn slots and NPC positions',()=>{
  const deer=codexEntry('deer'),dots=codexLocations(deer),land=Object.values(SLOTS).filter(slot=>slot.habitat==='land');
- assert.equal(dots.length,land.filter(slot=>slot.areaId!=='deep-trail').length,'no deer on the Deep Trail');
- assert.deepEqual(codexRegions(deer),['Reedwater Landing','Windchime Path','Willowbank Crossroads','Shellback Marsh','Stone Clearing','Forest Edge','Whispering Woods','Elk Run','Trailhead']);
- assert.equal(codexLocations(codexEntry('rabbit')).length,land.filter(slot=>!['whispering-woods','elk-run','trailhead','deep-trail'].includes(slot.areaId)).length,'no rabbits in the deep forest');
- assert.equal(codexLocations(codexEntry('turtle')).length,Object.values(SLOTS).filter(slot=>slot.habitat==='water'&&['landing','marsh','forest-edge'].includes(slot.areaId)).length);
+ assert.equal(dots.length,land.filter(slot=>!['deep-trail','heron-point'].includes(slot.areaId)).length,'no deer on the Deep Trail or Heron Point');
+ assert.deepEqual(codexRegions(deer),['Reedwater Landing','Windchime Path','Willowbank Crossroads','Shellback Marsh','Stone Clearing','Forest Edge','Whispering Woods','Elk Run','Trailhead','Upper Falls','Glasswater Basin','Heron Islands']);
+ assert.equal(codexLocations(codexEntry('rabbit')).length,land.filter(slot=>!['whispering-woods','elk-run','trailhead','deep-trail','upper-falls','glasswater','heron-islands','heron-point'].includes(slot.areaId)).length,'no rabbits in the deep forest or at the falls');
+ assert.equal(codexLocations(codexEntry('turtle')).length,Object.values(SLOTS).filter(slot=>slot.habitat==='water'&&['landing','marsh','forest-edge','glasswater','heron-islands'].includes(slot.areaId)).length);
  // Shadow walkers take their share of the land slots: half the marsh, a quarter of the crossroads.
- assert.deepEqual(codexSpawnRates(deer).map(r=>[r.areaId,r.label]),[['landing','common'],['windchime','common'],['crossroads','uncommon'],['marsh','uncommon'],['stone-clearing','uncommon'],['forest-edge','uncommon'],['whispering-woods','uncommon'],['elk-run','uncommon'],['trailhead','uncommon']]);
- assert.deepEqual(codexSpawnRates(codexEntry('shadow-walker')).map(r=>[r.areaId,r.label]),[['landing','rare'],['windchime','rare'],['crossroads','uncommon'],['marsh','common'],['stone-clearing','rare'],['forest-edge','rare'],['whispering-woods','uncommon'],['elk-run','rare'],['trailhead','uncommon'],['deep-trail','uncommon']]);
- assert.deepEqual(codexSpawnRates(codexEntry('eel')).map(r=>r.areaId),['landing','crossroads','marsh','stone-clearing','elk-run']);
+ assert.deepEqual(codexSpawnRates(deer).map(r=>[r.areaId,r.label]),[['landing','common'],['windchime','common'],['crossroads','uncommon'],['marsh','uncommon'],['stone-clearing','uncommon'],['forest-edge','uncommon'],['whispering-woods','uncommon'],['elk-run','uncommon'],['trailhead','uncommon'],['upper-falls','uncommon'],['glasswater','uncommon'],['heron-islands','rare']]);
+ assert.deepEqual(codexSpawnRates(codexEntry('shadow-walker')).map(r=>[r.areaId,r.label]),[['landing','rare'],['windchime','rare'],['crossroads','uncommon'],['marsh','common'],['stone-clearing','rare'],['forest-edge','rare'],['whispering-woods','uncommon'],['elk-run','rare'],['trailhead','uncommon'],['deep-trail','uncommon'],['upper-falls','uncommon'],['glasswater','uncommon'],['heron-islands','uncommon'],['heron-point','common']]);
+ assert.deepEqual(codexSpawnRates(codexEntry('eel')).map(r=>r.areaId),['landing','crossroads','marsh','stone-clearing','elk-run','upper-falls','heron-islands','heron-point']);
  assert.deepEqual(codexRegions(codexEntry('blacksmith')),['Willowback Merchant Quarter']);
  assert.deepEqual(codexRegions(codexEntry('emilia')),['The Chief’s House']);
  assert.deepEqual(codexLocations(codexEntry('croshelda')),[]);

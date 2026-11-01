@@ -52,7 +52,7 @@ export function drawAnimalStatus(c,world){
   if(a.health<=0||a.areaId!==world.areaId)continue;
   const near=Math.hypot(a.x-world.player.x,a.y-world.player.y)<150;
   if(a.health===a.maxHealth&&!a.shiny&&!['notice','chase','attack','strike','roar'].includes(a.state)&&(!near||world.inventory.selected===1))continue;
-  const y=a.y-(a.spriteId==='nightwalker'?66:a.species==='deer'?51:a.species==='rabbit'?42:a.species==='fox'?40:a.species==='boar'?46:a.species==='elk'?96:a.species==='bear'?62:33);
+  const y=a.y-(a.spriteId==='nightwalker'?66:a.species==='deer'?51:a.species==='rabbit'?42:a.species==='fox'?40:a.species==='boar'?46:a.species==='elk'?96:a.species==='bear'?62:a.species==='heron'?56:33);
   c.fillStyle='#19362de8';c.fillRect(a.x-23,y,46,6);c.fillStyle='#c8d78a';c.fillRect(a.x-22,y+1,44*a.health/a.maxHealth,4);
   c.font='12px monospace';c.textAlign='center';const tag=`${a.name} · ${BEHAVIOR_LABELS[a.behavior]||a.behavior}`;
   // A shiny's tag is gold with a dark edge so it reads on bright grass.
