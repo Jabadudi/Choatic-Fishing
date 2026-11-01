@@ -15,6 +15,12 @@ export const NPC_TYPES=Object.freeze({
 export const ANIMAL_TYPES=Object.freeze({
  rabbit:{name:'Rabbit',maxHealth:18,radius:10,habitat:'land',speed:70,fleeSpeed:180,fearRange:55,huntXp:10,loot:'rabbit'},
  deer:{behavior:BEHAVIORS.DEFENSIVE,attackDamage:12,attackRange:52,attackWindup:.45,attackCooldown:1.4,chaseSpeed:115,leashRange:320,name:'Deer',maxHealth:60,radius:18,habitat:'land',speed:48,fleeSpeed:175,fearRange:150,huntXp:25,loot:'deer'},
+ // Red fox: shyer and much quicker than a rabbit, so it bolts from further off and a bow beats chasing it.
+ fox:{name:'Red Fox',maxHealth:26,radius:12,habitat:'land',speed:64,fleeSpeed:215,fearRange:120,huntXp:14,loot:'fox'},
+ // Bristleback boar: leaves Eli alone until hurt, then charges. The first animal that can really hurt him.
+ boar:{behavior:BEHAVIORS.DEFENSIVE,attackDamage:18,attackRange:54,attackWindup:.55,attackCooldown:1.7,chaseSpeed:128,leashRange:300,name:'Bristleback Boar',maxHealth:95,radius:20,habitat:'land',speed:40,fleeSpeed:150,fearRange:150,huntXp:35,loot:'boar'},
+ // Grey elk: the Elk Spirit's herd. Calm until hurt, then a long antler sweep with a lot of health behind it.
+ elk:{behavior:BEHAVIORS.DEFENSIVE,attackDamage:22,attackRange:68,attackWindup:.65,attackCooldown:1.9,chaseSpeed:118,leashRange:340,name:'Grey Elk',maxHealth:150,radius:26,habitat:'land',speed:46,fleeSpeed:170,fearRange:160,huntXp:50,loot:'elk'},
  turtle:{name:'Turtle',maxHealth:45,radius:14,habitat:'water',speed:18,fleeSpeed:42,fearRange:85,huntXp:15,loot:'turtle'},
  eel:{name:'Eel',maxHealth:24,radius:12,habitat:'water',speed:36,fleeSpeed:100,fearRange:110,huntXp:12,loot:'eel'},
  // Monster: hunts Eli on sight (src/monsters.js). Slower than Eli at a run, so he can always break away.

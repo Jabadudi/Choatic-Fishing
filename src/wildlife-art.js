@@ -1,5 +1,6 @@
 import {drawEntitySprite} from './sprites.js';
-import {BEHAVIOR_LABELS} from './entities.js';
+import {BEHAVIOR_LABELS,facingFor} from './entities.js';
+import {SPRITES} from './sprite-definitions.js';
 import {drawShiny,SHINY_GOLD} from './shiny-art.js';
 // Monsters: the axe goes up through the windup and comes down on the strike; a chase walks unless it is standing in reach.
 const MONSTER_STATES={attack:'raise',strike:'swing',chase:'walk',return:'walk',notice:'idle'};
@@ -13,13 +14,18 @@ export function animalPose(a){
   return {state:a.state==='chase'&&a.still?'idle':MONSTER_STATES[a.state]||a.state,time:t};
  }
  if(a.hurtRemaining>0)return {state:'hurt',time:.25-a.hurtRemaining};
- return {state:a.state==='flee'?'walk':a.state==='attack'?'idle':a.state,time:t};
+ // A sheet with a run row (the fox, the boar) runs away, or after Eli once it is angry; the others walk.
+ const clips=SPRITES[a.spriteId]?.animations||{};
+ if(a.state==='flee'||a.state==='walk'&&a.anger>0)return {state:clips['run:right']?'run':'walk',time:t};
+ // An attack clip, where there is one, plays across the windup so the hit lands on its last frame.
+ if(a.state==='attack')return clips.attack?{state:'attack',time:t,duration:a.attackWindup}:{state:'idle',time:t};
+ return {state:a.state,time:t};
 }
 export function drawWildlife(c,a){
  if(a.shiny&&!a.plain){drawShiny(c,a,(globalThis.performance?.now()??0)/1000,l=>drawWildlife(l,{...a,plain:true}));return;}
  const {x,y}=a,t=a.time||0;
  c.save();if(a.health<=0)c.globalAlpha=Math.min(1,a.deathRemaining);else if(a.hurtRemaining>0)c.globalAlpha=.55;
- if(drawEntitySprite(c,a.spriteId,{x,y,...animalPose(a),facingX:a.direction.x})){c.restore();return;}
+ if(drawEntitySprite(c,a.spriteId,{x,y,...animalPose(a),facingX:a.direction.x,direction:facingFor(a.direction.x,a.direction.y)})){c.restore();return;}
  c.translate(Math.round(x),Math.round(y));if(a.species==='turtle'?a.direction.x>0:a.direction.x<0)c.scale(-1,1);
  if(a.health<=0){c.scale(1,.35);c.translate(0,10);}
  const r=(color,x,y,w,h)=>{c.fillStyle=color;c.fillRect(x,y,w,h);};
@@ -44,7 +50,7 @@ export function drawAnimalStatus(c,world){
   if(a.health<=0||a.areaId!==world.areaId)continue;
   const near=Math.hypot(a.x-world.player.x,a.y-world.player.y)<150;
   if(a.health===a.maxHealth&&!a.shiny&&!['notice','chase','attack','strike'].includes(a.state)&&(!near||world.inventory.selected===1))continue;
-  const y=a.y-(a.spriteId==='nightwalker'?66:a.species==='deer'?51:a.species==='rabbit'?42:33);
+  const y=a.y-(a.spriteId==='nightwalker'?66:a.species==='deer'?51:a.species==='rabbit'?42:a.species==='fox'?40:a.species==='boar'?46:a.species==='elk'?96:33);
   c.fillStyle='#19362de8';c.fillRect(a.x-23,y,46,6);c.fillStyle='#c8d78a';c.fillRect(a.x-22,y+1,44*a.health/a.maxHealth,4);
   c.font='12px monospace';c.textAlign='center';const tag=`${a.name} · ${BEHAVIOR_LABELS[a.behavior]||a.behavior}`;
   // A shiny's tag is gold with a dark edge so it reads on bright grass.

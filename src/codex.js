@@ -9,6 +9,7 @@ import {createVillageResidents} from './village-life.js';
 import {WARES} from './trade.js';
 import {createNpcs} from './npcs.js';
 import {areaFor} from './wilds.js';
+import {ATLAS_SIZE} from './atlas-area.js';
 export const CODEX_CATEGORIES=Object.freeze([
  {id:'wildlife',label:'Wildlife',blurb:'Animals you can hunt for food and materials.'},
  {id:'monsters',label:'Monsters',blurb:'Things that want you dead.'},
@@ -28,9 +29,11 @@ export const AREA_BOUNDS=Object.freeze({
 const DOORS={cabin:['landing',1660,1440],'chief-house':['village',1250,350],'guest-lodge':['village',400,560]};
 // Landmarks beyond the playable areas, as fractions of each atlas image.
 const ATLAS_POINTS={'listening-tree':['delta',.21,.12,'The Listening Tree']};
+// Areas built from the atlas carry their own frame on it, in atlas pixels.
+const atlasBounds=area=>{if(!area.frame)return null;const [x0,x1,y0,y1]=area.frame;return [x0/ATLAS_SIZE.width,y0/ATLAS_SIZE.height,(x1-x0)/ATLAS_SIZE.width,(y1-y0)/ATLAS_SIZE.height];};
 export function atlasPoint(areaId,x,y){
  const place=areaId,door=DOORS[areaId];if(door)[areaId,x,y]=door;
- const bounds=AREA_BOUNDS[areaId],area=areaFor(areaId);if(!bounds||area.id!==areaId)return null;
+ const area=areaFor(areaId),bounds=AREA_BOUNDS[areaId]||atlasBounds(area);if(!bounds||area.id!==areaId)return null;
  const [left,top,width,height]=bounds;
  return {map:'delta',x:left+Math.min(1,Math.max(0,x/area.width))*width,y:top+Math.min(1,Math.max(0,y/area.height))*height,areaId:place};
 }
@@ -39,6 +42,9 @@ const resident=id=>createVillageResidents().find(n=>n.id===id);
 export const CODEX_ENTRIES=Object.freeze([
  animal('rabbit',{id:'rabbit',portrait:'codex/rabbit.png',firstSeen:'Chapter 1',description:'Grey meadow rabbits that graze around Reedwater Landing. They bolt the moment you get close, so a bow beats chasing them. Good meat, soft pelts and, very rarely, a lucky foot.'}),
  animal('deer',{id:'deer',portrait:'codex/deer.png',firstSeen:'Chapter 1',description:'Shy grazers of the landing meadow and Windchime Path. Leave them alone and they leave you alone. Wound one and it turns and fights back with its antlers. Venison is the heart of Grandpa’s supper.'}),
+ animal('fox',{id:'fox',portrait:'codex/fox.png',firstSeen:'Windchime Path',description:'A slim russet fox with black socks and a white-tipped brush. It hunts mice along the chime trails and bolts long before you get close, faster than any rabbit. Its pelt is prized for winter hoods.'}),
+ animal('boar',{id:'boar',portrait:'codex/boar.png',firstSeen:'Forest Edge',description:'A stocky wild boar with a ridge of black bristles and curved tusks, rooting through the northern forest. It ignores you until you hurt it, then lowers its head and charges. Get out of the way when it paws the ground.'}),
+ animal('elk',{id:'elk',portrait:'codex/elk.png',firstSeen:'Elk Run',description:'Tall grey elk with shaggy manes and wide pale racks. They are the Elk Spirit’s own herd, and Elk Run is named for them. Leave them be and they graze on. Hurt one and it lowers that rack and sweeps it at you, and it takes a lot of arrows to bring down.'}),
  animal('turtle',{id:'turtle',portrait:'codex/turtle.png',firstSeen:'Chapter 1',description:'A slow, moss-backed turtle that paddles around Reedwater Spring. It never fights back, but its shell soaks up a lot of punishment. Drops wash up on the bank.'}),
  animal('eel',{id:'eel',glyph:'≋',firstSeen:'Chapter 1',description:'Quick, slippery eels that hunt in the shallows over the Drowned Road. Hard to hit and quick to flee. Their skin and oil are prized by anyone who works leather.'}),
  {id:'shadow-walker',category:'monsters',species:'shadow-walker',spawns:'shadow-walker',title:'Remnant of the dark army',portrait:'codex/shadow-walker.png',firstSeen:'Chapter 1',loot:'shadow-walker',

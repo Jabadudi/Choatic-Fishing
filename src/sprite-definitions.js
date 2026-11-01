@@ -110,6 +110,33 @@ export const SPRITES={
  }},
  player:{asset:null,scale:1,anchor:[.5,1],offset:[0,15]},
  mara:{asset:null,scale:1,anchor:[.5,1],offset:[0,14]},
+ // Red fox, cut by scripts/prepare-animal-sprites.py from art/sprites/creatures/fox/. Rows 0-3 walk; row 4 the flee run;
+ // row 5 sitting and sniffing; row 6 hurt (48-49) then lying down (50-55). The run, sniff and hurt strips face right.
+ // Running away up or down the screen plays the walk faster.
+ fox:{asset:'fox-sheet.png',frameSize:[118,65],columns:8,scale:.5,anchor:[.5,1],offset:[0,3],mirror:'right',mirrorDirections:{left:'right'},animations:{
+  idle:{frames:[40,41,42,43,44,45,46,47],cycle:4},'idle:right':{frames:[40,41,42,43,44,45,46,47],cycle:4},'idle:down':{frames:[16]},'idle:up':{frames:[24]},
+  ...walkClips(8,.9),
+  'run:right':{frames:[32,33,34,35,36,37,38,39],cycle:.5},'run:down':{frames:[16,17,18,19,20,21,22,23],cycle:.45},'run:up':{frames:[24,25,26,27,28,29,30,31],cycle:.45},
+  hurt:{frames:[48,49],fps:8,loop:false},death:{frames:[50,51,52,53,54,55],fps:6,loop:false}
+ }},
+ // Bristleback boar, cut by the same script from art/sprites/creatures/boar/. Rows 0-3 walk (7 frames a side); row 4 the
+ // charge: scraping a hoof (32-33), the rush (34-37), the tusk toss (38) and a skid (39); row 5 hurt (40-42) then down (43-47).
+ // An angry boar chasing Eli rushes on the charge frames; the attack scrapes, then tosses its tusks as it lands.
+ boar:{asset:'boar-sheet.png',frameSize:[178,70],columns:8,scale:.5,anchor:[.5,1],offset:[0,3],mirror:'right',mirrorDirections:{left:'right'},animations:{
+  idle:{frames:[0]},'idle:right':{frames:[0]},'idle:down':{frames:[16]},'idle:up':{frames:[24]},
+  ...walkClips(7,1.1),
+  'run:right':{frames:[34,35,36,37],cycle:.4},'run:down':{frames:[16,17,18,19,20,21,22],cycle:.5},'run:up':{frames:[24,25,26,27,28,29,30],cycle:.5},
+  attack:{frames:[32,33,32,33,38],loop:false},
+  hurt:{frames:[41,42],fps:8,loop:false},death:{frames:[43,44,45,46,47],fps:6,loop:false}
+ }},
+ // Grey elk, cut by the same script from art/sprites/creatures/elk/. Rows 0-3 walk; row 4 the antler swing (head down
+ // 32-34, the sweep 35-37); row 5 grazing, its idle side-on; row 6 hurt (48-49) then sinking down to lie still (50-55).
+ elk:{asset:'elk-sheet.png',frameSize:[280,174],columns:8,scale:.5,anchor:[.5,1],offset:[0,3],mirror:'right',mirrorDirections:{left:'right'},animations:{
+  idle:{frames:[40,41,42,43,44,45,46,47],cycle:5},'idle:right':{frames:[40,41,42,43,44,45,46,47],cycle:5},'idle:down':{frames:[16]},'idle:up':{frames:[24]},
+  ...walkClips(8,1.2),
+  attack:{frames:[32,33,34,35,36,37],loop:false},
+  hurt:{frames:[48,49],fps:8,loop:false},death:{frames:[50,51,52,53,54,55],fps:5,loop:false}
+ }},
  // 4×4 grid of 64px cells: stand, walk, leap, graze. Cells keep ~5px below the hooves.
  deer:{asset:'deer-sheet.png',frameSize:[64,64],columns:4,scale:1,anchor:[.5,1],offset:[0,25],mirror:'left',animations:{
   idle:{frames:[0,1,2,3],fps:3},walk:{frames:[4,5,6,7],fps:8},
@@ -143,4 +170,4 @@ export const STORY_ART={
 // Each scene keeps its drawn shape as the fallback, and collision never depends on this artwork.
 export const PROPS=Object.fromEntries(['cook-stove','lure-box-shelf','photo-side-table','dining-table','chair','bed-green','fishing-rod-rack','oil-lamp','door-mat','rain-barrel','firewood-stack','bed-straw-violet','stool-waterskin','chest-brass','chamber-pot','rug-rust-red','stone-hearth','pot-herb-shelf','carved-post','window-evening','rug-red-blue','round-table','fur-stool','wall-bench','chief-cabinet','tea-set','barrel','lantern-post','well','produce-stall','fish-stall','plank-bench','bench-backrest','net-rack','rope-coils','rowing-boat','rest-shelter','fire-ring-cold','apple-crate','fishing-seat','fish-trap','flower-box','campfire','training-dummy','training-dummy-worn','archery-target','weapon-rack','weapon-barrel','water-trough','water-bucket','hay-bale','spear-crate','willow-tree','log-fence','log-fence-side','training-gate-posts','fence-corner-post','training-wall','dirt-ground','glowing-sword','water-bucket-full','training-gate-arch',...['cabin','chief','lodge'].flatMap(room=>['floor','wall','wall-top','wall-side'].map(part=>`${room}-${part}`))].map(id=>[id,`props/${id}.webp`]));
 // Familiar shards on the ground reuse their inventory icons.
-for(const id of ['rabbit','deer','turtle','eel','shadow-walker','moonfang','rimejaw','flitlynx'])PROPS[`shard-${id}`]=`items/shard-${id}.webp`;
+for(const id of ['rabbit','fox','deer','boar','elk','turtle','eel','shadow-walker','moonfang','rimejaw','flitlynx'])PROPS[`shard-${id}`]=`items/shard-${id}.webp`;
