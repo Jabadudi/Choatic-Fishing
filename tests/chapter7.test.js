@@ -97,3 +97,12 @@ test('invalid Chapter 7 progress is rejected',()=>{
   const bad=structuredClone(save);change(bad.state.story);assert.throws(()=>restoreSave(bad),/story|run|squat/i);
  }
 });
+
+test('the slow lap leaves the farm both ways while Mara sits on the fence',()=>{
+ const w=playTo('ch7-laps');assert.equal(w.story.guide.areaId,TRAINING_GROUND.id);
+ w.areaId=TRAINING_GROUND.id;stand(w,40,1150);
+ for(let i=0;i<20&&w.areaId===TRAINING_GROUND.id;i++)w.move(-10,0);
+ assert.equal(w.areaId,'village-market');
+ for(let i=0;i<20&&w.areaId==='village-market';i++)w.move(10,0);
+ assert.equal(w.areaId,TRAINING_GROUND.id);
+});
