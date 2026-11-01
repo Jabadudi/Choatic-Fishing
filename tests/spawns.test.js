@@ -117,6 +117,12 @@ test('spawns, shinies and timers survive a save, and version 5 saves keep their 
  const old=captureSave(fresh());old.version=5;delete old.state.spawns;for(const x of old.state.animals){delete x.slotId;delete x.species;delete x.shiny;delete x.seen;x.respawnRemaining=10;}
  old.state.animals[0].health=0;
  const migrated=restoreSave(old);assert.equal(migrated.animals.length,12);assert.equal(migrated.animals[0].health,0);assert.equal(migrated.spawns.current,'landing');
- const bad=captureSave(w);bad.state.animals[0].slotId='nowhere';assert.throws(()=>restoreSave(bad),/animal/);
- const water=captureSave(w);water.state.animals.find(x=>x.id==='gold-eel').species='deer';assert.throws(()=>restoreSave(water),/animal/);
+ // A spawn point the world editor removed, or turned from water to land, lets its creature go instead of breaking the save.
+ const gone=captureSave(w),lost=gone.state.animals[0].id;gone.state.animals[0].slotId='nowhere';const kept=restoreSave(gone);
+ assert.equal(kept.animals.length,w.animals.length-1);assert.ok(!kept.animals.some(x=>x.id===lost));
+ const water=captureSave(w);water.state.animals.find(x=>x.id==='gold-eel').species='deer';assert.ok(!restoreSave(water).animals.some(x=>x.id==='gold-eel'));
+ const bad=captureSave(w);bad.state.animals[0].slotId=7;assert.throws(()=>restoreSave(bad),/animal/);
+ // Spawn timers for an area the editor removed are dropped, and long timers shrink to a shortened respawn time.
+ const old2=captureSave(w);old2.state.spawns.areas['removed-area']={lastSeen:null,timer:40};old2.state.spawns.current='removed-area';old2.state.spawns.areas.landing.timer=1e5;
+ const trimmed=restoreSave(old2);assert.equal(trimmed.spawns.current,null);assert.ok(!trimmed.spawns.areas['removed-area']);assert.equal(trimmed.spawns.areas.landing.timer,SPAWN_AREAS.landing.respawnSeconds);
 });
