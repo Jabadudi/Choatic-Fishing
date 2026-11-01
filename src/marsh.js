@@ -1,5 +1,5 @@
 // The atlas wetlands: dry hummocks linked by real, walkable timber crossings.
-export const MARSH={id:'marsh',name:'Shellback Marsh',width:2100,height:2400,seed:7357,spawn:{x:140,y:760},exits:[{edge:'west',from:700,to:820,target:'crossroads',entry:{x:1530,y:660},label:'Willowbank Crossroads'},
+export const MARSH={id:'marsh',name:'Shellback Marsh',width:2100,height:2400,seed:7357,spawn:{x:140,y:760},exits:[{edge:'west',from:700,to:820,target:'crossroads',entry:{x:1490,y:473},label:'Willowbank Crossroads'},
  {edge:'north',from:110,to:250,target:'long-boardwalk',label:'Long Boardwalk'},{edge:'east',from:1340,to:1460,target:'stilt-reach',label:'Stilt Reach'}]};
 export const MARSH_ISLANDS=[{x:310,y:760,rx:260,ry:210},{x:940,y:980,rx:340,ry:300},{x:1040,y:440,rx:280,ry:190},{x:1580,y:1000,rx:240,ry:260},{x:1060,y:1620,rx:300,ry:230},{x:400,y:1370,rx:180,ry:230}];
 export const MARSH_BOARDS=[

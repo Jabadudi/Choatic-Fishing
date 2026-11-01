@@ -7,9 +7,9 @@ import {captureSave,restoreSave} from '../src/save-format.js';
 import {gameScale} from '../src/mobile.js';
 const fresh=()=>new World(()=>.1,{adventure:true});
 test('crossroads east and marsh west connect in both directions and preserve the journey',()=>{
- const w=fresh();w.areaId='crossroads';Object.assign(w.player,{x:1596,y:660});w.inventory.receive({name:'Sardine'});w.quests['mara-sardine'].status='active';
+ const w=fresh();w.areaId='crossroads';Object.assign(w.player,{x:1596,y:445});w.inventory.receive({name:'Sardine'});w.quests['mara-sardine'].status='active';
  w.move(12,0,false);assert.equal(w.areaId,'marsh');assert.deepEqual({x:w.player.x,y:w.player.y},MARSH.spawn);assert.ok(walkable(w.player.x,w.player.y,'marsh'));
- Object.assign(w.player,{x:4,y:760});w.move(-12,0,false);assert.equal(w.areaId,'crossroads');assert.equal(w.player.x,1530);assert.ok(walkable(w.player.x,w.player.y,'crossroads'));
+ Object.assign(w.player,{x:4,y:760});w.move(-12,0,false);assert.equal(w.areaId,'crossroads');assert.equal(w.player.x,1490);assert.ok(walkable(w.player.x,w.player.y,'crossroads'));
  assert.equal(w.inventory.allItems[0].name,'Sardine');assert.equal(w.quests['mara-sardine'].status,'active');
  assert.equal(transitionAt(-1,100,'marsh'),null);assert.equal(transitionAt(2101,1000,'marsh'),null);
 });

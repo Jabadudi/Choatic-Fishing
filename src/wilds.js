@@ -138,7 +138,7 @@ function findScenery(gx,gy,id){
  if(DISTRICTS[id]?.clear(x,y))return null;
  if(id==='village'&&villageClear(x,y))return null;
  if(id==='windchime'&&ellipseDistance(x,y,GLADE)<0)return null;
- if(id==='crossroads'&&((x>475&&x<900&&y>440&&y<860)||(x>1200&&y>570&&y<1000)||(x<430&&y>340&&y<530)))return null;
+ if(id==='crossroads'&&((x>560&&x<900&&y>720&&y<1100)||(x>330&&x<620&&y>820&&y<1010)||(x>1040&&x<1260&&y>960&&y<1100)||(x<380&&y>400&&y<680)))return null;
  if(waterDistance(x,y,id)<95||roadDistance(x,y,id)<65||placesFor(id).some(p=>Math.hypot(x-p.x,y-p.y)<100))return null;
  let kind=region==='Windchime Path'||region==='Forest Approach'?(r<.78?'tree':r<.87?'bush':null):r<.13?'tree':r<.21?'rock':r<.35?'bush':null;
  return kind?{x,y,kind,r:kind==='tree'?12:kind==='rock'?15:0}:null;
