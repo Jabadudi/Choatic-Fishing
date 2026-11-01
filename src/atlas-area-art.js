@@ -31,8 +31,9 @@ export function drawAtlasGround(ctx,built,left,top,width,height){
   each(b.pts,9,(x,y,a,j)=>{ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.fillStyle=j%2?'#9a7a52':'#b39066';ctx.fillRect(-3,-b.half+2,7,w-4);ctx.fillStyle='#6b5034';ctx.fillRect(3,-b.half+2,1,w-4);ctx.restore();});
  }
  for(const b of built.fords){if(!near(b.pts,b.half,left,top,width,height))continue;
-  stroke(ctx,b.pts,b.half*2+8,'rgba(150,215,205,.55)');
+  // The painted stepping stones sit straight in the water; the pale band only backs the drawn ones.
   const stone=drawPropSprite(ctx,'atlas/stepping-stone',{x:-1e5,y:-1e5,w:1,h:1});
+  if(!stone)stroke(ctx,b.pts,b.half*2+8,'rgba(150,215,205,.55)');
   if(stone){each(b.pts,26,(x,y,a,j)=>{const o=(j%2?1:-1)*b.half*.25;drawPropSprite(ctx,'atlas/stepping-stone',{x:x-Math.sin(a)*o,y:y+Math.cos(a)*o+9,w:34,h:21});});continue;}
   each(b.pts,26,(x,y,a,j)=>{const o=(j%2?1:-1)*b.half*.25,dx=-Math.sin(a)*o,dy=Math.cos(a)*o;ctx.fillStyle='#55605a';ctx.beginPath();ctx.ellipse(x+dx+1,y+dy+3,13,9,a,0,Math.PI*2);ctx.fill();ctx.fillStyle=j%3?'#a7a594':'#b8b5a2';ctx.beginPath();ctx.ellipse(x+dx,y+dy,12,8,a,0,Math.PI*2);ctx.fill();ctx.fillStyle='#d2cfbb';ctx.fillRect(Math.round(x+dx-5),Math.round(y+dy-5),6,2);});
  }
