@@ -28,3 +28,9 @@ test('Eli walks from Windchime Path into Chimewood and back',()=>{
  assert.equal(w.areaId,'chimewood');assert.ok(walkable(w.player.x,w.player.y,'chimewood'));
  Object.assign(w.player,{x:10,y:120});w.move(-20,0,false);assert.equal(w.areaId,'windchime');
 });
+test('Eli walks west from the Landing into the Drowned Road, and rows from the pier to Arrival Bay',()=>{
+ const w=new World(()=>.1,{adventure:true});w.areaId='landing';Object.assign(w.player,{x:10,y:1600});w.move(-20,0,false);
+ assert.equal(w.areaId,'drowned-road');assert.ok(walkable(w.player.x,w.player.y,'drowned-road'));
+ const pier=placesFor('landing').find(p=>p.id==='pier');assert.ok(walkable(pier.x,pier.y,'landing'));
+ assert.equal(pier.travel.target,'arrival-bay');assert.ok(walkable(pier.travel.entry.x,pier.travel.entry.y,'arrival-bay'));
+});

@@ -25,7 +25,7 @@ export const AREAS={
  cabin:CABIN_AREA,
  'chief-house':CHIEF_HOUSE,
  'guest-lodge':GUEST_LODGE,
- landing:{id:'landing',name:'Reedwater Landing',width:2800,height:2200,seed:7319,spawn:{x:1250,y:1650},exits:[{edge:'north',from:1280,to:1520,target:'windchime',entry:{x:WINDCHIME_ENTRY.x,y:WINDCHIME_ENTRY.y},label:'Windchime Path'}]},
+ landing:{id:'landing',name:'Reedwater Landing',width:2800,height:2200,seed:7319,spawn:{x:1250,y:1650},exits:[{edge:'north',from:1280,to:1520,target:'windchime',entry:{x:WINDCHIME_ENTRY.x,y:WINDCHIME_ENTRY.y},label:'Windchime Path'},{edge:'west',from:1500,to:1700,target:'drowned-road',label:'The Drowned Road'}]},
  crossroads:CROSSROADS,
  village:VILLAGE,
  ...Object.fromEntries(Object.entries(DISTRICTS).map(([id,d])=>[id,d.area])),
@@ -59,10 +59,12 @@ const PATH_PLACES=[
 const GLADE={x:1110,y:700,rx:150,ry:110};
 const WINDCHIME_TREES=[[470,300],[384,520],[250,640],[200,800],[190,960],[1000,150],[1080,300]];
 export const LANDMARKS=LANDING_PLACES;
+// The pier's rowboat is a way across the bay, not one of the Landing's five landmarks.
+const LANDING_ALL=[...LANDING_PLACES,{id:'pier',name:'The Pier',x:1260,y:1900,kind:'atlas',text:'A rowboat is tied at the end of the pier. Eli rows out across Arrival Bay',travel:{target:'arrival-bay',entry:AREAS['arrival-bay'].fromAtlas([251,407])}}];
 // Walk-in rooms: no water, scenery, weather or open-air atmosphere.
 export const INTERIOR_AREAS=['cabin','chief-house','guest-lodge'];
 const interior=id=>INTERIOR_AREAS.includes(id);
-export const placesFor=id=>DELTA[id]?DELTA[id].places:DISTRICTS[id]?DISTRICTS[id].places:id==='cabin'?CABIN_PLACES:id==='guest-lodge'?GUEST_LODGE_PLACES:id==='chief-house'?CHIEF_HOUSE_PLACES:id==='marsh'?MARSH_PLACES:id==='village'?VILLAGE_PLACES:id==='crossroads'?CROSSROADS_PLACES:id==='windchime'?PATH_PLACES:LANDING_PLACES;
+export const placesFor=id=>DELTA[id]?DELTA[id].places:DISTRICTS[id]?DISTRICTS[id].places:id==='cabin'?CABIN_PLACES:id==='guest-lodge'?GUEST_LODGE_PLACES:id==='chief-house'?CHIEF_HOUSE_PLACES:id==='marsh'?MARSH_PLACES:id==='village'?VILLAGE_PLACES:id==='crossroads'?CROSSROADS_PLACES:id==='windchime'?PATH_PLACES:LANDING_ALL;
 export const areaFor=id=>AREAS[id]||WORLD;
 export const LAKES=[{x:2020,y:1050,rx:130,ry:150},{x:650,y:1910,rx:390,ry:190}];
 export const RIVERS=[[[2370,-100],[2290,500],[2320,1000],[2440,1500],[2310,2300]]];

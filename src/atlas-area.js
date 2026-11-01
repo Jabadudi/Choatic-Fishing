@@ -30,7 +30,9 @@ export function defineArea(def){
  const land=def.base!=='water';
  function water(x,y){
   let v=land?4000:-4000;
-  for(const s of shapes){const far=outside(x,y,s.box);if(s.op==='land'){if(v>=-far)continue;v=Math.max(v,s.sd(x,y));}else{if(v<=far)continue;v=Math.min(v,-s.sd(x,y));}}
+  // A shape whose box is far away cannot change the answer; inside its box it always might (overlapping shapes
+  // would otherwise leave a seam along the inner edge).
+  for(const s of shapes){const far=outside(x,y,s.box);if(s.op==='land'){if(far>0&&v>=-far)continue;v=Math.max(v,s.sd(x,y));}else{if(far>0&&v<=far)continue;v=Math.min(v,-s.sd(x,y));}}
   return v;
  }
  // Crossings run a little past both ends, so they always bite into the dry ground they join.

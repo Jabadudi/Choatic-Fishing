@@ -37,7 +37,7 @@ function drawProp(ctx,p,t){
    for(const [dx,h] of [[-40,12],[-18,22],[6,8],[28,16]])R(ctx,'#8e887a',x+dx,y-150-h,14,h);R(ctx,'#5f8a4a',x-40,y-60,10,24);R(ctx,'#6d9a3a',x+28,y-96,12,18);break;
   case 'ruin':shadow(ctx,x,y,48,12);for(const [dx,h] of [[-44,58],[-22,30],[0,72],[22,26],[40,44]])R(ctx,'#8e887a',x+dx,y-h,18,h),R(ctx,'#a49e8e',x+dx,y-h,18,3);R(ctx,'#5f8a4a',x-30,y-14,16,10);break;
   case 'arch':for(const dx of [-46,30]){R(ctx,'#7d776b',x+dx,y-96,16,96);R(ctx,'#a39d8d',x+dx,y-96,16,3);}ctx.strokeStyle='#8e887a';ctx.lineWidth=14;ctx.beginPath();ctx.arc(x-8,y-90,38,Math.PI,0);ctx.stroke();break;
-  case 'pillar':shadow(ctx,x,y,14,5);R(ctx,'#7d776b',x-10,y-70*s,20,70*s);R(ctx,'#a39d8d',x-10,y-70*s,20,3);R(ctx,'#5f8a4a',x-10,y-24,8,10);break;
+  case 'pillar':shadow(ctx,x,y,14,5);R(ctx,'#7d776b',x-10,y-70,20,70);R(ctx,'#a39d8d',x-10,y-70,20,3);R(ctx,'#5f8a4a',x-10,y-24,8,10);break;
   case 'stone':shadow(ctx,x,y,16,6);R(ctx,'#6f6c64',x-12,y-46,24,46);R(ctx,'#94907f',x-12,y-46,10,46);R(ctx,'#7fc2b0',x-3,y-34,6,2);break;
   case 'cairn':for(let i=0;i<4;i++)R(ctx,i%2?'#9a968a':'#7d7a70',x-14+i*3,y-10-i*10,28-i*6,10);break;
   case 'boat':ctx.save();ctx.translate(x,y);ctx.rotate(p.angle||0);ctx.fillStyle='#4a3220';ctx.beginPath();ctx.ellipse(0,0,44,15,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#8a6038';ctx.beginPath();ctx.ellipse(0,-2,38,10,0,0,Math.PI*2);ctx.fill();R(ctx,'#5c3b22',-2,-11,4,18);ctx.restore();break;

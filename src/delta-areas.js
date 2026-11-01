@@ -121,7 +121,8 @@ area({id:'seal-skerries',num:'23',name:'Seal Skerries',frame:[296,456,346,438],s
   {id:'seal-watcher-hut',name:'Seal-watcher Hut',at:[378,382],text:'An old hut with a bench outside and a spyglass nailed to the wall. Someone counted seals here for years.'},
   {id:'great-skerry',name:'Great Skerry',at:[368,404],text:'Bare rock and seals, dozens of them. Step softly: when they slide into the water, the fish go too.'},
   {id:'seal-sand',name:'Seal Sand',at:[428,408],text:'A long sandbar where more seals rest in the sun. The open sea starts just past it.'},
-  {id:'skerry-jetty',name:'The Jetty',at:[383,400],text:'A little plank jetty with a rowing boat tied to it. Eli rows east to the Delta Mouth',travel:{target:'delta-mouth',entry:[474,382]}}
+  {id:'skerry-jetty',name:'The Jetty',at:[383,400],text:'A little plank jetty with a rowing boat tied to it. Eli rows east to the Delta Mouth',travel:{target:'delta-mouth',entry:[474,382]}},
+  {id:'skerry-rowboat',name:'Rowboat to the Bay',at:[372,382],text:'An old rowboat pulled up on the shingle. Eli rows west across Arrival Bay',travel:{target:'arrival-bay',entry:[262,391]}}
  ],
  exits:[{edge:'north',from:336,to:348,target:'chimewood',label:'Chimewood'}]});
 
@@ -572,6 +573,101 @@ area({id:'glasswater',num:'3.2',name:'Glasswater Basin',frame:[2,130,158,214],si
  exits:[
   {edge:'north',from:87,to:95,target:'upper-falls',label:'Upper Falls'},
   {edge:'south',from:53,to:63,target:'western-falls',label:'Western Falls'}
+ ]});
+
+// 11 Western Falls: where the Glasswater staircase reaches the lowlands. The Lower Falls and the Veil Falls drop into
+// the Plunge Pool; a slow river runs south-east past Fallsfoot, a hamlet of stilt houses, to the Drowned Road.
+area({id:'western-falls',num:'11',name:'Western Falls',frame:[0,128,204,320],size:[2200,2000],base:'land',ground:'forest',
+ shapes:[
+  ['land',[[4,236],[36,226],[60,240],[70,270],[56,300],[30,312],[4,318]],{zone:'sand'}],
+  ['land',[[98,214],[118,212],[124,240],[126,262],[110,252],[96,232]],{zone:'forest'}],
+  ['water',[[36,224],[70,220],[96,222],[104,240],[116,258],[128,268],[128,320],[60,320],[64,300],[72,276],[64,252],[44,236]]],
+  ['water','line',[[52,204],[50,214],[48,226]],3],
+  ['water','line',[[86,206],[86,214],[86,224]],2],
+  ['land',[[4,300],[30,298],[60,306],[60,320],[4,320]],{zone:'sand'}]
+ ],
+ cliffs:[[[30,204],[100,204],[100,214],[66,222],[36,222],[26,214]]],
+ roads:[[[58,204],[60,212],[58,219]],[[42,238],[40,246],[42,262],[50,276],[46,290],[34,302],[24,312],[14,320]]],
+ walks:[[[58,218],[53,228],[43,237]],[[46,240],[56,252],[64,264],[66,280],[62,294]],[[66,268],[80,268]],[[66,286],[82,286]]],
+ props:[{kind:'stilt-hut',at:[56,248]},{kind:'stilt-hut',at:[64,261]},{kind:'stilt-hut',at:[69,274],roof:'#7a5a3a'},{kind:'stilt-hut',at:[68,292]},{kind:'boat',at:[86,271]},{kind:'boat',at:[88,289]},{kind:'pillar',at:[100,282]},{kind:'pillar',at:[110,296]},{kind:'pillar',at:[118,276]},{kind:'pillar',at:[96,306]}],
+ places:[
+  {id:'lower-falls-foot',name:'Lower Falls',at:[59,214],text:'Rock steps come down beside the Lower Falls. The smaller Veil Falls drops off the same ledge a little to the east.'},
+  {id:'plunge-pool',name:'Plunge Pool',at:[46,235],text:'Both falls crash into a deep, churning pool. Big fish hang in the white water and wait for whatever comes over the edge.'},
+  {id:'fallsfoot',name:'Fallsfoot',at:[52,264],text:'A tiny hamlet of four stilt houses joined by a boardwalk. Nets drying, a cat on a roof, and nobody in a hurry.'},
+  {id:'fallsfoot-docks',name:'Fallsfoot Docks',at:[76,268],text:'Two little docks with boats moored to them. Out in the river the first pillars of the drowned road stand in the current.'},
+  {id:'river-sandbar',name:'The Sandbar',at:[30,308],text:'A long sandbar at the river mouth. From here you can wade out into the Drowned Road shallows.'}
+ ],
+ exits:[
+  {edge:'north',from:53,to:63,target:'glasswater',label:'Glasswater Basin'},
+  {edge:'south',from:8,to:30,target:'drowned-road',label:'The Drowned Road'}
+ ]});
+
+// 16 The Drowned Road: wide turquoise shallows over a flooded street. The old road's paving runs just under the
+// surface from the Landing north-west past a colonnade of pillars; sandbars link the beaches and the islets.
+area({id:'drowned-road',num:'16',name:'The Drowned Road',frame:[0,235,265,395],size:[3000,1700],base:'water',ground:'sand',
+ shapes:[
+  ['land',[[0,286],[58,294],[64,312],[56,330],[28,336],[0,342]],{zone:'sand'}],
+  ['land',[[55,345],[112,344],[122,358],[98,366],[64,362]],{zone:'sand'}],
+  ['land',[[140,352],[205,348],[235,346],[235,395],[160,395],[148,374]],{zone:'sand'}],
+  ['land',[[24,318],[90,318],[100,342],[62,362],[16,350]],{zone:'sand'}],
+  ['land',[[0,265],[62,265],[58,288],[30,290],[0,286]],{zone:'forest'}],
+  ['land',[[206,276],[235,272],[235,304],[214,300]],{zone:'forest'}],
+  ['land',[[206,334],[235,330],[235,350],[210,352]],{zone:'meadow'}],
+  ['land',[[103,348],[136,348],[138,370],[108,372]],{zone:'meadow'}],
+  // Sandbars where the beaches and islets touch.
+  ['land','line',[[70,352],[100,353]],6],['land','line',[[100,356],[116,358]],6],['land','line',[[30,330],[40,324]],6],['land','line',[[20,282],[26,294]],6]
+ ],
+ zones:[['forest',[[30,322],[84,322],[92,340],[62,354],[24,346]]]],
+ fords:[{pts:[[112,265],[124,280],[140,292],[158,305],[172,320],[186,334],[205,340],[235,341]],width:5},[[118,358],[152,366]],[[200,339],[200,352]]],
+ props:[{kind:'pillar',at:[78,282]},{kind:'pillar',at:[86,286]},{kind:'pillar',at:[94,290],scale:.6},{kind:'pillar',at:[102,294]},{kind:'pillar',at:[80,300]},{kind:'pillar',at:[108,306],scale:.6},{kind:'pillar',at:[128,272]},{kind:'pillar',at:[140,276]},{kind:'pillar',at:[166,282],scale:.6},{kind:'pillar',at:[180,294]},{kind:'pillar',at:[150,330]},{kind:'pillar',at:[160,346],scale:.6},{kind:'pillar',at:[192,302]},{kind:'pillar',at:[200,322]},{kind:'pillar',at:[118,318],scale:.6},{kind:'pillar',at:[176,356]},{kind:'arch',at:[84,320]},{kind:'heron',at:[52,334]},{kind:'nest',at:[56,338]},{kind:'stone',at:[20,346],solid:0},{kind:'stone',at:[112,374],solid:0}],
+ places:[
+  {id:'sunken-doorway',name:'The Sunken Doorway',at:[80,328],text:'A stone arch half under water, with steps going down into the dark. The doorway the old sign at the Landing speaks of.'},
+  {id:'colonnade',name:'The Colonnade',at:[121,278],text:'A row of tall pillars, some still standing, some broken off at the knee. The road runs between them under a hand of water.'},
+  {id:'eel-shallows',name:'Eel Shallows',at:[178,327],text:'The paving shows clearly here through the warm water. Eels slide between the stones.'},
+  {id:'rookery-isle',name:'Rookery Isle',at:[46,340],text:'A wooded islet loud with seabirds. Nests in every crook of every tree.'},
+  {id:'gull-islet',name:'Gull Islet',at:[118,360],text:'A grassy islet where gulls sit in rows and argue about everything.'}
+ ],
+ exits:[
+  {edge:'east',from:335,to:347,target:'landing',label:'Reedwater Landing'},
+  {edge:'north',from:8,to:40,target:'western-falls',label:'Western Falls'}
+ ]});
+
+// 22 Arrival Bay: a walkable beach along the north (tide pools, driftwood, the wrecked dinghy) and the bay Eli rowed
+// across in Chapter 1. The Mistline in the south stops every boat.
+area({id:'arrival-bay',num:'22',name:'Arrival Bay',frame:[180,300,385,470],size:[2400,1700],base:'water',ground:'sand',sea:true,spawn:[256,392],
+ shapes:[
+  ['land',[[180,385],[300,385],[300,398],[284,400],[262,396],[240,401],[214,397],[196,400],[180,397]],{zone:'sand'}],
+  ['land',[[180,385],[300,385],[300,387],[180,387]],{zone:'meadow'}],
+  ['water','ellipse',[195,391],2.5,1.2],['water','ellipse',[268,390],2.5,1.2],
+  ['land','ellipse',[194,414],5,4],['land','ellipse',[286,410],3,4],['land','ellipse',[291,414],2.5,3]
+ ],
+ zones:[['rock',[[188,410],[200,410],[200,418],[188,418]]],['rock',[[282,405],[295,405],[295,418],[282,418]]]],
+ walks:[{pts:[[251,396],[251,412]],width:3.5},{pts:[[245,412],[258,412]],width:3}],
+ props:[{kind:'wreck',at:[226,395]},{kind:'logs',at:[208,393],solid:0},{kind:'logs',at:[280,392],solid:0},{kind:'shell',at:[238,393],solid:0},{kind:'raft',at:[262,414]}],
+ places:[
+  {id:'arrival-pier',name:'The Pier',at:[251,409],text:'The pier where the captain’s boat came in. A rowboat is tied at the end. Eli rows east to the Seal Skerries',travel:{target:'seal-skerries',entry:[371,384]}},
+  {id:'wrecked-dinghy',name:'Wrecked Dinghy',at:[228,397],text:'A small boat with its bottom stove in, half buried in the sand. Someone painted a name on it once.'},
+  {id:'tide-pools',name:'Tide Pools',at:[268,393],text:'Rock pools left by the tide, full of little crabs and anemones that close up when your shadow falls on them.'},
+  {id:'mistline',name:'The Mistline',at:[251,412],text:'Far out in the south, a wall of mist lies on the water. Every boat that tries it comes back the same way it went.'}
+ ],
+ exits:[{edge:'north',from:200,to:290,target:'landing',label:'Reedwater Landing'}]});
+
+// 5.2 Old Roads: open meadow north of the ruins where two old paved roads cross. One runs east to the river and on to
+// the Great Bridge; the north edge is the top of the atlas and leads nowhere.
+area({id:'old-roads',num:'5.2',name:'Old Roads',frame:[262,422,0,46],size:[2800,900],base:'land',ground:'meadow',
+ shapes:[['water',[[398,0],[422,0],[422,30],[412,31],[402,24],[396,10]]]],
+ zones:[['forest',[[262,0],[290,0],[286,16],[276,30],[270,46],[262,46]]],['forest',[[310,32],[360,30],[366,46],[306,46]]],['forest',[[330,0],[364,0],[360,12],[334,12]]],['rock',[[384,36],[396,36],[398,46],[384,46]]]],
+ roads:[[[262,26],[290,24],[320,20],[350,20],[378,22]],[[370,0],[372,10],[378,22],[381,34],[379,46]],[[378,22],[392,30],[408,36],[422,42]],[[300,46],[302,34],[304,23]]],
+ props:[{kind:'sign',at:[382,19]},{kind:'cairn',at:[322,18]},{kind:'ruin',at:[290,14]},{kind:'cart',at:[352,26]},{kind:'stone',at:[396,22]}],
+ places:[
+  {id:'old-crossroads',name:'Old Crossroads',at:[376,25],text:'Two old paved roads cross here, their stones worn smooth. A leaning signpost points north to somewhere the paint has worn away.'},
+  {id:'old-milestone',name:'Old Milestone',at:[322,22],text:'A milestone half sunk in the grass. The numbers on it count down to a town that is not on any map you have seen.'},
+  {id:'old-cart',name:'Abandoned Cart',at:[352,23],text:'An old cart with a broken wheel, left where it stopped. Grass grows up through the boards.'},
+  {id:'upper-river',name:'Upper Silverflow',at:[402,34],text:'The Silverflow runs fast and clear here, above the gorge. The road follows it east toward the Great Bridge.'}
+ ],
+ exits:[
+  {edge:'south',from:295,to:305,target:'aqueduct-ruins',label:'Aqueduct Ruins'},
+  {edge:'east',from:36,to:46,target:'great-bridge',label:'The Great Bridge'}
  ]});
 
 export const DELTA_DEFS=DEFS;
