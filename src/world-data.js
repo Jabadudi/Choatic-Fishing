@@ -591,5 +591,8 @@ export const WORLD_DATA=Object.freeze({
   {id:"stream-farmer",name:"Farmer",areaId:"village-farm",x:450,y:1500,greeting:"Quiet out here. Just me, the cabbages and the crows.",spriteId:"villager-trader"},
   {id:"basket-carrier",name:"Basket carrier",areaId:"village-farm",x:300,y:1250,greeting:"The fields still need tending. Storm or no storm.",spriteId:"villager-basket",end:{x:560,y:1250}}
  ],
- bosses:[]
+ bosses:[
+  {id:"greyhorn",name:"Greyhorn",areaId:"elk-run",x:1290,y:600,species:"greyhorn",health:6,damage:2,arena:520,trigger:"always",respawnMinutes:45,notes:"At the foot of the Grey Spire. Freed in the world only for now; the shadow retakes him when he respawns."},
+  {id:"drowned-captain",name:"Drowned Captain",areaId:"drowned-road",x:1545,y:170,species:"drowned-captain",health:5,damage:1.8,arena:600,trigger:"always",respawnMinutes:30,notes:"Rises from the water at the Colonnade. World boss only."}
+ ]
 });

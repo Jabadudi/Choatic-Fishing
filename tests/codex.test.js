@@ -11,10 +11,11 @@ import {damageAnimal} from '../src/wildlife.js';
 import {walkable} from '../src/wilds.js';
 import {DEFAULT_BINDINGS} from '../src/input-bindings.js';
 
-test('every huntable animal has its own loot table, with one guaranteed drop and rarer extras',()=>{
+test('every huntable animal has its own loot table, with one guaranteed drop and rarer extras (a world boss has several)',()=>{
  for(const [species,spec] of Object.entries(ANIMAL_TYPES)){
   const table=LOOT_TABLES[spec.loot];assert.ok(table,`${species} has a loot table`);
-  assert.equal(table.filter(e=>e.chance>=1).length,1,`${species} has one guaranteed drop`);
+  if(spec.boss)assert.ok(table.filter(e=>e.chance>=1).length>1,`${species} has several guaranteed drops`);
+  else assert.equal(table.filter(e=>e.chance>=1).length,1,`${species} has one guaranteed drop`);
   for(const entry of table){assert.ok(LOOT_ITEMS[entry.item],entry.item);assert.ok(entry.chance>0&&entry.chance<=1);assert.ok(ITEM_CATEGORIES.some(c=>c.id===LOOT_ITEMS[entry.item].category));}
  }
  assert.deepEqual(rollLoot('rabbit',()=>.99).map(i=>i.name),['Rabbit Meat']);

@@ -22,9 +22,20 @@ export const ARTIFACTS=Object.freeze({
   effect:v=>`Take ${Math.round(v*100)}% less damage`},
  'black-light-heart':{name:'Heart of Black Light',species:'shadow-walker',chance:1/15,values:[1,2,3,4,6],
   description:'It beats, slowly, when shadow walkers are near.',
-  effect:v=>`Each kill restores ${v} health`}
+  effect:v=>`Each kill restores ${v} health`},
+ // World boss artifacts. "In water" means wading the shallows or standing within two steps of the water's edge (WET_REACH),
+ // since Eli can't walk out into the water himself.
+ 'drowned-gorget':{name:'Drowned Gorget',species:'drowned-captain',boss:true,chance:.2,values:[.04,.08,.12,.16,.2],
+  description:'A brass throat guard from an officer who never left his post. It feels heavier out of the water.',
+  effect:v=>`Take ${Math.round(v*100)}% less damage in or beside water`},
+ 'spire-bell':{name:'Spire Bell',species:'greyhorn',boss:true,chance:.2,values:[.04,.08,.12,.16,.2],
+  description:'An old bell from the Grey Spire. The shadow flinches when it rings.',
+  effect:v=>`Shadow walkers deal ${Math.round(v*100)}% less damage`}
 });
+export const WET_REACH=100;
 export const ARTIFACT_IDS=Object.freeze(Object.keys(ARTIFACTS));
+// A world boss's artifact only ever comes from that boss, never from the Wishing Well.
+export const WELL_ARTIFACT_IDS=Object.freeze(ARTIFACT_IDS.filter(id=>!ARTIFACTS[id].boss));
 const BY_NAME=new Map(ARTIFACT_IDS.map(id=>[ARTIFACTS[id].name,id]));
 export const artifactIdFor=name=>BY_NAME.get(name)||null;
 export const isArtifact=item=>!!item&&Object.hasOwn(ARTIFACTS,item.artifact)&&RARITIES.includes(item.rarity);

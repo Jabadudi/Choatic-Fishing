@@ -5,9 +5,9 @@ export const ITEM_CATEGORIES=Object.freeze([
  {id:'trophies',label:'Trophies'}, {id:'upgrade-materials',label:'Upgrade materials'}
 ]);
 const ITEM_CATEGORY={'Sardine':'consumables','Deer Meat':'consumables','Deer Hide':'upgrade-materials','Deer Antlers':'trophies','Grappling Squid':'consumables','Treasure Key':'quest-items','Old Boot':'trophies'};
-const WEAPON_NAMES=new Set(['Frying Pan','Swordfish','Harpoon Gun','Anchor','Reed Spear','Crab Maul','Shell Sling','Pufferfish Bomb','Hunting Bow','Hunting Knife']);
+const WEAPON_NAMES=new Set(['Frying Pan','Swordfish','Harpoon Gun','Anchor','Reed Spear','Crab Maul','Shell Sling','Pufferfish Bomb','Hunting Bow','Hunting Knife','Captain’s Sabre','Greyhorn Spear']);
 // Permanent tools are never used up, however often they are fired.
-export const PERMANENT_ITEMS=new Set(['Hunting Bow']);
+export const PERMANENT_ITEMS=new Set(['Hunting Bow','Captain’s Sabre','Greyhorn Spear']);
 // Identical single-use items share one backpack slot, up to a full stack. Weapons wear down one by one and story items are one of a kind.
 export const STACK_SIZE=20;
 const UNIQUE_ITEMS=new Set(['Mysterious Lure','Region Core']);

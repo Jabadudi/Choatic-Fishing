@@ -58,7 +58,8 @@ function prune(world){
 export function rollArea(world,areaId){
  const area=SPAWN_AREAS[areaId],spawns=world.spawns;if(!area||!spawns)return [];
  prune(world);
- const living=world.animals.filter(a=>a.areaId===areaId),taken=new Set(living.map(a=>a.slotId));
+ // Bosses and the adds they call stand outside the area's cap.
+ const living=world.animals.filter(a=>a.areaId===areaId&&!a.bossId),taken=new Set(living.map(a=>a.slotId));
  const story=storyHunt(world),here=spawnAreaFor(world.areaId)===areaId,p=world.player;
  const empty=Object.values(SLOTS).filter(slot=>slot.areaId===areaId&&!taken.has(slot.id));
  // Story slots first so the Chapter 1 deer always fit, then the rest in a seeded order.

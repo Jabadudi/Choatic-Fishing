@@ -11,7 +11,7 @@ function random(a){let s=a.seed;s^=s<<13;s^=s>>>17;s^=s<<5;a.seed=s>>>0;return a
 export const monsterTarget=world=>world.player.health>0&&!(world.respawnGrace>0)&&!world.defeat?world.player:null;
 function face(a,x,y){const angle=Math.atan2(y-a.y,x-a.x);a.direction={x:Math.cos(angle),y:Math.sin(angle)};return angle;}
 // Straight at the goal, or the nearest side route when scenery is in the way.
-function stepToward(a,x,y,speed,dt){
+export function stepToward(a,x,y,speed,dt){
  const angle=Math.atan2(y-a.y,x-a.x);
  for(const offset of [0,.6,-.6,1.2,-1.2,1.8,-1.8]){
   const dx=Math.cos(angle+offset),dy=Math.sin(angle+offset);
