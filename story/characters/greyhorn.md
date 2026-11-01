@@ -2,7 +2,7 @@
 
 **Role:** World boss of Elk Run. The lead bull of the Elk Spirit's herd, taken by the shadow and multiplied by it, as the Creature Index says shadow walkers do.
 
-**First appearance:** None yet. A world boss from the spawn plan, found at the Grey Spire at the top of Elk Run (area 2.2).
+**First appearance:** World boss only for now (Netanel, 1 Nov 2026); he is freed in the world, not in a chapter. Found at the Grey Spire at the top of Elk Run (area 2.2). After each win the shadow leaves him, and it finds him again when he respawns.
 
 ## Appearance (placeholder; no chapter describes him yet)
 - An enormous old elk bull, far bigger than a horse, with a shaggy silver-grey coat, a heavy mane and moss on his shoulders.
@@ -32,9 +32,10 @@ He doesn't speak. Even taken, he seems proud and sorrowful rather than cruel. He
 - After he is freed, the Elk Run shadow walker share could drop, and he could appear as a peaceful elk at the Grey Spire.
 
 ## Open questions / not yet established
-- Whether he is freed in a chapter or only in the world.
-- Whether a freed Greyhorn gives a familiar shard, a gift, or nothing.
+- Loot (approved 1 Nov 2026, see art/sprite-prompts/greyhorn-loot.md in the project files): Shadow Ichor, Hollow Antler Shard, Greyhorn Hide, Greyhorn's Antler trophy, the Spire Bell artifact and the Greyhorn Spear weapon.
 - How the shadow got into him, and how long ago.
 
 ## Visual reference notes
+Art delivered (staged in `/mnt/project-files/art/incoming-greyhorn/`): reference sheet, freed pose, walk set (4 columns, 7 frames each), antler charge, hoof stomp, hollow bellow, shadow antlers and hurt/freed strips. In the art his antlers are dark brown-black wood with moss, and the freed antlers turn pale bone-white.
+
 Silver-grey, moss green and black smoke. The silhouette is a huge elk with an oversized branching rack. The hollow chest and the smoke eyes should read clearly at sprite size.
