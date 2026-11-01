@@ -11,7 +11,6 @@ import {storyTarget} from './story-quests.js';
 import {paintWorld,fullView,areaAt,atlasImage} from './world-map.js';
 import {paintQuestMap,paintQuestMinimap} from './quest-map.js';
 import {amountLabel} from './inventory.js';
-import {paintStoryMap} from './story-map.js';
 import {drawStoryWeather} from './story-weather.js';
 import {mountAtmosphere,syncAtmosphere} from './atmosphere.js';
 import {mountSaveUI} from './save-ui.js';
@@ -36,7 +35,8 @@ import {preloadProps} from './sprites.js';
 import {titleArtReady} from './title-art.js';
 import './music.js';
 import {Lobby} from './lobby.js';
-import {areaFor,placesFor,regionAt,nearestLandmark,examinableLandmark,paintAtlas,INTERIOR_AREAS} from './wilds.js';
+import {areaFor,placesFor,regionAt,nearestLandmark,examinableLandmark,paintAtlasLabels,INTERIOR_AREAS} from './wilds.js';
+import {areaMap} from './area-map-art.js';
 import {explorationHud,promptParts} from './hud.js';
 import {mountHudShell} from './hud-shell.js';
 import {mountHub} from './hub-ui.js';
@@ -231,7 +231,6 @@ $('music-icon').onclick=()=>{const open=document.querySelector('.music-hud').cla
 $('open-atlas').setAttribute('aria-label','Open area map');$('open-atlas').querySelector('span').textContent='M · AREA MAP';
 $('world-atlas').setAttribute('aria-label','Area map');document.querySelector('.atlas-card p').textContent='Walk through the marked map edge to reach the connecting path. Gold marks places you have found; the bright marker shows your position.';
 canvas.setAttribute('aria-label','Reedwater exploration. WASD move, Space talk or examine, left click use item, B backpack, H controls.');
-const atlasImages=new Map();
 // The map shows the area Eli is in, or zooms out to the whole delta.
 let mapMode='area';
 const storyGoal=()=>{const t=storyTarget(world);return t?.toward||t;};
@@ -240,25 +239,27 @@ atlasImage(()=>{if(atlasOpen)drawMap($('atlas-canvas'));});
 // The area map shows where Eli is, or the area of the story's next stop when opened from the quest log.
 function drawMap(target){
  if(mapMode==='world'){paintWorld(target.getContext('2d'),target.width,target.height,world,fullView(target.width,target.height),{labels:true,target:storyGoal(),t:performance.now()/1000});return;}
- const area=areaFor(atlasFocus?.areaId||world.areaId),here=area.id===world.areaId,key=`${area.id}:${target.width}:${target.height}`;let base=atlasImages.get(key);
- if(!base){base=document.createElement('canvas');base.width=target.width;base.height=target.height;paintAtlas(base.getContext('2d'),base.width,base.height,null,new Set(),area.id);atlasImages.set(key,base);}
- const c=target.getContext('2d');c.imageSmoothingEnabled=false;c.drawImage(base,0,0);
- const sx=target.width/area.width,sy=target.height/area.height;
- if(area.id==='landing'){paintStoryMap(c,sx,sy,world.story);if(target.width>400&&world.story){c.font='bold 12px monospace';c.textAlign='center';c.fillStyle='#fff0c9';c.fillText(cabinDamaged(world.story)?'Damaged Cabin':'Grandpa’s Cabin',1630*sx,1300*sy);}}
+ // The area keeps its own shape, centred on the canvas; everything after this is drawn in area units × k.
+ const area=areaFor(atlasFocus?.areaId||world.areaId),here=area.id===world.areaId,c=target.getContext('2d'),base=areaMap(area.id,world.story).canvas;
+ const k=Math.min(target.width/area.width,target.height/area.height),w=area.width*k,h=area.height*k;
+ c.setTransform(1,0,0,1,0,0);c.fillStyle='#173038';c.fillRect(0,0,target.width,target.height);
+ c.setTransform(1,0,0,1,Math.round((target.width-w)/2),Math.round((target.height-h)/2));c.imageSmoothingEnabled=true;c.drawImage(base,0,0,w,h);
+ paintAtlasLabels(c,w,h,world.discovered,area.id);
+ const sx=k,sy=k;
+ if(area.id==='landing'){if(target.width>400&&world.story){c.font='bold 12px monospace';c.textAlign='center';c.fillStyle='#fff0c9';c.fillText(cabinDamaged(world.story)?'Damaged Cabin':'Grandpa’s Cabin',1630*sx,1300*sy);}}
  const guide=world.story?.guide;if(guide&&(guide.areaId||'landing')===area.id){c.fillStyle='#99e4df';c.beginPath();c.arc(guide.x*sx,guide.y*sy,4,0,Math.PI*2);c.fill();if(target.width>400){c.font='bold 12px monospace';c.textAlign='center';c.fillText('Your guide',guide.x*sx,guide.y*sy-10);}}
  for(const p of placesFor(area.id))if(world.discovered.has(p.id)){c.fillStyle='#e8be65';c.fillRect(p.x*sx-3,p.y*sy-3,6,6);}
  paintQuestMap(c,world,area.id,storyTarget(world)?.areaId===area.id?storyTarget(world):atlasFocus?.label?atlasFocus:null,sx,sy,performance.now()/1000);
  if(here){c.fillStyle='#fff4c1';c.strokeStyle='#20383d';c.lineWidth=2;c.beginPath();c.arc(world.player.x*sx,world.player.y*sy,4,0,Math.PI*2);c.fill();c.stroke();}
+ c.setTransform(1,0,0,1,0,0);
 }
-// The minimap follows Eli: a close crop of the area atlas, centred on him.
+// The minimap follows Eli: a close crop of the area map, centred on him.
 function drawMinimap(target){
- const area=areaFor(world.areaId),key=`${area.id}:800:600`;let base=atlasImages.get(key);
- if(!base){base=document.createElement('canvas');base.width=800;base.height=600;paintAtlas(base.getContext('2d'),800,600,null,new Set(),area.id);atlasImages.set(key,base);}
+ const area=areaFor(world.areaId),base=areaMap(area.id,world.story).canvas;
  const c=target.getContext('2d'),span=Math.min(area.width,area.height,900),zoom=target.width/span,sx=zoom,sy=zoom;
- c.setTransform(1,0,0,1,0,0);c.fillStyle='#24413a';c.fillRect(0,0,target.width,target.height);c.imageSmoothingEnabled=false;
+ c.setTransform(1,0,0,1,0,0);c.fillStyle='#24413a';c.fillRect(0,0,target.width,target.height);c.imageSmoothingEnabled=true;
  c.setTransform(1,0,0,1,target.width/2-world.player.x*zoom,target.height/2-world.player.y*zoom);
  c.drawImage(base,0,0,area.width*zoom,area.height*zoom);
- if(area.id==='landing')paintStoryMap(c,sx,sy,world.story);
  const guide=world.story?.guide;if(guide&&(guide.areaId||'landing')===area.id){c.fillStyle='#e8c46a';c.save();c.translate(guide.x*sx,guide.y*sy);c.rotate(Math.PI/4);c.fillRect(-4,-4,8,8);c.restore();}
  for(const p of placesFor(area.id))if(world.discovered.has(p.id)){c.fillStyle='#e8be65';c.fillRect(p.x*sx-2,p.y*sy-2,4,4);}
  c.setTransform(1,0,0,1,0,0);paintQuestMinimap(c,world,storyTarget(world),zoom,target.width/2,target.height/2,Math.min(target.width,target.height)/2);
