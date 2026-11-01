@@ -1,6 +1,6 @@
 # The Wilds — Reedwater Landing
 
-The first version focuses on Reedwater Delta. Reedwater Landing, Windchime Path, Willowbank Crossroads, Willowback Village and Shellback Marsh are playable; the rest of the regional atlas is future work.
+The game covers the whole Reedwater Delta regional atlas (`assets/codex/reedwater-delta-map.jpg`). Every numbered area and sub-area on it is playable. The hand-built areas are below; the rest are described in [Atlas areas](#atlas-areas).
 
 ## Playable areas
 
@@ -50,6 +50,15 @@ The lower river provides enough camera space for portrait fishing above the touc
 
 ## Shellback Marsh
 
-The eastern branch of the crossroads now leads to the atlas wetlands. Six dry islands and a network of 74–86 unit boardwalks connect the Reed Threshold, Shellback Glade, Reedwatch Lookout, Angler's Reach, the Sunken Steps and Lantern Pools. The centre glade contains an ancient empty shell as a landscape relic. Fish from the eastern landing or the smaller western pools. The west edge returns to the crossroads.
+Redrawn from the atlas: four natural islands and a reedy west shore, split by the deep Shell Channel. Timber walks of 70 to 86 units, with lantern posts, connect the Reed Threshold (west shore), Shellback Glade and its ancient empty shell (east island), Reedwatch Lookout (north island), Angler's Reach (east tip), the Sunken Steps (south island) and the Lantern Pools (west shore). The road from Willowbank Crossroads arrives on the west shore. The Long Boardwalk runs north-west out to 9.2, and the east walk past Angler's Reach leads to Stilt Reach (13.2). Marsh art and gameplay data live in `src/marsh-art.js` and `src/marsh.js`.
 
-The 2,100 × 2,400 area leaves water space below its southern landmarks for portrait camera framing. Wet channels block movement outside timber crossings; fixed tree roots and structures have explicit collision. Marsh art and gameplay data live separately in `src/marsh-art.js` and `src/marsh.js`. The active area map shows islands, crossings and discoveries, and existing save version 1 restores marsh journeys without dropping prior progress.
+## Atlas areas
+
+The other areas are plain data in `src/delta-areas.js`. Each is traced in atlas pixels on the 720 × 480 atlas: a frame cut out of the atlas, a size in world units, and land and water shapes, ground zones, trails, boardwalks, fords, bridges, cliffs, props, landmarks, edge exits, portals and rowboat crossings. `src/atlas-area.js` scales each one into world units and answers the terrain questions. `src/atlas-area-art.js` paints the decks and props. `tests/delta-areas.test.js` checks three things for every area: each landmark and exit can be reached on foot, each arrival is walkable, and each way in has a way back.
+
+- **North-west forest.** 1.1 Trailhead, 1.2 Deep Trail (the Fallen Giant closes the way deeper for now), 2.1 Listening Glade, 2.2 Elk Run, 3.1 Upper Falls, 3.2 Glasswater Basin, 4.1 Forest Edge, 4.2 Whispering Woods, 4.3 Stone Clearing, 11 Western Falls.
+- **Ruins and the river.** 5.1 Aqueduct Ruins, 5.2 Old Roads, 6.1 The Great Bridge, 6.2 Lookout Heights, 7 Springmouth Cave, 8 Abandoned Quarry, 9.1 Falls Channels, 9.2 Long Boardwalk, 10.1 North Shallows, 10.2 Egret Isles.
+- **The wetlands and the east.** 13.2 Stilt Reach, 14 Heron Islands, 15 The Broken Watch, 18.3 Chimewood, 26 Stonefall Creek, 19.1 Upper Braids, 19.2 Delta Mouth.
+- **The coast and the sea.** 16 The Drowned Road, 20 Tidecave Coast, 21 Outer Shallows, 22 Arrival Bay, 23 Seal Skerries, 24 Sandbar Spits, 25 Heron Point.
+
+Press **M** for the area map. Its Reedwater Delta tab shows the whole atlas with every playable area outlined in green and Eli's own area in gold; click an area to open its map.

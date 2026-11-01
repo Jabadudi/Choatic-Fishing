@@ -256,3 +256,8 @@
  :root :is(#backpack,#save-menu,#skills-sheet,#codex-sheet,#trade-sheet,#quest-sheet,#well-sheet,#radio-sheet,#players-sheet,#settings-menu,#controls-help,#hud-menu-sheet){max-width:calc(100vw - 2 * var(--sheet-gap-x));max-height:calc(100dvh - 2 * var(--sheet-gap-y))}
  :root #codex-sheet{height:calc(100dvh - 2 * var(--sheet-gap-y))}
 }
+
+/* Minimap zoom: a small round button on the minimap's rim switches between this area and the whole delta. */
+#hud-shell #hud-map{position:absolute}
+#hud-shell #minimap-zoom{position:absolute;left:68px;top:66px;width:24px;height:24px;padding:0;border-radius:50%;border:2px solid var(--hud-line);background:#14302f;color:var(--hud-cream);font:bold 15px/18px Georgia,serif;pointer-events:auto;cursor:pointer;box-shadow:0 2px 6px #0009}
+#hud-shell #minimap-zoom[aria-pressed=true]{background:#2f5a3a}

@@ -129,7 +129,10 @@ export class World {
   if(nearWell(this)){this.wellRequest=true;this.message='Eli looks into the well. The water glows blue.';return true;}
   const place=Wilds.examinableLandmark(this.player.x,this.player.y,this.areaId);
   if(!place)return false;
-  this.discovered.add(place.id);this.message=place.text;return true;
+  this.discovered.add(place.id);
+  // A boat or a ferry rope: examining it takes Eli across to another area.
+  if(place.travel?.entry&&Wilds.AREAS[place.travel.target]){this.enterArea({areaId:place.travel.target,...place.travel.entry},this.player,`${place.text} · ${Wilds.areaFor(place.travel.target).name}`);return true;}
+  this.message=place.text;return true;
  }
  collectDrop(drop){
   const shard=absorbShard(this,drop.item.familiar);if(!shard)this.inventory.receive(drop.item);this.drops=this.drops.filter(item=>item.id!==drop.id);
@@ -173,7 +176,7 @@ export class World {
    let next=Wilds.transitionAt(p.x,p.y,this.areaId);
    if(next&&this.story&&!inlandUnlocked(this.story)&&this.areaId==='landing'){next=null;p.y=Math.max(25,p.y);this.message=storyObjective(this);}
    if(next&&!storyTransitionAllowed(this,next)){next=null;const a=Wilds.areaFor(this.areaId);p.x=Math.max(25,Math.min(a.width-25,p.x));p.y=Math.max(25,Math.min(a.height-25,p.y));this.message='Your guide is still on the trail. Stay with her before moving on.';}
-   if(next){const previous=this.areaId;this.projectiles=[];this.effects=[];this.dialogue=null;this.areaId=next.areaId;p.x=next.x;p.y=next.y;p.vx=0;p.vy=0;this.cancel();this.message=this.areaId==='crossroads'?'Willowbank Crossroads · West: Willowback · East: Shellback Marsh · South: Windchime Path.':`${Wilds.areaFor(this.areaId).name} · Follow the trail; walk back through the edge to return.`;onStoryAreaChange(this,previous);}
+   if(next)this.enterArea(next,p);
    p.walkTime=(p.walkTime||0)+Math.hypot(dx,dy)*.14;return;
   }
   let x=Math.max(LAND.left+15,Math.min(LAND.right-15,p.x+dx));
@@ -185,6 +188,7 @@ export class World {
   for(let i=0;i<steps;i++){if(walkable(p.x+sx,p.y)&&(!shoreOnly||nearWater(p.x+sx,p.y)))p.x+=sx;if(walkable(p.x,p.y+sy)&&(!shoreOnly||nearWater(p.x,p.y+sy)))p.y+=sy;}
   if(Math.abs(p.x-x)<1e-8)p.x=x;if(Math.abs(p.y-y)<1e-8)p.y=y;
  }
+ enterArea(next,p=this.player,message=null){const previous=this.areaId;this.projectiles=[];this.effects=[];this.dialogue=null;this.areaId=next.areaId;p.x=next.x;p.y=next.y;p.vx=0;p.vy=0;this.cancel();this.message=message||(this.areaId==='crossroads'?'Willowbank Crossroads · West: Willowback · East: Shellback Marsh · South: Windchime Path.':`${Wilds.areaFor(this.areaId).name} · Follow the trail; walk back through the edge to return.`);onStoryAreaChange(this,previous);}
  castActor(actor,aim){
   if(this.matchState!=='playing'||actor.health<=0||actor.fishing.state!=='idle'||currentScene(this))return false;
   if(this.story&&!rodReady(this.story)){if(actor===this.player)this.message='Grandpa’s fishing rod is on the weapon rack inside the cabin.';return false;}

@@ -356,13 +356,15 @@ function updateChapterTwo(w,dt,walkable){
  g.x=n.x;g.y=n.y;
  if(Math.hypot(n.x-goal.x,n.y-goal.y)<1)g.waypoint++;
 }
+// Only Chapter 3's walk to Willowback holds Eli back for his guide. From Chapter 4 on she stands at fixed places,
+// some of them on that old route (the training-yard fence is in the farm), and must never close an exit.
 export function storyTransitionAllowed(w,next){
- const s=w.story,areas=travelAreas(s);if(!villageStory(s)||!s.guide||s.guide.areaId!==w.areaId||!areas.includes(w.areaId))return true;
+ const s=w.story,areas=travelAreas(s);if(!chapterThree(s)||!s.guide||s.guide.areaId!==w.areaId||!areas.includes(w.areaId))return true;
  const forward=areas[areas.indexOf(w.areaId)+1];
  return next.areaId!==forward||s.guide.waypoint>=chapter3Route(s).length;
 }
 export function onStoryAreaChange(w,previous){
- const s=w.story,areas=travelAreas(s);if(!villageStory(s)||!s.guide||s.guide.areaId!==previous||!areas.includes(previous))return;
+ const s=w.story,areas=travelAreas(s);if(!chapterThree(s)||!s.guide||s.guide.areaId!==previous||!areas.includes(previous))return;
  const next=areas[areas.indexOf(previous)+1];
  if(w.areaId!==next||s.guide.waypoint<chapter3Route(s).length)return;
  s.guide={...CHAPTER3_ENTRIES[next],areaId:next,waypoint:0};w.npcs=createStoryNpcs(s,w.elapsed);

@@ -11,7 +11,7 @@ export const travelAreas=s=>['ch3-chief','ch3-complete'].includes(s?.stage)?CHIE
 export const CHAPTER3_ROUTES={
  landing:[{x:1380,y:1180},{x:1350,y:800},{x:1400,y:50}],
  windchime:[{x:348,y:1060},{x:303,y:928},{x:366,y:692},{x:511,y:510},{x:711,y:382},{x:892,y:291},{x:1128,y:164},{x:1150,y:50}],
- crossroads:[{x:800,y:1080},{x:760,y:870},{x:800,y:680},{x:610,y:630},{x:400,y:490},{x:170,y:460},{x:50,y:460}],
+ crossroads:[{x:800,y:1080},{x:760,y:1000},{x:700,y:880},{x:667,y:821},{x:476,y:688},{x:248,y:554},{x:50,y:462}],
  'village-farm':[{x:1800,y:840},{x:1300,y:905},{x:900,y:1015},{x:500,y:1115},{x:50,y:1150}],
  'village-market':[{x:1450,y:540},{x:1300,y:520}]
 };

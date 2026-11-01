@@ -57,7 +57,7 @@ export function mountHudShell({act,openHelp,examine,openAtlas,openQuests,openWel
  document.body.append(sheet);
  // Existing pieces move into the new layout; their own modules keep updating them by id.
  const map=$('hud-map'),where=map.querySelector('.hud-where');
- map.prepend($('open-atlas'));where.append($('region-name'),$('discovery-dots'),$('discovery-count'));
+ map.prepend($('open-atlas'));if($('minimap-zoom'))$('open-atlas').after($('minimap-zoom'));where.append($('region-name'),$('discovery-dots'),$('discovery-count'));
  const icons=$('hud-icons'),wallet=el('div');wallet.id='hud-wallet';
  const stones=el('p');stones.id='hud-stones';stones.title='Wishstones';stones.innerHTML='<span class="wishstone-icon" style="width:14px;height:11px" aria-hidden="true"></span><span></span>';
  wallet.append($('purse-hud'),stones);icons.prepend(wallet);
