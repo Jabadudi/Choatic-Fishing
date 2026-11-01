@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {World} from '../src/world.js';
 import {SLOTS} from '../src/spawn-tables.js';
 import {createCreature,rollArea,spawnWeights} from '../src/spawns.js';
-import {updateWildlife,damageAnimal} from '../src/wildlife.js';
+import {updateWildlife,damageAnimal,startleRange,rushSpeed} from '../src/wildlife.js';
 import {animalPose} from '../src/wildlife-art.js';
 import {SPRITES} from '../src/sprite-definitions.js';
 import {frameIndex} from '../src/sprites.js';
@@ -21,7 +21,7 @@ test('foxes roam Windchime Path and the Crossroads, and nowhere the story hunts 
 
 test('a fox bolts from further off than a rabbit, faster, and leaves a pelt',()=>{
  const w=fresh(),fox=createCreature(SLOTS['windchime-north'],'fox',{id:'fox-1',seed:11});w.wildlife.push(fox);
- w.areaId='windchime';Object.assign(w.player,{x:fox.x+100,y:fox.y});
+ w.areaId='windchime';Object.assign(w.player,{x:fox.x+62,y:fox.y});
  const {x,y}=fox;updateWildlife(w,1/60);assert.equal(fox.state,'flee');assert.equal(animalPose(fox).state,'run');
  // A rabbit would still be grazing at this distance (fear range 55), and the fox outruns its 180.
  for(let i=0;i<5;i++)updateWildlife(w,1/60);assert.ok(Math.hypot(fox.x-x,fox.y-y)>=215*6/60-1,'it runs at full speed');
@@ -69,7 +69,7 @@ test('bears roam the deep trails, rear up and roar when first hurt, then swipe',
 test('herons stalk the delta landmarks and fly off when Eli comes close',()=>{
  for(const id of ['upper-falls','glasswater','heron-islands','heron-point'])assert.ok(spawnWeights(id,'land').some(([s])=>s==='heron'),id);
  const w=fresh(),slot=Object.values(SLOTS).find(s=>s.areaId==='heron-point'&&s.habitat==='land'),heron=createCreature(slot,'heron',{id:'heron-1',seed:4});
- w.wildlife.push(heron);w.areaId='heron-point';Object.assign(w.player,{x:heron.x+100,y:heron.y});
+ w.wildlife.push(heron);w.areaId='heron-point';Object.assign(w.player,{x:heron.x+startleRange(heron)-5,y:heron.y});
  updateWildlife(w,1/60);assert.equal(heron.state,'flee');assert.equal(animalPose(heron).state,'run','it takes to the air');
  damageAnimal(w,heron,1e4,w.player,0);assert.ok(w.drops.some(d=>d.item.name==='Heron Feather'));
 });
@@ -91,7 +91,7 @@ test('otters, ducks and seals keep to the water and swim or fly off when Eli com
  for(const [species,area] of [['otter','falls-channels'],['duck','glasswater'],['seal','seal-skerries']]){
   assert.ok(spawnWeights(area,'water').some(([s])=>s===species),area);
   const w=fresh(),a=spawnAt(w,area,'water',species);assert.equal(a.habitat,'water');
-  Object.assign(w.player,{x:a.x+60,y:a.y});updateWildlife(w,1/60);
+  Object.assign(w.player,{x:a.x+startleRange(a)-5,y:a.y});updateWildlife(w,1/60);
   assert.equal(a.state,'flee',species);assert.equal(animalPose(a).state,'run');
  }
 });
@@ -108,4 +108,30 @@ for(const id of ['fox','boar','elk','bear','heron','crab','goat','otter','duck',
  const count=(w/cw)*(h/ch);
  for(const clip of Object.values(def.animations))for(const f of clip.frames)assert.ok(f>=0&&f<count,`frame ${f}`);
  if(['fox','boar','heron'].includes(id))assert.equal(frameIndex(def,'run','',{direction:'right'}),{fox:32,boar:34,heron:36}[id]);
+});
+
+test('passive animals watch a calm Eli instead of being pushed away by him',()=>{
+ for(const species of ['fox','heron']){
+  const w=fresh(),slot=Object.values(SLOTS).find(s=>s.areaId==='windchime'&&s.habitat==='land'),a=createCreature(slot,species,{id:`${species}-calm`,seed:7});
+  w.wildlife.push(a);w.areaId='windchime';
+  // Eli stands well inside the fear range but outside the startle range: the animal turns to look, and never runs.
+  Object.assign(w.player,{x:a.x+(a.fearRange+startleRange(a))/2,y:a.y});
+  for(let i=0;i<60*8;i++){updateWildlife(w,1/60);assert.notEqual(a.state,'flee',species);}
+  // Walking past it sideways does not scare it either.
+  Object.assign(w.player,{x:a.x+startleRange(a)+15,y:a.y-120});
+  for(let i=0;i<60*1.2;i++){w.player.y+=150/60;updateWildlife(w,1/60);assert.notEqual(a.state,'flee',species);}
+ }
+});
+test('rushing at an animal makes it bolt, and the flight carries it off before it settles and looks back',()=>{
+ const w=fresh(),slot=Object.values(SLOTS).find(s=>s.areaId==='windchime'&&s.habitat==='land'),fox=createCreature(slot,'fox',{id:'fox-rush',seed:3});
+ w.wildlife.push(fox);w.areaId='windchime';Object.assign(w.player,{x:fox.x+fox.fearRange+40,y:fox.y});
+ let frames=0;
+ while(fox.state!=='flee'&&frames++<120){w.player.x-=195/60;updateWildlife(w,1/60);}
+ assert.equal(fox.state,'flee');assert.ok(Math.hypot(fox.x-w.player.x,fox.y-w.player.y)>startleRange(fox),'it ran before Eli reached it');
+ assert.ok(rushSpeed(fox)<195);
+ // Eli stops. The fox keeps running well past its fear range instead of halting right on its edge.
+ for(let i=0;i<60*3&&fox.state==='flee';i++)updateWildlife(w,1/60);
+ assert.equal(fox.state,'idle');
+ assert.ok(Math.hypot(fox.x-w.player.x,fox.y-w.player.y)>fox.fearRange+60);
+ assert.ok(fox.direction.x*(w.player.x-fox.x)+fox.direction.y*(w.player.y-fox.y)>0,'it looks back at Eli');
 });

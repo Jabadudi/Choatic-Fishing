@@ -89,13 +89,46 @@ export function updateAnimalCombat(world,dt){
   if(a.vx||a.vy){moveAnimal(a,a.vx*dt,a.vy*dt);a.vx*=Math.exp(-10*dt);a.vy*=Math.exp(-10*dt);}
  }
 }
+// Passive animals notice Eli at their fear range and keep an eye on him, but only bolt when he comes close, rushes
+// straight at them, or hurts them. Skittish kinds startle sooner and at a gentler approach.
+const SKITTISH=new Set(['fox','heron','duck','otter','eel']);
+export function startleRange(a){return Math.max(a.radius+26,a.fearRange*(SKITTISH.has(a.species)?.55:.4));}
+// How fast (px/s) Eli has to close in, inside the fear range, before the animal runs. Eli walks at 195.
+export const rushSpeed=a=>SKITTISH.has(a.species)?110:165;
+const turnToward=(from,to,max)=>{const d=Math.atan2(Math.sin(to-from),Math.cos(to-from));return from+Math.max(-max,Math.min(max,d));};
+function startFlee(a,threat){
+ a.fleeAngle=Math.atan2(a.y-threat.y,a.x-threat.x)+(random(a)-.5)*.7;
+ a.fleeRemaining=1.1+random(a)*.7;a.state='flee';a.time=0;
+}
+// A flight commits to a heading and turns smoothly, instead of sliding to keep an exact distance from Eli.
+function runAway(world,a,dt,threat){
+ if(threat)a.fleeAngle=turnToward(a.fleeAngle,Math.atan2(a.y-threat.y,a.x-threat.x),3*dt);
+ a.fleeRemaining=Math.max(0,a.fleeRemaining-dt);
+ // Try side routes when the direct escape is blocked; never cross habitat boundaries.
+ for(const offset of [0,.6,-.6,1.2,-1.2,1.8,-1.8,Math.PI]){
+  const angle=a.fleeAngle+offset,dx=Math.cos(angle),dy=Math.sin(angle);
+  if(!animalGround(a,a.x+dx*18,a.y+dy*18))continue;
+  if(offset)a.fleeAngle=turnToward(a.fleeAngle,angle,6*dt);
+  a.direction={x:dx,y:dy};moveAnimal(a,dx*a.fleeSpeed*dt,dy*a.fleeSpeed*dt);break;
+ }
+ // Safe again: stop, look back at Eli, and settle down before wandering off.
+ if(a.fleeRemaining===0){
+  const p=world.player;a.state='idle';a.time=0;a.wait=1.4+random(a)*1.6;a.calm=2.5;
+  const look=Math.atan2(p.y-a.y,p.x-a.x);a.direction={x:Math.cos(look),y:Math.sin(look)};
+ }
+}
 export function updateWildlife(world,dt){
  if(!world.adventure||world.matchState!=='playing')return;
+ const p=world.player;
  for(const a of world.wildlife){
   if(a.areaId!==world.areaId||a.health<=0)continue;
-  a.time+=dt;a.alert=Math.max(0,a.alert-dt);
-  const distance=Math.hypot(a.x-world.player.x,a.y-world.player.y),disturbed=world.player.health>0&&distance<a.fearRange;
-  const reaction=reactionFor(a,{disturbed,provoked:a.behavior==='defensive'?a.anger>0:a.alert>0});
+  a.time+=dt;a.alert=Math.max(0,a.alert-dt);a.calm=Math.max(0,(a.calm||0)-dt);
+  const distance=Math.hypot(a.x-p.x,a.y-p.y),alive=p.health>0;
+  // Eli's closing speed, smoothed. A jump (an area change, a respawn) counts as no approach.
+  if(dt>0){const raw=a.gap===undefined?0:(a.gap-distance)/dt;a.closing=(a.closing||0)+((Math.abs(raw)>600?0:raw)-(a.closing||0))*Math.min(1,dt*8);}
+  a.gap=distance;
+  const near=alive&&distance<a.fearRange,close=alive&&distance<startleRange(a),rushed=near&&!(a.calm>0)&&a.closing>rushSpeed(a);
+  const reaction=reactionFor(a,{disturbed:close||rushed,provoked:a.behavior==='defensive'?a.anger>0:a.alert>0});
   if(reaction==='pursue'){updateMonster(world,a,dt);continue;}
   if(reaction==='retaliate'){
    const target=world.actors.find(actor=>actor.id===a.attackerId),range=target?Math.hypot(target.x-a.x,target.y-a.y):Infinity;
@@ -118,20 +151,22 @@ export function updateWildlife(world,dt){
     continue;
    }
   }
-  if(reaction==='flee'){
-   const threat=disturbed?world.player:a.threat||world.player,angle=Math.atan2(a.y-threat.y,a.x-threat.x);
-   a.state='flee';
-   // Try side routes when the direct escape is blocked; never cross habitat boundaries.
-   for(const offset of [0,.6,-.6,1.2,-1.2,1.8,-1.8,Math.PI]){
-    const dx=Math.cos(angle+offset),dy=Math.sin(angle+offset);
-    if(!animalGround(a,a.x+dx*18,a.y+dy*18))continue;
-    a.direction={x:dx,y:dy};moveAnimal(a,dx*a.fleeSpeed*dt,dy*a.fleeSpeed*dt);break;
-   }
-   continue;
+  const threat=close||rushed?p:a.alert>0?a.threat||p:null;
+  if(reaction==='flee'&&!(a.state==='flee'&&a.fleeRemaining>0))startFlee(a,threat||p);
+  if(a.state==='flee'){
+   // An old save can hold a flight with no time left on it.
+   if(!(a.fleeRemaining>0))startFlee(a,threat||p);
+   runAway(world,a,dt,threat||(near?p:null));continue;
   }
-  if(a.state==='flee'){a.state='idle';a.time=0;a.wait=.8;}
+  // Eli in sight but no threat: a passive animal stops walking his way and watches him for a moment.
+  const watching=near&&a.behavior==='passive';
+  if(watching&&!a.watching){a.watching=true;const look=Math.atan2(p.y-a.y,p.x-a.x);a.direction={x:Math.cos(look),y:Math.sin(look)};if(a.state==='walk'){a.state='idle';a.time=0;}a.wait=Math.max(a.wait-a.time,0)+1+random(a)*1.5;}
+  else if(!near)a.watching=false;
+  if(a.state==='walk'&&watching&&a.direction.x*(p.x-a.x)+a.direction.y*(p.y-a.y)>.3*distance){a.state='idle';a.time=0;a.wait=1+random(a)*1.5;}
   if(a.state==='idle'&&a.time>=a.wait){
-   const angle=Math.hypot(a.x-a.home.x,a.y-a.home.y)>180?Math.atan2(a.home.y-a.y,a.home.x-a.x):random(a)*Math.PI*2;
+   const away=Math.atan2(a.y-p.y,a.x-p.x);
+   // Wandering drifts home, or, with Eli close by, loosely away from him; otherwise anywhere.
+   const angle=Math.hypot(a.x-a.home.x,a.y-a.home.y)>180?Math.atan2(a.home.y-a.y,a.home.x-a.x):alive&&a.behavior==='passive'&&distance<a.fearRange*1.5?away+(random(a)-.5)*2.2:random(a)*Math.PI*2;
    a.direction={x:Math.cos(angle),y:Math.sin(angle)};a.state='walk';a.time=0;a.wait=1+random(a)*1.4;
   }else if(a.state==='walk'){
    const moved=moveAnimal(a,a.direction.x*a.speed*dt,a.direction.y*a.speed*dt);
