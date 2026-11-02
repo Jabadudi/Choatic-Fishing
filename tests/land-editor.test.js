@@ -98,3 +98,14 @@ test('a new area made in the atlas ships whole and sits inside its parent on the
  assert.equal(built.area.width,2400);assert.equal(built.area.within,'old-roads');
  assert.equal(built.area.portals[0].target,'old-roads');
 });
+
+test('a door can be a line anywhere in the area, and arrivals land beside it',()=>{
+ const b=BUILT_DEFS.find(d=>d.id==='stilt-reach');
+ const def={...JSON.parse(JSON.stringify(b)),portals:[{at:[440,200],to:[440,220],r:30,target:'marsh',label:'Reed gap'}]};
+ const notes=[],out=fromEditor([{id:'stilt-reach',def:JSON.stringify(def)}],notes)['stilt-reach'];
+ assert.deepEqual(out.portals,[{at:[440,200],to:[440,220],r:30,target:'marsh',label:'Reed gap'}]);
+ const built=defineArea(merged('stilt-reach',out)),q=built.area.portals[0];
+ assert.equal(q.line.length,4);assert.equal(q.r,30);
+ const [x1,y1]=built.toWorld([440,200]),[x2,y2]=built.toWorld([440,220]);
+ assert.equal(q.x,Math.round((x1+x2)/2));
+});

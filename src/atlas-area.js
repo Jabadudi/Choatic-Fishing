@@ -60,7 +60,9 @@ export function defineArea(def){
  const trailAt=(x,y)=>{if(!styled)return null;let best=null,bd=Infinity;for(const t of trails){if(outside(x,y,t.box)>0)continue;const d=lineDistance(x,y,t.pts);if(d<bd){bd=d;best=t.style;}}return best;};
  const exits=(def.exits||[]).map(e=>{const horizontal=e.edge==='west'||e.edge==='east',from=horizontal?(e.from-Y0)*ky:(e.from-X0)*kx,to=horizontal?(e.to-Y0)*ky:(e.to-X0)*kx;return {edge:e.edge,from:Math.round(Math.min(from,to)),to:Math.round(Math.max(from,to)),target:e.target,label:e.label,back:e.back||null,...entryOf(e.entry)};});
  // Portals: a spot inside the area (a ford's far end, a cave mouth) that leads straight into another area.
- const portals=(def.portals||[]).map(q=>{const [x,y]=P(q.at);return {x:Math.round(x),y:Math.round(y),r:q.r||60,target:q.target,label:q.label,quiet:!!q.quiet,...entryOf(q.entry)};});
+ // A door is a circle (at, r) or a line (at → to, r = how close counts as crossing it).
+ const portals=(def.portals||[]).map(q=>{const [x,y]=P(q.at);if(!q.to)return {x:Math.round(x),y:Math.round(y),r:q.r||60,target:q.target,label:q.label,quiet:!!q.quiet,...entryOf(q.entry)};
+  const [x2,y2]=P(q.to);return {x:Math.round((x+x2)/2),y:Math.round((y+y2)/2),line:[Math.round(x),Math.round(y),Math.round(x2),Math.round(y2)],r:q.r||40,target:q.target,label:q.label,quiet:!!q.quiet,...entryOf(q.entry)};});
  const area={id:def.id,name:def.name,num:def.num,width:W,height:H,seed:def.seed||7400+[...def.id].reduce((a,c)=>a+c.charCodeAt(0),0),spawn:def.spawn?{x:Math.round(P(def.spawn)[0]),y:Math.round(P(def.spawn)[1])}:null,exits,portals,frame:def.frame,within:def.within||null,atlas:true,sea:!!def.sea,fromAtlas:pt=>{const [x,y]=P(pt);return {x:Math.round(x),y:Math.round(y)};}};
  // Arrivals snap onto the nearest trail, boardwalk or ford, so a diagonal trail still meets the edge where Eli lands.
  area.snap=(x,y)=>{let best=null,bd=170;for(const pts of [...roads,...decks.map(d=>d.pts)])for(let i=1;i<pts.length;i++){const [ax,ay]=pts[i-1],[bx,by]=pts[i],dx=bx-ax,dy=by-ay,l=dx*dx+dy*dy,t=l?Math.max(0,Math.min(1,((x-ax)*dx+(y-ay)*dy)/l)):0,px=ax+t*dx,py=ay+t*dy,d=Math.hypot(x-px,y-py);if(d<bd){bd=d;best={x:Math.round(px),y:Math.round(py)};}}return best||{x,y};};
@@ -90,6 +92,8 @@ export function linkEntries(areas){
  // Doors (portals) without an arrival spot: step out beside the door back, or at the area's start.
  for(const area of Object.values(areas))for(const q of area.portals||[]){if(q.entry)continue;const target=areas[q.target];if(!target)continue;
   const back=(target.portals||[]).find(b=>b.target===area.id);
-  if(back){const y=back.y+back.r+50<target.height-40?back.y+back.r+50:back.y-back.r-50;q.entry=target.snap?target.snap(back.x,y):{x:back.x,y};}
+  if(back&&back.line){const [x1,y1,x2,y2]=back.line,l=Math.hypot(x2-x1,y2-y1)||1,nx=-(y2-y1)/l,ny=(x2-x1)/l,d=back.r+70,inside=(x,y)=>x>40&&y>40&&x<target.width-40&&y<target.height-40;
+   const a={x:Math.round(back.x+nx*d),y:Math.round(back.y+ny*d)},b={x:Math.round(back.x-nx*d),y:Math.round(back.y-ny*d)};q.entry=inside(a.x,a.y)?a:inside(b.x,b.y)?b:a;}
+  else if(back){const y=back.y+back.r+50<target.height-40?back.y+back.r+50:back.y-back.r-50;q.entry=target.snap?target.snap(back.x,y):{x:back.x,y};}
   else q.entry=target.spawn?{...target.spawn}:{x:Math.round(target.width/2),y:Math.round(target.height/2)};}
 }
