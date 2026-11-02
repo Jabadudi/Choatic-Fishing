@@ -29,9 +29,19 @@ built.
 
 The same screen has a **Land** mode (or press **Edit land** on an area in the atlas) for reshaping an atlas-built area:
 land and water shapes, ponds and streams, ground patches (forest, meadow, clearing, sand, rock, marsh, dirt), cliffs,
-trails, boardwalks, fords and bridges, props (including single trees, bushes and rocks), landmarks and exits. The
+trails, boardwalks, fords and bridges, props (including single trees, bushes, rocks and waterfalls), landmarks, exits
+and doors. The
 **Plan** view redraws the terrain as the game reads it while you edit; **Game art** is the picture from the last
 snapshot.
+
+- **Hitboxes.** A prop's hitbox is the radius Eli cannot walk into (0 = walk through). A boardwalk, ford or bridge has a
+  width (how wide the planks are drawn) and a hitbox (`hit`, how wide Eli can walk on it, in atlas px). Decks end
+  square, 30 units past their end points, matching the art.
+- **Waterfalls** are props (`kind:'waterfall'`): the animated fall is drawn where the prop stands, so put it on the
+  water at the foot of the drop.
+- **Doors** are `portals`: an invisible circle (`r`, game units) that takes Eli to `target`. `quiet:true` hides its name
+  tag. Without an `entry`, Eli arrives beside a door in the target that leads back, or at the target's start.
+- **Ground texture size** (`textures`, e.g. `{forest:0.5}`) scales a ground texture in that area; 1 is as painted.
 
 Each edited area is one document in the atlas collection `land` (`def` holds the area's terrain as JSON, in atlas
 pixels like `src/delta-areas.js`); `land/_shared` holds the `lastEditAt`/`shippedAt` marker. Shipping is a one-file PR:

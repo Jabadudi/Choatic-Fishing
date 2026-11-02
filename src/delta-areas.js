@@ -40,7 +40,7 @@ area({id:'stonefall',num:'26',name:'Stonefall Creek',frame:[200,304,220,290],siz
  zones:[['rock',[[214,246],[232,242],[250,248],[254,262],[246,276],[232,280],[222,268],[214,258]]],['forest',[[256,256],[304,258],[304,290],[250,290],[254,272]]],['forest',[[268,226],[304,226],[304,244],[272,244]]],['forest',[[200,226],[214,232],[214,246],[200,252]]],['clear',[[250,238],[272,238],[274,256],[250,256]]]],
  roads:[[[228,234],[242,238],[252,242]],[[268,249],[280,251],[292,252],[304,253]],[[252,242],[258,241],[266,244],[268,249]]],
  fords:[[[236,251],[237,255],[238,259]]],
- props:[{kind:'bench',at:[268,253]},{kind:'stone',at:[228,247]},{kind:'stone',at:[244,268]},{kind:'cairn',at:[236,262]}],
+ props:[{kind:'waterfall',at:[235.4,255.1]},{kind:'waterfall',at:[206.9,262.4]},{kind:'bench',at:[268,253]},{kind:'stone',at:[228,247]},{kind:'stone',at:[244,268]},{kind:'cairn',at:[236,262]}],
  places:[
   {id:'stonefall-pond',name:'Stonefall Pond',at:[262,253],text:'A spring-fed pond ringed with reeds. Frogs, dragonflies, and a heron that pretends you are not there.'},
   {id:'the-stonefall',name:'The Stonefall',at:[232,250],text:'A field of tumbled boulders, some as big as a house. The creek threads between them toward the cliff.'},
@@ -61,7 +61,7 @@ area({id:'upper-braids',num:'19.1',name:'Upper Braids',frame:[390,560,266,342],s
  ],
  roads:[[[535,312],[560,313]],[[397,293],[412,300],[426,312],[426,330]],[[412,300],[430,292],[446,284]]],
  fords:[[[390,293],[397,293]],[[431,293],[437,285]],[[476,266],[476,274],[474,282]],[[460,288],[466,289]],[[480,296],[494,312]],[[517,313],[534,312]],[[426,330],[426,342]],[[498,332],[496,342]]],
- props:[{kind:'heron',at:[474,290]},{kind:'logs',at:[506,320]},{kind:'tent',at:[514,316]},{kind:'dock',at:[476,262]}],
+ props:[{kind:'waterfall',at:[486,300]},{kind:'heron',at:[474,290]},{kind:'logs',at:[506,320]},{kind:'tent',at:[514,316]},{kind:'dock',at:[476,262]}],
  places:[
   {id:'egret-bar',name:'Egret Bar',at:[474,292],text:'A bare sandbar in the middle of the braids. The great egret stands here on one leg and does not care about you at all.'},
   {id:'westbraid-isle',name:'Westbraid Isle',at:[418,306],text:'The biggest of the wooded islands. Fords lead off it to the south and over the rapids to the west.'},
@@ -194,7 +194,7 @@ area({id:'falls-channels',num:'9.1',name:'Falls Channels',frame:[284,436,86,150]
  bridges:[[[304,104],[318,112],[332,120],[346,128],[360,134],[372,142],[380,150]],[[397,103],[410,106]]],
  walks:[[[398,100],[386,108],[376,116],[364,124],[356,130]],[[284,124],[296,122],[306,118],[318,114]]],
  roads:[[[398,86],[398,101]],[[399,102],[414,106],[428,108],[434,98],[434,86]]],
- props:[{kind:'wheel',at:[368,114],still:true},{kind:'ruin',at:[316,104]}],
+ props:[{kind:'waterfall',at:[371.3,103.5]},{kind:'wheel',at:[368,114],still:true},{kind:'ruin',at:[316,104]}],
  places:[
   {id:'silverfall-pool',name:'Silverfall Pool',at:[426,110],text:'The Silverfall drops off the cliff into a deep, cold pool. The roar fills your chest. Big fish hold in the dark water under the spray.'},
   {id:'old-dyke',name:'The Old Dyke',at:[332,124],text:'A paved causeway, older than the village, laid straight across the channels. The stones are worn smooth in the middle.'},
@@ -538,7 +538,7 @@ area({id:'upper-falls',num:'3.1',name:'Upper Falls',frame:[2,128,100,166],size:[
  ],
  cliffs:[[[2,100],[36,100],[40,112],[38,126],[44,140],[40,152],[30,166],[2,166]]],
  roads:[[[54,100],[57,104],[52,108],[57,112],[52,116],[56,120],[58,124]],[[58,124],[70,122],[86,126],[92,132],[92,140]],[[92,140],[93,148],[92,156],[90,166]],[[92,133],[104,136],[116,138],[128,140]]],
- props:[{kind:'heron',at:[64,133]},{kind:'cave',at:[37,112]},{kind:'bench',at:[78,122]}],
+ props:[{kind:'waterfall',at:[44,107.8]},{kind:'waterfall',at:[82.8,141.3]},{kind:'heron',at:[64,133]},{kind:'cave',at:[37,112]},{kind:'bench',at:[78,122]}],
  places:[
   {id:'top-falls',name:'Top Falls',at:[52,111],text:'Fallsrun pours over the lip above into the pool, in a curtain of white water. Behind it, the rock looks darker, almost like an opening.'},
   {id:'upper-pool',name:'Upper Pool',at:[72,123],text:'A clear, deep pool full of mist and rainbows. A heron stands on the rock in the middle, ignoring you completely.'},
@@ -563,7 +563,7 @@ area({id:'glasswater',num:'3.2',name:'Glasswater Basin',frame:[2,130,158,214],si
  cliffs:[[[2,158],[14,158],[16,175],[10,190],[12,214],[2,214]]],
  roads:[[[90,158],[94,164],[98,170]],[[98,170],[108,178],[110,188],[104,198],[90,204],[74,206],[60,206],[56,207]],[[56,207],[57,211],[58,214]]],
  walks:[[[104,190],[98,190]]],
- props:[{kind:'hut',at:[117,183]},{kind:'big-tree',at:[65,180],solid:0},{kind:'dock',at:[100,190]}],
+ props:[{kind:'waterfall',at:[84.2,165.5]},{kind:'waterfall',at:[50.3,208.5]},{kind:'hut',at:[117,183]},{kind:'big-tree',at:[65,180],solid:0},{kind:'dock',at:[100,190]}],
  places:[
   {id:'glasswater-jetty',name:'Glasswater',at:[100,190],text:'A turquoise pool so clear you can see the fish from the jetty. In the west the Clearwater Shallows are sandy and knee-deep.'},
   {id:'fishing-hut',name:'Fishing Hut',at:[112,190],text:'An empty fishing hut. A net on the wall, a stool by the door, and a kettle that someone meant to come back for.'},
@@ -590,7 +590,7 @@ area({id:'western-falls',num:'11',name:'Western Falls',frame:[0,128,204,320],siz
  cliffs:[[[30,204],[100,204],[100,214],[66,222],[36,222],[26,214]]],
  roads:[[[58,204],[60,212],[58,219]],[[42,238],[40,246],[42,262],[50,276],[46,290],[34,302],[24,312],[14,320]]],
  walks:[[[58,218],[53,228],[43,237]],[[46,240],[56,252],[64,264],[66,280],[62,294]],[[66,268],[80,268]],[[66,286],[82,286]]],
- props:[{kind:'stilt-hut',at:[56,248]},{kind:'stilt-hut',at:[64,261]},{kind:'stilt-hut',at:[69,274],roof:'#7a5a3a'},{kind:'stilt-hut',at:[68,292]},{kind:'boat',at:[86,271]},{kind:'boat',at:[88,289]},{kind:'pillar',at:[100,282]},{kind:'pillar',at:[110,296]},{kind:'pillar',at:[118,276]},{kind:'pillar',at:[96,306]}],
+ props:[{kind:'waterfall',at:[60.6,221.7]},{kind:'stilt-hut',at:[56,248]},{kind:'stilt-hut',at:[64,261]},{kind:'stilt-hut',at:[69,274],roof:'#7a5a3a'},{kind:'stilt-hut',at:[68,292]},{kind:'boat',at:[86,271]},{kind:'boat',at:[88,289]},{kind:'pillar',at:[100,282]},{kind:'pillar',at:[110,296]},{kind:'pillar',at:[118,276]},{kind:'pillar',at:[96,306]}],
  places:[
   {id:'lower-falls-foot',name:'Lower Falls',at:[59,214],text:'Rock steps come down beside the Lower Falls. The smaller Veil Falls drops off the same ledge a little to the east.'},
   {id:'plunge-pool',name:'Plunge Pool',at:[46,235],text:'Both falls crash into a deep, churning pool. Big fish hang in the white water and wait for whatever comes over the edge.'},
@@ -861,7 +861,7 @@ area({id:'outer-shallows',num:'21',name:'Outer Shallows',frame:[0,180,380,480],s
 
 // The land editor (Reedwater Delta Atlas → Edit world → Land) ships whole terrain fields per area in land-data.js.
 // Each one it holds replaces the same field written above; everything it leaves out stays as written here.
-export const LAND_FIELDS=['base','sea','ground','size','spawn','shapes','zones','cliffs','roads','walks','fords','bridges','props','places','exits','portals'];
+export const LAND_FIELDS=['base','sea','ground','size','spawn','shapes','zones','cliffs','roads','walks','fords','bridges','props','places','exits','portals','textures'];
 export const BUILT_DEFS=DEFS;
 export const DELTA_DEFS=DEFS.map(def=>{const edit=LAND_DATA[def.id];if(!edit)return def;const out={...def};for(const k of LAND_FIELDS)if(Object.hasOwn(edit,k))out[k]=edit[k];return out;});
 export const DELTA=Object.fromEntries(DELTA_DEFS.map(def=>[def.id,defineArea(def)]));

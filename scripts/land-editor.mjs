@@ -11,8 +11,10 @@ import {readdir,readFile,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {BUILT_DEFS,DELTA_DEFS,LAND_FIELDS} from '../src/delta-areas.js';
 import {PROP_SOLID,PROP_ART} from '../src/atlas-area.js';
+import {GROUND_TEXTURES} from '../src/ground-textures.js';
 
 export const ZONES=['meadow','clear','forest','sand','rock','marsh','dirt'];
+export const TEXTURE_KINDS=Object.keys(GROUND_TEXTURES);
 const EDGES=['north','south','west','east'];
 const isNum=v=>typeof v==='number'&&Number.isFinite(v);
 const clamp=(v,min,max)=>Math.min(max,Math.max(min,v));
@@ -50,7 +52,7 @@ export function cleanLand(def,built,notes=[]){
  if(Array.isArray(def.cliffs))out.cliffs=def.cliffs.flatMap((c,i)=>{const p=pts(c,3);if(!p){drop(`cliff ${i+1}`);return [];}return [p];});
  if(Array.isArray(def.roads))out.roads=def.roads.flatMap((r,i)=>{const p=pts(r,2);if(!p){drop(`trail ${i+1}`);return [];}return [p];});
  for(const k of ['walks','fords','bridges'])if(Array.isArray(def[k]))out[k]=def[k].flatMap((w,i)=>{
-  if(w&&!Array.isArray(w)&&typeof w==='object'){const p=pts(w.pts,2);if(!p||!isNum(w.width)){drop(`${k} ${i+1}`);return [];}return [{pts:p,width:r1(clamp(w.width,.5,20))}];}
+  if(w&&!Array.isArray(w)&&typeof w==='object'){const p=pts(w.pts,2);if(!p||!isNum(w.width)){drop(`${k} ${i+1}`);return [];}const o={pts:p,width:r1(clamp(w.width,.5,20))};if(isNum(w.hit))o.hit=r1(clamp(w.hit,.2,20));return [o];}
   const p=pts(w,2);if(!p){drop(`${k} ${i+1}`);return [];}return [p];
  });
  if(Array.isArray(def.props))out.props=def.props.flatMap((p,i)=>{
@@ -85,7 +87,9 @@ export function cleanLand(def,built,notes=[]){
   const l=link(e);if(l?.entry)o.entry=l.entry;
   return [o];
  });
- if(Array.isArray(def.portals))out.portals=def.portals.flatMap((q,i)=>{const at=pt(q?.at),l=link(q);if(!at||!l){drop(`portal ${i+1}`);return [];}const o={at,r:Math.round(clamp(isNum(q.r)?q.r:60,10,300)),target:l.target,label:text(q.label,60)||l.target};if(l.entry)o.entry=l.entry;return [o];});
+ if(Array.isArray(def.portals))out.portals=def.portals.flatMap((q,i)=>{const at=pt(q?.at),l=link(q);if(!at||!l){drop(`portal ${i+1}`);return [];}const o={at,r:Math.round(clamp(isNum(q.r)?q.r:60,10,300)),target:l.target,label:text(q.label,60)||l.target};if(q.quiet===true)o.quiet=true;if(l.entry)o.entry=l.entry;return [o];});
+ // Ground texture size per ground kind (1 = as painted).
+ if(Object.hasOwn(def,'textures')){const t=def.textures;if(t==null)out.textures=undefined;else if(typeof t==='object'){const o={};for(const [k,v] of Object.entries(t))if(TEXTURE_KINDS.includes(k)&&isNum(v)&&v!==1)o[k]=Math.round(clamp(v,.25,3)*100)/100;else drop(`texture size ${k}`);out.textures=Object.keys(o).length?o:undefined;}else drop('bad texture sizes');}
  return out;
 }
 
@@ -118,7 +122,7 @@ export const LAND_DATA=Object.freeze({${areas.length?'\n'+areas.join(',\n')+'\n'
 // What the editor starts from: every atlas area's terrain as the game has it now, plus the choices it offers.
 export function shippedLand(){
  const pick=d=>{const o={id:d.id,name:d.name,num:d.num,frame:d.frame};for(const k of LAND_FIELDS)if(d[k]!==undefined)o[k]=d[k];return o;};
- return {zones:ZONES,props:Object.keys(PROP_SOLID),propArt:PROP_ART,propSolid:PROP_SOLID,areas:Object.fromEntries(DELTA_DEFS.map(d=>[d.id,pick(d)]))};
+ return {zones:ZONES,textures:TEXTURE_KINDS,props:Object.keys(PROP_SOLID),propArt:PROP_ART,propSolid:PROP_SOLID,areas:Object.fromEntries(DELTA_DEFS.map(d=>[d.id,pick(d)]))};
 }
 
 async function readDocs(dir){

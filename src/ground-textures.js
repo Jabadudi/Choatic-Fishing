@@ -4,7 +4,8 @@
 export const GROUND_TEXTURES=Object.freeze({forest:'forest-floor',sand:'beach-sand',rock:'rocky-ground',marsh:'marsh-ground',dirt:'packed-dirt',
  cliff:'cliff-top',road:'old-road',drowned:'drowned-road',shallow:'shallow-water',river:'river-water',sea:'open-sea'});
 const images=new Map();
-export function groundPattern(ctx,kind,invalidate){
+// scale shrinks or grows the texture (an atlas area's land can set one per ground, e.g. smaller forest leaves).
+export function groundPattern(ctx,kind,invalidate,scale=1){
  const name=GROUND_TEXTURES[kind];if(!name||typeof Image==='undefined')return null;
  let entry=images.get(name);
  if(!entry){
@@ -14,8 +15,11 @@ export function groundPattern(ctx,kind,invalidate){
  }
  if(!entry.ready)return null;
  // Patterns belong to one context; each terrain chunk has its own.
- entry.patterns??=new WeakMap();let pattern=entry.patterns.get(ctx);
- if(!pattern){pattern=ctx.createPattern(entry.image,'repeat');if(pattern)entry.patterns.set(ctx,pattern);}
+ entry.patterns??=new WeakMap();let byScale=entry.patterns.get(ctx);if(!byScale){byScale=new Map();entry.patterns.set(ctx,byScale);}
+ let pattern=byScale.get(scale);
+ if(!pattern){pattern=ctx.createPattern(entry.image,'repeat');
+  if(pattern&&scale!==1&&typeof DOMMatrix!=='undefined'&&pattern.setTransform)pattern.setTransform(new DOMMatrix().scaleSelf(scale,scale));
+  if(pattern)byScale.set(scale,pattern);}
  return pattern;
 }
 // Which texture paints a spot in an atlas area: water by depth (the Drowned Road's street under its shallows, open sea

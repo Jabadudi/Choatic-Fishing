@@ -241,7 +241,7 @@ function staticArea(ctx,left,top,width,height,id){
   const deck=id==='marsh'&&onMarshDeck(px,py)||id==='crossroads'&&onCrossroadsDeck(px,py)||id==='village'&&onVillageDeck(px,py)||!!DISTRICTS[id]?.deck(px,py),water=wet<0&&!deck,path=!water&&(deck||road<24+r*12),zone=DELTA[id]?.zoneAt(px,py),sand=!water&&!path&&(zone==='sand'||wet< (DELTA[id]?30:coastDistance(px,py)>-70?58:20)+r*8),ground=!water&&!path&&!sand&&(zone==='rock'||zone==='marsh'||zone==='dirt'||zone==='cliff');
   // The atlas areas paint their ground and water textures where they have one; every other outdoor area (the Landing,
   // Willowback, the marsh, the Crossroads) paints its water with them and keeps its own ground.
-  const texture=atlasTextures?groundPattern(ctx,groundKind(id,{water,path,sand,zone,wet,r}),markStale)
+  const gk=atlasTextures&&groundKind(id,{water,path,sand,zone,wet,r}),texture=atlasTextures?groundPattern(ctx,gk,markStale,DELTA[id].textures?.[gk]||1)
    :water&&groundPattern(ctx,waterKind(id,wet,r,px,py),markStale);
   if(texture){ctx.fillStyle=texture;ctx.fillRect(x,y,8,8);continue;}
   else if(water||path||sand||ground||!texturedGrass){ctx.fillStyle=water?waterColor(wet,id==='landing'&&coastDistance(px,py)>0,id==='marsh'):path?['#d6bd7a','#dfc885','#d9c17e'][Math.floor(r*3)]:sand?(id==='marsh'?['#8c8b60','#a2a074','#929469']:['#c5ba77','#d1c487','#cabe7d'])[Math.floor(r*3)]:palette[Math.floor(hash(Math.floor(x/48),Math.floor(y/48))*3)];ctx.fillRect(x,y,8,8);}
@@ -358,7 +358,7 @@ export function drawDepthSorted(ctx,world,view,actors,drawActor,{still=false}={}
  if(id==='marsh')for(const object of MARSH_OBJECTS)if(object.x>view.left-180&&object.x<view.right+180&&object.y>view.top-30&&object.y<view.bottom+200){const it=slot(n++);it.kind='marsh';it.y=object.y+12;it.ref=object;}
  if(DISTRICTS[id])for(const object of [...DISTRICTS[id].buildings,...DISTRICTS[id].props])if(object.x>view.left-200&&object.x<view.right+200&&object.y>view.top-30&&object.y<view.bottom+220){const it=slot(n++);it.kind='village';it.y=object.y+18;it.ref=object;}
  if(id==='village')for(const object of villageObjects)if(object.x>view.left-200&&object.x<view.right+200&&object.y>view.top-30&&object.y<view.bottom+220){const it=slot(n++);it.kind='village';it.y=object.y+18;it.ref=object;}
- if(DELTA[id])for(const object of DELTA[id].props)if(object.x>view.left-200&&object.x<view.right+200&&object.y>view.top-30&&object.y<view.bottom+220){const it=slot(n++);it.kind='atlas';it.y=object.y;it.ref=object;}
+ if(DELTA[id])for(const object of DELTA[id].props)if(object.kind!=='waterfall'&&object.x>view.left-200&&object.x<view.right+200&&object.y>view.top-30&&object.y<view.bottom+220){const it=slot(n++);it.kind='atlas';it.y=object.y;it.ref=object;}
  if(id==='landing'){const it=slot(n++);it.kind='story-cabin';it.y=1515;}
  order.length=0;for(let i=0;i<n;i++)order.push(slots[i]);order.sort((a,b)=>a.y-b.y);
  for(const it of order){
@@ -399,18 +399,8 @@ function waterKind(id,wet,r,x,y){
  if(wet> -38+r*12)return 'shallow';
  return id==='landing'&&coastDistance(x,y)>0||id==='village-port'?'sea':'river';
 }
-// The falls and rapids the atlas areas name: each sits on the water nearest its label.
-const FALLS=/^(The Stonefall|The Falls|The Rush|Sluice Falls|Top Falls|The Cascade|Middle Falls|Lower Falls)$/,falls=new Map();
-export function fallsFor(id){
- if(!DELTA[id]||id==='landing')return [];
- let list=falls.get(id);if(list)return list;list=[];
- for(const p of DELTA[id].places){
-  if(!FALLS.test(p.name||''))continue;let best=null,bd=Infinity;
-  for(let r=0;r<=320&&!best;r+=8)for(let k=0;k<32;k++){const x=p.x+Math.cos(k/32*Math.PI*2)*r,y=p.y+Math.sin(k/32*Math.PI*2)*r,d=waterDistance(x,y,id);if(d< -10&&r<bd){bd=r;best={x:Math.round(x),y:Math.round(y)};}}
-  if(best)list.push(best);
- }
- falls.set(id,list);return list;
-}
+// Waterfalls are props in the atlas areas' land ({kind:'waterfall'}), placed and moved in the land editor.
+export function fallsFor(id){return DELTA[id]?DELTA[id].props.filter(p=>p.kind==='waterfall'):[];}
 function drawWater(ctx,world,view,id){
  if(id==='windchime'||interior(id))return;const t=world.elapsed||0;ctx.save();
  for(const f of fallsFor(id))if(f.x>view.left-80&&f.x<view.right+80&&f.y>view.top-80&&f.y<view.bottom+80)drawEntitySprite(ctx,'waterfall',{x:f.x,y:f.y,state:'idle',time:t+f.x*.01});
@@ -475,7 +465,7 @@ export function drawWildsLabels(ctx,world,view){
  for(const p of placesFor(id))if(p.x>view.left-120&&p.x<view.right+120&&p.y>view.top-100&&p.y<view.bottom+100)parchmentTag(ctx,p.x,p.y+34,p.name,labelAlpha(Math.hypot(world.player.x-p.x,world.player.y-p.y)));
  if(id==='crossroads')drawCrossroadsLabels(ctx);
  if(id==='landing'){parchmentTag(ctx,1630,1565,cabinDamaged(world.story)?'The Damaged Cabin':'Grandpa’s Cabin',labelAlpha(Math.hypot(world.player.x-1630,world.player.y-1545)));}
- for(const q of area.portals||[])parchmentTag(ctx,q.x,q.y-q.r-30,`◆ ${q.label}`,labelAlpha(Math.hypot(world.player.x-q.x,world.player.y-q.y)-60));
+ for(const q of area.portals||[])if(!q.quiet)parchmentTag(ctx,q.x,q.y-q.r-30,`◆ ${q.label}`,labelAlpha(Math.hypot(world.player.x-q.x,world.player.y-q.y)-60));
  for(const exit of area.exits){const horizontal=exit.edge==='east'||exit.edge==='west',x=horizontal?(exit.edge==='east'?area.width-160:160):(exit.from+exit.to)/2,y=horizontal?(exit.from+exit.to)/2:exit.edge==='north'?110:(interior(id)?area.height-45:area.height-200);parchmentTag(ctx,x,y-12,`${{north:'↑',south:'↓',west:'←',east:'→'}[exit.edge]} ${exit.label}`,1);}
 }
 export function drawExplorer(ctx,p,time=0){
@@ -500,7 +490,7 @@ export function paintAtlasLabels(ctx,width,height,discovered=new Set(),id='landi
  const area=areaFor(id),sx=width/area.width,sy=height/area.height;
  for(const p of placesFor(id)){ctx.fillStyle=discovered.has(p.id)?'#e6bd65':'#e3e1c9';ctx.fillRect(p.x*sx-2,p.y*sy-2,4,4);if(width>400){ctx.font='bold 12px monospace';ctx.textAlign='center';ctx.fillStyle='#203c38';ctx.fillText(p.name,p.x*sx+1,p.y*sy-9);ctx.fillStyle='#fff0c9';ctx.fillText(p.name,p.x*sx,p.y*sy-10);}}
  for(const e of area.exits){const horizontal=e.edge==='east'||e.edge==='west',x=horizontal?(e.edge==='east'?width-8:8):(e.from+e.to)/2*sx,y=horizontal?(e.from+e.to)/2*sy:e.edge==='north'?18:height-10;ctx.fillStyle='#f0d68b';ctx.textAlign=horizontal?(e.edge==='east'?'right':'left'):'center';ctx.font=`bold ${width>400?12:8}px monospace`;edgeText(ctx,`${{north:'↑',south:'↓',west:'←',east:'→'}[e.edge]} ${e.label}`,x,y);}
- for(const q of area.portals||[]){ctx.fillStyle='#f0d68b';ctx.textAlign='center';ctx.font=`bold ${width>400?12:8}px monospace`;edgeText(ctx,`◆ ${q.label}`,q.x*sx,q.y*sy-6);}
+ for(const q of area.portals||[]){if(q.quiet)continue;ctx.fillStyle='#f0d68b';ctx.textAlign='center';ctx.font=`bold ${width>400?12:8}px monospace`;edgeText(ctx,`◆ ${q.label}`,q.x*sx,q.y*sy-6);}
 }
 // Exit and door signs sit on busy art, so they get a dark outline.
 function edgeText(ctx,text,x,y){ctx.save();ctx.lineWidth=3;ctx.lineJoin='round';ctx.strokeStyle='#14262a';ctx.strokeText(text,x,y);ctx.restore();ctx.fillText(text,x,y);}
