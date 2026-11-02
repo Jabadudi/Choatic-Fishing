@@ -36,12 +36,34 @@ export function frameRect(definition,index,imageWidth,imageHeight){
  if(definition.frameSize){const [w,h]=definition.frameSize,columns=definition.columns||Math.floor(imageWidth/w);if(columns<1)return null;return [(index%columns)*w,Math.floor(index/columns)*h,w,h];}
  return [0,0,imageWidth,imageHeight];
 }
+// Creature sheets are big (up to 2.5 MB), so on a phone a request can drop. A sheet that failed is asked for again after a
+// pause that doubles each time (2 s up to 30 s), instead of staying blank until the page reloads.
+const failures=new Map();
+function sheetImage(url){
+ let img=images.get(url);
+ if(img){
+  if(!img.complete||img.naturalWidth)return img;
+  const failed=failures.get(url)||{tries:0,at:0},now=Date.now();
+  if(!failed.at){failed.at=now;failures.set(url,failed);}
+  if(now-failed.at<Math.min(30000,2000*2**failed.tries))return img;
+  failed.tries++;failed.at=0;images.delete(url);
+ }
+ img=new Image();images.set(url,img);
+ img.onload=()=>failures.delete(url);
+ img.src=url;
+ return img;
+}
+// Starts fetching a sprite's sheet before it is on screen, e.g. as a creature spawns somewhere in the area.
+export function preloadSprite(id){
+ const def=SPRITES[id];if(!def?.asset||typeof Image==='undefined')return;
+ sheetImage(spriteAssetUrl(def.asset));
+}
+export const spriteHasArt=id=>!!SPRITES[id]?.asset;
 export const spriteFrame=(id,state,time,options)=>frameIndex(SPRITES[id]||{},state,time,options);
 export function drawSprite(ctx,definition,{x=0,y=0,state='idle',time=0,direction,duration,flipX=false,angle=0}={}){
  if(!definition?.asset||typeof Image==='undefined')return false;
- const url=spriteAssetUrl(definition.asset);let img=images.get(url);
- if(!img){img=new Image();images.set(url,img);img.src=url;}
- if(!img.complete||!img.naturalWidth||!img.naturalHeight)return false;
+ const url=spriteAssetUrl(definition.asset),img=sheetImage(url);
+ if(!img||!img.complete||!img.naturalWidth||!img.naturalHeight)return false;
  const source=imageSource(img,definition,url);if(!source)return false;
  const rect=frameRect(definition,frameIndex(definition,state,time,{direction,duration}),img.naturalWidth,img.naturalHeight);
  if(!rect)return false;
@@ -97,4 +119,4 @@ export function preloadProps(){
  if(typeof Image==='undefined')return;
  for(const id of Object.keys(PROPS)){const url=spriteAssetUrl(PROPS[id]);if(images.has(url))continue;const img=new Image();img.onload=()=>propListeners.forEach(fn=>fn());images.set(url,img);img.src=url;}
 }
-export const clearSpriteCache=()=>{images.clear();keyedImages.clear();};
+export const clearSpriteCache=()=>{images.clear();keyedImages.clear();failures.clear();};
