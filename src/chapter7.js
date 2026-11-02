@@ -1,5 +1,6 @@
 import {script,say,think,narrate} from './scene-script.js';
 import {CORE,OCELOT} from './chapter6.js';
+import {storyCount} from './story-tuning.js';
 // Story dialogue and route only. Chapter 7 starts when Eli goes to bed at the end of Chapter 6: Drayfus wakes him
 // in the dark, he runs the edge of Willowback until the sun comes up, eats breakfast with Mara, holds a squat in the
 // training circle until Drayfus freezes at the word "grandmother", runs again, and ends on the grass behind the lodge.
@@ -23,7 +24,7 @@ export const PERIMETER=[
 export const WATCHTOWER={x:150,y:800};
 export const TOWER_PLATFORM={x:150,y:690};
 // Eli squats in the middle of the training circle, just in front of Drayfus.
-export const HOLD_SECONDS=20;
+export const HOLD_SECONDS=storyCount('holdSeconds');
 // Where Eli lies down at the end of the day: the grass behind the guest lodge, out of sight of the square.
 export const REST_SPOT={x:520,y:440};
 const eli=text=>say('Eli',text),mara=text=>say('Mara',text),drayfus=text=>say('Drayfus',text),ocelot=text=>say(OCELOT,text),core=text=>say(CORE,text);

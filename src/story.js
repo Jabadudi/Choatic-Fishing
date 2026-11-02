@@ -13,6 +13,7 @@ import {createNpcs} from './npcs.js';
 import {NPC_TYPES} from './entities.js';
 import {practise} from './skills.js';
 import {startSpar,updateSpar,sparDown,sparObjective} from './spar.js';
+import {storyCount,editedObjective} from './story-tuning.js';
 export const COOKING_XP=40;
 // Fishing XP for line-casting the sword out of Drayfus's hand.
 export const DISARM_XP=30;
@@ -50,7 +51,7 @@ export const LURE='Mysterious Lure',REGION_CORE='Region Core';
 export const pageForBeat=(scene,beat)=>SCENES[scene]?.findIndex(p=>p.beat===beat)??-1;
 export const createStory=()=>({stage:'arrival',lureSeen:false,photoSeen:false,scene:'arrival',page:0,guide:null,rod:false,bow:false,coreIngested:false,callAwakened:false});
 // Chapter 1 supper: two Sardines from the pier, then three Deer Meat from the meadow, all cooked at the stove.
-export const SUPPER=Object.freeze({Sardine:2,'Deer Meat':3});
+export const SUPPER=Object.freeze({Sardine:storyCount('supperSardines'),'Deer Meat':storyCount('supperDeerMeat')});
 export const RACK={x:320,y:96};
 const PRE_STORM=['arrival','explore','fish'];
 export const rodReady=story=>!story||story.rod!==false;
@@ -59,10 +60,10 @@ export const bowAvailable=w=>w.story?.stage==='fish'&&w.story.rod&&carried(w,'Sa
 export function supperObjective(w){
  const s=w.story,fish=Math.min(SUPPER.Sardine,carried(w,'Sardine')),meat=Math.min(SUPPER['Deer Meat'],carried(w,'Deer Meat'));
  if(!s.rod)return 'Chapter 1 · Take Grandpa’s fishing rod from the weapon rack in the cabin.';
- if(!s.bow&&fish<SUPPER.Sardine)return `Chapter 1 · Fish 2 Sardines from the pier (${fish}/2).`;
+ if(!s.bow&&fish<SUPPER.Sardine)return `Chapter 1 · Fish ${SUPPER.Sardine} Sardines from the pier (${fish}/${SUPPER.Sardine}).`;
  if(!s.bow)return 'Chapter 1 · Take the hunting bow from the weapon rack in the cabin.';
- if(fish<SUPPER.Sardine||meat<SUPPER['Deer Meat'])return `Chapter 1 · Hunt deer in the meadow and collect 3 Deer Meat (${meat}/3)${fish<SUPPER.Sardine?` · Sardines ${fish}/2`:''}.`;
- return 'Chapter 1 · Bring 2 Sardines and 3 Deer Meat to the cabin stove and cook dinner.';
+ if(fish<SUPPER.Sardine||meat<SUPPER['Deer Meat'])return `Chapter 1 · Hunt deer in the meadow and collect ${SUPPER['Deer Meat']} Deer Meat (${meat}/${SUPPER['Deer Meat']})${fish<SUPPER.Sardine?` · Sardines ${fish}/${SUPPER.Sardine}`:''}.`;
+ return `Chapter 1 · Bring ${SUPPER.Sardine} Sardines and ${SUPPER['Deer Meat']} Deer Meat to the cabin stove and cook dinner.`;
 }
 export const cabinDamaged=story=>!!story&&((story.stage==='storm'&&story.scene==='storm'&&story.page>=SCENES.storm.findIndex(p=>p.action==='escape'))||['awakening','complete'].includes(story.stage)||chapterTwo(story)||villageStory(story));
 export const chapterHeading=scene=>scene?.startsWith('ch7-')?'CHAPTER 7 · LEGS':scene?.startsWith('ch6-')?'CHAPTER 6 · RESONANCE':scene?.startsWith('ch5-')?'CHAPTER 5 · SUNRISE':scene?.startsWith('ch4-')?'CHAPTER 4 · REGION CORE':scene?.startsWith('ch3-')?'CHAPTER 3 · THE VILLAGE':scene?.startsWith('ch2-')?'CHAPTER 2 · SHADOW WALKER':'CHAPTER 1 · THE OLD FISHING HUT';
@@ -76,14 +77,16 @@ export function storyObjective(world){
  if(s.stage==='ch6-spar'&&world.spar)return sparObjective(world.spar);
  if(['ch7-run','ch7-laps'].includes(s.stage))return runObjective(s.stage,s.run||0);
  if(s.stage==='ch7-hold')return holdObjective(s.hold||0);
- return ({...CHAPTER3_OBJECTIVES,...CHAPTER4_OBJECTIVES,...CHAPTER5_OBJECTIVES,...CHAPTER6_OBJECTIVES,...CHAPTER7_OBJECTIVES,arrival:'Chapter 1 · Walk up the beach from the pier to Grandpa’s cabin.',explore:'Chapter 1 · Examine the lure box and the photograph inside the cabin.',rest:'Chapter 1 · When you are ready, rest in the cabin bed.',storm:'Chapter 1 · Survive the storm.',awakening:'Chapter 1 · A new morning.',complete:'Chapter 2 · Talk to the girl beside the campfire at Reedwater Landing.',
+ return editedObjective(s.stage,STORY_OBJECTIVES[s.stage]);
+}
+// Each stage's objective line, as written in code. The atlas can reword them (src/story-tuning.js).
+export const STORY_OBJECTIVES=Object.freeze({...CHAPTER3_OBJECTIVES,...CHAPTER4_OBJECTIVES,...CHAPTER5_OBJECTIVES,...CHAPTER6_OBJECTIVES,...CHAPTER7_OBJECTIVES,arrival:'Chapter 1 · Walk up the beach from the pier to Grandpa’s cabin.',explore:'Chapter 1 · Examine the lure box and the photograph inside the cabin.',rest:'Chapter 1 · When you are ready, rest in the cabin bed.',storm:'Chapter 1 · Survive the storm.',awakening:'Chapter 1 · A new morning.',complete:'Chapter 2 · Talk to the girl beside the campfire at Reedwater Landing.',
  'ch2-camp':'Chapter 2 · Talk with your rescuer about last night.',
  'ch2-cabin':'Chapter 2 · Ask the girl about the cabin. You can examine the ruins and the beach first.',
  'ch2-home':'Chapter 2 · Ask the girl how to get home.',
  'ch2-ready':'Chapter 2 · Talk to the girl when you are ready to leave the shore.',
  'ch2-follow':'Chapter 2 · Follow the girl toward the inland trail. She waits if you fall behind.',
- 'ch2-complete':'Chapter 3 · Return to the girl on the inland trail at Reedwater Landing. Talk when you are ready to visit the village.'})[s.stage];
-}
+ 'ch2-complete':'Chapter 3 · Return to the girl on the inland trail at Reedwater Landing. Talk when you are ready to visit the village.'});
 export function storyPrompt(w){
  if(!w.story)return null;
  if(w.storySuspended&&pendingScene(w))return 'Resume conversation';
@@ -475,6 +478,8 @@ export function restoreStory(data){
  const story={stage:data.stage,lureSeen:data.lureSeen,photoSeen:data.photoSeen,scene:data.scene,page:data.page,guide,rod,bow,coreIngested:reached('ch5-morning'),callAwakened:reached('ch6-cast')};
  // Drayfus's bucket count exists only while Eli is carrying water.
  if(data.stage==='ch6-buckets'){
+  // The count can change in the story editor; a save from before keeps its place, capped to the new count.
+  if(Number.isInteger(data.buckets)&&data.buckets>BUCKET_TRIPS)data={...data,buckets:data.scene==='ch6-forty'?BUCKET_TRIPS:BUCKET_TRIPS-1};
   if(!Number.isInteger(data.buckets)||data.buckets<0||data.buckets>BUCKET_TRIPS||typeof data.carrying!=='boolean'||(data.scene==='ch6-forty')!==(data.buckets===BUCKET_TRIPS)||(data.carrying&&data.buckets===BUCKET_TRIPS))throw Error('Invalid bucket trips.');
   Object.assign(story,{buckets:data.buckets,carrying:data.carrying});
  }else if(data.buckets!==undefined||data.carrying!==undefined)throw Error('Invalid bucket trips.');
@@ -484,8 +489,8 @@ export function restoreStory(data){
   story.run=data.run;
  }else if(data.run!==undefined)throw Error('Invalid run progress.');
  if(data.stage==='ch7-hold'){
-  if(!Number.isFinite(data.hold)||data.hold<0||data.hold>HOLD_SECONDS)throw Error('Invalid squat progress.');
-  story.hold=data.hold;
+  if(!Number.isFinite(data.hold)||data.hold<0)throw Error('Invalid squat progress.');
+  story.hold=Math.min(data.hold,HOLD_SECONDS);
  }else if(data.hold!==undefined)throw Error('Invalid squat progress.');
  return story;
 }

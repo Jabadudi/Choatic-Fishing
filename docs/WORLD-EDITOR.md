@@ -69,7 +69,8 @@ units, so check them after resizing.
 
 The **Quests** mode (or **Edit quests** on an area in the atlas) places quest givers and edits their side quests. Tap a
 villager to see their quests, or use **+ Quest giver** to place someone new in any area (outside Willowback, villagers
-appear once Eli has reached Willowback in the story). A quest has a title, what Eli must hunt or bring, where to look,
+appear once Eli has reached Willowback in the story). A quest has a title, what Eli must do (hunt, bring, deliver or
+talk to), where to look,
 the level it unlocks at, the quest it comes after, its rewards (marks, XP and items), its lore for the quest log and the
 giver's lines. **Write lore with Claude** and **Write the lines with Claude** draft those in the story's narration style.
 Untick **In the game** to hold a quest back.
@@ -86,3 +87,28 @@ ship with the world editor changes. Shipping quests is a one-file PR:
 In the game, a quest below its unlock level shows no ! over the giver, who tells Eli to come back when he's stronger.
 `node scripts/quest-editor.mjs meta <file>` rebuilds the editor's creature and item lists (`world/quest-editor.json`)
 when new creatures or items are added.
+
+### Delivery and talk-to errands
+
+A **Deliver** objective names an item, a count and the villager it goes to; the giver hands Eli the goods when he takes
+the job (he needs room in his pack), and they leave his pack when he reaches that villager. A **Talk to** objective names
+a villager to visit. Either can carry the line that villager says when Eli arrives. The villager must be in the game and
+can't be the giver. Once every objective is done Eli goes back to the giver for the reward. Parcel and Sealed Letter are
+the errand items.
+
+### Main story
+
+**Main story** at the bottom of the Quests panel lists Claude's chapters. A chapter's title, its recap, each step's name in
+the quest log, its objective lines and a few counts (supper sardines and deer meat in chapter 1, bucket trips in
+chapter 6, the hold in chapter 7) can be changed there. Scenes, dialogue and the order of steps stay in code, and lines
+that count progress (the fishing line, the bucket tally, the run) are written by the game. Each chapter is one document
+in `story` (`ch6`) holding only what differs from the code; `story/_shared` holds the shipping marker. To ship when
+Netanel says "ship the story changes":
+
+1. Download the `story` collection into a folder.
+2. `node scripts/story-editor.mjs export <folder>` rewrites `src/story-edits.js`.
+3. Run `npm test`, open the PR, then set `story/_shared.shippedAt` to the downloaded `lastEditAt`.
+
+`node scripts/story-editor.mjs meta <file>` rebuilds `world/story.json` (the chapters as the code has them) whenever a
+chapter is added or its steps change, and the atlas is republished with it. A count change caps saved progress rather
+than breaking older saves.
