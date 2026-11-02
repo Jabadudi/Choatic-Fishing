@@ -2,7 +2,7 @@ import {storyObjective,storyPrompt} from './story.js';
 import {nearbyDrop} from './drops.js';
 import {itemLabel} from './artifacts.js';
 import {questObjective} from './quests.js';
-import {sideObjective,questFor} from './side-quests.js';
+import {sideObjective,questFor,visitFor} from './side-quests.js';
 import {placesFor,examinableLandmark} from './wilds.js';
 import {nearbyNpc} from './npcs.js';
 import {MERCHANTS} from './trade.js';
@@ -20,7 +20,7 @@ export function explorationHud(world,exploringSeconds){
   sideQuest:sideObjective(world),
   // Boats and other ways across are not landmarks to discover.
   dots:placesFor(id).filter(p=>!p.travel).map(p=>world.discovered.has(p.id)),
-  prompt:storyPrompt(world)|| (nearbyDrop(world)?`Pick up ${itemLabel(nearbyDrop(world).item)}`:work?.state==='ready'?`Report to ${npc.name}`:work?.state==='offer'?`Talk to ${npc.name} · Side mission`:npc?`${npc.interactions?.includes('examine')?'Examine':MERCHANTS[npc.id]?'Trade with':'Talk to'} ${npc.name}`:nearWell(world)?'Look into the Wishing Well':place?`Examine ${place.name}`:null),
+  prompt:storyPrompt(world)|| (nearbyDrop(world)?`Pick up ${itemLabel(nearbyDrop(world).item)}`:work?.state==='ready'?`Report to ${npc.name}`:work?.state==='offer'||(npc&&visitFor(world,npc.id))?`Talk to ${npc.name} · Side mission`:npc?`${npc.interactions?.includes('examine')?'Examine':MERCHANTS[npc.id]?'Trade with':'Talk to'} ${npc.name}`:nearWell(world)?'Look into the Wishing Well':place?`Examine ${place.name}`:null),
   health:playerHealth(world.player,world.progression.maxHealth),
   upgradeFraction:Math.max(0,Math.min(1,1-world.progression.upgradeRemaining/30))
  };

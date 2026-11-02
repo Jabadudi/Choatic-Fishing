@@ -134,9 +134,11 @@ test('saves from before the ingest scene lose the core and gain the flag',()=>{
 });
 test('invalid Chapter 6 progress is rejected',()=>{
  const w=playTo('ch6-buckets');w.story.buckets=1;const original=captureSave(w);
- for(const change of [s=>s.buckets=4,s=>s.buckets=-1,s=>s.carrying='yes',s=>delete s.buckets,s=>s.scene='ch6-forty',s=>{s.stage='ch6-rack';},s=>s.guide.areaId=GUEST_LODGE.id,s=>s.guide.x=500]){
+ for(const change of [s=>s.buckets=-1,s=>s.carrying='yes',s=>delete s.buckets,s=>s.scene='ch6-forty',s=>{s.stage='ch6-rack';},s=>s.guide.areaId=GUEST_LODGE.id,s=>s.guide.x=500]){
   const bad=structuredClone(original);change(bad.state.story);assert.throws(()=>restoreSave(bad),/story|bucket/i);
  }
+ // A count lowered in the story editor caps saved progress instead of refusing the save.
+ {const over=structuredClone(original);over.state.story.buckets=BUCKET_TRIPS+1;assert.equal(restoreSave(over).story.buckets,BUCKET_TRIPS-1);}
  assert.ok(AREAS[TRAINING_GROUND.id]);
 });
 test('a closed conversation in Chapter 6 can be picked up again',()=>{

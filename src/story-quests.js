@@ -6,11 +6,12 @@ import {CHIEF_DOOR,CHIEF_HOUSE,MARA_SPOT} from './chief-house.js';
 import {GUEST_LODGE,LODGE_DOOR,LODGE_BED} from './guest-lodge.js';
 import {TRAINING_GROUND,DRAYFUS_SPOT,RACK_SPOT,YARD_WELL,TROUGH,CAST_SPOT} from './training-ground.js';
 import {AREAS} from './wilds.js';
+import {editedChapter} from './story-tuning.js';
 
 // Each chapter lists its steps in order. A step can cover more than one stage. A chapter can open on the last stage
 // of the chapter before it (Chapter 4 starts on the chief's porch, which is still stage ch3-complete), and `end` is the
 // stage where every step is done but the next chapter has not started yet.
-export const STORY_CHAPTERS=[
+export const BASE_STORY_CHAPTERS=[
  {n:1,title:'The Old Fishing Hut',recap:'Grandpa left Eli a fishing cabin on the Reedwater shore, a box with a strange blue lure in it, and a photograph he can’t stop looking at. Supper first. Then the storm.',
   steps:[[['arrival'],'Find Grandpa’s cabin'],[['explore'],'Look around the cabin'],[['fish'],'Catch and cook supper'],[['rest'],'Rest for the night'],[['storm'],'Survive the storm'],[['awakening'],'A new morning']]},
  {n:2,title:'Shadow Walker',recap:'Something with an axe came out of the storm, and a huge gray wolf came out of nowhere to stop it. Eli woke beside a campfire, next to a girl who isn’t telling him everything.',
@@ -26,6 +27,8 @@ export const STORY_CHAPTERS=[
  {n:7,title:'Legs',recap:'Drayfus doesn’t knock. He gave Eli until sunrise to run the path around Willowback, and he’ll be up in the watchtower, watching his shoulders.',
   steps:[[['ch7-run'],'The dawn run'],[['ch7-breakfast'],'Breakfast with Mara'],[['ch7-squat'],'Report to Drayfus'],[['ch7-hold'],'Hold the squat'],[['ch7-laps'],'The slow lap'],[['ch7-rest'],'Rest on the grass']],end:'ch7-complete'}
 ];
+// What the game shows: the chapters with any edits from the atlas (src/story-tuning.js).
+export const STORY_CHAPTERS=BASE_STORY_CHAPTERS.map(editedChapter);
 const chapterOf=stage=>STORY_CHAPTERS.find(c=>c.end===stage||c.steps.some(([stages])=>stages.includes(stage)));
 // Every story stage belongs to exactly one chapter; the tests hold this as chapters are added.
 export const unplacedStages=()=>STORY_STAGES.filter(stage=>!chapterOf(stage));

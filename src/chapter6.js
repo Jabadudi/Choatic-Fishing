@@ -1,11 +1,12 @@
 import {script,say,think,narrate} from './scene-script.js';
+import {storyCount} from './story-tuning.js';
 // Story dialogue only. Chapter 6 opens in Eli's room the morning after he swallows the Region Core,
 // moves to the guard's training yard out past the Willowback Gate, and ends back in his room that night.
 export const CORE='Region Core',OCELOT='The ocelot';
 export const CHAPTER_SIX_STAGES=['ch6-door','ch6-circle','ch6-spar','ch6-confession','ch6-rack','ch6-cast','ch6-buckets','ch6-night','ch6-complete'];
 export const chapterSix=s=>!!s&&CHAPTER_SIX_STAGES.includes(s.stage);
 // Drayfus's bucket trips from the yard well to the trough: three, with the buckets full to the brim.
-export const BUCKET_TRIPS=3;
+export const BUCKET_TRIPS=storyCount('bucketTrips');
 const eli=text=>say('Eli',text),mara=text=>say('Mara',text),emilia=text=>say('Emilia',text),drayfus=text=>say('Drayfus',text),ocelot=text=>say(OCELOT,text),core=text=>say(CORE,text);
 export const CHAPTER6_OBJECTIVES={
  'ch6-door':'Chapter 6 · Mara is pounding on the door. Answer it.',

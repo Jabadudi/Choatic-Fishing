@@ -3,7 +3,7 @@ import {PERMANENT_ITEMS} from './inventory.js';
 import {storySpeed,rodReady,createStory,currentScene,inspectStory,advanceStory,skipStory,storyObjective,updateStory,inlandUnlocked,storyTransitionAllowed,onStoryAreaChange} from './story.js';
 import {nearbyDrop,dropItem} from './drops.js';
 import {createQuests,maraQuestDialogue} from './quests.js';
-import {questFor,lockedLine} from './side-quests.js';
+import {questFor,lockedLine,visitFor,visitNpc} from './side-quests.js';
 import {createWildlife,updateWildlife,updateAnimalCombat} from './wildlife.js';
 import {Fishing,ITEMS} from './fishing.js';
 import {Progression,XP} from './progression.js';
@@ -125,6 +125,8 @@ export class World {
   const drop=nearbyDrop(this);if(drop){this.collectDrop(drop);return true;}
   const npc=nearbyNpc(this);
   // Villagers with work for Eli open the quest sheet to offer it or take it back; a job in progress gets a reminder.
+  // An errand that sends Eli here is settled first: a word passed on, or goods handed over.
+  if(npc&&visitFor(this,npc.id)){const text=visitNpc(this,npc);this.dialogue={npcId:npc.id,text,remaining:12};return true;}
   const work=npc&&questFor(this,npc.id);
   if(work&&(work.state==='offer'||work.state==='ready')){this.message=`${npc.name}: ${work.state==='ready'?'You’re back! Did you manage it?':work.quest.offer}`;this.questRequest=npc.id;return true;}
   if(npc){const text=npc.id==='mara'&&!this.story?maraQuestDialogue(this):work&&!MERCHANTS[npc.id]?(work.state==='locked'?lockedLine(work.quest):work.quest.reminder):npc.greeting;this.message=`${npc.name}: ${text}`;

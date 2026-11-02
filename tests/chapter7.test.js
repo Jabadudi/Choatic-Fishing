@@ -93,9 +93,11 @@ test('the second run ends on the grass beside the lodge, and Chapter 7 pays its 
 test('invalid Chapter 7 progress is rejected',()=>{
  const run=captureSave(playTo('ch7-run')),hold=captureSave(playTo('ch7-hold'));
  for(const [save,change] of [[run,s=>s.run=9],[run,s=>s.run=-1],[run,s=>s.run=1.5],[run,s=>delete s.run],[run,s=>s.run=8],[run,s=>s.hold=3],[run,s=>s.guide.areaId=TRAINING_GROUND.id],
-  [hold,s=>s.hold=HOLD_SECONDS+1],[hold,s=>s.hold='x'],[hold,s=>delete s.hold],[hold,s=>s.run=2]]){
+  [hold,s=>s.hold='x'],[hold,s=>delete s.hold],[hold,s=>s.run=2]]){
   const bad=structuredClone(save);change(bad.state.story);assert.throws(()=>restoreSave(bad),/story|run|squat/i);
  }
+ // A count lowered in the story editor caps saved progress instead of refusing the save.
+ const over=structuredClone(hold);over.state.story.hold=HOLD_SECONDS+5;assert.equal(restoreSave(over).story.hold,HOLD_SECONDS);
 });
 
 test('the slow lap leaves the farm both ways while Mara sits on the fence',()=>{

@@ -4,7 +4,7 @@ export const ITEM_CATEGORIES=Object.freeze([
  {id:'armor',label:'Armor'}, {id:'artifacts',label:'Artifacts'}, {id:'quest-items',label:'Quest items'},
  {id:'trophies',label:'Trophies'}, {id:'upgrade-materials',label:'Upgrade materials'}
 ]);
-const ITEM_CATEGORY={'Sardine':'consumables','Deer Meat':'consumables','Deer Hide':'upgrade-materials','Deer Antlers':'trophies','Grappling Squid':'consumables','Treasure Key':'quest-items','Old Boot':'trophies'};
+const ITEM_CATEGORY={'Sardine':'consumables','Deer Meat':'consumables','Deer Hide':'upgrade-materials','Deer Antlers':'trophies','Grappling Squid':'consumables','Treasure Key':'quest-items','Parcel':'quest-items','Sealed Letter':'quest-items','Old Boot':'trophies'};
 const WEAPON_NAMES=new Set(['Frying Pan','Swordfish','Harpoon Gun','Anchor','Reed Spear','Crab Maul','Shell Sling','Pufferfish Bomb','Hunting Bow','Hunting Knife','Captain’s Sabre','Greyhorn Spear']);
 // Permanent tools are never used up, however often they are fired.
 export const PERMANENT_ITEMS=new Set(['Hunting Bow','Captain’s Sabre','Greyhorn Spear']);

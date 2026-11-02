@@ -45,3 +45,11 @@ test('a level-locked quest waits for Eli to reach its level',()=>{
  w.progression.level=5;assert.equal(levelReady(w,quest),true);assert.equal(unlocked(w,quest),true);
  assert.match(lockedLine(quest),/Level 5/);
 });
+
+test('talk and delivery errands export with the villager they lead to, and never to a stranger or the giver',async()=>{
+ const notes=[],out=fromEditor([{id:'errands',giver:'baker',title:'Errands',objectives:[
+  {type:'deliver',item:'Parcel',count:2,to:'miller',line:'Flour money. About time.'},{type:'talk',to:'herbalist',count:9},
+  {type:'talk',to:'nobody'},{type:'deliver',item:'Moon Cheese',to:'miller'},{type:'talk',to:'baker'}]}],await gameLists(),notes);
+ assert.deepEqual(out[0].objectives,[{type:'deliver',item:'Parcel',count:2,to:'miller',toName:'Miller',line:'Flour money. About time.'},{type:'talk',count:1,to:'herbalist',toName:'Herbalist'}]);
+ assert.equal(notes.length,3);
+});
