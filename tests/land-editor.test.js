@@ -5,20 +5,21 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {fromEditor,formatLandData,shippedLand} from '../scripts/land-editor.mjs';
-import {BUILT_DEFS,DELTA_DEFS,LAND_FIELDS} from '../src/delta-areas.js';
+import {BUILT_DEFS,LAND_FIELDS} from '../src/delta-areas.js';
 import {defineArea} from '../src/atlas-area.js';
 const docsOf=areas=>Object.values(areas).map(a=>({id:a.id,def:JSON.stringify(a)}));
 const merged=(id,edit)=>{const d={...BUILT_DEFS.find(d=>d.id===id)};for(const k of LAND_FIELDS)if(Object.hasOwn(edit,k))d[k]=edit[k];return d;};
 
-test('the land editor round-trips every shipped area without a change',async()=>{
+test('the land editor round-trips the shipped land without a change',async()=>{
+ // The editor starts from the land as shipped (delta-areas.js with land-data.js on top); exporting it untouched
+ // writes land-data.js again, line for line.
  const notes=[],out=fromEditor(docsOf(shippedLand().areas),notes);
  assert.deepEqual(notes,[]);
- assert.deepEqual(out,{});
- if(!DELTA_DEFS.some((d,i)=>d!==BUILT_DEFS[i]))assert.equal(formatLandData(out),await readFile(new URL('../src/land-data.js',import.meta.url),'utf8'));
+ assert.equal(formatLandData(out),await readFile(new URL('../src/land-data.js',import.meta.url),'utf8'));
 });
 
 test('a land edit reshapes the area in the game and ships only the fields that changed',async()=>{
- const chime=shippedLand().areas.chimewood,b=defineArea(BUILT_DEFS.find(d=>d.id==='chimewood'));
+ const chime=JSON.parse(JSON.stringify(BUILT_DEFS.find(d=>d.id==='chimewood'))),b=defineArea(BUILT_DEFS.find(d=>d.id==='chimewood'));
  const spot=[340,300],[wx,wy]=b.toWorld(spot);assert.ok(b.water(wx,wy)>0,'dry land before the edit');
  chime.shapes=[...chime.shapes,['water','ellipse',spot,4,4]];
  chime.props=[...chime.props,{kind:'tree',art:'pine',at:[336,320]},{kind:'dragon',at:[336,320]}];
