@@ -43,6 +43,9 @@ snapshot.
   tag. Without an `entry`, Eli arrives beside a door in the target that leads back, or at the target's start.
 - **Ground texture size** (`textures`, e.g. `{forest:0.5}`) scales a ground texture in that area; 1 is as painted.
 
+- **Trail surface.** A trail is a point list, or `{pts, style}` with `style` one of `dirt` (the sandy trail),
+  `stone` (old paved road), `packed` (packed dirt) or `sand`. Without a style a trail is stone in the old paved areas
+  (Old Roads, Great Bridge, Aqueduct Ruins, Drowned Road) and dirt everywhere else (`TRAIL_STYLES` in `src/ground-textures.js`).
 Each edited area is one document in the atlas collection `land` (`def` holds the area's terrain as JSON, in atlas
 pixels like `src/delta-areas.js`); `land/_shared` holds the `lastEditAt`/`shippedAt` marker. Shipping is a one-file PR:
 

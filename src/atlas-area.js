@@ -53,7 +53,11 @@ export function defineArea(def){
  const props=(def.props||[]).map((p,i)=>{const [x,y]=P(p.at);return {id:`${def.id}-${p.kind}-${i}`,...p,x,y,r:p.solid??PROP_SOLID[p.kind]??0,area:def.id,inWater:water(x,y)<0};});
  const solidProps=props.filter(p=>p.r>0);
  const places=(def.places||[]).map(p=>{const [x,y]=P(p.at);const {at,...rest}=p;if(rest.travel)rest.travel={target:rest.travel.target,...entryOf(rest.travel.entry)};return {kind:'atlas',...rest,x:Math.round(x),y:Math.round(y)};});
- const roads=(def.roads||[]).map(Ps);
+ // A trail is a point list, or {pts, style} when the land editor gave it its own surface (see TRAIL_STYLES).
+ const trails=(def.roads||[]).map(r=>{const pts=Ps(Array.isArray(r[0])?r:r.pts);return {pts,style:Array.isArray(r[0])?null:r.style||null,box:boxOf(pts,40)};});
+ const roads=trails.map(t=>t.pts),styled=trails.some(t=>t.style);
+ // The surface under a spot of trail: the nearest trail's own style, or null for the area's default.
+ const trailAt=(x,y)=>{if(!styled)return null;let best=null,bd=Infinity;for(const t of trails){if(outside(x,y,t.box)>0)continue;const d=lineDistance(x,y,t.pts);if(d<bd){bd=d;best=t.style;}}return best;};
  const exits=(def.exits||[]).map(e=>{const horizontal=e.edge==='west'||e.edge==='east',from=horizontal?(e.from-Y0)*ky:(e.from-X0)*kx,to=horizontal?(e.to-Y0)*ky:(e.to-X0)*kx;return {edge:e.edge,from:Math.round(Math.min(from,to)),to:Math.round(Math.max(from,to)),target:e.target,label:e.label,back:e.back||null,...entryOf(e.entry)};});
  // Portals: a spot inside the area (a ford's far end, a cave mouth) that leads straight into another area.
  const portals=(def.portals||[]).map(q=>{const [x,y]=P(q.at);return {x:Math.round(x),y:Math.round(y),r:q.r||60,target:q.target,label:q.label,quiet:!!q.quiet,...entryOf(q.entry)};});
@@ -65,7 +69,7 @@ export function defineArea(def){
  const onRoad=(x,y)=>roads.some(r=>lineDistance(x,y,r)<30)||deck(x,y);
  const blocked=(x,y)=>solidProps.some(p=>(x-p.x)**2+(y-p.y)**2<(p.r+12)**2)||cliffs.some(c=>outside(x,y,c.box)===0&&inside(x,y,c.poly))&&!onRoad(x,y);
  area.places=places;
- return {area,water,deck,blocked,zoneAt,roads,places,props,walks,fords,bridges,toWorld:P,textures:def.textures||null,
+ return {area,water,deck,blocked,zoneAt,roads,trailAt,places,props,walks,fords,bridges,toWorld:P,textures:def.textures||null,
   // Ground kept free of random trees and rocks: the walks' ends, landmarks and props.
   clear:(x,y)=>props.some(p=>Math.hypot(x-p.x,y-p.y)<(p.clear??90))||decks.some(d=>outside(x,y,d.box)<60&&lineDistance(x,y,d.pts)<d.half+50)};
 }

@@ -26,9 +26,13 @@ export function groundPattern(ctx,kind,invalidate,scale=1){
 // off the coast, river water elsewhere), the old paved roads, and the ground zones. Meadow and clearings keep the grass.
 const SEA_AREAS=new Set(['outer-shallows','seal-skerries','sandbar-spits','tidecave-coast','delta-mouth','arrival-bay','heron-point']);
 const PAVED_AREAS=new Set(['old-roads','great-bridge','aqueduct-ruins','drowned-road']);
-export function groundKind(id,{water,path,sand,zone,wet,r}){
+// Trail surfaces the land editor can pick per trail. 'dirt' is the classic sandy trail (no texture, the path painter's
+// own dirt); the rest are ground textures. A trail without one is stone in the old paved areas and dirt elsewhere.
+export const TRAIL_STYLES=Object.freeze({dirt:null,stone:'road',packed:'dirt',sand:'sand'});
+export const defaultTrail=id=>PAVED_AREAS.has(id)?'stone':'dirt';
+export function groundKind(id,{water,path,sand,zone,wet,r,trail}){
  if(water)return id==='drowned-road'&&wet> -160?'drowned':wet> -38+r*12?'shallow':SEA_AREAS.has(id)?'sea':'river';
- if(path)return PAVED_AREAS.has(id)?'road':null;
+ if(path)return TRAIL_STYLES[trail||defaultTrail(id)]??null;
  if(sand)return 'sand';
  return zone in GROUND_TEXTURES?zone:null;
 }
