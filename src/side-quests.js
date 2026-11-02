@@ -3,68 +3,24 @@ import {earnMarks,marksLabel} from './trade.js';
 import {levelUpText,LEVEL_GROWTH} from './skills.js';
 import {levelUpEffect} from './level-up-fx.js';
 import {nearbyNpc} from './npcs.js';
+import {QUEST_DATA} from './quest-data.js';
 // Side missions: villagers in Willowback ask Eli to hunt creatures or bring them goods.
 // Gameplay data only. The quest sheet (quest-ui.js) and the markers over heads read it; neither changes it.
 // kill counts hunts made after the mission is accepted; collect counts what the backpack holds and is handed over at the end.
-export const SIDE_QUESTS=Object.freeze([
- {id:'garden-raiders',giver:'basket-carrier',giverName:'Basket carrier',title:'Garden raiders',
-  objectives:[{type:'kill',species:'rabbit',count:4}],rewards:{marks:10,xp:40,items:[{name:'Willow Apples',count:4}]},
-  where:'Rabbits graze the meadows of Reedwater Landing, Windchime Path and the crossroads.',
-  offer:'The gardens still need tending, storm or no storm. And the rabbits think the storm was an invitation. Four of them have been at my cabbages since dawn. Thin them out for me?',
-  thought:'Pest control. Not the heroic first quest Eli had pictured, but the cabbages did look genuinely threatened.',
-  reminder:'Four rabbits. They’re bold now, but they still run.',
-  done:'That’s the worst of them. Take some apples for your trouble, and don’t tell the children where they came from.'},
- {id:'deer-in-the-beans',giver:'basket-carrier',giverName:'Basket carrier',title:'Deer in the beans',requires:['garden-raiders'],
-  objectives:[{type:'kill',species:'deer',count:2}],rewards:{marks:18,xp:70,items:[{name:'Healing Salve',count:1}]},
-  where:'Deer graze the Reedwater meadow and Windchime Path.',
-  offer:'Rabbits were the small problem. Two deer have been stripping the bean rows every night. They kick when they’re cornered, so mind yourself.',
-  thought:'Deer that fight back. Eli remembered the meadow, and the hooves, and decided he would be bringing the bow.',
-  reminder:'Two deer. Mind the hooves.',
-  done:'The beans might live to see summer after all. Keep this salve close. You look like someone who’ll need it.'},
- {id:'harness-hides',giver:'village-smith',giverName:'Blacksmith',title:'Hides for the harness',
-  objectives:[{type:'collect',item:'Deer Hide',count:2}],rewards:{marks:15,xp:50,items:[{name:'Whetstone',count:1}]},
-  where:'Deer sometimes leave a hide behind. Hunt them on the Reedwater meadow and Windchime Path.',
-  offer:'The guardian tore her harness on the shore last night. I can stitch new straps if someone brings me good leather. Two deer hides would do it.',
-  thought:'Eli looked at the Rimejaw, then at the size of her harness, and privately hoped they were very large deer.',
-  reminder:'Two deer hides for the harness. Supple ones.',
-  done:'Good leather. She’ll have new straps by tonight. Take the whetstone. It keeps an edge honest.'},
- {id:'tangled-nets',giver:'village-fisher',giverName:'Fisher',title:'Eels in the nets',
-  objectives:[{type:'kill',species:'eel',count:3}],rewards:{marks:12,xp:45,items:[{name:'Iron Fishhooks',count:1}]},
-  where:'Eels swim the Reedwater shallows, the crossroads river and Shellback Marsh.',
-  offer:'The boats are sound, but the storm drove eels into the shallows and they’ve chewed through half our nets. Three fewer eels would be a start.',
-  thought:'Eli had arrived in this world with a fishing rod and his grandfather’s cabin. Being hired to fight fish felt on brand.',
-  reminder:'Three eels. They bite back less than you’d think.',
-  done:'The nets will hold now. Those are proper iron hooks. Don’t lose them to the first snag.'},
- {id:'net-mending',giver:'net-carrier',giverName:'Net carrier',title:'Mending what the night left',
-  objectives:[{type:'collect',item:'Eel Skin',count:2}],rewards:{marks:14,xp:50,items:[{name:'Woven Fish Trap',count:1}]},
-  where:'Eels sometimes leave their skin behind. Hunt them in the Reedwater shallows, the crossroads river and the marsh.',
-  offer:'We’re mending what the night left behind. Eel skin binds a net frame better than any cord. Bring me two and I’ll owe you.',
-  thought:'Eli did not know what a net frame was. He suspected admitting that would cost him the job.',
-  reminder:'Two eel skins, if you find them.',
-  done:'Perfect. That frame will outlast both of us. Take a trap. Set it in the shallows and come back later.'},
- {id:'lucky-foot',giver:'child-one',giverName:'Village child',title:'A lucky foot',
-  objectives:[{type:'collect',item:'Rabbit’s Foot',count:1}],rewards:{marks:6,xp:60,items:[]},
-  where:'Only a lucky few rabbits leave a foot behind. Luck helps.',
-  offer:'Did you see the wolves last night? My brother says a rabbit’s foot keeps shadow walkers away. Can you find me one? I saved six whole marks.',
-  thought:'Eli doubted a rabbit’s foot would stop anything carrying an axe. He also was not going to be the one to tell her.',
-  reminder:'Did you find a lucky foot yet?',
-  done:'It’s so soft! Here, all six marks. Don’t spend them on anything boring.'},
- {id:'walker-iron',giver:'village-smith',giverName:'Blacksmith',title:'Ash and iron',requires:['harness-hides'],
-  objectives:[{type:'kill',species:'shadow-walker',count:3}],rewards:{marks:30,xp:120,items:[{name:'Hunting Knife',count:1}]},
-  where:'Shadow walkers haunt Shellback Marsh most of all, and the crossroads and Windchime Path too. They come at you, so keep your health up.',
-  offer:'You saw one up close and lived. If they’re coming out of the marsh again, I want them gone before they reach the gardens. Three of them.',
-  thought:'Last time, Eli had run, fallen over, and been rescued by a wolf. He decided not to mention that.',
-  reminder:'Three walkers. Don’t let them close.',
-  done:'Three. You’re tougher than you look. Take the knife. You’ve earned a blade that bites back.'}
-]);
+// The quests themselves live in src/quest-data.js, which the quest editor in the atlas writes. Each one can wait for
+// earlier quests (requires) and for Eli's level (minLevel), and carries a little lore for the quest log.
+export const SIDE_QUESTS=QUEST_DATA;
 export const SIDE_QUEST_IDS=Object.freeze(SIDE_QUESTS.map(q=>q.id));
 export const sideQuest=id=>SIDE_QUESTS.find(q=>q.id===id)||null;
 export const createSideQuests=()=>Object.fromEntries(SIDE_QUEST_IDS.map(id=>[id,{status:'available'}]));
 // Villagers start handing out work once Eli has arrived in Willowback with his guide.
 export const sideQuestsOpen=world=>!!world.adventure&&!!world.story&&!['ch3-chimes','ch3-travel'].includes(world.story.stage);
 const stateOf=(world,quest)=>world.quests?.[quest.id];
-// A mission is offered when the ones before it are done and every creature it asks for can be met (it has gameplay, so it spawns).
-export const unlocked=(world,quest)=>(quest.requires||[]).every(id=>world.quests?.[id]?.status==='complete')&&quest.objectives.every(o=>o.type!=='kill'||Object.hasOwn(ANIMAL_TYPES,o.species));
+// A mission is offered when the ones before it are done, Eli is high enough level and every creature it asks for can be
+// met (it has gameplay, so it spawns). levelReady is kept apart so a villager can say when to come back.
+export const levelReady=(world,quest)=>(world.progression?.level||1)>=(quest.minLevel||1);
+const chainReady=(world,quest)=>(quest.requires||[]).every(id=>world.quests?.[id]?.status==='complete')&&quest.objectives.every(o=>o.type!=='kill'||Object.hasOwn(ANIMAL_TYPES,o.species));
+export const unlocked=(world,quest)=>chainReady(world,quest)&&levelReady(world,quest);
 const huntedCount=(world,species)=>world.hunting?.bySpecies?.[species]||0;
 export function objectiveLabel(o){
  if(o.type==='collect')return o.item;
@@ -82,16 +38,21 @@ export const questReady=(world,quest)=>stateOf(world,quest)?.status==='active'&&
 export function rewardParts(quest){
  const r=quest.rewards;return [r.marks?marksLabel(r.marks):'',r.xp?`${r.xp} XP`:'',...(r.items||[]).map(i=>i.count>1?`${i.name} ×${i.count}`:i.name)].filter(Boolean);
 }
-// What a villager has to say about work: a reward waiting, a job in progress, or a new offer. Givers with nothing return null.
+// What a villager has to say about work: a reward waiting, a job in progress, a new offer, or (state 'locked') one that
+// waits only for Eli to grow stronger. Givers with nothing return null.
 export function questFor(world,npcId){
  if(!sideQuestsOpen(world))return null;
  const quests=SIDE_QUESTS.filter(q=>q.giver===npcId&&stateOf(world,q));
  const ready=quests.find(q=>questReady(world,q));if(ready)return {quest:ready,state:'ready'};
  const active=quests.find(q=>stateOf(world,q).status==='active');if(active)return {quest:active,state:'active'};
- const offer=quests.find(q=>stateOf(world,q).status==='available'&&unlocked(world,q));return offer?{quest:offer,state:'offer'}:null;
+ const offer=quests.find(q=>stateOf(world,q).status==='available'&&unlocked(world,q));if(offer)return {quest:offer,state:'offer'};
+ const later=quests.filter(q=>stateOf(world,q).status==='available'&&chainReady(world,q)).sort((a,b)=>(a.minLevel||1)-(b.minLevel||1))[0];
+ return later?{quest:later,state:'locked'}:null;
 }
 // The marker drawn over a giver's head: ! for new work, ? once it can be handed in.
-export const questMarker=(world,npc)=>{const found=npc?.npc&&questFor(world,npc.id);return found?found.state:null;};
+export const questMarker=(world,npc)=>{const found=npc?.npc&&questFor(world,npc.id);return found&&found.state!=='locked'?found.state:null;};
+// What a villager says while their next job waits for Eli's level.
+export const lockedLine=quest=>`I might have work for you, but it’s dangerous. Come back when you’re stronger. (Level ${quest.minLevel})`;
 const atGiver=(world,quest)=>nearbyNpc(world)?.id===quest.giver;
 const canAct=world=>sideQuestsOpen(world)&&world.matchState==='playing'&&world.player.health>0&&world.fishing.state==='idle';
 export function acceptQuest(world,id){

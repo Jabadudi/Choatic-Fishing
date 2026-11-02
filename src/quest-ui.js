@@ -16,7 +16,7 @@ const ICONS={
  next:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>',
  chevron:'<path d="M9 6l6 6-6 6"/>'
 };
-const BADGES={offer:'New mission',active:'Under way',ready:'Ready to hand in',complete:'Complete'};
+const BADGES={locked:'Locked',offer:'New mission',active:'Under way',ready:'Ready to hand in',complete:'Complete'};
 const TABS=[['story','Story'],['side','Side'],['done','Done']];
 const el=(tag,className,text)=>{const node=document.createElement(tag);if(className)node.className=className;if(text!==undefined)node.textContent=text;return node;};
 const icon=(name,size=22)=>{const s=el('span','quest-icon');s.innerHTML=svg(ICONS[name],size);return s;};
@@ -48,6 +48,8 @@ export function mountQuests({getWorld,onOpen,onClose,onTrade,onMap}){
   const article=el('article','quest-card');article.dataset.state=state;
   const head=el('div','quest-card-head'),names=el('div');
   names.append(el('small','quest-kicker',`Side mission · ${quest.giverName}`),el('h3',null,quest.title));head.append(names,el('span','quest-badge',BADGES[state]));article.append(head);
+  // The story behind the job, told the way the chapters are. Kept short so the card still fits a phone.
+  if(quest.lore){const lore=el('details','quest-lore');lore.open=state==='offer'||state==='complete';lore.append(el('summary',null,'The story'),el('p',null,quest.lore));article.append(lore);}
   if(state!=='complete'){
    article.append(el('blockquote','quest-quote',`“${talk&&state==='ready'?'You’re back! Did you manage it?':talk&&state==='active'?quest.reminder:quest.offer}”`));
    if(state==='offer')article.append(el('p','quest-thought',quest.thought));
