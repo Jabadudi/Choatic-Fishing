@@ -1,4 +1,4 @@
-import {drawEntitySprite} from './sprites.js';
+import {drawEntitySprite,spriteHasArt} from './sprites.js';
 import {BEHAVIOR_LABELS,facingFor} from './entities.js';
 import {SPRITES} from './sprite-definitions.js';
 import {drawShiny,SHINY_GOLD} from './shiny-art.js';
@@ -44,6 +44,11 @@ export function drawWildlife(c,a){
  // A Whisperer is faint until it hunts.
  if(a.visibility!==undefined&&a.health>0)c.globalAlpha*=a.visibility;
  if(drawEntitySprite(c,a.spriteId,{x,y,...animalPose(a),facingX:a.direction.x,direction:facingFor(a.direction.x,a.direction.y)})){c.restore();return;}
+ // A creature with its own sheet that has not arrived yet shows only its shadow on the ground, not a stand-in shape.
+ if(spriteHasArt(a.spriteId)&&!['deer','turtle'].includes(a.species)&&a.spriteId!=='nightwalker'){
+  if(a.health>0){c.fillStyle='#0000002e';c.beginPath();c.ellipse(Math.round(x),Math.round(y)+2,Math.max(10,(a.radius||14)*1.1),Math.max(4,(a.radius||14)*.4),0,0,Math.PI*2);c.fill();}
+  c.restore();return;
+ }
  c.translate(Math.round(x),Math.round(y));if(a.species==='turtle'?a.direction.x>0:a.direction.x<0)c.scale(-1,1);
  if(a.health<=0){c.scale(1,.35);c.translate(0,10);}
  const r=(color,x,y,w,h)=>{c.fillStyle=color;c.fillRect(x,y,w,h);};
