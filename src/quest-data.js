@@ -101,5 +101,34 @@ export const QUEST_DATA=[
   thought:"Last time, Eli had run, fallen over, and been rescued by a wolf. He decided not to mention that.",
   reminder:"Three walkers. Don’t let them close.",
   done:"Three. You’re tougher than you look. Take the knife. You’ve earned a blade that bites back."
+ },
+ {
+  id:"quest-giver-job-otqur",
+  giver:"giver-ot6n3",
+  giverName:"Quest giver",
+  title:"Elk Hunt",
+  minLevel:5,
+  objectives:[{type:"kill",species:"elk",count:5}],
+  rewards:{marks:10,xp:250,items:[{name:"Harpoon Gun",count:1}]},
+  lore:"Elk roam the woods beyond Reedwater. A hunter at the Landing has offered a harpoon gun in exchange for bringing down five of them. Eli will need to be ready for their antlers before taking the job.",
+  where:"Look for elk in Elk Run and along the Deep Trail.",
+  offer:"Know your way around a bow? Hunt five elk and come back to me. There is a harpoon gun in it for you.",
+  thought:"Five elk. Eli pictured the antlers and decided to keep his distance.",
+  reminder:"Five elk. Watch the antlers, and come back when the hunt is done.",
+  done:"Five elk, as promised. Here is the harpoon gun. Mind where you point it."
+ },
+ {
+  id:"quest-giver-job-xy5vw",
+  giver:"giver-xxjsb",
+  giverName:"Toby",
+  title:"Golda NiMax",
+  objectives:[{type:"talk",count:1,to:"jetty-angler",toName:"Angler",line:"you are now a giga ni"}],
+  rewards:{marks:10000,xp:100000,items:[]},
+  lore:"Toby lives in a hut over Hidden Creek, away from the traffic of the old road. He has asked Eli to find the angler at the village jetty. The errand is called Golda NiMax; Toby has left the explanation for later.",
+  where:"Find the Angler at the village jetty in Willowback Port, then return to Toby in Hidden Creek.",
+  offer:"Find the angler at the village jetty and speak to him for me. Come back here afterward; I will be waiting.",
+  thought:"An angler by a jetty. That sounded easier to find than a hut hidden in a creek.",
+  reminder:"Speak to the angler at the village jetty, then return to me here.",
+  done:"You found him, then. Thank you for making the trip. Here is what I promised."
  }
 ];

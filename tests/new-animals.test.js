@@ -11,12 +11,12 @@ import {frameIndex} from '../src/sprites.js';
 const fresh=()=>{const w=new World(()=>.2,{adventure:true});w.journeyId='new-animals';return w;};
 const pngSize=path=>{const b=readFileSync(path);return [b.readUInt32BE(16),b.readUInt32BE(20)];};
 
-test('foxes roam Windchime Path and the Crossroads, and nowhere the story hunts deer',()=>{
- for(const id of ['windchime','crossroads'])assert.ok(spawnWeights(id,'land').some(([s])=>s==='fox'),id);
- for(const id of ['landing','marsh'])assert.ok(!spawnWeights(id,'land').some(([s])=>s==='fox'),id);
+test('foxes roam the forest while the early story hunting areas stay clear',()=>{
+ for(const id of ['forest-edge','whispering-woods'])assert.ok(spawnWeights(id,'land').some(([s])=>s==='fox'),id);
+ for(const id of ['landing','windchime','crossroads','marsh'])assert.ok(!spawnWeights(id,'land').some(([s])=>s==='fox'),id);
  const w=fresh();w.areaId='village';let seen=0;
- for(let i=0;i<60&&!seen;i++){w.wildlife=w.wildlife.filter(a=>a.areaId!=='windchime');seen=rollArea(w,'windchime').filter(a=>a.species==='fox').length;}
- assert.ok(seen>0,'a windchime roll brings a fox');
+ for(let i=0;i<60&&!seen;i++){w.wildlife=w.wildlife.filter(a=>a.areaId!=='forest-edge');seen=rollArea(w,'forest-edge').filter(a=>a.species==='fox').length;}
+ assert.ok(seen>0,'a forest-edge roll brings a fox');
 });
 
 test('a fox bolts from further off than a rabbit, faster, and leaves a pelt',()=>{
@@ -135,3 +135,4 @@ test('rushing at an animal makes it bolt, and the flight carries it off before i
  assert.ok(Math.hypot(fox.x-w.player.x,fox.y-w.player.y)>fox.fearRange+60);
  assert.ok(fox.direction.x*(w.player.x-fox.x)+fox.direction.y*(w.player.y-fox.y)>0,'it looks back at Eli');
 });
+
