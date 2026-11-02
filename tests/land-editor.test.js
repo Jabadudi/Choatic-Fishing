@@ -83,3 +83,18 @@ test('a trail can carry its own surface, and the rest keep the area default',()=
  assert.equal(groundKind('windchime-wood',{path:true,trail:'stone'}),'road');
  assert.equal(groundKind('windchime-wood',{path:true,trail:'packed'}),'dirt');
 });
+
+test('a new area made in the atlas ships whole and sits inside its parent on the world map',()=>{
+ const def={isNew:true,id:'hidden-creek',num:'5.2.1',name:'Hidden Creek',within:'old-roads',frame:[0,120,0,80],size:[2400,1600],base:'land',ground:'meadow',
+  roads:[{pts:[[10,40],[110,40]],style:'dirt'}],portals:[{at:[60,70],r:60,target:'old-roads',label:'Old Roads'}],bogus:1};
+ const notes=[],out=fromEditor([{id:'hidden-creek',def:JSON.stringify(def)},{id:'nowhere',def:JSON.stringify({frame:[0,1,0,1]})}],notes);
+ const n=out['hidden-creek'];
+ assert.equal(n.isNew,true);assert.equal(n.name,'Hidden Creek');assert.equal(n.num,'5.2.1');assert.equal(n.within,'old-roads');
+ assert.deepEqual(n.frame,[0,120,0,80]);assert.deepEqual(n.size,[2400,1600]);
+ assert.deepEqual(n.roads,[{pts:[[10,40],[110,40]],style:'dirt'}]);
+ assert.ok(!out.nowhere&&notes.some(t=>/unknown area nowhere/.test(t)));
+ const text=formatLandData(out);assert.match(text,/"hidden-creek":\{\n  isNew:true,/);
+ const built=defineArea({id:'hidden-creek',...n});
+ assert.equal(built.area.width,2400);assert.equal(built.area.within,'old-roads');
+ assert.equal(built.area.portals[0].target,'old-roads');
+});

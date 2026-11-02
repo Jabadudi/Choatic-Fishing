@@ -46,6 +46,10 @@ snapshot.
 - **Trail surface.** A trail is a point list, or `{pts, style}` with `style` one of `dirt` (the sandy trail),
   `stone` (old paved road), `packed` (packed dirt) or `sand`. Without a style a trail is stone in the old paved areas
   (Old Roads, Great Bridge, Aqueduct Ruins, Drowned Road) and dirt everywhere else (`TRAIL_STYLES` in `src/ground-textures.js`).
+- **New areas.** An atlas area with a number and a size but no game area gets a blank land canvas ("Create land").
+  Its document has `isNew`, its own `frame` (20 game units per atlas pixel) and `within` (the area it sits inside on
+  the world map, from its number: 5.2.1 sits in 5.2). It ships whole as an `isNew` entry in `src/land-data.js`, and
+  `delta-areas.js` adds it to the world. Give it a door or exit both ways, or the way-back test stops the ship.
 Each edited area is one document in the atlas collection `land` (`def` holds the area's terrain as JSON, in atlas
 pixels like `src/delta-areas.js`); `land/_shared` holds the `lastEditAt`/`shippedAt` marker. Shipping is a one-file PR:
 
