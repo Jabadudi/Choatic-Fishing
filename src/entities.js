@@ -14,29 +14,29 @@ export const NPC_TYPES=Object.freeze({
 });
 export const ANIMAL_TYPES=Object.freeze({
  rabbit:{name:'Rabbit',maxHealth:18,radius:10,habitat:'land',speed:70,fleeSpeed:180,fearRange:55,huntXp:10,loot:'rabbit'},
- deer:{behavior:BEHAVIORS.DEFENSIVE,attackDamage:12,attackRange:52,attackWindup:.45,attackCooldown:1.4,chaseSpeed:115,leashRange:320,name:'Deer',maxHealth:60,radius:18,habitat:'land',speed:48,fleeSpeed:175,fearRange:150,huntXp:25,loot:'deer'},
+ deer:{behavior:BEHAVIORS.DEFENSIVE,attackDamage:12,attackRange:52,attackWindup:.4,attackCooldown:.75,chaseSpeed:115,leashRange:320,name:'Deer',maxHealth:60,radius:18,habitat:'land',speed:48,fleeSpeed:175,fearRange:150,huntXp:25,loot:'deer'},
  // Red fox: shyer and much quicker than a rabbit, so it bolts from further off and a bow beats chasing it.
  fox:{name:'Red Fox',maxHealth:26,radius:12,habitat:'land',speed:64,fleeSpeed:215,fearRange:120,huntXp:14,loot:'fox'},
  // Bristleback boar: leaves Eli alone until hurt, then charges. The first animal that can really hurt him.
- boar:{behavior:BEHAVIORS.DEFENSIVE,attackDamage:18,attackRange:54,attackWindup:.55,attackCooldown:1.7,chaseSpeed:128,leashRange:300,name:'Bristleback Boar',maxHealth:95,radius:20,habitat:'land',speed:40,fleeSpeed:150,fearRange:150,huntXp:35,loot:'boar'},
+ boar:{behavior:BEHAVIORS.DEFENSIVE,attackDamage:18,attackRange:54,attackWindup:.5,attackCooldown:.85,chaseSpeed:128,leashRange:300,name:'Bristleback Boar',maxHealth:95,radius:20,habitat:'land',speed:40,fleeSpeed:150,fearRange:150,huntXp:35,loot:'boar'},
  // Grey elk: the Elk Spirit's herd. Calm until hurt, then a long antler sweep with a lot of health behind it.
- elk:{behavior:BEHAVIORS.DEFENSIVE,attackDamage:22,attackRange:68,attackWindup:.65,attackCooldown:1.9,chaseSpeed:118,leashRange:340,name:'Grey Elk',maxHealth:150,radius:26,habitat:'land',speed:46,fleeSpeed:170,fearRange:160,huntXp:50,loot:'elk'},
+ elk:{behavior:BEHAVIORS.DEFENSIVE,attackDamage:22,attackRange:68,attackWindup:.55,attackCooldown:.95,chaseSpeed:225,leashRange:340,name:'Grey Elk',maxHealth:150,radius:26,habitat:'land',speed:46,fleeSpeed:170,fearRange:160,huntXp:50,loot:'elk'},
  // Brown bear: the strongest animal in the woods. Calm until hurt, then it rears up and roars (roar: seconds) before
- // coming after Eli, and every claw swipe hits hard. Slow, so Eli can still walk away from it.
- bear:{behavior:BEHAVIORS.DEFENSIVE,attackDamage:30,attackRange:62,attackWindup:.75,attackCooldown:2.2,chaseSpeed:108,leashRange:320,roar:1.2,name:'Brown Bear',maxHealth:240,radius:26,habitat:'land',speed:36,fleeSpeed:140,fearRange:160,huntXp:75,loot:'bear'},
+ // coming after Eli, and every claw swipe hits hard. Faster than Eli once angry: think twice before hurting one.
+ bear:{behavior:BEHAVIORS.DEFENSIVE,attackDamage:30,attackRange:62,attackWindup:.6,attackCooldown:1.05,chaseSpeed:215,leashRange:320,roar:1.2,name:'Brown Bear',maxHealth:240,radius:26,habitat:'land',speed:36,fleeSpeed:140,fearRange:160,huntXp:75,loot:'bear'},
  // Grey heron: stalks the shallows at the delta's heron landmarks, and takes flight from further off than a deer.
  heron:{name:'Grey Heron',maxHealth:30,radius:12,habitat:'land',speed:28,fleeSpeed:200,fearRange:150,huntXp:18,loot:'heron'},
  // Shore crab: scuttles the tide pools and nips back when hurt. Small and weak, but quick to retaliate.
- crab:{behavior:BEHAVIORS.DEFENSIVE,attackDamage:8,attackRange:40,attackWindup:.45,attackCooldown:1.3,chaseSpeed:92,leashRange:220,name:'Shore Crab',maxHealth:40,radius:12,habitat:'land',speed:34,fleeSpeed:120,fearRange:90,huntXp:16,loot:'crab'},
+ crab:{behavior:BEHAVIORS.DEFENSIVE,attackDamage:8,attackRange:40,attackWindup:.4,attackCooldown:.7,chaseSpeed:92,leashRange:220,name:'Shore Crab',maxHealth:40,radius:12,habitat:'land',speed:34,fleeSpeed:120,fearRange:90,huntXp:16,loot:'crab'},
  // Crag goat: stubborn on the heights. Hurt it and it rears and headbutts hard enough to throw Eli back (knockback).
- goat:{behavior:BEHAVIORS.DEFENSIVE,attackDamage:16,attackRange:56,attackWindup:.6,attackCooldown:1.8,chaseSpeed:125,leashRange:300,knockback:240,name:'Crag Goat',maxHealth:80,radius:18,habitat:'land',speed:44,fleeSpeed:165,fearRange:140,huntXp:30,loot:'goat'},
+ goat:{behavior:BEHAVIORS.DEFENSIVE,attackDamage:16,attackRange:56,attackWindup:.5,attackCooldown:.9,chaseSpeed:125,leashRange:300,knockback:240,name:'Crag Goat',maxHealth:80,radius:18,habitat:'land',speed:44,fleeSpeed:165,fearRange:140,huntXp:30,loot:'goat'},
  // River otter: quick in the water and gone in a dive.
  otter:{name:'River Otter',maxHealth:30,radius:12,habitat:'water',speed:40,fleeSpeed:190,fearRange:130,huntXp:18,loot:'otter'},
  // Reed duck: paddles the pools and flies off; the easiest thing on the water to hunt.
  duck:{name:'Reed Duck',maxHealth:18,radius:10,habitat:'water',speed:30,fleeSpeed:150,fearRange:110,huntXp:8,loot:'duck'},
  // Silver pike: the first animal that fights back from the water. Hurt it and it lunges at Eli on the bank or a dock;
  // its reach covers the shore line, but it never leaves the water.
- pike:{behavior:BEHAVIORS.DEFENSIVE,attackDamage:14,attackRange:72,attackWindup:.5,attackCooldown:1.6,chaseSpeed:120,leashRange:260,name:'Silver Pike',maxHealth:55,radius:14,habitat:'water',speed:36,fleeSpeed:140,fearRange:100,huntXp:26,loot:'pike'},
+ pike:{behavior:BEHAVIORS.DEFENSIVE,attackDamage:14,attackRange:72,attackWindup:.45,attackCooldown:.85,chaseSpeed:120,leashRange:260,name:'Silver Pike',maxHealth:55,radius:14,habitat:'water',speed:36,fleeSpeed:140,fearRange:100,huntXp:26,loot:'pike'},
  // Grey seal: basks off the skerries and slides away into the sea.
  seal:{name:'Grey Seal',maxHealth:90,radius:22,habitat:'water',speed:30,fleeSpeed:150,fearRange:150,huntXp:30,loot:'seal'},
  turtle:{name:'Turtle',maxHealth:45,radius:14,habitat:'water',speed:18,fleeSpeed:42,fearRange:85,huntXp:15,loot:'turtle'},

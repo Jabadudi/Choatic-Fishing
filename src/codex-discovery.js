@@ -1,13 +1,9 @@
 // Index entries stay hidden until Eli meets them or the story names them.
 // Encounters are saved with the journey; story reveals are read from story progress, so older saves catch up.
-import {CHAPTER_TWO_STAGES} from './story.js';
-import {CHAPTER_THREE_STAGES} from './chapter3.js';
-import {CHAPTER_FOUR_STAGES} from './chapter4.js';
-import {CHAPTER_FIVE_STAGES} from './chapter5.js';
-import {CHAPTER_SIX_STAGES} from './chapter6.js';
-import {CHAPTER_SEVEN_STAGES} from './chapter7.js';
+import {STORY_STAGES} from './story.js';
 export const CODEX_IDS=Object.freeze(['rabbit','fox','deer','boar','elk','bear','heron','crab','goat','otter','duck','pike','seal','turtle','eel','shadow-walker','hollow-stag','gloam-boar','stoneshade','whisperer','mire-walker','drowned-soldier','ash-archer','inkeel','drowned-captain','greyhorn','croshelda','moonfang','rimejaw','flitlynx','elk-spirit','ocelot','mara','emilia','drayfus','blacksmith','fisher','gardener']);
-const STAGES=['arrival','explore','fish','rest','storm','awakening','complete',...CHAPTER_TWO_STAGES,...CHAPTER_THREE_STAGES,...CHAPTER_FOUR_STAGES,...CHAPTER_FIVE_STAGES,...CHAPTER_SIX_STAGES,...CHAPTER_SEVEN_STAGES];
+// Every chapter's stages, in order. Read from the story itself so a new chapter cannot hide what earlier ones revealed.
+const stageIndex=stage=>STORY_STAGES.indexOf(stage);
 // Each scene that introduces entries, and the first stage the story reaches once that scene has played.
 export const STORY_REVEALS=Object.freeze([
  {scene:'storm',after:'awakening',ids:['shadow-walker','moonfang']},
@@ -24,8 +20,8 @@ const NPC_ENTRIES={mara:'mara',emilia:'emilia',drayfus:'drayfus',ocelot:'ocelot'
 export const ENCOUNTER_RANGE=360;
 export function storyRevealed(world,id){
  const s=world.story;if(!s)return false;
- const at=STAGES.indexOf(s.stage);
- return STORY_REVEALS.some(r=>r.ids.includes(id)&&(s.scene===r.scene||at>=STAGES.indexOf(r.after)));
+ const at=stageIndex(s.stage);
+ return STORY_REVEALS.some(r=>r.ids.includes(id)&&(s.scene===r.scene||at>=stageIndex(r.after)));
 }
 export const codexRevealed=(world,id)=>!!world.codex?.has(id)||(world.hunting?.bySpecies?.[id]||0)>0||storyRevealed(world,id);
 export const revealedCount=world=>CODEX_IDS.filter(id=>codexRevealed(world,id)).length;

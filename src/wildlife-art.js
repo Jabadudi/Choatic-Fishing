@@ -40,7 +40,8 @@ export function animalPose(a){
   if(a.wading&&clips['wade:right'])state=state==='walk'||state==='run'?'wade':state==='idle'?'wade-idle':state;
   return {state,time:t};
  }
- if(a.hurtRemaining>0)return {state:'hurt',time:.25-a.hurtRemaining};
+ // A swing or a roar that has started plays through a hit; the hit only shows as a flash.
+ if(a.hurtRemaining>0&&a.state!=='attack'&&a.state!=='roar')return {state:'hurt',time:.25-a.hurtRemaining};
  // A sheet with a run row (the fox, the boar) runs away, or after Eli once it is angry; the others walk.
  const clips=SPRITES[a.spriteId]?.animations||{};
  if(a.state==='flee'||a.state==='walk'&&a.anger>0){
