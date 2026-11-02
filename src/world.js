@@ -11,7 +11,7 @@ import {Inventory,canUseItem,itemCount,stackable,HEALING} from './inventory.js';
 import {MERCHANTS,findMarks,marksLabel} from './trade.js';
 import {attack,special,updateProjectiles,startRush,updateRush,WEAPON_RUSHES} from './combat.js';
 import {createBosses,updateBosses} from './bosses.js';
-import {createCore,updateCore,useCoreAbility} from './core-abilities.js';
+import {createCore,updateCore,useCoreAbility,useCoreSlot} from './core-abilities.js';
 import {facingFor} from './entities.js';
 import {updateBot} from './bots.js';
 import {LAND,CHESTS,LAKES,lakeDistance,isWater,nearWater,walkable} from './terrain.js';
@@ -116,6 +116,7 @@ export class World {
  }
  useSpecial(kind,actor=this.player){const used=special(this,actor,kind);if(actor===this.player)this.message=used?`${kind==='tidal'?'Tidal Cannon':'Whirlpool Burst'} unleashed!`:'Special unavailable. Earn a charge, abandon fishing, and let your attack recover.';return used;}
  useCoreAbility(id){const {used,message}=useCoreAbility(this,id);if(message)this.message=message;return used;}
+ useCoreSlot(slot){const {used,message}=useCoreSlot(this,slot);if(message)this.message=message;return used;}
  recordElimination(victimId){return this.progression.recordElimination(victimId);}
  nearestWater(actor=this.player){return this.adventure?Wilds.nearWater(actor.x,actor.y,this.areaId):nearWater(actor.x,actor.y);}
  inspect(){

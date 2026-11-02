@@ -1,6 +1,7 @@
 import {createSkills,skillXpToNext,BASE_STAT,LEVEL_GROWTH} from './skills.js';
 import {createSkillTrees,talentFor,talentState,pointsSpent,pointsEarned,treePassives} from './skill-trees.js';
 import {sumPassives} from './passives.js';
+import {createCoreSkills,CORE_LEVEL_CAP} from './core-skills.js';
 export const XP=Object.freeze({catch:30,elimination:90});
 export const BUFFS=Object.freeze([
  {id:'speed',name:'Fleet Footed',description:'+5% movement speed'},
@@ -12,6 +13,8 @@ export class Progression {
  constructor(){this.upgradeRemaining=30;this.pendingUpgrades=0;this.upgrades={hermes:0,dash:0,health:0};this.level=1;this.xp=0;this.totalXp=0;this.pendingChoices=0;this.ranks={speed:0,power:0,vitality:0,armor:0};this.specials={tidal:0,whirlpool:0};this.eliminations=new Set();this.lastBuff=null;
   // Exploration characters grow attributes with their level; arena matches keep the flat match balance.
   this.characterStats=false;this.skills=createSkills();this.skillTrees=createSkillTrees();
+  // Region Core skill points and wheel slots (core-skills.js).
+  this.coreSkills=createCoreSkills();
   // Bonus from the active familiar (familiars.js), or null. Arena matches never have one.
   this.familiar=null;}
  get maxDashes(){return 1+this.upgrades.dash;}
@@ -38,7 +41,10 @@ export class Progression {
  get damageReduction(){return 1-(1-.5*(1-Math.pow(.9,this.ranks.armor)))*(1-(this.familiar?.damageReduction||0));}
  get specialCharges(){return this.specials.tidal+this.specials.whirlpool;}
  grantCatchBuff(random=Math.random){const buff=BUFFS[Math.min(BUFFS.length-1,Math.floor(random()*BUFFS.length))];this.ranks[buff.id]++;this.lastBuff=buff;return buff;}
- award(amount){if(!Number.isSafeInteger(amount)||amount<=0)return 0;this.xp+=amount;this.totalXp+=amount;let levels=0;while(this.xp>=this.xpToNextLevel){this.xp-=this.xpToNextLevel;this.level++;this.pendingChoices++;levels++;}return levels;}
+ award(amount){if(!Number.isSafeInteger(amount)||amount<=0)return 0;this.xp+=amount;this.totalXp+=amount;let levels=0;while(this.level<CORE_LEVEL_CAP&&this.xp>=this.xpToNextLevel){this.xp-=this.xpToNextLevel;this.level++;this.pendingChoices++;levels++;}
+  // Eli stops at Lv 150; experience past it still counts toward his total but fills no bar.
+  if(this.level>=CORE_LEVEL_CAP)this.xp=0;
+  return levels;}
  train(id,base){
   const skill=Object.hasOwn(this.skills,id)?this.skills[id]:null;if(!skill||!Number.isSafeInteger(base)||base<=0)return null;
   const amount=Math.round(base*(this.skillXpMultiplier+this.passive(`skillXp.${id}`))*(1+(this.familiar?.[`${id}Xp`]||0)));let skillLevels=0;skill.xp+=amount;
