@@ -56,8 +56,8 @@ export function mountQuests({getWorld,onOpen,onClose,onTrade,onMap}){
    const list=el('ul','quest-objectives');
    for(const o of objectiveProgress(world,quest)){
     const li=el('li','quest-objective');li.dataset.done=o.done;
-    const mark=el('span','quest-check',o.done?'✓':o.type==='kill'?'⚔':'');if(o.type==='collect'&&!o.done)setItemIcon(mark,o.item);
-    const text=el('span','quest-objective-text');text.append(el('strong',null,o.type==='collect'?`Bring ${o.count} ${o.item}`:`${o.label}`));
+    const mark=el('span','quest-check',o.done?'✓':o.type==='kill'?'⚔':o.type==='talk'?'…':'');if((o.type==='collect'||o.type==='deliver')&&!o.done)setItemIcon(mark,o.item);
+    const text=el('span','quest-objective-text');text.append(el('strong',null,o.type==='collect'?`Bring ${o.count} ${o.item}`:o.type==='deliver'&&o.count>1?`${o.label} (×${o.count})`:`${o.label}`));
     const track=el('span','quest-track');track.setAttribute('role','progressbar');track.setAttribute('aria-label',o.label);track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax',String(o.count));track.setAttribute('aria-valuenow',String(o.have));
     const fill=el('i');fill.style.width=`${o.have/o.count*100}%`;track.append(fill);text.append(track);
     li.append(mark,text,el('span','quest-tally',`${o.have} / ${o.count}`));list.append(li);
