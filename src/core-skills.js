@@ -81,7 +81,7 @@ const sec=n=>`${Math.round(n*10)/10}s`,pct=n=>`${Math.round(n*100)}%`;
 export function statLines(id,level){
  const s=SKILL[id],at=key=>statAt(s,key,level);if(!s?.stats)return [];
  switch(id){
-  case 'reeds-call':return [`Damage ${Math.round(at('damage'))}`,`Costs ${Math.round(at('cost'))} reserves, ${Math.round(at('waterCost'))} by living water`,'Cooldown 1.2s'];
+  case 'reeds-call':return [`Damage ${Math.round(at('damage'))}`,`Cost ${Math.round(at('cost'))} reserves (${Math.round(at('waterCost'))} by water)`,'Cooldown 1.2s'];
   case 'still-water':return [`Lasts ${sec(at('duration'))}`,`Damage taken −${pct(at('guard'))}`,`Cooldown ${sec(at('cooldown'))}`];
   case 'steady-heart':return [`Still Water for ${sec(at('duration'))}`,`At most once every ${sec(at('cooldown'))}`];
   case 'deep-reserves':return [`Max reserves +${Math.round(at('reserves'))}`,`Reserves refill ${pct(at('regen'))} faster`];

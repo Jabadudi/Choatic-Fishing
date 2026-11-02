@@ -34,6 +34,13 @@ const PHONE={viewport:{width:844,height:390},isMobile:true,hasTouch:true,deviceS
  await phone.evaluate(()=>document.querySelector('#open-skills').click());await phone.locator('#skills-sheet[open]').waitFor();
  await phone.locator('[data-skill="core"]').tap();await phone.locator('[data-core-skill="reeds-call"]').tap();
  await phone.locator('[data-core-skill="reeds-call"]').scrollIntoViewIfNeeded();await phone.screenshot({path:`${out}/07-phone-core.png`});
+ // The whole window fits a phone screen held sideways: no page scroll in either direction.
+ for(const [label,size] of [['pixel',{width:844,height:390}],['iphone-se',{width:667,height:375}]]){
+  await phone.setViewportSize(size);await phone.waitForTimeout(250);
+  const fit=await phone.evaluate(()=>{const d=document.querySelector('#skills-sheet'),r=d.getBoundingClientRect();return {tall:d.scrollHeight>d.clientHeight+1,out:r.bottom>innerHeight+1||r.top<-1};});
+  if(fit.tall||fit.out)errors.push(`${label}: skill window does not fit one screen`);
+  await phone.screenshot({path:`${out}/08-phone-fit-${label}.png`});
+ }
  const wide=await phone.evaluate(()=>document.querySelector('#skills-sheet').scrollWidth>document.querySelector('#skills-sheet').clientWidth+1);if(wide)errors.push('phone menu scrolls sideways');
  console.log(errors.join('\n')||'Core skills preview passed.');await browser.close();process.exit(errors.length?1:0);
 })().catch(e=>{console.error(e);process.exit(1);});
