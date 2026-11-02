@@ -2,6 +2,7 @@
 // pixels on the 720 × 480 regional atlas; each area's frame is the piece of the atlas it covers.
 // Exits name their target area; an exit whose target is not built yet is left out until it is.
 import {defineArea} from './atlas-area.js';
+import {LAND_DATA} from './land-data.js';
 const DEFS=[];
 const area=def=>DEFS.push(def);
 
@@ -858,5 +859,9 @@ area({id:'outer-shallows',num:'21',name:'Outer Shallows',frame:[0,180,380,480],s
   {id:'to-drowned-road',name:'Skiff North',at:[44,414],text:'Eli poles north to the Drowned Road',travel:{target:'drowned-road',entry:[24,322]}}
  ]});
 
-export const DELTA_DEFS=DEFS;
-export const DELTA=Object.fromEntries(DEFS.map(def=>[def.id,defineArea(def)]));
+// The land editor (Reedwater Delta Atlas → Edit world → Land) ships whole terrain fields per area in land-data.js.
+// Each one it holds replaces the same field written above; everything it leaves out stays as written here.
+export const LAND_FIELDS=['base','sea','ground','size','spawn','shapes','zones','cliffs','roads','walks','fords','bridges','props','places','exits','portals'];
+export const BUILT_DEFS=DEFS;
+export const DELTA_DEFS=DEFS.map(def=>{const edit=LAND_DATA[def.id];if(!edit)return def;const out={...def};for(const k of LAND_FIELDS)if(Object.hasOwn(edit,k))out[k]=edit[k];return out;});
+export const DELTA=Object.fromEntries(DELTA_DEFS.map(def=>[def.id,defineArea(def)]));

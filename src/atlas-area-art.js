@@ -55,6 +55,10 @@ const PAINTED={hut:['fisher-hut',110,80],'stilt-hut':['stilt-hut',110,96],tower:
  tent:['tent',90,62],shell:['turtle-shell',150,92],sign:['signpost',44,56],crane:['crane',120,120],'big-tree':['oak',170,170],statue:['statue',44,96],
  nest:['heron-nest',60,40],shrine:['shrine',60,70],cart:['cart',80,44],logs:['log-stack',64,42],mine:['mine',100,70],lighthouse:['lighthouse',80,185],
  wreck:['wreck',190,80],gate:['gate',110,100],dock:['jetty',34,90],chimes:['chimes-post',60,72],spring:['spring-pool',110,96]};
+// Hand-placed trees, plants and rocks use the same paintings and sizes as the random scenery (wilds.js).
+const SCENERY_ART={tree:{oak:['oak',150,118],pine:['pine',100,124],birch:['birch',80,118],'dead-tree':['dead-tree',110,114],'chime-tree':['chime-tree',150,140]},
+ bush:{bush:['bush',60,40],fern:['fern',56,30],reeds:['reeds',56,38],'marsh-shrub':['marsh-shrub',60,26]},
+ boulder:{'mossy-boulder':['mossy-boulder',50,38],'rock-cluster':['rock-cluster',46,26],'sea-rock':['sea-rock',56,34],'mossy-log':['mossy-log',66,28]}};
 function painted(p){
  const big=(p.scale||1)>=3;
  if(p.kind==='tower'&&p.area==='broken-watch')return ['broken-watch',170,190];
@@ -63,6 +67,7 @@ function painted(p){
  if(p.kind==='logs'&&big)return ['fallen-giant',64,40];
  if(p.kind==='wreck'&&p.area==='arrival-bay')return ['dinghy',110,48];
  if(p.kind==='big-tree')return big?['listening-tree',110,110]:p.glow==='#ffd36a'?['goldleaf-tree',150,160]:p.glow==='#cfe8ff'?['hollow-tree',150,160]:PAINTED['big-tree'];
+ if(SCENERY_ART[p.kind])return SCENERY_ART[p.kind][p.art]||Object.values(SCENERY_ART[p.kind])[0];
  return PAINTED[p.kind];
 }
 function drawProp(ctx,p,t){
@@ -93,6 +98,9 @@ function drawProp(ctx,p,t){
   case 'sign':R(ctx,'#7d6244',x-4,y-36,8,36);R(ctx,'#c2a878',x-34,y-44,68,18);R(ctx,'#8a6f4a',x-34,y-28,68,2);break;
   case 'crane':R(ctx,'#5a3e26',x-6,y-120,12,120);R(ctx,'#6a4a2e',x-6,y-120,90,10);ctx.strokeStyle='#3a2a1c';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+76,y-110);ctx.lineTo(x+76,y-50);ctx.stroke();R(ctx,'#7d776b',x+66,y-50,20,16);break;
   case 'big-tree':shadow(ctx,x,y,60,16);R(ctx,'#5c3b22',x-16,y-80,32,80);ctx.fillStyle='#2f6b3a';ctx.beginPath();ctx.ellipse(x,y-120,90,64,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#4a8a45';ctx.beginPath();ctx.ellipse(x-18,y-136,58,38,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=p.glow||'#9fe3c8';for(let i=0;i<6;i++)R(ctx,ctx.fillStyle,x-60+i*24,y-110+((i*37)%30),4,4);break;
+  case 'tree':shadow(ctx,x,y,30,8);R(ctx,'#5c3b22',x-6,y-40,12,40);ctx.fillStyle='#3f7a3a';ctx.beginPath();ctx.ellipse(x,y-64,36,30,0,0,Math.PI*2);ctx.fill();break;
+  case 'bush':ctx.fillStyle='#4f8a3e';ctx.beginPath();ctx.ellipse(x,y-12,26,14,0,0,Math.PI*2);ctx.fill();break;
+  case 'boulder':shadow(ctx,x,y,22,6);ctx.fillStyle='#8a877a';ctx.beginPath();ctx.ellipse(x,y-14,22,16,0,0,Math.PI*2);ctx.fill();break;
   case 'lantern':R(ctx,'#4a3a28',x-2,y-40,4,40);R(ctx,'#ffd27a',x-5,y-50,10,10);break;
   case 'well':shadow(ctx,x,y,30,8);R(ctx,'#7d776b',x-28,y-26,56,26);R(ctx,'#2a3c48',x-22,y-24,44,8);R(ctx,'#5c3b22',x-26,y-60,6,36);R(ctx,'#5c3b22',x+20,y-60,6,36);R(ctx,'#8a6038',x-30,y-64,60,6);break;
   case 'statue':shadow(ctx,x,y,24,8);R(ctx,'#7d776b',x-20,y-16,40,16);R(ctx,'#9b9584',x-10,y-74,20,58);R(ctx,'#9b9584',x-7,y-88,14,14);break;

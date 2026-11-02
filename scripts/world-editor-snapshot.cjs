@@ -1,7 +1,8 @@
 // Pictures and ground maps of every outdoor area for the world editor in the Reedwater Delta Atlas.
 // Each area is drawn whole with the game's own terrain and scenery, so editor points sit where they will in the game.
 // Also writes world-editor.json: the areas, the creatures that can spawn, the villager sprites, and a coarse ground
-// grid per area (1 = land a creature can stand on, 2 = water deep enough for a swimmer, 0 = neither) for live warnings.
+// grid per area (1 = land a creature can stand on, 2 = water deep enough for a swimmer, 0 = neither) for live warnings,
+// and land.json: the atlas areas' terrain for the land editor.
 //   OUT=<dir> node scripts/world-editor-snapshot.cjs
 const {chromium}=require('playwright');
 const {mkdirSync,writeFileSync}=require('node:fs');
@@ -29,6 +30,8 @@ const ATLAS_NUM={windchime:'18.1',crossroads:'18.2','village-port':'12.1',villag
    villagerSprites:Object.keys(SPRITES).filter(k=>k.startsWith('villager-')),grids};
  },{CELL,ATLAS_NUM});
  writeFileSync(`${out}/world-editor.json`,JSON.stringify(meta));
+ // The land editor starts from the shipped terrain of every atlas area.
+ const {shippedLand}=await import('./land-editor.mjs');writeFileSync(`${out}/land.json`,JSON.stringify(shippedLand()));
  for(const a of meta.areas){
   const s=Math.min(1,MAX/Math.max(a.width,a.height)),w=Math.round(a.width*s),h=Math.round(a.height*s);
   await page.setViewportSize({width:w,height:h});
