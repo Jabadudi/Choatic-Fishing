@@ -5,6 +5,7 @@ import {ANIMAL_TYPES,animalTraits} from './entities.js';
 import {animalGround} from './wildlife.js';
 import {areaFor} from './wilds.js';
 import {storyRevealed} from './codex-discovery.js';
+import {preloadSprite} from './sprites.js';
 export const spawnAreaFor=areaId=>{const id=SPAWN_PARENT[areaId]??areaId;return SPAWN_AREAS[id]?id:null;};
 // Only creatures with built behaviour can spawn; the others' weight is shared out to the rest of the table.
 export const spawnable=species=>Object.hasOwn(ANIMAL_TYPES,species);
@@ -58,7 +59,8 @@ function prune(world){
 export function rollArea(world,areaId){
  const area=SPAWN_AREAS[areaId],spawns=world.spawns;if(!area||!spawns)return [];
  prune(world);
- const living=world.animals.filter(a=>a.areaId===areaId),taken=new Set(living.map(a=>a.slotId));
+ // Bosses and the adds they call stand outside the area's cap.
+ const living=world.animals.filter(a=>a.areaId===areaId&&!a.bossId),taken=new Set(living.map(a=>a.slotId));
  const story=storyHunt(world),here=spawnAreaFor(world.areaId)===areaId,p=world.player;
  const empty=Object.values(SLOTS).filter(slot=>slot.areaId===areaId&&!taken.has(slot.id));
  // Story slots first so the Chapter 1 deer always fit, then the rest in a seeded order.
@@ -73,7 +75,7 @@ export function rollArea(world,areaId){
   const shiny=!first&&random(spawns)<SHINY.chance;
   const creature=createCreature(slot,species,{id:`${slot.id}-${spawns.next}`,seed:Math.floor(random(spawns)*4294967295)||1,shiny});
   if(!creature)continue;
-  spawns.next++;listFor(world,species).push(creature);born.push(creature);count++;
+  spawns.next++;listFor(world,species).push(creature);born.push(creature);count++;preloadSprite(creature.spriteId);
  }
  return born;
 }
@@ -88,6 +90,8 @@ export function updateSpawns(world,dt){
  const id=spawnAreaFor(world.areaId),state=id&&spawns.areas[id];
  if(id!==spawns.current){
   spawns.current=id;
+  // Fetch the art of everything already living here (e.g. from a save) as Eli arrives, not once it walks into view.
+  for(const a of world.animals)if(a.areaId===world.areaId)preloadSprite(a.spriteId);
   if(state){
    if(state.lastSeen===null||world.elapsed-state.lastSeen>=AWAY_SECONDS){rollArea(world,id);state.timer=SPAWN_AREAS[id].respawnSeconds;}
    announce(world,id);

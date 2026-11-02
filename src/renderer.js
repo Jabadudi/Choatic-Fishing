@@ -61,6 +61,11 @@ export function render(ctx,world,view,{others=[]}={}){
     else if(effect.name==='shiny'){ctx.fillStyle='#ffe28a';for(let i=0;i<10;i++){const a=i*Math.PI/5+age,r=10+age*60;ctx.fillRect(Math.cos(a)*r-1,Math.sin(a)*r-3,2,6);ctx.fillRect(Math.cos(a)*r-3,Math.sin(a)*r-1,6,2);}if(effect.label){ctx.font='bold 13px monospace';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#10261d';ctx.strokeText(effect.label,0,-28-age*16);ctx.fillText(effect.label,0,-28-age*16);}}
     else if(effect.name==='Hunting Bow'){ctx.strokeStyle='#8a6438';ctx.lineWidth=3;ctx.beginPath();ctx.arc(10,0,14,-1.2,1.2);ctx.stroke();}
     else if(['Harpoon Gun','Old Boot','Pufferfish Bomb'].includes(effect.name)){ctx.fillRect(18,-3,8,6);}
+    // Greyhorn's stomp: a ring of black smoke running out along the ground.
+    else if(effect.name==='stomp'){const k=age/duration;ctx.strokeStyle='#241c2c';ctx.globalAlpha*=.8;ctx.lineWidth=10*(1-k)+2;ctx.beginPath();ctx.ellipse(0,0,effect.radius*k,effect.radius*k*.5,0,0,Math.PI*2);ctx.stroke();}
+    else if(effect.name==='sabre-sweep'){ctx.strokeStyle='#cfe6ff';ctx.lineWidth=4;ctx.beginPath();ctx.arc(0,0,70,-1.3,-1.3+2.6*Math.min(1,age/(duration*.5)));ctx.stroke();}
+    // The boss weapon rushes are drawn by Eli's own sheet.
+    else if(['Tide Lunge','Antler Charge','Captain’s Sabre','Greyhorn Spear'].includes(effect.name)){}
     else if(effect.name==='Whirlpool Burst'){ctx.strokeStyle='#a0eee2';ctx.beginPath();ctx.arc(0,0,155*(1-effect.life/.8),0,Math.PI*2);ctx.stroke();}
     else if(effect.name==='explosion'||effect.name==='defeat'){ctx.beginPath();ctx.arc(0,0,10+age*150,0,Math.PI*2);ctx.stroke();}
     else if(effect.name==='Sardine'){ctx.fillStyle='#b9db8c';ctx.font='bold 25px Arial';ctx.fillText('SNACK',0,-30-age*40);}
@@ -91,9 +96,15 @@ function drawPlayer(ctx,world){
  if(fallen){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(Math.PI/2);drawExplorer(ctx,{...p,x:0,y:0,steppedAt:undefined},world.elapsed||0);ctx.restore();}
  // Holding Drayfus's squat: lower at the knees, and shaking once the legs start to go.
  else if(world.story?.stage==='ch7-hold'&&!world.story.scene){const h=world.story.hold||0,shake=h>7?Math.round(Math.sin((world.elapsed||0)*47)*Math.min(1.5,(h-7)/6)):0;ctx.save();ctx.translate(p.x+shake,p.y+14);ctx.scale(1,.84);ctx.translate(-p.x,-(p.y+14));drawExplorer(ctx,p,world.elapsed||0);ctx.restore();}
- else drawExplorer(ctx,p,world.elapsed||0);
+ // A boss weapon in hand: its swing or rush sheet plays over the walk while the move lasts.
+ else if(!weaponPose(ctx,world,p))drawExplorer(ctx,p,world.elapsed||0);
  // Drayfus's buckets, one in each hand, while Eli carries water to the trough.
  if(world.story?.stage==='ch6-buckets'&&world.story.carrying)for(const side of [-1,1]){const x=Math.round(p.x+side*15),y=Math.round(p.y+2+Math.sin((p.walkTime||world.elapsed||0)*6+side)*1);if(drawProp(ctx,'water-bucket-full',{x,y:y+10,w:16,h:16}))continue;ctx.fillStyle='#5c3b22';ctx.fillRect(x-5,y-2,10,11);ctx.fillStyle='#8a6038';ctx.fillRect(x-5,y-2,10,2);ctx.fillStyle='#3f7f95';ctx.fillRect(x-4,y,8,2);ctx.strokeStyle='#3a2414';ctx.lineWidth=1;ctx.beginPath();ctx.arc(x,y-2,5,Math.PI,0);ctx.stroke();}
+}
+function weaponPose(ctx,world,p){
+ const pose=p.weaponPose,age=(world.elapsed||0)-(pose?.started??0);
+ if(!pose||world.bobber||age<0||age>=pose.duration)return false;
+ return drawEntitySprite(ctx,pose.spriteId,{x:p.x,y:p.y,state:pose.state,time:age,duration:pose.duration,facingX:Math.cos(p.angle)<0?-1:1});
 }
 // Another player: Eli's sprite with their nickname above, in a gold-edged tag so players stand apart from villagers. Away players are faded.
 function drawOtherPlayer(ctx,o,t){

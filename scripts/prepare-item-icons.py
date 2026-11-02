@@ -13,6 +13,10 @@ SHEETS=[
  ('03-materials-trophies.png',4,3,False,['deer-hide','rabbit-pelt','turtle-shell','eel-skin','eel-oil','shadow-ichor','rusted-axe-head','deer-antlers','rabbits-foot','river-pearl','black-light-shard','old-boot']),
  ('04-shards-quest.png',4,2,True,['shard-rabbit','shard-deer','shard-turtle','shard-eel','shard-shadow-walker','region-core','treasure-key','reed-mark']),
  ('05-guardian-shards.png',3,1,True,['shard-moonfang','shard-rimejaw','shard-flitlynx']),
+ # The world bosses' loot holds green smoke, weed and moss, so it keys on closeness to the backdrop too.
+ # The Greyhorn sheet came with black cell frames; they were painted over with the backdrop green before it was added.
+ ('06-drowned-captain-loot.png',5,1,True,['captains-sabre','drowned-gorget','rusted-officers-helm','drowned-brass','barnacled-plate']),
+ ('07-greyhorn-loot.png',5,1,True,['greyhorn-spear','spire-bell','greyhorn-antler','hollow-antler-shard','greyhorn-hide']),
 ]
 def key(a):
     r,g,b=[a[...,i].astype(int) for i in range(3)]

@@ -10,6 +10,9 @@ import {WARES} from './trade.js';
 import {createNpcs} from './npcs.js';
 import {areaFor} from './wilds.js';
 import {ATLAS_SIZE} from './atlas-area.js';
+import {WORLD_DATA} from './world-data.js';
+// A world boss's dot is its boss spot from the world editor.
+const bossPlaces=species=>WORLD_DATA.bosses.filter(b=>b.species===species).map(b=>[b.areaId,b.x,b.y]);
 export const CODEX_CATEGORIES=Object.freeze([
  {id:'wildlife',label:'Wildlife',blurb:'Animals you can hunt for food and materials.'},
  {id:'monsters',label:'Monsters',blurb:'Things that want you dead.'},
@@ -75,6 +78,12 @@ export const CODEX_ENTRIES=Object.freeze([
   description:'An eel the shadow turned into a hunter, long and black with a mouth full of teeth. The first creature in the water that comes for you: it strikes at you on docks and ledges while you fish.'},
  {id:'croshelda',category:'bosses',name:'Croshelda',title:'The Witch of Darkness',portrait:'codex/croshelda.png',firstSeen:'Chapter 3 (named), Chapter 5 (vision)',status:'Whereabouts unknown',map:'world',
   description:'The shadow walkers once served her as an army. In Eli’s vision she was a crying girl with long white hair and storm-purple eyes, and black light burst out of her and swallowed everything. Nobody knows where she is.',lootNote:'Unknown. Nobody has ever faced her and come back to say.'},
+ {id:'drowned-captain',category:'bosses',species:'drowned-captain',name:'The Drowned Captain',title:'He never left his post',portrait:'codex/drowned-captain.png',firstSeen:'The Drowned Road',status:'World boss',loot:'drowned-captain',places:bossPlaces('drowned-captain'),
+  description:'The officer of the drowned company, still in his rusted helm and weed plume, rising out of the water by the Colonnade. He wades where you cannot follow, sweeps his sabre in a wide arc, and lunges a long way down the road after you. When he is hurt he calls his Drowned Soldiers up out of the shallows. Step aside from the lunge and keep out of the water’s edge.',
+  lootNote:'Also 40 to 80 reed marks. The Captain’s Sabre is certain the first time he falls. He rises again 30 minutes after each defeat.'},
+ {id:'greyhorn',category:'bosses',species:'greyhorn',name:'Greyhorn',title:'The Hollow Elk',portrait:'codex/greyhorn.png',firstSeen:'Elk Run',status:'World boss',loot:'greyhorn',places:bossPlaces('greyhorn'),
+  description:'The old lead bull of the Elk Spirit’s herd, taken by the shadow. He guards the Grey Spire. Up close he rears and stomps a ring of smoke along the ground; from further off he lowers his black antlers and charges. His bellow brings Hollow Stags out of the trees, and at half strength his antlers grow wider still. Beating him drives the shadow out of him, but it finds him again.',
+  lootNote:'Also 40 to 80 reed marks. The Greyhorn Spear is certain the first time he is freed. The shadow takes him again 45 minutes after each defeat.'},
  {id:'moonfang',category:'guardians',name:'Moonfang',title:'Wolf guardians',portrait:'codex/moonfang.png',firstSeen:'Chapter 1',status:'Ally',places:[['cabin',0,0],['village',1500,600]],
   description:'Grey wolves the size of ponies that roam the land and keep the villages safe from the monsters of the night. One knocked the shadow walker off its feet before it could reach Eli.',lootNote:'Never hunted. The Moonfang are allies.'},
  {id:'rimejaw',category:'guardians',name:'Rimejaw',title:'Frost-scaled guardian',portrait:'codex/rimejaw.png',firstSeen:'Chapter 3',status:'Ally',npc:'village-rimejaw',

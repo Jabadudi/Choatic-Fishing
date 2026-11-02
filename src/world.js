@@ -9,7 +9,8 @@ import {Fishing,ITEMS} from './fishing.js';
 import {Progression,XP} from './progression.js';
 import {Inventory,canUseItem,itemCount,stackable,HEALING} from './inventory.js';
 import {MERCHANTS,findMarks,marksLabel} from './trade.js';
-import {attack,special,updateProjectiles} from './combat.js';
+import {attack,special,updateProjectiles,startRush,updateRush,WEAPON_RUSHES} from './combat.js';
+import {createBosses,updateBosses} from './bosses.js';
 import {createCore,updateCore,useCoreAbility} from './core-abilities.js';
 import {facingFor} from './entities.js';
 import {updateBot} from './bots.js';
@@ -48,7 +49,7 @@ export class World {
   }
   this.story=adventure&&story?createStory():null;this.adventure=adventure;this.drops=[];this.nextDropId=1;
   if(adventure)this.player.inventory=new Inventory({separateStorage:true});
-  this.rabbits=adventure?createRabbits():[];this.wildlife=adventure?createWildlife():[];this.hunting={total:0,bySpecies:{},shiny:{seen:{},hunted:{}}};this.spawns=adventure?createSpawns():null;this.familiars=createFamiliars();this.core=createCore();this.companion=null;this.codex=new Set();this.itemsFound=new Set();this.well=createWell();
+  this.rabbits=adventure?createRabbits():[];this.wildlife=adventure?createWildlife():[];this.hunting={total:0,bySpecies:{},shiny:{seen:{},hunted:{}}};this.spawns=adventure?createSpawns():null;this.bosses=createBosses();this.familiars=createFamiliars();this.core=createCore();this.companion=null;this.codex=new Set();this.itemsFound=new Set();this.well=createWell();
   this.npcs=adventure?createNpcs():[];this.dialogue=null;this.quests=createQuests();
   if(adventure){this.areaId='landing';Object.assign(this.player,Wilds.SPAWN);this.bots=[];this.actors=[this.player];this.humans=[this.player];this.chests=[];this.countdownRemaining=0;this.matchState='playing';this.discovered=new Set();this.message='Welcome to Reedwater Landing. Follow the north trail to walk into Windchime Path. M opens the area map.';}
   if(adventure)this.player.progression.characterStats=true;
@@ -91,7 +92,7 @@ export class World {
   const name=this.inventory.item?.name,huntsBefore=this.hunting.total;
   if(!this.useActorItem(this.player)){if(!this.inventory.item)this.message='Selected slot is empty. Choose a filled slot with 2–7.';return false;}
   if(name==='Treasure Key'||Object.hasOwn(HEALING,name)||this.hunting.total>huntsBefore)return true;
-  this.message=PERMANENT_ITEMS.has(name)?`${name} · Arrow loosed.`:this.inventory.item?`${name} · ${stackable(this.inventory.item)?`${itemCount(this.inventory.item)} left`:`${this.inventory.item.uses} uses left`}.`:`${name} used up. Slot clear — fish again.`;return true;
+  this.message=PERMANENT_ITEMS.has(name)?(name==='Hunting Bow'?`${name} · Arrow loosed.`:WEAPON_RUSHES[name]?`${name} · Hold attack for the ${WEAPON_RUSHES[name].name}.`:`${name}.`):this.inventory.item?`${name} · ${stackable(this.inventory.item)?`${itemCount(this.inventory.item)} left`:`${this.inventory.item.uses} uses left`}.`:`${name} used up. Slot clear — fish again.`;return true;
  }
  backpackAction(id,action,slot){
   if(!this.adventure||this.matchState!=='playing'||this.player.health<=0||this.fishing.state!=='idle')return false;
@@ -240,6 +241,7 @@ export class World {
   updateWildlife(this,dt);
   updateDefeat(this,dt);
   updateSpawns(this,dt);
+  updateBosses(this,dt);
   updateFamiliar(this,dt);
   if(this.adventure)updateCore(this,dt);
   if(this.adventure)this.pullDrops(dt);
@@ -265,7 +267,12 @@ export class World {
   const p=this.player;p.angle=Math.atan2(input.aim.y-p.y,input.aim.x-p.x);
   // A Mire Walker's grab slows Eli to half pace for a moment.
   if(p.slowRemaining>0)p.slowRemaining=Math.max(0,p.slowRemaining-dt);
-  if(!dashing&&p.health>0&&(this.fishing.state==='idle'||this.fishing.state==='reeling')){const analog=Number.isFinite(input.moveX)&&Number.isFinite(input.moveY),x=analog?input.moveX:Number(input.right)-Number(input.left),y=analog?input.moveY:Number(input.down)-Number(input.up),len=Math.max(1,Math.hypot(x,y)),speed=195*this.progression.speedMultiplier*storySpeed(this)*(p.slowRemaining>0?.5:1);if(x||y){p.facing=facingFor(x,y);p.steppedAt=this.elapsed;}this.move(x/len*speed*dt,y/len*speed*dt,this.fishing.state==='reeling');}
+  // A boss weapon held ready (attack held down) rushes Eli forward once per press.
+  const rush=WEAPON_RUSHES[this.inventory.selected>1?this.inventory.item?.name:null];
+  if(rush&&input.held&&this.fishing.state==='idle'&&p.health>0){p.holdTime=(p.holdTime||0)+dt;if(p.holdTime>=rush.hold&&!p.holdSpent&&startRush(this,p,this.inventory.item.name))p.holdSpent=true;}
+  else{p.holdTime=0;p.holdSpent=false;}
+  updateRush(this,p,dt);
+  if(!dashing&&!p.rush&&p.health>0&&(this.fishing.state==='idle'||this.fishing.state==='reeling')){const analog=Number.isFinite(input.moveX)&&Number.isFinite(input.moveY),x=analog?input.moveX:Number(input.right)-Number(input.left),y=analog?input.moveY:Number(input.down)-Number(input.up),len=Math.max(1,Math.hypot(x,y)),speed=195*this.progression.speedMultiplier*storySpeed(this)*(p.slowRemaining>0?.5:1);if(x||y){p.facing=facingFor(x,y);p.steppedAt=this.elapsed;}this.move(x/len*speed*dt,y/len*speed*dt,this.fishing.state==='reeling');}
   if(p.health>0)this.advanceFishing(p,dt,input.held);
  }
 }

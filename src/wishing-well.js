@@ -2,7 +2,7 @@
 // draws from one of two pools: artifacts at a random rarity, or familiar shards for a creature in his index.
 // Gameplay only. The window is drawn by well-ui.js.
 import {STORY_STAGES} from './story.js';
-import {RARITIES,RARITY_NAMES,ARTIFACT_IDS,ARTIFACTS,artifactItem,copiesOf,itemLabel,withArticle} from './artifacts.js';
+import {RARITIES,RARITY_NAMES,WELL_ARTIFACT_IDS,ARTIFACTS,artifactItem,copiesOf,itemLabel,withArticle} from './artifacts.js';
 import {FAMILIARS,absorbShard} from './familiars.js';
 import {revealedCount} from './codex-discovery.js';
 import {marksOf,marksLabel} from './trade.js';
@@ -75,7 +75,7 @@ export function rollWell(pity,random){
 export const familiarPool=world=>Object.keys(FAMILIARS).filter(id=>(world.familiars?.shards[id]||0)<SHARD_CAP);
 const pick=(list,random)=>list[Math.min(list.length-1,Math.floor(random()*list.length))];
 function drawArtifact(world,random){
- const rarity=rollWell(world.well.pity.artifacts,random),id=pick(ARTIFACT_IDS,random),item=artifactItem(id,rarity),inv=world.inventory;
+ const rarity=rollWell(world.well.pity.artifacts,random),id=pick(WELL_ARTIFACT_IDS,random),item=artifactItem(id,rarity),inv=world.inventory;
  const isNew=RARITIES.every(r=>copiesOf(inv,`${id}:${r}`)===0);
  // A Legendary cannot combine any higher, so a second one goes back into the well as stones.
  if(rarity==='legendary'&&copiesOf(inv,`${id}:legendary`)>0){addStones(world.well,LEGENDARY_REFUND);return {rarity,kind:'artifact',artifact:id,name:ARTIFACTS[id].name,refund:LEGENDARY_REFUND};}
@@ -115,7 +115,7 @@ export function drawWell(world,pool,count=1,random=world.random){
 export const rarityChance=rarity=>rarity==='common'?1-Object.values(WELL_ODDS).reduce((a,b)=>a+b,0):WELL_ODDS[rarity];
 export function poolRates(world,pool){
  const rarities=RARITIES.map(rarity=>({rarity,chance:rarityChance(rarity),shards:pool==='familiars'?SHARD_COUNTS[rarity]:null}));
- if(pool==='artifacts')return {rarities,prizes:ARTIFACT_IDS.map(id=>({id,name:ARTIFACTS[id].name,inPool:true,chances:Object.fromEntries(RARITIES.map(r=>[r,rarityChance(r)/ARTIFACT_IDS.length]))}))};
+ if(pool==='artifacts')return {rarities,prizes:WELL_ARTIFACT_IDS.map(id=>({id,name:ARTIFACTS[id].name,inPool:true,chances:Object.fromEntries(RARITIES.map(r=>[r,rarityChance(r)/WELL_ARTIFACT_IDS.length]))}))};
  const open=familiarPool(world);
  return {rarities,prizes:Object.keys(FAMILIARS).map(id=>{
   const inPool=open.includes(id),why=inPool?null:'Full: this familiar has every shard it can use';

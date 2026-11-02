@@ -1,12 +1,30 @@
-import {drawEntitySprite} from './sprites.js';
+import {drawEntitySprite,spriteHasArt} from './sprites.js';
 import {BEHAVIOR_LABELS,facingFor} from './entities.js';
 import {SPRITES} from './sprite-definitions.js';
 import {drawShiny,SHINY_GOLD} from './shiny-art.js';
 // Monsters: the axe goes up through the windup and comes down on the strike; a chase walks unless it is standing in reach.
 const MONSTER_STATES={attack:'raise',strike:'swing',chase:'walk',return:'walk',notice:'idle'};
+// A boss's moves each have their own clip; the rush is the Captain's lunge or Greyhorn's charge.
+function bossPose(a,t){
+ const move=a.moves||{},rush=a.moves?.lunge?'lunge':'charge';
+ switch(a.state){
+  case 'rise':return {state:'rise',time:t,duration:1.4};
+  case 'call':return {state:'call',time:t,duration:move.call?.time};
+  case 'antlers':return {state:'antlers',time:t,duration:move.antlers?.time};
+  case 'attack':return {state:'raise',time:t,duration:a.attackWindup};
+  case 'strike':return {state:'swing',time:.25+t};
+  case 'rush-raise':return {state:`${rush}-raise`,time:t,duration:move[rush]?.windup};
+  case 'rush':return {state:rush,time:t,...(rush==='lunge'?{duration:move.lunge.time}:{})};
+  case 'skid':return SPRITES[a.spriteId]?.animations?.skid?{state:'skid',time:t}:{state:'swing',time:.25+t};
+  case 'chase':return {state:a.still?'idle':'walk',time:t};
+  case 'return':return {state:'walk',time:t};
+ }
+ return {state:a.state==='notice'?'idle':a.state,time:t};
+}
 export function animalPose(a){
  const t=a.time||0;
  if(a.health<=0)return {state:'death',time:t};
+ if(a.boss)return bossPose(a,t);
  if(a.behavior==='aggressive'){
   if(a.state==='attack')return {state:'raise',time:t,duration:a.attackWindup};
   // The swing clip starts with the two raised frames, so the strike begins on its third.
@@ -44,6 +62,11 @@ export function drawWildlife(c,a){
  // A Whisperer is faint until it hunts.
  if(a.visibility!==undefined&&a.health>0)c.globalAlpha*=a.visibility;
  if(drawEntitySprite(c,a.spriteId,{x,y,...animalPose(a),facingX:a.direction.x,direction:facingFor(a.direction.x,a.direction.y)})){c.restore();return;}
+ // A creature with its own sheet that has not arrived yet shows only its shadow on the ground, not a stand-in shape.
+ if(spriteHasArt(a.spriteId)&&!['deer','turtle'].includes(a.species)&&a.spriteId!=='nightwalker'){
+  if(a.health>0){c.fillStyle='#0000002e';c.beginPath();c.ellipse(Math.round(x),Math.round(y)+2,Math.max(10,(a.radius||14)*1.1),Math.max(4,(a.radius||14)*.4),0,0,Math.PI*2);c.fill();}
+  c.restore();return;
+ }
  c.translate(Math.round(x),Math.round(y));if(a.species==='turtle'?a.direction.x>0:a.direction.x<0)c.scale(-1,1);
  if(a.health<=0){c.scale(1,.35);c.translate(0,10);}
  const r=(color,x,y,w,h)=>{c.fillStyle=color;c.fillRect(x,y,w,h);};
@@ -64,17 +87,19 @@ export function drawWildlife(c,a){
  c.restore();
 }
 // How high the health bar sits above each shadow walker kind's feet.
-const STATUS_HEIGHT={'hollow-stag':98,'gloam-boar':42,stoneshade:96,whisperer:76,'mire-walker':64,'drowned-soldier':64,'ash-archer':62,inkeel:44};
+const STATUS_HEIGHT={'drowned-captain':86,greyhorn:134,'hollow-stag':98,'gloam-boar':42,stoneshade:96,whisperer:76,'mire-walker':64,'drowned-soldier':64,'ash-archer':62,inkeel:44};
 export function drawAnimalStatus(c,world){
  for(const a of world.animals){
   if(a.health<=0||a.areaId!==world.areaId)continue;
   const near=Math.hypot(a.x-world.player.x,a.y-world.player.y)<150;
   // A hidden Mire Walker or a faded Whisperer shows no tag until it is hunting.
   if((a.hidden||a.fade)&&['idle','walk','return'].includes(a.state)&&a.health===a.maxHealth)continue;
-  if(a.health===a.maxHealth&&!a.shiny&&!['notice','chase','attack','strike','roar'].includes(a.state)&&(!near||world.inventory.selected===1))continue;
+  if(a.health===a.maxHealth&&!a.shiny&&!a.boss&&!['notice','chase','attack','strike','roar'].includes(a.state)&&(!near||world.inventory.selected===1))continue;
   const y=a.y-(STATUS_HEIGHT[a.species]??(a.spriteId==='nightwalker'?66:a.species==='deer'?51:a.species==='rabbit'?42:a.species==='fox'?40:a.species==='boar'?46:a.species==='elk'?96:a.species==='bear'?62:a.species==='heron'?56:a.species==='crab'?30:a.species==='goat'?48:a.species==='otter'?30:a.species==='duck'?38:a.species==='pike'?28:a.species==='seal'?40:33));
-  c.fillStyle='#19362de8';c.fillRect(a.x-23,y,46,6);c.fillStyle='#c8d78a';c.fillRect(a.x-22,y+1,44*a.health/a.maxHealth,4);
-  c.font='12px monospace';c.textAlign='center';const tag=`${a.name} · ${BEHAVIOR_LABELS[a.behavior]||a.behavior}`;
+  // A boss gets a long bar in its own colour, and its tag says what it is.
+  const half=a.boss?60:23;
+  c.fillStyle='#19362de8';c.fillRect(a.x-half,y,half*2,a.boss?8:6);c.fillStyle=a.boss?'#d8705a':'#c8d78a';c.fillRect(a.x-half+1,y+1,(half*2-2)*a.health/a.maxHealth,a.boss?6:4);
+  c.font=a.boss?'bold 13px monospace':'12px monospace';c.textAlign='center';const tag=a.boss?`${a.name} · World boss`:`${a.name} · ${BEHAVIOR_LABELS[a.behavior]||a.behavior}`;
   // A shiny's tag is gold with a dark edge so it reads on bright grass.
   if(a.shiny){c.lineWidth=3;c.strokeStyle='#10261d';c.strokeText(tag,a.x,y-5);}
   c.fillStyle=a.shiny?SHINY_GOLD:'#fff0cd';c.fillText(tag,a.x,y-5);

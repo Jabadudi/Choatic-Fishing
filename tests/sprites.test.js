@@ -119,3 +119,16 @@ test('Corvane’s entrance and block play once and hold their last frame',()=>{
  assert.equal(frameIndex(d,'block',0),40);assert.equal(frameIndex(d,'block',99),47);
  assert.equal(frameIndex(d,'walk:up',0),24);assert.equal(frameIndex(d,'idle:down',5),16);
 });
+test('a creature sheet whose download failed is asked for again instead of staying blank',()=>{
+ const original=globalThis.Image,realNow=Date.now,c=fakeCanvas();let now=1000,made=0,fail=true;
+ try{
+  clearSpriteCache();Date.now=()=>now;
+  globalThis.Image=class{constructor(){made++;this.complete=true;this.naturalWidth=fail?0:280;this.naturalHeight=fail?0:174;}set src(v){}};
+  const def={asset:'flaky-sheet.png',frameSize:[280,174],columns:1};
+  assert.equal(drawSprite(c.ctx,def),false);assert.equal(made,1);
+  // Within the pause the failed image is not fetched again every frame.
+  now+=500;assert.equal(drawSprite(c.ctx,def),false);now+=1000;assert.equal(drawSprite(c.ctx,def),false);assert.equal(made,1);
+  // Once the pause is over a new request goes out, and this time it arrives.
+  fail=false;now+=2500;assert.equal(drawSprite(c.ctx,def),true);assert.equal(made,2);
+ }finally{globalThis.Image=original;Date.now=realNow;clearSpriteCache();}
+});
