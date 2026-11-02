@@ -8,11 +8,13 @@ const fresh=()=>{const w=new World(()=>.1,{adventure:true,story:true});w.story.s
 
 test('the wheel holds the two Reedwater powers and two sealed slots, all asleep until the story wakes them',()=>{
  const w=fresh();
- assert.deepEqual(CORE_ABILITIES.map(a=>a.name),['Still Water','Reedwater’s Call','???','???']);
+ assert.deepEqual(CORE_ABILITIES.map(a=>a.name),['Still Water','Reedwater’s Call']);
+ assert.deepEqual(coreWheel(w).map(r=>r.id),['still-water','reeds-call',null,null]);
+ assert.deepEqual(coreWheel(w).map(r=>r.sealed),[false,false,true,true]);
  assert.deepEqual(coreWheel(w).map(r=>r.unlocked),[false,false,false,false]);
  assert.equal(w.useCoreAbility('still-water'),false);assert.match(w.message,/out of reach/);
  assert.equal(w.useCoreAbility('reeds-call'),false);assert.match(w.message,/asleep/);
- assert.equal(w.useCoreAbility('sealed-3'),false);assert.match(w.message,/hasn’t awakened/);
+ assert.equal(w.useCoreSlot(2),false);assert.match(w.message,/hasn’t awakened/);
  w.story.coreIngested=true;
  assert.deepEqual(coreWheel(w).map(r=>r.unlocked),[true,false,false,false]);
  w.story.callAwakened=true;

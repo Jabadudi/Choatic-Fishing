@@ -2,6 +2,7 @@ import {damageAnimal} from './wildlife.js';
 import {huntableInArea} from './entities.js';
 import {artifactBonus,WET_REACH} from './artifacts.js';
 import {waterDistance} from './wilds.js';
+import {stillWaterGuardAmount,afterPlayerHit} from './core-abilities.js';
 export const combatTargets=world=>world.adventure?[...world.actors,...world.animals.filter(a=>huntableInArea(world,a))]:world.actors;
 // Swept collision prevents fast shells or harpoons skipping a small animal between steps.
 function shotHit(shot,target,startX,startY){
@@ -42,9 +43,10 @@ export function damage(world,target,amount,source,angle,knockback=0){
  const steady=target===world.player&&world.core?.stillWater>0;if(steady)knockback=0;
  // The Drowned Gorget guards Eli in or beside water; the Spire Bell against anything the shadow has taken.
  const wet=world.adventure&&waterDistance(target.x,target.y,world.areaId)<=WET_REACH,shadow=source.entityType==='animal'&&source.behavior==='aggressive';
- const taken=amount*(steady?.75:1)*(source.progression?.damageMultiplier??1)*(1-target.progression.damageReduction)*(1-artifactBonus(target,'mossback-scute'))*(source.entityType==='animal'?1-target.progression.passive('hunting.hide'):1)*(wet?1-artifactBonus(target,'drowned-gorget'):1)*(shadow?1-artifactBonus(target,'spire-bell'):1);
+ const taken=amount*(steady?1-stillWaterGuardAmount(world):1)*(source.progression?.damageMultiplier??1)*(1-target.progression.damageReduction)*(1-artifactBonus(target,'mossback-scute'))*(source.entityType==='animal'?1-target.progression.passive('hunting.hide'):1)*(wet?1-artifactBonus(target,'drowned-gorget'):1)*(shadow?1-artifactBonus(target,'spire-bell'):1);
  target.health=Math.max(0,target.health-taken);
  target.vx+=Math.cos(angle)*knockback;target.vy+=Math.sin(angle)*knockback;
+ if(target===world.player&&world.adventure)afterPlayerHit(world);
  if(world.adventure)world.effects.push({name:'player-hit',label:`-${Math.round(taken)}`,x:target.x,y:target.y-40,angle:0,life:.7,duration:.7});
  if(target.health===0){
   target.fishing.cancel();target.bobber=null;
@@ -113,7 +115,10 @@ export function updateProjectiles(world,dt){
    // A monster's arrow only ever hits Eli.
    const hits=(shot.hostile?[world.player]:combatTargets(world)).filter(target=>target!==shot.owner&&target.health>0&&!shot.hit.has(target.id)).map(target=>({target,t:shotHit(shot,target,startX,startY)})).filter(hit=>hit.t!==null).sort((a,b)=>a.t-b.t);
    for(const {target} of hits){
-    damage(world,target,shot.damage,shot.owner,shot.angle,shot.knockback);shot.hit.add(target.id);if(shot.kind!=='wave'){shot.done=true;break;}
+    damage(world,target,shot.damage,shot.owner,shot.angle,shot.knockback);shot.hit.add(target.id);if(shot.kind==='wave')continue;
+    // A maxed Reedwater's Call passes through its first foe; it then flies on straight.
+    if(shot.pierce>0){shot.pierce--;shot.homing=null;break;}
+    shot.done=true;break;
    }
   }
   if(shot.travel>=shot.range)shot.done=true;

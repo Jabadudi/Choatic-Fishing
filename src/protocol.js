@@ -30,7 +30,7 @@ export function applyAction(world,id,action,input){
    case 'tidal':return world.useSpecial('tidal');
    case 'whirlpool':return world.useSpecial('whirlpool');
    case 'still-water':case 'reeds-call':return world.adventure&&world.useCoreAbility(action);
-   case 'sealed':return world.adventure&&world.useCoreAbility('sealed-3');
+   case 'core-slot-0':case 'core-slot-1':case 'core-slot-2':case 'core-slot-3':return world.adventure&&world.useCoreSlot(Number(action.slice(-1)));
    case 'choose-tidal':return actor.progression.choose('tidal');
    case 'choose-whirlpool':return actor.progression.choose('whirlpool');
    default:return false;

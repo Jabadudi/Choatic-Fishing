@@ -5,6 +5,7 @@ import {AREAS,walkable} from './wilds.js';
 import {animalGround} from './wildlife.js';
 import {SKILL_IDS,skillXpToNext} from './skills.js';
 import {validTree} from './skill-trees.js';
+import {validCoreSkills,DEFAULT_SLOTS} from './core-skills.js';
 import {restoreFamiliars} from './familiars.js';
 import {restoreCodex} from './codex-discovery.js';
 import {restoreItemsFound} from './pickups.js';
@@ -70,6 +71,9 @@ function progressionFrom(data,target){
  for(const id of SKILL_IDS){const ranks=data.skillTrees?.[id];if(ranks===undefined)continue;
   if(!validTree(id,ranks,target.skills[id].level))fail('Invalid skill tree data.');
   target.skillTrees[id]=Object.fromEntries(Object.entries(ranks).filter(([,rank])=>rank>0));}
+ // Region Core skills arrived with save version 8 already set; saves without them keep every Core SP unspent.
+ if(data.coreSkills!==undefined){if(!validCoreSkills(data.coreSkills,target.level))fail('Invalid Region Core skill data.');
+  target.coreSkills={levels:Object.fromEntries(Object.entries(data.coreSkills.levels||{}).filter(([,n])=>n>0)),slots:[...(data.coreSkills.slots||DEFAULT_SLOTS)]};}
  if(target.xp>=target.xpToNextLevel)fail('Experience exceeds the level threshold.');
 }
 // Willowback's Commons, Upper Lanes, Millside and Training Ground became the Town Square, the Merchant Quarter and the
@@ -191,5 +195,5 @@ export function restoreSave(input){
 export function parseSave(text){if(typeof text!=='string'||text.length>5*1024*1024)fail('Save file is too large.');let save;try{save=JSON.parse(text);}catch{fail('Could not read this file. Choose a valid The Wilds JSON save.');}restoreSave(save);return save;}
 export function importantProgress(world){
  const p=world.progression;
- return JSON.stringify([world.areaId,world.inventory.allItems,world.inventory.marks,world.inventory.slots.map(i=>i?.id),world.inventory.artifactSlots,world.well,p.totalXp,p.skills,p.skillTrees,p.pendingChoices,p.pendingUpgrades,p.upgrades,p.ranks,p.specials,world.quests,world.story,[...world.discovered],world.hunting,world.familiars,[...(world.codex||[])],world.drops,world.animals.map(a=>a.health)]);
+ return JSON.stringify([world.areaId,world.inventory.allItems,world.inventory.marks,world.inventory.slots.map(i=>i?.id),world.inventory.artifactSlots,world.well,p.totalXp,p.skills,p.skillTrees,p.coreSkills,p.pendingChoices,p.pendingUpgrades,p.upgrades,p.ranks,p.specials,world.quests,world.story,[...world.discovered],world.hunting,world.familiars,[...(world.codex||[])],world.drops,world.animals.map(a=>a.health)]);
 }

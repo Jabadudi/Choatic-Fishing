@@ -88,6 +88,9 @@
 .hud-act.core.locked svg{opacity:.7}
 /* Like the reference wheel, the powers go by their icons; the name shows on hover and in the status line when used. */
 .hud-act.core small{display:none}
+.hud-core-icon{display:contents}
+.hud-act.core.empty{border-style:dashed;border-color:#9ad7ff88;background:radial-gradient(circle at 50% 35%,#1d4a5c99,#0d243099 72%);color:#9ad7ffcc}
+.hud-act.core.empty .hud-cd{display:none}
 .hud-act.core.active{border-color:#e8f7ff;box-shadow:0 0 16px #8fd4ff,0 2px 8px #0007}
 .hud-cd{position:absolute;inset:0;border-radius:50%;background:conic-gradient(#000a var(--cd,0deg),transparent 0);pointer-events:none}
 .hud-act.core.locked .hud-cd{display:none}

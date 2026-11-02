@@ -7,7 +7,7 @@ import {bindingLabel} from './keybinds.js';
 import {regionAt} from './wilds.js';
 import {FAMILIARS} from './familiars.js';
 import {wishstonesLabel} from './wishing-well.js';
-import {coreWheel,RESERVES_MAX,abilityUnlocked} from './core-abilities.js';
+import {coreWheel,RESERVES_MAX,abilityUnlocked,reservesMax} from './core-abilities.js';
 import {dashMeter} from './hud.js';
 const svg=(body,size=24)=>`<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
 const el=(tag,className,text)=>{const node=document.createElement(tag);if(className)node.className=className;if(text!==undefined)node.textContent=text;return node;};
@@ -23,6 +23,7 @@ const ICONS={
  dash:'<path d="M5 12h9M9 7l5 5-5 5M17 6v12"/>',
  'still-water':'<path d="M12 3c2.5 3.2 4 5.4 4 7.2a4 4 0 0 1-8 0C8 8.4 9.5 6.2 12 3z"/><path d="M3 17c2.5 0 3-1.5 4.5-1.5S10 17 12 17s3-1.5 4.5-1.5S19 17 21 17M6 20.5h12"/>',
  'reeds-call':'<path d="M4 20c4-1 6-5 7-9s3-7 8-7"/><path d="M19 4v4.5a2.5 2.5 0 0 1-5 0"/><path d="M6 13v7M8.5 10v10"/>',
+ empty:'<circle cx="12" cy="12" r="7" stroke-dasharray="2.5 2.5"/><path d="M12 9v6M9 12h6"/>',
  sealed:'<rect x="6" y="11" width="12" height="9" rx="1.5"/><path d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3M12 14.5v2"/>'
 };
 // A story objective reads "Chapter 5 · Mara is waiting…"; the part before the first dot becomes the tracker's heading.
@@ -42,10 +43,10 @@ export function mountHudShell({act,openHelp,examine,openAtlas,openQuests,openWel
 <div id="hud-actions">
  <div class="hud-reserves" hidden aria-label="Reserves"><i></i></div>
  <button class="hud-act side talk desk" data-act="talk" aria-label="Talk or examine">${svg(ICONS.talk)}<kbd></kbd><small>Talk</small></button>
- <button class="hud-act ring core" style="--a:180deg" data-act="still-water" data-core="still-water" aria-label="Still Water">${svg(ICONS['still-water'])}<i class="hud-cd"></i><kbd></kbd><small>Still Water</small></button>
- <button class="hud-act ring core" style="--a:135deg" data-act="reeds-call" data-core="reeds-call" aria-label="Reedwater’s Call">${svg(ICONS['reeds-call'])}<i class="hud-cd"></i><kbd></kbd><small>Call</small></button>
- <button class="hud-act ring core" style="--a:90deg" data-act="sealed" data-core="sealed-3" aria-label="Sealed power">${svg(ICONS.sealed)}<small>???</small></button>
- <button class="hud-act ring core" style="--a:45deg" data-act="sealed" data-core="sealed-4" aria-label="Sealed power">${svg(ICONS.sealed)}<small>???</small></button>
+ <button class="hud-act ring core" style="--a:180deg" data-act="core-slot-0" data-core-slot="0" data-core="still-water" aria-label="Still Water"><span class="hud-core-icon">${svg(ICONS['still-water'])}</span><i class="hud-cd"></i><kbd></kbd><small>Still Water</small></button>
+ <button class="hud-act ring core" style="--a:135deg" data-act="core-slot-1" data-core-slot="1" data-core="reeds-call" aria-label="Reedwater’s Call"><span class="hud-core-icon">${svg(ICONS['reeds-call'])}</span><i class="hud-cd"></i><kbd></kbd><small>Call</small></button>
+ <button class="hud-act ring core" style="--a:90deg" data-act="core-slot-2" data-core-slot="2" data-core="" aria-label="Sealed power"><span class="hud-core-icon">${svg(ICONS.sealed)}</span><i class="hud-cd"></i><kbd></kbd><small>???</small></button>
+ <button class="hud-act ring core" style="--a:45deg" data-act="core-slot-3" data-core-slot="3" data-core="" aria-label="Sealed power"><span class="hud-core-icon">${svg(ICONS.sealed)}</span><i class="hud-cd"></i><kbd></kbd><small>???</small></button>
  <button class="hud-act ring dash" style="--a:0deg" data-act="dash" aria-label="Dash">${svg(ICONS.dash)}<i class="hud-cd"></i><b class="hud-charges" hidden></b><kbd></kbd><small>Dash</small></button>
  <button class="hud-act use desk" data-act="use" aria-label="Attack with the selected item"><span class="hud-use-icon"></span><kbd></kbd><small></small></button>
 </div>
@@ -135,10 +136,14 @@ export function mountHudShell({act,openHelp,examine,openAtlas,openQuests,openWel
    const touchSymbol=document.querySelector('#touch-use .touch-symbol');if(touchSymbol)setItemIcon(touchSymbol,rod?'Fishing Rod':item?.name);
    // The Region Core's powers ring the attack: sealed until the story wakes them, then a cooldown sweep and a reserves bar.
    for(const row of coreWheel(world)){
-    const b=actions.querySelector(`[data-core="${row.id}"]`);if(!b)continue;
-    b.classList.toggle('locked',!row.unlocked);b.classList.toggle('active',row.active);b.classList.toggle('waiting',row.unlocked&&!row.ready);
-    if(!row.sealed){const name=row.unlocked?row.name:'???';setText(b.querySelector('small'),row.id==='reeds-call'&&row.unlocked?'Call':name);b.setAttribute('aria-label',row.unlocked?row.name:'Sealed power');b.title=row.unlocked?row.name:'Not yet awakened';
-     const cd=b.querySelector('.hud-cd'),sweep=`${Math.round(row.cooldownFraction*360)}deg`;if(cd.style.getPropertyValue('--cd')!==sweep)cd.style.setProperty('--cd',sweep);}
+    const b=actions.querySelector(`[data-core-slot="${row.slot}"]`);if(!b)continue;
+    // Each slot shows whatever Core skill is equipped there; the icon only changes when the skill does.
+    const shown=row.sealed?'sealed':row.empty?'empty':row.id;
+    if(b.dataset.shown!==shown){b.dataset.shown=shown;b.dataset.core=row.id||'';b.querySelector('.hud-core-icon').innerHTML=svg(ICONS[row.sealed?'sealed':row.empty?'empty':row.id]||ICONS.sealed);}
+    b.classList.toggle('locked',!row.unlocked);b.classList.toggle('empty',row.empty);b.classList.toggle('active',row.active);b.classList.toggle('waiting',row.unlocked&&!row.ready);
+    const name=row.sealed?'???':row.empty?'Empty':row.unlocked?row.name:'???';setText(b.querySelector('small'),row.id==='reeds-call'&&row.unlocked?'Call':name);
+    b.setAttribute('aria-label',row.sealed?'Sealed power':row.empty?'Empty Core slot':row.unlocked?row.name:'Sealed power');b.title=row.sealed?'Not yet awakened':row.empty?'Empty slot · equip a Core skill from Skills':row.unlocked?row.name:'Not yet awakened';
+    const cd=b.querySelector('.hud-cd'),sweep=`${Math.round(row.cooldownFraction*360)}deg`;if(cd.style.getPropertyValue('--cd')!==sweep)cd.style.setProperty('--cd',sweep);
    }
    // Dash: a sweep drains clockwise as the spent charge comes back, the button dims while no charge is left, and it flashes once when ready.
    const dash=actions.querySelector('.dash'),dm=dashMeter(world),dashSweep=`${Math.round(dm.remaining*360)}deg`,dashCd=dash.querySelector('.hud-cd');
@@ -148,9 +153,9 @@ export function mountHudShell({act,openHelp,examine,openAtlas,openQuests,openWel
    const charges=dash.querySelector('.hud-charges');charges.hidden=dm.max<2;if(!charges.hidden)setText(charges,String(dm.charges));
    const dashLabel=dm.ready?(dm.remaining>0?`Dash, ${dm.charges} of ${dm.max} ready`:'Dash'):`Dash recharging, ${dm.seconds.toFixed(1)} seconds`;if(dash.getAttribute('aria-label')!==dashLabel)dash.setAttribute('aria-label',dashLabel);
    const reserves=actions.querySelector('.hud-reserves');reserves.hidden=!abilityUnlocked(world,'reeds-call');
-   if(!reserves.hidden){const w=`${Math.round((world.core?.reserves??RESERVES_MAX)/RESERVES_MAX*100)}%`;if(reserves.firstElementChild.style.width!==w)reserves.firstElementChild.style.width=w;}
-   const keys={'still-water':'tidal','reeds-call':'whirlpool',talk:'inspect',use:rod?'fish':'use',dash:'dash'};
-   for(const b of actions.querySelectorAll('[data-act]')){const k=b.querySelector('kbd');if(k)setText(k,touch?'':b.dataset.act==='use'?'Click':bindingLabel(keys[b.dataset.act]).replace(/^(Left|Right) /,''));}
+   if(!reserves.hidden){const w=`${Math.round((world.core?.reserves??RESERVES_MAX)/reservesMax(world)*100)}%`;if(reserves.firstElementChild.style.width!==w)reserves.firstElementChild.style.width=w;}
+   const keys={'core-slot-0':'tidal','core-slot-1':'whirlpool',talk:'inspect',use:rod?'fish':'use',dash:'dash'};
+   for(const b of actions.querySelectorAll('[data-act]')){const k=b.querySelector('kbd');if(k)setText(k,touch?'':b.dataset.act==='use'?'Click':!keys[b.dataset.act]?'':bindingLabel(keys[b.dataset.act]).replace(/^(Left|Right) /,''));}
    // Pickups and first finds.
    const seen=notePickups(world,carried);carried=seen.carried;
    for(const g of seen.gained)pushFeed(g);queue.push(...seen.firsts);
