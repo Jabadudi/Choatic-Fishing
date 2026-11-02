@@ -9,15 +9,17 @@ const FRAMES={windchime:[262,340,236,296],crossroads:[266,350,176,243],marsh:[32
  village:[112,198,180,232],'village-port':[108,198,218,272],'village-market':[192,244,190,236],'village-farm':[234,270,178,236]};
 // Rooms sit inside the area whose door they open from.
 const PARENT={cabin:'landing','chief-house':'village','guest-lodge':'village'};
-export const frameFor=id=>{const a=AREAS[PARENT[id]||id];return a?.frame||FRAMES[a?.id]||null;};
-export const mapAreaId=id=>PARENT[id]||id;
+// New areas made in the atlas sit inside another area (`within`) and show there, like rooms.
+const parentOf=id=>PARENT[id]||(AREAS[id]?.within&&AREAS[AREAS[id].within]?AREAS[id].within:null);
+export const frameFor=id=>{const a=AREAS[parentOf(id)||id];return a?.frame||FRAMES[a?.id]||null;};
+export const mapAreaId=id=>parentOf(id)||id;
 // Where a point in an area lies on the atlas.
 export function atlasPoint(id,x,y){
  const area=AREAS[mapAreaId(id)],f=frameFor(id);if(!area||!f)return null;
- if(PARENT[id])return {x:(f[0]+f[1])/2,y:(f[2]+f[3])/2};
+ if(parentOf(id))return {x:(f[0]+f[1])/2,y:(f[2]+f[3])/2};
  return {x:f[0]+(f[1]-f[0])*x/area.width,y:f[2]+(f[3]-f[2])*y/area.height};
 }
-export const playableAreas=()=>Object.values(AREAS).filter(a=>!PARENT[a.id]&&frameFor(a.id));
+export const playableAreas=()=>Object.values(AREAS).filter(a=>!parentOf(a.id)&&frameFor(a.id));
 let image=null;
 export function atlasImage(onload){
  if(typeof Image==='undefined')return null;

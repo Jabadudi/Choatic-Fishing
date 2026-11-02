@@ -863,5 +863,9 @@ area({id:'outer-shallows',num:'21',name:'Outer Shallows',frame:[0,180,380,480],s
 // Each one it holds replaces the same field written above; everything it leaves out stays as written here.
 export const LAND_FIELDS=['base','sea','ground','size','spawn','shapes','zones','cliffs','roads','walks','fords','bridges','props','places','exits','portals','textures'];
 export const BUILT_DEFS=DEFS;
-export const DELTA_DEFS=DEFS.map(def=>{const edit=LAND_DATA[def.id];if(!edit)return def;const out={...def};for(const k of LAND_FIELDS)if(Object.hasOwn(edit,k))out[k]=edit[k];return out;});
+// New areas made in the atlas (a sub-area given a size, e.g. a cave behind a door) ship whole: their land-data.js entry
+// has isNew and carries its own name, number and frame; `within` is the area it sits inside on the world map.
+const NEW_DEFS=Object.entries(LAND_DATA).filter(([id,e])=>e.isNew&&!DEFS.some(d=>d.id===id))
+ .map(([id,e])=>({id,name:e.name||id,num:e.num||'',frame:e.frame,within:e.within||null,size:e.size||[2000,1400],base:'land',ground:'meadow',isNew:true}));
+export const DELTA_DEFS=[...DEFS,...NEW_DEFS].map(def=>{const edit=LAND_DATA[def.id];if(!edit)return def;const out={...def};for(const k of LAND_FIELDS)if(Object.hasOwn(edit,k))out[k]=edit[k];return out;});
 export const DELTA=Object.fromEntries(DELTA_DEFS.map(def=>[def.id,defineArea(def)]));

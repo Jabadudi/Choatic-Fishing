@@ -33,7 +33,7 @@ const DOORS={cabin:['landing',1660,1440],'chief-house':['village',1250,350],'gue
 // Landmarks beyond the playable areas, as fractions of each atlas image.
 const ATLAS_POINTS={'listening-tree':['delta',.21,.12,'The Listening Tree']};
 // Areas built from the atlas carry their own frame on it, in atlas pixels.
-const atlasBounds=area=>{if(!area.frame)return null;const [x0,x1,y0,y1]=area.frame;return [x0/ATLAS_SIZE.width,y0/ATLAS_SIZE.height,(x1-x0)/ATLAS_SIZE.width,(y1-y0)/ATLAS_SIZE.height];};
+const atlasBounds=area=>{if(!area.frame||area.within)return null;const [x0,x1,y0,y1]=area.frame;return [x0/ATLAS_SIZE.width,y0/ATLAS_SIZE.height,(x1-x0)/ATLAS_SIZE.width,(y1-y0)/ATLAS_SIZE.height];};
 export function atlasPoint(areaId,x,y){
  const place=areaId,door=DOORS[areaId];if(door)[areaId,x,y]=door;
  const area=areaFor(areaId),bounds=AREA_BOUNDS[areaId]||atlasBounds(area);if(!bounds||area.id!==areaId)return null;
