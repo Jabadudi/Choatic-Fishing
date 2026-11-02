@@ -56,12 +56,12 @@ test('minimap dots come from real spawn slots and NPC positions',()=>{
  const slotsFor=(species,habitat)=>Object.values(SLOTS).filter(slot=>slot.habitat===habitat&&listing(species,habitat).includes(slot.areaId)).length;
  assert.equal(dots.length,slotsFor('deer','land'));assert.ok(dots.length<land.length,'no deer on the Deep Trail or the coast');
  // The story areas come first, in the order they open.
- assert.deepEqual(codexRegions(deer).slice(0,9),['Reedwater Landing','Windchime Path','Willowbank Crossroads','Shellback Marsh','Stone Clearing','Forest Edge','Whispering Woods','Elk Run','Trailhead']);
+ assert.deepEqual(codexRegions(deer).slice(0,9),['Reedwater Landing','Windchime Path','Willowbank Crossroads','Shellback Marsh','Stonefall Creek','Stone Clearing','Aqueduct Ruins','Forest Edge','Whispering Woods']);
  assert.equal(codexLocations(codexEntry('rabbit')).length,slotsFor('rabbit','land'));
  assert.ok(!listing('rabbit','land').some(id=>['whispering-woods','elk-run','trailhead','deep-trail'].includes(id)),'no rabbits in the deep forest');
  assert.equal(codexLocations(codexEntry('turtle')).length,slotsFor('turtle','water'));
  // Shadow walkers take their share of the land slots: half the marsh, a quarter of the crossroads.
- assert.deepEqual(codexSpawnRates(deer).map(r=>[r.areaId,r.label]).slice(0,9),[['landing','common'],['windchime','common'],['crossroads','uncommon'],['marsh','uncommon'],['stone-clearing','uncommon'],['forest-edge','uncommon'],['whispering-woods','uncommon'],['elk-run','uncommon'],['trailhead','uncommon']]);
+ assert.deepEqual(codexSpawnRates(deer).map(r=>[r.areaId,r.label]).slice(0,9),[['landing','common'],['windchime','common'],['crossroads','uncommon'],['marsh','uncommon'],['stonefall','common'],['stone-clearing','uncommon'],['aqueduct-ruins','common'],['forest-edge','uncommon'],['whispering-woods','uncommon']]);
  assert.deepEqual(codexSpawnRates(codexEntry('shadow-walker')).map(r=>[r.areaId,r.label]).slice(0,4),[['landing','rare'],['windchime','rare'],['crossroads','uncommon'],['marsh','common']]);
  assert.deepEqual(codexSpawnRates(codexEntry('eel')).map(r=>r.areaId).slice(0,4),['landing','crossroads','marsh','stone-clearing']);
  assert.deepEqual(codexRegions(codexEntry('blacksmith')),['Willowback Merchant Quarter']);
@@ -85,3 +85,4 @@ test('loot rows show the shiny chance: four times every uncertain drop, capped a
  assert.equal(by('Deer Meat').shiny,1);assert.equal(by('Deer Hide').shiny,1);assert.ok(Math.abs(by('Deer Antlers').shiny-.8)<1e-9);assert.ok(Math.abs(by('Deer Familiar Shard').shiny-.4)<1e-9);
  assert.equal(shinyChance(.05),.2);
 });
+
