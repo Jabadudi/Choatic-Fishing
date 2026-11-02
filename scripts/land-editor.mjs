@@ -11,7 +11,7 @@ import {readdir,readFile,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {BUILT_DEFS,DELTA_DEFS,LAND_FIELDS} from '../src/delta-areas.js';
 import {PROP_SOLID,PROP_ART} from '../src/atlas-area.js';
-import {GROUND_TEXTURES} from '../src/ground-textures.js';
+import {GROUND_TEXTURES,TRAIL_STYLES,defaultTrail} from '../src/ground-textures.js';
 
 export const ZONES=['meadow','clear','forest','sand','rock','marsh','dirt'];
 export const TEXTURE_KINDS=Object.keys(GROUND_TEXTURES);
@@ -50,7 +50,11 @@ export function cleanLand(def,built,notes=[]){
  });
  if(Array.isArray(def.zones))out.zones=def.zones.flatMap((z,i)=>{const p=Array.isArray(z)&&ZONES.includes(z[0])&&pts(z[1],3);if(!p){drop(`ground patch ${i+1}`);return [];}return [[z[0],p]];});
  if(Array.isArray(def.cliffs))out.cliffs=def.cliffs.flatMap((c,i)=>{const p=pts(c,3);if(!p){drop(`cliff ${i+1}`);return [];}return [p];});
- if(Array.isArray(def.roads))out.roads=def.roads.flatMap((r,i)=>{const p=pts(r,2);if(!p){drop(`trail ${i+1}`);return [];}return [p];});
+ if(Array.isArray(def.roads))out.roads=def.roads.flatMap((r,i)=>{
+  const obj=r&&!Array.isArray(r)&&typeof r==='object',p=pts(obj?r.pts:r,2);if(!p){drop(`trail ${i+1}`);return [];}
+  if(obj&&r.style!==undefined&&!Object.hasOwn(TRAIL_STYLES,r.style))drop(`surface ${r.style} on trail ${i+1}`);
+  return [obj&&Object.hasOwn(TRAIL_STYLES,r.style)?{pts:p,style:r.style}:p];
+ });
  for(const k of ['walks','fords','bridges'])if(Array.isArray(def[k]))out[k]=def[k].flatMap((w,i)=>{
   if(w&&!Array.isArray(w)&&typeof w==='object'){const p=pts(w.pts,2);if(!p||!isNum(w.width)){drop(`${k} ${i+1}`);return [];}const o={pts:p,width:r1(clamp(w.width,.5,20))};if(isNum(w.hit))o.hit=r1(clamp(w.hit,.2,20));return [o];}
   const p=pts(w,2);if(!p){drop(`${k} ${i+1}`);return [];}return [p];
@@ -122,7 +126,7 @@ export const LAND_DATA=Object.freeze({${areas.length?'\n'+areas.join(',\n')+'\n'
 // What the editor starts from: every atlas area's terrain as the game has it now, plus the choices it offers.
 export function shippedLand(){
  const pick=d=>{const o={id:d.id,name:d.name,num:d.num,frame:d.frame};for(const k of LAND_FIELDS)if(d[k]!==undefined)o[k]=d[k];return o;};
- return {zones:ZONES,textures:TEXTURE_KINDS,props:Object.keys(PROP_SOLID),propArt:PROP_ART,propSolid:PROP_SOLID,areas:Object.fromEntries(DELTA_DEFS.map(d=>[d.id,pick(d)]))};
+ return {zones:ZONES,textures:TEXTURE_KINDS,trails:Object.keys(TRAIL_STYLES),trailDefault:Object.fromEntries(DELTA_DEFS.map(d=>[d.id,defaultTrail(d.id)])),props:Object.keys(PROP_SOLID),propArt:PROP_ART,propSolid:PROP_SOLID,areas:Object.fromEntries(DELTA_DEFS.map(d=>[d.id,pick(d)]))};
 }
 
 async function readDocs(dir){

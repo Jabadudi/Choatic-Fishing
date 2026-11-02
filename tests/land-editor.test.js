@@ -7,6 +7,7 @@ import {pathToFileURL} from 'node:url';
 import {fromEditor,formatLandData,shippedLand} from '../scripts/land-editor.mjs';
 import {BUILT_DEFS,LAND_FIELDS} from '../src/delta-areas.js';
 import {defineArea} from '../src/atlas-area.js';
+import {groundKind} from '../src/ground-textures.js';
 const docsOf=areas=>Object.values(areas).map(a=>({id:a.id,def:JSON.stringify(a)}));
 const merged=(id,edit)=>{const d={...BUILT_DEFS.find(d=>d.id===id)};for(const k of LAND_FIELDS)if(Object.hasOwn(edit,k))d[k]=edit[k];return d;};
 
@@ -64,4 +65,21 @@ test('doors, deck hitboxes, waterfalls and texture sizes ship from the editor',(
  assert.ok(!built.deck(end[0]+60,end[1]),'nothing past the square end');
  assert.ok(!built.deck(end[0]-40,end[1]+60),'the hitbox is narrower than the planks');
  assert.equal(built.area.portals[0].quiet,true);
+});
+
+test('a trail can carry its own surface, and the rest keep the area default',()=>{
+ const b=BUILT_DEFS.find(d=>d.id==='great-bridge');
+ const def={...JSON.parse(JSON.stringify(b)),roads:[{pts:b.roads[0],style:'dirt'},b.roads[1],{pts:[[430,10],[440,12]],style:'lava'}]};
+ const notes=[],out=fromEditor([{id:'great-bridge',def:JSON.stringify(def)}],notes)['great-bridge'];
+ assert.deepEqual(out.roads[0],{pts:b.roads[0],style:'dirt'});
+ assert.deepEqual(out.roads[1],b.roads[1]);
+ assert.deepEqual(out.roads[2],[[430,10],[440,12]]);
+ assert.ok(notes.some(n=>/surface lava/.test(n)));
+ const built=defineArea(merged('great-bridge',out)),[x0,y0]=built.toWorld(b.roads[0][1]),[x1,y1]=built.toWorld(b.roads[1][2]);
+ assert.equal(built.trailAt(x0,y0),'dirt');
+ assert.equal(built.trailAt(x1,y1),null);
+ assert.equal(groundKind('great-bridge',{path:true,trail:'dirt'}),null,'dirt is the plain trail');
+ assert.equal(groundKind('great-bridge',{path:true,trail:null}),'road','the old paved areas stay stone');
+ assert.equal(groundKind('windchime-wood',{path:true,trail:'stone'}),'road');
+ assert.equal(groundKind('windchime-wood',{path:true,trail:'packed'}),'dirt');
 });

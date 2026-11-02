@@ -241,7 +241,7 @@ function staticArea(ctx,left,top,width,height,id){
   const deck=id==='marsh'&&onMarshDeck(px,py)||id==='crossroads'&&onCrossroadsDeck(px,py)||id==='village'&&onVillageDeck(px,py)||!!DISTRICTS[id]?.deck(px,py),water=wet<0&&!deck,path=!water&&(deck||road<24+r*12),zone=DELTA[id]?.zoneAt(px,py),sand=!water&&!path&&(zone==='sand'||wet< (DELTA[id]?30:coastDistance(px,py)>-70?58:20)+r*8),ground=!water&&!path&&!sand&&(zone==='rock'||zone==='marsh'||zone==='dirt'||zone==='cliff');
   // The atlas areas paint their ground and water textures where they have one; every other outdoor area (the Landing,
   // Willowback, the marsh, the Crossroads) paints its water with them and keeps its own ground.
-  const gk=atlasTextures&&groundKind(id,{water,path,sand,zone,wet,r}),texture=atlasTextures?groundPattern(ctx,gk,markStale,DELTA[id].textures?.[gk]||1)
+  const gk=atlasTextures&&groundKind(id,{water,path,sand,zone,wet,r,trail:path&&DELTA[id].trailAt(px,py)}),texture=atlasTextures?groundPattern(ctx,gk,markStale,DELTA[id].textures?.[gk]||1)
    :water&&groundPattern(ctx,waterKind(id,wet,r,px,py),markStale);
   if(texture){ctx.fillStyle=texture;ctx.fillRect(x,y,8,8);continue;}
   else if(water||path||sand||ground||!texturedGrass){ctx.fillStyle=water?waterColor(wet,id==='landing'&&coastDistance(px,py)>0,id==='marsh'):path?['#d6bd7a','#dfc885','#d9c17e'][Math.floor(r*3)]:sand?(id==='marsh'?['#8c8b60','#a2a074','#929469']:['#c5ba77','#d1c487','#cabe7d'])[Math.floor(r*3)]:palette[Math.floor(hash(Math.floor(x/48),Math.floor(y/48))*3)];ctx.fillRect(x,y,8,8);}
