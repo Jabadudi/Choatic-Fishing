@@ -47,3 +47,25 @@ pixels like `src/delta-areas.js`); `land/_shared` holds the `lastEditAt`/`shippe
 Hand-built areas (Windchime Path, Willowbank Crossroads, Willowback, Shellback Marsh and the rooms) are drawn in code,
 so their land is not editable here. A changed area size keeps spawn points, villagers and bosses at the same game
 units, so check them after resizing.
+
+## Quests
+
+The **Quests** mode (or **Edit quests** on an area in the atlas) places quest givers and edits their side quests. Tap a
+villager to see their quests, or use **+ Quest giver** to place someone new in any area (outside Willowback, villagers
+appear once Eli has reached Willowback in the story). A quest has a title, what Eli must hunt or bring, where to look,
+the level it unlocks at, the quest it comes after, its rewards (marks, XP and items), its lore for the quest log and the
+giver's lines. **Write lore with Claude** and **Write the lines with Claude** draft those in the story's narration style.
+Untick **In the game** to hold a quest back.
+
+Each quest is one document in the atlas collection `quests` (`giver` is a villager id from `npcs`); `quests/_shared`
+holds the `lastEditAt`/`shippedAt` marker. Villagers placed or moved in this mode are ordinary `npcs` documents, so they
+ship with the world editor changes. Shipping quests is a one-file PR:
+
+1. Download the `quests` collection into a folder (and `npcs` too if a quest's giver is new).
+2. `node scripts/quest-editor.mjs export <folder>` rewrites `src/quest-data.js`. Quests switched off, quests whose giver
+   is not in the game, and objectives or rewards the game doesn't know are dropped and listed.
+3. Run `npm test`, open the PR, then set `quests/_shared.shippedAt` to the downloaded `lastEditAt`.
+
+In the game, a quest below its unlock level shows no ! over the giver, who tells Eli to come back when he's stronger.
+`node scripts/quest-editor.mjs meta <file>` rebuilds the editor's creature and item lists (`world/quest-editor.json`)
+when new creatures or items are added.
