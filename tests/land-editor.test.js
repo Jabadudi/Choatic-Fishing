@@ -44,3 +44,24 @@ test('malformed land is dropped, not shipped',()=>{
  const [X0,X1,Y0,Y1]=BUILT_DEFS.find(d=>d.id===id).frame;assert.deepEqual(out.props[0].at,[X1+40,Y0-40],'far-off props are pulled back to the area');
  assert.ok(!('size' in out));assert.ok(notes.length>=8);
 });
+
+test('doors, deck hitboxes, waterfalls and texture sizes ship from the editor',()=>{
+ const b=BUILT_DEFS.find(d=>d.id==='stilt-reach');
+ const def={...JSON.parse(JSON.stringify(b)),
+  walks:[{pts:[[427,234],[436,234]],width:7.1,hit:5}],
+  portals:[{at:[442,170],r:50,target:'marsh',label:'Netter’s Hut',quiet:true}],
+  props:[...b.props,{kind:'waterfall',at:[470,200]}],
+  textures:{forest:.5,sand:1,bogus:2}};
+ const notes=[],out=fromEditor([{id:'stilt-reach',def:JSON.stringify(def)}],notes)['stilt-reach'];
+ assert.deepEqual(out.walks,[{pts:[[427,234],[436,234]],width:7.1,hit:5}]);
+ assert.deepEqual(out.portals,[{at:[442,170],r:50,target:'marsh',label:'Netter’s Hut',quiet:true}]);
+ assert.ok(out.props.some(p=>p.kind==='waterfall'));
+ assert.deepEqual(out.textures,{forest:.5});
+ assert.ok(notes.some(n=>/texture size bogus/.test(n)));
+ // The deck's walkable width is the hitbox, and it ends square: no walkable lip past the planks.
+ const built=defineArea(merged('stilt-reach',out)),end=built.toWorld([436,234]);
+ assert.ok(built.deck(end[0]+20,end[1]),'the plank run continues a little past the last point');
+ assert.ok(!built.deck(end[0]+60,end[1]),'nothing past the square end');
+ assert.ok(!built.deck(end[0]-40,end[1]+60),'the hitbox is narrower than the planks');
+ assert.equal(built.area.portals[0].quiet,true);
+});

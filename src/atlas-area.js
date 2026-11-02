@@ -5,6 +5,9 @@
 // Geometry and collision only; atlas-area-art.js paints the boardwalks, fords and props.
 export const ATLAS_SIZE={width:720,height:480};
 const segment=(x,y,ax,ay,bx,by)=>{const dx=bx-ax,dy=by-ay,l=dx*dx+dy*dy,t=l?Math.max(0,Math.min(1,((x-ax)*dx+(y-ay)*dy)/l)):0;return Math.hypot(x-ax-t*dx,y-ay-t*dy);};
+// Decks (boardwalks, fords, bridges) end square, like their art: past either end of the line there is no deck,
+// so a wide platform no longer has a round, invisible lip of walkable water at each end.
+const deckDistance=(x,y,pts)=>{let d=Infinity;const n=pts.length-1;for(let i=1;i<=n;i++){const [ax,ay]=pts[i-1],[bx,by]=pts[i],dx=bx-ax,dy=by-ay,l=dx*dx+dy*dy,t=l?((x-ax)*dx+(y-ay)*dy)/l:0;if((i===1&&t<0)||(i===n&&t>1))continue;d=Math.min(d,segment(x,y,ax,ay,bx,by));}return d;};
 const lineDistance=(x,y,pts)=>{let d=Infinity;for(let i=1;i<pts.length;i++)d=Math.min(d,segment(x,y,...pts[i-1],...pts[i]));return pts.length===1?Math.hypot(x-pts[0][0],y-pts[0][1]):d;};
 export function inside(x,y,poly){let c=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const [xi,yi]=poly[i],[xj,yj]=poly[j];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)c=!c;}return c;}
 // Signed distance to a closed polygon: positive inside.
@@ -13,7 +16,7 @@ const boxOf=(pts,pad=0)=>{let l=Infinity,r=-Infinity,t=Infinity,b=-Infinity;for(
 const outside=(x,y,b)=>Math.max(b.l-x,x-b.r,b.t-y,y-b.b,0);
 const KIND_REACH={tree:true};
 // Props that block walking, as a radius in world units around the prop's foot.
-export const PROP_SOLID={hut:46,'stilt-hut':0,tower:58,arch:0,pillar:16,boat:0,wheel:0,cave:0,tent:34,shell:60,stone:18,sign:0,cairn:16,crane:20,'big-tree':30,ruin:40,lantern:0,well:30,statue:22,bench:0,raft:0,nest:0,heron:0,shrine:28,dock:0,cart:24,logs:22,mine:0,lighthouse:40,wreck:0,gate:0,tree:14,bush:0,boulder:16};
+export const PROP_SOLID={hut:46,'stilt-hut':0,tower:58,arch:0,pillar:16,boat:0,wheel:0,cave:0,tent:34,shell:60,stone:18,sign:0,cairn:16,crane:20,'big-tree':30,ruin:40,lantern:0,well:30,statue:22,bench:0,raft:0,nest:0,heron:0,shrine:28,dock:0,cart:24,logs:22,mine:0,lighthouse:40,wreck:0,gate:0,waterfall:0,tree:14,bush:0,boulder:16};
 // Single trees, plants and rocks placed by hand (the land editor); `art` picks the painting, as in the random scenery.
 export const PROP_ART={tree:['oak','pine','birch','dead-tree','chime-tree'],bush:['bush','fern','reeds','marsh-shrub'],boulder:['mossy-boulder','rock-cluster','sea-rock','mossy-log']};
 // An arrival spot is either world units in the target area ({x, y}) or an atlas point ([ax, ay]) that linkEntries
@@ -39,10 +42,10 @@ export function defineArea(def){
  }
  // Crossings run a little past both ends, so they always bite into the dry ground they join.
  const extend=pts=>{if(pts.length<2)return pts;const out=pts.map(p=>[...p]),push=(i,j)=>{const [ax,ay]=out[j],[bx,by]=out[i],l=Math.hypot(bx-ax,by-ay)||1;out[i]=[bx+(bx-ax)/l*30,by+(by-ay)/l*30];};push(0,1);push(out.length-1,out.length-2);return out;};
- const lines=(list,width)=>(list||[]).map(item=>{const raw=Array.isArray(item[0])?item:item.pts,w=(Array.isArray(item[0])?width:item.width||width)*k,pts=extend(Ps(raw));return {pts,half:w/2,box:boxOf(pts,w/2)};});
+ const lines=(list,width)=>(list||[]).map(item=>{const raw=Array.isArray(item[0])?item:item.pts,w=(Array.isArray(item[0])?width:item.width||width)*k,pts=extend(Ps(raw)),hit=(Array.isArray(item[0])||item.hit==null?w:item.hit*k)/2;return {pts,half:w/2,hit,box:boxOf(pts,Math.max(w,hit*2)/2)};});
  const walks=lines(def.walks,2.6),fords=lines(def.fords,2.2),bridges=lines(def.bridges,3.2);
  const decks=[...walks,...fords,...bridges];
- const deck=(x,y)=>decks.some(d=>outside(x,y,d.box)===0&&lineDistance(x,y,d.pts)<=d.half);
+ const deck=(x,y)=>decks.some(d=>outside(x,y,d.box)===0&&deckDistance(x,y,d.pts)<=d.hit);
 // A land shape can carry its own ground ({zone:'sand'}); those come after the listed zones, which stay on top.
  for(const c of def.cliffs||[])shapeZones.unshift(['cliff',c]);
  const zones=[...(def.zones||[]),...shapeZones].map(([kind,poly])=>{const p=Ps(poly);return {kind,poly:p,box:boxOf(p)};});
@@ -53,7 +56,7 @@ export function defineArea(def){
  const roads=(def.roads||[]).map(Ps);
  const exits=(def.exits||[]).map(e=>{const horizontal=e.edge==='west'||e.edge==='east',from=horizontal?(e.from-Y0)*ky:(e.from-X0)*kx,to=horizontal?(e.to-Y0)*ky:(e.to-X0)*kx;return {edge:e.edge,from:Math.round(Math.min(from,to)),to:Math.round(Math.max(from,to)),target:e.target,label:e.label,back:e.back||null,...entryOf(e.entry)};});
  // Portals: a spot inside the area (a ford's far end, a cave mouth) that leads straight into another area.
- const portals=(def.portals||[]).map(q=>{const [x,y]=P(q.at);return {x:Math.round(x),y:Math.round(y),r:q.r||60,target:q.target,label:q.label,...entryOf(q.entry)};});
+ const portals=(def.portals||[]).map(q=>{const [x,y]=P(q.at);return {x:Math.round(x),y:Math.round(y),r:q.r||60,target:q.target,label:q.label,quiet:!!q.quiet,...entryOf(q.entry)};});
  const area={id:def.id,name:def.name,num:def.num,width:W,height:H,seed:def.seed||7400+[...def.id].reduce((a,c)=>a+c.charCodeAt(0),0),spawn:def.spawn?{x:Math.round(P(def.spawn)[0]),y:Math.round(P(def.spawn)[1])}:null,exits,portals,frame:def.frame,atlas:true,sea:!!def.sea,fromAtlas:pt=>{const [x,y]=P(pt);return {x:Math.round(x),y:Math.round(y)};}};
  // Arrivals snap onto the nearest trail, boardwalk or ford, so a diagonal trail still meets the edge where Eli lands.
  area.snap=(x,y)=>{let best=null,bd=170;for(const pts of [...roads,...decks.map(d=>d.pts)])for(let i=1;i<pts.length;i++){const [ax,ay]=pts[i-1],[bx,by]=pts[i],dx=bx-ax,dy=by-ay,l=dx*dx+dy*dy,t=l?Math.max(0,Math.min(1,((x-ax)*dx+(y-ay)*dy)/l)):0,px=ax+t*dx,py=ay+t*dy,d=Math.hypot(x-px,y-py);if(d<bd){bd=d;best={x:Math.round(px),y:Math.round(py)};}}return best||{x,y};};
@@ -62,7 +65,7 @@ export function defineArea(def){
  const onRoad=(x,y)=>roads.some(r=>lineDistance(x,y,r)<30)||deck(x,y);
  const blocked=(x,y)=>solidProps.some(p=>(x-p.x)**2+(y-p.y)**2<(p.r+12)**2)||cliffs.some(c=>outside(x,y,c.box)===0&&inside(x,y,c.poly))&&!onRoad(x,y);
  area.places=places;
- return {area,water,deck,blocked,zoneAt,roads,places,props,walks,fords,bridges,toWorld:P,
+ return {area,water,deck,blocked,zoneAt,roads,places,props,walks,fords,bridges,toWorld:P,textures:def.textures||null,
   // Ground kept free of random trees and rocks: the walks' ends, landmarks and props.
   clear:(x,y)=>props.some(p=>Math.hypot(x-p.x,y-p.y)<(p.clear??90))||decks.some(d=>outside(x,y,d.box)<60&&lineDistance(x,y,d.pts)<d.half+50)};
 }
@@ -80,4 +83,9 @@ export function linkEntries(areas){
   exit.entry=target.snap?target.snap(spot.x,spot.y):spot;
  }
  for(const area of Object.values(areas))if(area.atlas&&!area.spawn){const e=area.exits[0];if(e){const mid=Math.round((e.from+e.to)/2),inset=110;const spot=e.edge==='north'?{x:mid,y:inset}:e.edge==='south'?{x:mid,y:area.height-inset}:e.edge==='west'?{x:inset,y:mid}:{x:area.width-inset,y:mid};area.spawn=area.snap(spot.x,spot.y);}else area.spawn={x:area.width/2,y:area.height/2};}
+ // Doors (portals) without an arrival spot: step out beside the door back, or at the area's start.
+ for(const area of Object.values(areas))for(const q of area.portals||[]){if(q.entry)continue;const target=areas[q.target];if(!target)continue;
+  const back=(target.portals||[]).find(b=>b.target===area.id);
+  if(back){const y=back.y+back.r+50<target.height-40?back.y+back.r+50:back.y-back.r-50;q.entry=target.snap?target.snap(back.x,y):{x:back.x,y};}
+  else q.entry=target.spawn?{...target.spawn}:{x:Math.round(target.width/2),y:Math.round(target.height/2)};}
 }
