@@ -22,6 +22,7 @@ import {linkEntries} from './atlas-area.js';
 import {drawAtlasGround,drawAtlasProp} from './atlas-area-art.js';
 export const WINDCHIME_ENTRY={x:330,y:1120};
 // Original, repeatable pixel-art areas. Exit coordinates connect actual map edges.
+const segmentDistance=(x,y,ax,ay,bx,by)=>{const dx=bx-ax,dy=by-ay,l=dx*dx+dy*dy,t=l?Math.max(0,Math.min(1,((x-ax)*dx+(y-ay)*dy)/l)):0;return Math.hypot(x-ax-t*dx,y-ay-t*dy);};
 export const AREAS={
  cabin:CABIN_AREA,
  'chief-house':CHIEF_HOUSE,
@@ -168,7 +169,7 @@ export function walkable(x,y,id='landing'){
  return true;
 }
 export function transitionAt(x,y,id='landing'){
- const portal=areaFor(id).portals?.find(q=>Math.hypot(x-q.x,y-q.y)<=q.r);if(portal&&portal.entry)return {areaId:portal.target,x:portal.entry.x,y:portal.entry.y};
+ const portal=areaFor(id).portals?.find(q=>q.line?segmentDistance(x,y,...q.line)<=q.r:Math.hypot(x-q.x,y-q.y)<=q.r);if(portal&&portal.entry)return {areaId:portal.target,x:portal.entry.x,y:portal.entry.y};
  const area=areaFor(id),exit=area.exits.find(e=>inExit(e.edge==='east'||e.edge==='west'?y:x,e)&&((e.edge==='north'&&y<0)||(e.edge==='south'&&y>area.height)||(e.edge==='west'&&x<0)||(e.edge==='east'&&x>area.width)));
  return exit?{areaId:exit.target,...exit.entry}:null;
 }

@@ -91,7 +91,7 @@ export function cleanLand(def,built,notes=[]){
   const l=link(e);if(l?.entry)o.entry=l.entry;
   return [o];
  });
- if(Array.isArray(def.portals))out.portals=def.portals.flatMap((q,i)=>{const at=pt(q?.at),l=link(q);if(!at||!l){drop(`portal ${i+1}`);return [];}const o={at,r:Math.round(clamp(isNum(q.r)?q.r:60,10,300)),target:l.target,label:text(q.label,60)||l.target};if(q.quiet===true)o.quiet=true;if(l.entry)o.entry=l.entry;return [o];});
+ if(Array.isArray(def.portals))out.portals=def.portals.flatMap((q,i)=>{const at=pt(q?.at),l=link(q);if(!at||!l){drop(`portal ${i+1}`);return [];}const to=q?.to==null?null:pt(q.to),o={at,r:Math.round(clamp(isNum(q.r)?q.r:to?40:60,10,300)),target:l.target,label:text(q.label,60)||l.target};if(to)o.to=to;if(q.quiet===true)o.quiet=true;if(l.entry)o.entry=l.entry;return [o];});
  // Ground texture size per ground kind (1 = as painted).
  if(Object.hasOwn(def,'textures')){const t=def.textures;if(t==null)out.textures=undefined;else if(typeof t==='object'){const o={};for(const [k,v] of Object.entries(t))if(TEXTURE_KINDS.includes(k)&&isNum(v)&&v!==1)o[k]=Math.round(clamp(v,.25,3)*100)/100;else drop(`texture size ${k}`);out.textures=Object.keys(o).length?o:undefined;}else drop('bad texture sizes');}
  return out;
