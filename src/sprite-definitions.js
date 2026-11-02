@@ -227,6 +227,26 @@ export const SPRITES={
   'wade-idle':{frames:[32]},'wade-idle:right':{frames:[32]},'wade-idle:down':{frames:[48]},'wade-idle:up':{frames:[56]}}}),
  // The Ash Archer draws (32-35) and looses (36-39); row 5 stepping back, played while it backs away from Eli.
  'ash-archer':shadowKind('ash-archer',[232,134],7,{attack:32,hurt:48,cycle:1.1,extra:{back:{frames:[40,41,42,43,44,45,46,47],cycle:.9}}}),
+ // World bosses (scripts/prepare-boss-sprites.py). Rows 0-3 walk, then one row of 8 per move, facing right unless noted.
+ // The Drowned Captain: 4 rising out of the shallows (toward the camera), 5 sabre sweep, 6 tide lunge, 7 calling the
+ // drowned (toward the camera), 8 the hit and then breaking up into water and smoke.
+ 'drowned-captain':shadowKind('drowned-captain',[530,185],18,{attack:40,hurt:64,cycle:1.2,extra:{
+  rise:{frames:[32,33,34,35,36,37,38,39],loop:false},
+  'lunge-raise':{frames:[48,49,50],loop:false},lunge:{frames:[51,52,53,54,55],loop:false},
+  call:{frames:[56,57,58,59,60,61,62,63],loop:false}}}),
+ // Greyhorn walks on 7 frames a direction. 4 antler charge (lower the head 32-34, gallop 35-38, skid 39), 5 hoof stomp
+ // (rear 40-42, slam and the smoke ring 43-47), 6 hollow bellow (toward the camera), 7 shadow antlers, 8 the flinch and
+ // then the shadow leaving him (freed, standing, 69-71).
+ greyhorn:shadowKind('greyhorn',[676,327],37,{attack:40,hurt:64,cycle:1.3,extra:{
+  ...walkClips(7,1.3),
+  'charge-raise':{frames:[32,33,34],loop:false},charge:{frames:[35,36,37,38],cycle:.5},skid:{frames:[39]},
+  call:{frames:[48,49,50,51,52,53,54,55],loop:false},antlers:{frames:[56,57,58,59,60,61,62,63],loop:false},
+  death:{frames:[65,66,67,68,69,70,71],loop:false}}}),
+ // Eli with the boss weapons, facing right (mirrored for left). Row 0 the normal swing, row 1 the hold-attack rush.
+ 'eli-sabre':{asset:'story/eli-sabre-sheet.png',frameSize:[298,118],columns:8,scale:.5,anchor:[.5,1],offset:[0,15],mirror:'right',animations:{
+  swing:{frames:[0,1,2,3,4,5,6,7],loop:false},rush:{frames:[8,9,10,11,12,13,14,15],loop:false}}},
+ 'eli-spear':{asset:'story/eli-spear-sheet.png',frameSize:[188,115],columns:8,scale:.5,anchor:[.5,1],offset:[0,15],mirror:'right',animations:{
+  swing:{frames:[0,1,2,3,4,5,6,7],loop:false},rush:{frames:[8,9,10,11,12,13,14,15],loop:false}}},
  // The atlas waterfall loop (scripts/prepare-atlas-props.py): a ledge pouring into a pool, 8 frames.
  waterfall:{asset:'waterfall-sheet.png',frameSize:[129,84],columns:8,scale:.6,anchor:[.5,.78],offset:[0,0],animations:{idle:{frames:[0,1,2,3,4,5,6,7],fps:10}}},
  // The arrow's 4 flight frames, pointing right; the renderer turns it to its heading.

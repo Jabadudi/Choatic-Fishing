@@ -60,7 +60,19 @@ export const ANIMAL_TYPES=Object.freeze({
  // Ash Archer: keeps its distance (keepAway) and shoots arrows from range. Eli can dash through an arrow.
  'ash-archer':{...monster('Ash Archer'),ranged:true,keepAway:170,arrowSpeed:330,maxHealth:60,radius:15,speed:36,noticeRange:300,chaseSpeed:112,attackDamage:14,attackRange:290,attackWindup:.7,attackRecover:.4,attackCooldown:2,huntXp:50,loot:'ash-archer'},
  // Inkeel: the first hostile water creature. It swims up to the bank and strikes at Eli on docks and ledges.
- inkeel:{...monster('Inkeel'),habitat:'water',maxHealth:80,radius:18,speed:40,noticeRange:220,chaseSpeed:132,attackDamage:20,attackRange:96,attackWindup:.55,attackRecover:.5,attackCooldown:1.8,huntXp:60,loot:'inkeel'}
+ inkeel:{...monster('Inkeel'),habitat:'water',maxHealth:80,radius:18,speed:40,noticeRange:220,chaseSpeed:132,attackDamage:20,attackRange:96,attackWindup:.55,attackRecover:.5,attackCooldown:1.8,huntXp:60,loot:'inkeel'},
+ // World bosses (src/bosses.js): one each at a boss spot from the world editor (WORLD_DATA.bosses), never from a spawn table.
+ // base is the shadow walker kind the boss grew from; the spot's health and damage multipliers apply to that kind's
+ // numbers, so the values here are the defaults for a spot that sets ×5/×1.8 (the Captain) and ×6/×2 (Greyhorn).
+ // The Drowned Captain: wades deep, sweeps his sabre, lunges along the road and calls Drowned Soldiers up from the water.
+ 'drowned-captain':{...monster('Drowned Captain'),boss:true,base:'drowned-soldier',wades:220,maxHealth:500,radius:20,speed:34,noticeRange:600,noticeDelay:1.2,chaseSpeed:112,
+  attackDamage:32,attackRange:96,attackWindup:.7,attackRecover:.55,attackCooldown:1.4,knockback:200,huntXp:400,loot:'drowned-captain',adds:'drowned-soldier',
+  moves:{lunge:{windup:.6,speed:560,time:.45,cooldown:5,min:150,max:330,damage:1.3,knockback:260},call:{time:1.6}}},
+ // Greyhorn, the Hollow Elk: stomps a ring of smoke round him up close, charges from range, bellows for Hollow Stags and
+ // grows shadow antlers at half health. Beating him drives the shadow out instead of killing him.
+ greyhorn:{...monster('Greyhorn'),boss:true,base:'hollow-stag',maxHealth:360,radius:34,speed:44,noticeRange:520,noticeDelay:1.2,chaseSpeed:118,
+  attackDamage:28,attackRange:130,attackWindup:.8,attackRecover:.6,attackCooldown:1.6,knockback:260,huntXp:400,loot:'greyhorn',adds:'hollow-stag',freed:true,
+  moves:{charge:{windup:.9,speed:470,time:1.05,cooldown:4.5,min:170,max:520,damage:1.4,knockback:380},call:{time:1.6},antlers:{time:1.4,at:.5,reach:1.3}}}
 });
 // familiar:false — the kinds have no familiar or shard of their own yet.
 function monster(name){return {behavior:BEHAVIORS.AGGRESSIVE,familiar:false,name,habitat:'land',fearRange:0,noticeRange:240,noticeDelay:.6,loseRange:460,leashRange:620};}

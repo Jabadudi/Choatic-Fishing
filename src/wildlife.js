@@ -7,6 +7,7 @@ import {practise} from './skills.js';
 import {huntProgress} from './side-quests.js';
 import {startingSlots,SHINY} from './spawn-tables.js';
 import {updateMonster} from './monsters.js';
+import {updateBoss,bossDefeated} from './bosses.js';
 
 export function animalGround(animal,x,y){
  const area=areaFor(animal.areaId),margin=animal.species==='rabbit'?80:Math.max(30,animal.radius+10);
@@ -42,7 +43,9 @@ function random(a){let s=a.seed;s^=s<<13;s^=s>>>17;s^=s<<5;a.seed=s>>>0;return a
 // Loot falls around the body as pickups; the animal's own seeded generator keeps rolls reproducible.
 function dropLoot(world,animal,source){
  const luck=(source.progression?.lootMultiplier??1)*(1+(source.progression?.passive('hunting.loot')??0))*(1+artifactBonus(source,'rabbits-foot'))*(animal.shiny?SHINY.loot:1);
- const items=rollLoot(animal.loot,()=>random(animal),luck),names=[];
+ // A boss's first defeat makes its weapon certain.
+ const first=!!animal.boss&&!(world.bosses?.[animal.bossId]?.defeats>0);
+ const items=rollLoot(animal.loot,()=>random(animal),luck,{first}),names=[];
  items.forEach((item,i)=>{
   let spot={x:animal.x,y:animal.y};
   // Water animals sink out of reach, so their drops wash up on the nearest walkable bank.
@@ -51,6 +54,8 @@ function dropLoot(world,animal,source){
  });
  return names;
 }
+// "Shadow Ichor ×3, Drowned Brass" rather than the same name three times.
+const tally=names=>[...new Set(names)].map(n=>{const k=names.filter(m=>m===n).length;return k>1?`${n} ×${k}`:n;}).join(', ');
 export function damageAnimal(world,animal,amount,source,angle,knockback=0){
  if(world.matchState!=='playing'||source.health<=0||!huntableInArea(world,animal)||!Number.isFinite(amount)||amount<=0)return false;
  const taken=amount*(source.progression?.damageMultiplier??1)*(1+(source.progression?.passive('hunting.damage')??0));
@@ -62,7 +67,8 @@ export function damageAnimal(world,animal,amount,source,angle,knockback=0){
   if(animal.roar&&!fighting&&animal.health>0){animal.roarRemaining=animal.roar;animal.time=0;}
   animal.attackerId=source.id;animal.anger=1;
  }animal.threat={x:source.x,y:source.y};
- if(!fighting){animal.vx+=Math.cos(angle)*knockback*.45;animal.vy+=Math.sin(angle)*knockback*.45;}
+ // A boss is far too heavy to be shoved far.
+ if(!fighting){const shove=knockback*(animal.boss?.08:.45);animal.vx+=Math.cos(angle)*shove;animal.vy+=Math.sin(angle)*shove;}
  if(animal.species==='rabbit'){animal.state='idle';animal.time=0;}
  world.effects.push({name:'animal-hit',label:`-${Math.round(taken)}`,x:animal.x,y:animal.y-25,angle:0,life:.6,duration:.6});
  if(animal.health===0){
@@ -78,8 +84,8 @@ export function damageAnimal(world,animal,amount,source,angle,knockback=0){
    // A familiar of the same kind takes on the shiny's gold for good.
    if(world.companion?.id===animal.loot)world.companion.shiny=true;
   }
-  const quest=huntProgress(world,animal.species);
-  world.message=`${animal.name} ${animal.behavior==='aggressive'?'defeated':'hunted'} · +${trained?.amount??animal.huntXp} Hunting XP${loot.length?` · Dropped ${loot.join(', ')}`:''}${quest?` · ${quest}`:''}${trained?.text?` · ${trained.text}`:''}`;
+  const quest=huntProgress(world,animal.species),boss=animal.boss?bossDefeated(world,animal):'';
+  world.message=`${boss||`${animal.name} ${animal.behavior==='aggressive'?'defeated':'hunted'}`} · +${trained?.amount??animal.huntXp} Hunting XP${loot.length?` · Dropped ${tally(loot)}`:''}${quest?` · ${quest}`:''}${trained?.text?` · ${trained.text}`:''}`;
  }
  return true;
 }
@@ -135,6 +141,7 @@ export function updateWildlife(world,dt){
   a.gap=distance;
   const near=alive&&distance<a.fearRange,close=alive&&distance<startleRange(a),rushed=near&&!(a.calm>0)&&a.closing>rushSpeed(a);
   const reaction=reactionFor(a,{disturbed:close||rushed,provoked:a.behavior==='defensive'?a.anger>0:a.alert>0});
+  if(a.boss){updateBoss(world,a,dt);continue;}
   if(reaction==='pursue'){updateMonster(world,a,dt);continue;}
   if(reaction==='retaliate'){
    const target=world.actors.find(actor=>actor.id===a.attackerId),range=target?Math.hypot(target.x-a.x,target.y-a.y):Infinity;

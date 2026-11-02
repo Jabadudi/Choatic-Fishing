@@ -15,9 +15,9 @@ const give=(w,id,n)=>{for(let i=0;i<n;i++)absorbShard(w,id);};
 
 test('every creature with a loot table drops its own familiar shard, and none fill the backpack categories by accident',()=>{
  const hunted=Object.entries(FAMILIARS).filter(([,f])=>!f.wellOnly);
- // The shadow walker kinds have no familiar yet (familiar:false).
+ // The shadow walker kinds and the world bosses have no familiar yet (familiar:false).
  const kinds=Object.entries(ANIMAL_TYPES).filter(([,spec])=>spec.familiar===false).map(([id])=>id);
- assert.deepEqual(kinds.sort(),['ash-archer','drowned-soldier','gloam-boar','hollow-stag','inkeel','mire-walker','stoneshade','whisperer']);
+ assert.deepEqual(kinds.sort(),['ash-archer','drowned-captain','drowned-soldier','gloam-boar','greyhorn','hollow-stag','inkeel','mire-walker','stoneshade','whisperer']);
  assert.deepEqual(hunted.map(([id])=>id).sort(),Object.keys(LOOT_TABLES).filter(id=>!kinds.includes(id)).sort());
  for(const [id,f] of hunted){
   const entry=LOOT_TABLES[id].find(e=>e.item===f.shard);assert.ok(entry,`${id} shard is in its table`);

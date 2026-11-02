@@ -14,6 +14,7 @@ import {ANIMAL_TYPES} from './entities.js';
 import {MARKS_LIMIT} from './trade.js';
 import {SIDE_QUEST_IDS,restoreSideQuests} from './side-quests.js';
 import {restoreWell} from './wishing-well.js';
+import {restoreBosses} from './bosses.js';
 import {ARTIFACTS,ARTIFACT_SLOT_COUNT,RARITIES,artifactIdFor,normalizeArtifact} from './artifacts.js';
 export const SAVE_VERSION=8;
 export const SAVE_FORMAT='the-wilds-save';
@@ -42,7 +43,9 @@ export function captureSave(world,reason='autosave',now=Date.now()){
   progression:{...clone(p.progression),eliminations:[...p.progression.eliminations]},catches:clone(p.catches),
   quests:clone(world.quests),discovered:[...world.discovered],hunting:clone(world.hunting),familiars:clone(world.familiars),codex:[...(world.codex||[])],itemsFound:world.itemsFound?[...world.itemsFound]:null,well:clone(world.well),
   spawns:world.spawns?{seed:world.spawns.seed,next:world.spawns.next,current:world.spawns.current,areas:clone(world.spawns.areas)}:null,
-  animals:world.animals.map(animal=>({id:animal.id,slotId:animal.slotId,species:animal.species,shiny:!!animal.shiny,seen:!!animal.seen,...Object.fromEntries(ANIMAL_FIELDS.filter(key=>animal[key]!==undefined).map(key=>[key,clone(animal[key])]))})),
+  // Bosses and their adds are not saved: a boss rises fresh when Eli comes back. Only each spot's clock is kept.
+  bosses:clone(world.bosses||{}),
+  animals:world.animals.filter(animal=>!animal.bossId).map(animal=>({id:animal.id,slotId:animal.slotId,species:animal.species,shiny:!!animal.shiny,seen:!!animal.seen,...Object.fromEntries(ANIMAL_FIELDS.filter(key=>animal[key]!==undefined).map(key=>[key,clone(animal[key])]))})),
   drops:clone(world.drops),nextDropId:world.nextDropId
  }};
 }
@@ -152,6 +155,8 @@ export function restoreSave(input){
  // The Wishing Well arrived after save version 7 was set; saves without it start with the well asleep, and it wakes once the story allows.
  restoreWell(s.well,w,fail);
  restoreSpawns(s.spawns,w);
+ // Boss spots arrived after save version 8 was set; saves without them have every boss ready to rise.
+ restoreBosses(s.bosses,w);
  // Every saved creature is rebuilt in its slot. Migrated saves name the slot of the journey's starting creature.
  const starting=w.animals;w.rabbits=[];w.wildlife=[];const animalIds=new Set();
  for(const saved of s.animals){

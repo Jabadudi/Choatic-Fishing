@@ -42,6 +42,15 @@ export const LOOT_ITEMS=Object.freeze({
  'Ash Arrowhead':{name:'Ash Arrowhead',category:'upgrade-materials',description:'A black iron arrowhead from an Ash Archer’s quiver, still flaking ash.'},
  'Ink Sac':{name:'Ink Sac',category:'upgrade-materials',description:'An Inkeel’s ink sac. The ink inside is black enough to swallow lamplight.'},
  'Black Light Shard':{name:'Black Light Shard',category:'trophies',description:'A sliver of darkness that moves when you are not looking at it.'},
+ // World boss drops (src/bosses.js).
+ 'Drowned Brass':{name:'Drowned Brass',category:'upgrade-materials',description:'Green-tarnished brass from an old officer’s armor. A smith can still work it.'},
+ 'Barnacled Plate':{name:'Barnacled Plate',category:'upgrade-materials',description:'A plate of old armor crusted with barnacles. Tough enough to rim a shield.'},
+ 'Rusted Officer’s Helm':{name:'Rusted Officer’s Helm',category:'trophies',description:'The Drowned Captain’s helm. Water still drips from it, however long it sits in the sun.'},
+ 'Captain’s Sabre':{name:'Captain’s Sabre',category:'weapons',description:'The Drowned Captain’s sabre, rust-pitted and still sharp. It never needs mending. 40 damage in a wide sweep. Hold attack to lunge.'},
+ 'Hollow Antler Shard':{name:'Hollow Antler Shard',category:'upgrade-materials',description:'Blackened antler, pale inside. It still smells faintly of smoke.'},
+ 'Greyhorn Hide':{name:'Greyhorn Hide',category:'upgrade-materials',description:'Shaggy silver-grey hide, warm and heavy. Good for a winter cloak.'},
+ 'Greyhorn’s Antler':{name:'Greyhorn’s Antler',category:'trophies',description:'A branch of Greyhorn’s antler. The black is fading from it, slowly.'},
+ 'Greyhorn Spear':{name:'Greyhorn Spear',category:'weapons',description:'A spear tipped with Greyhorn’s own antler, given or taken, depending on how you tell it. It never needs mending. 36 damage and the longest reach of any blade. Hold attack to charge.'},
  // Artifacts drop at a rolled rarity (see artifacts.js).
  ...Object.fromEntries(Object.entries(ARTIFACTS).map(([id,a])=>[a.name,{name:a.name,category:'artifacts',artifact:id,description:a.description}])),
  // Familiar shards are absorbed on pickup instead of filling the backpack (see familiars.js).
@@ -75,8 +84,15 @@ export const LOOT_TABLES=Object.freeze({
  'mire-walker':[{item:'Shadow Ichor',chance:1},{item:'Mire Moss',chance:.4},{item:'Black Light Shard',chance:.05}],
  'drowned-soldier':[{item:'Shadow Ichor',chance:1},{item:'Rusted Axe Head',chance:.4},{item:'Black Light Shard',chance:.05}],
  'ash-archer':[{item:'Shadow Ichor',chance:1},{item:'Ash Arrowhead',chance:.4},{item:'Black Light Shard',chance:.05}],
- inkeel:[{item:'Shadow Ichor',chance:1},{item:'Ink Sac',chance:.35},{item:'Black Light Shard',chance:.05}]
+ inkeel:[{item:'Shadow Ichor',chance:1},{item:'Ink Sac',chance:.35},{item:'Black Light Shard',chance:.05}],
+ // World bosses: several sure drops, counts (a number or [least, most]), and a weapon that is certain the first time (first).
+ 'drowned-captain':[{item:'Shadow Ichor',chance:1,count:3},{item:'Drowned Brass',chance:1,count:[1,2]},{item:'Barnacled Plate',chance:.6},{item:'Rusted Officer’s Helm',chance:.25},artifactEntry('drowned-gorget'),{item:'Captain’s Sabre',chance:.1,first:true}],
+ greyhorn:[{item:'Shadow Ichor',chance:1,count:3},{item:'Hollow Antler Shard',chance:1,count:[1,2]},{item:'Greyhorn Hide',chance:.6},{item:'Greyhorn’s Antler',chance:.25},artifactEntry('spire-bell'),{item:'Greyhorn Spear',chance:.1,first:true}]
 });
-export function rollLoot(table,random,luck=1){
- return (LOOT_TABLES[table]||[]).flatMap(entry=>entry.chance>=1||random()<Math.min(1,entry.chance*luck)?[entry.artifact?artifactItem(entry.artifact,rollRarity(random,luck)):{...LOOT_ITEMS[entry.item]}]:[]);
+// Reed marks a boss leaves besides its table, [least, most].
+export const BOSS_MARKS=Object.freeze({'drowned-captain':[40,80],greyhorn:[40,80]});
+const amount=(count,random)=>Array.isArray(count)?count[0]+Math.floor(random()*(count[1]-count[0]+1)):count??1;
+// first: the creature's first defeat, which makes every first-only entry certain.
+export function rollLoot(table,random,luck=1,{first=false}={}){
+ return (LOOT_TABLES[table]||[]).flatMap(entry=>entry.chance>=1||first&&entry.first||random()<Math.min(1,entry.chance*luck)?Array.from({length:amount(entry.count,random)},()=>entry.artifact?artifactItem(entry.artifact,rollRarity(random,luck)):{...LOOT_ITEMS[entry.item]}):[]);
 }

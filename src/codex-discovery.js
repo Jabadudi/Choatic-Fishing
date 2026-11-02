@@ -1,7 +1,7 @@
 // Index entries stay hidden until Eli meets them or the story names them.
 // Encounters are saved with the journey; story reveals are read from story progress, so older saves catch up.
 import {STORY_STAGES} from './story.js';
-export const CODEX_IDS=Object.freeze(['rabbit','fox','deer','boar','elk','bear','heron','crab','goat','otter','duck','pike','seal','turtle','eel','shadow-walker','hollow-stag','gloam-boar','stoneshade','whisperer','mire-walker','drowned-soldier','ash-archer','inkeel','croshelda','moonfang','rimejaw','flitlynx','elk-spirit','ocelot','mara','emilia','drayfus','blacksmith','fisher','gardener']);
+export const CODEX_IDS=Object.freeze(['rabbit','fox','deer','boar','elk','bear','heron','crab','goat','otter','duck','pike','seal','turtle','eel','shadow-walker','hollow-stag','gloam-boar','stoneshade','whisperer','mire-walker','drowned-soldier','ash-archer','inkeel','drowned-captain','greyhorn','croshelda','moonfang','rimejaw','flitlynx','elk-spirit','ocelot','mara','emilia','drayfus','blacksmith','fisher','gardener']);
 // Every chapter's stages, in order. Read from the story itself so a new chapter cannot hide what earlier ones revealed.
 const stageIndex=stage=>STORY_STAGES.indexOf(stage);
 // Each scene that introduces entries, and the first stage the story reaches once that scene has played.
