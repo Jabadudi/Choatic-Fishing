@@ -20,6 +20,16 @@ jobs:
           node-version: '22'
       - run: node --test
       - run: node build.mjs
+      - name: Install world snapshot renderer
+        run: |
+          npm install --no-save --package-lock=false playwright@1.64.1
+          npx playwright install --with-deps chromium
+      - name: Publish editor world with this game deployment
+        env:
+          OUT: dist/editor-world/${{ github.sha }}
+        run: |
+          node scripts/world-editor-snapshot.cjs
+          node --input-type=module -e "import {writeFile} from 'node:fs/promises'; await writeFile('dist/editor-world/latest.json', JSON.stringify({version:1,commit:process.env.GITHUB_SHA}));"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
