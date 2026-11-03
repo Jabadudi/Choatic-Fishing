@@ -6,6 +6,7 @@
 //   OUT=<dir> node scripts/world-editor-snapshot.cjs
 const {chromium}=require('playwright');
 const {mkdirSync,writeFileSync}=require('node:fs');
+const {execFileSync}=require('node:child_process');
 const out=process.env.OUT||'world-editor-snapshot';
 const MAX=Number(process.env.MAX)||1600,CELL=40;
 // Hand-built areas have no atlas number of their own; these are their entries on the atlas.
@@ -13,7 +14,7 @@ const ATLAS_NUM={windchime:'18.1',crossroads:'18.2','village-port':'12.1',villag
 (async()=>{
  mkdirSync(`${out}/areas`,{recursive:true});
  process.env.PORT='5197';await import('../server.mjs');
- const browser=await chromium.launch({headless:true});
+ const browser=await chromium.launch({headless:true,...(process.env.EDITOR_TEST_CHROME?{executablePath:process.env.EDITOR_TEST_CHROME}:{})});
  const page=await browser.newPage({viewport:{width:800,height:600}});
  page.on('pageerror',e=>console.error('PAGEERROR',e.message));
  await page.goto('http://127.0.0.1:5197/manifest.webmanifest');
@@ -25,7 +26,7 @@ const ATLAS_NUM={windchime:'18.1',crossroads:'18.2','village-port':'12.1',villag
   for(const a of areas){land.areaId=water.areaId=a.id;let g='';
    for(let y=CELL/2;y<a.height;y+=CELL)for(let x=CELL/2;x<a.width;x+=CELL)g+=animalGround(land,x,y)?'1':animalGround(water,x,y)?'2':'0';
    grids[a.id]=g;}
-  return {cell:CELL,areas:areas.map(a=>({id:a.id,name:a.name,num:a.num||ATLAS_NUM[a.id]||null,width:a.width,height:a.height,willowback:VILLAGE_AREAS.includes(a.id),sea:!!a.sea,places:placesFor(a.id).map(p=>({name:p.name,x:Math.round(p.x),y:Math.round(p.y)})),exits:a.exits.map(e=>({edge:e.edge,from:e.from,to:e.to,label:e.label}))})),
+  return {cell:CELL,areas:areas.map(a=>({id:a.id,name:a.name,num:a.num||ATLAS_NUM[a.id]||null,width:a.width,height:a.height,willowback:VILLAGE_AREAS.includes(a.id),sea:!!a.sea,places:placesFor(a.id).map(p=>({name:p.name,x:Math.round(p.x),y:Math.round(p.y)})),exits:a.exits.map(e=>({edge:e.edge,from:e.from,to:e.to,target:e.target,entry:e.entry,label:e.label})),portals:a.portals||[]})),
    species:Object.entries(ANIMAL_TYPES).map(([id,t])=>({id,name:t.name,habitat:t.habitat,behavior:t.behavior})),
    villagerSprites:Object.keys(SPRITES).filter(k=>k.startsWith('villager-')),grids};
  },{CELL,ATLAS_NUM});
@@ -49,5 +50,9 @@ const ATLAS_NUM={windchime:'18.1',crossroads:'18.2','village-port':'12.1',villag
   writeFileSync(`${out}/areas/${a.id}.jpg`,Buffer.from(data.split(',')[1],'base64'));
   console.log(a.id,w,h);
  }
+ const {editorWorld}=await import('./editor-world.mjs');
+ const commit=process.env.GITHUB_SHA||execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
+ const snapshot=await editorWorld({commit,meta});
+ writeFileSync(`${out}/world.json`,JSON.stringify(snapshot));
  await browser.close();process.exit(0);
-})();
+})().catch(error=>{console.error(error);process.exit(1);});
