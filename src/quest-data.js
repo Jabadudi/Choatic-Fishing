@@ -125,7 +125,7 @@ export const QUEST_DATA=[
   objectives:[{type:"talk",count:1,to:"jetty-angler",toName:"Angler",line:"you are now a giga ni"}],
   rewards:{marks:10000,xp:100000,items:[]},
   lore:"Toby lives in a hut over Hidden Creek, away from the traffic of the old road. He has asked Eli to find the angler at the village jetty. The errand is called Golda NiMax; Toby has left the explanation for later.",
-  where:"Find the Angler at the village jetty in Willowback Port, then return to Toby in Hidden Creek.",
+  where:"find the man who capture fishies in a crowd",
   offer:"Find the angler at the village jetty and speak to him for me. Come back here afterward; I will be waiting.",
   thought:"An angler by a jetty. That sounded easier to find than a hut hidden in a creek.",
   reminder:"Speak to the angler at the village jetty, then return to me here.",
