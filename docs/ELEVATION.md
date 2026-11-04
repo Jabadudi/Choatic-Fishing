@@ -20,6 +20,12 @@ An optional `elevation` object contains `base`, `terraces` (`id`, `height`, `poi
 
 The cliff texture was generated with the built-in image generation tool, referencing the approved quarry concept: front-on seamless quarry cliff face, painted grey stone and ochre strata, moss and cracks, without props, text, floor or sky. The generated raster was resized to 384 pixels and encoded as WebP. Concept: `output/concepts/abandoned-quarry-elevation.png` in the parent workspace.
 
+## Cliff edge refinement
+
+`src/cliff-art.js` derives decorative boundary pieces directly from terrace polygons. Diagonal corners follow the authored outline rather than the coarse terrain grid. Irregular textured caps, sparse chipped overhangs, exposed strata, seams and narrow contact shadows provide the rock edge finish. Top material follows the adjoining ground, avoiding a grass-colored border on bare stone. Ramp openings stay clear and the original terrain mesh closes their side faces.
+
+All geometry is deterministic and cached with the terrain strips. Textured and solid-color fallback rendering use the same silhouette. This is an artwork pass: terrace coordinates, height queries, collision, save data and gameplay remain unchanged.
+
 ## Preview and checks
 
 Run `npm start`, then open `/quarry-preview.html`. This development preview uses the real World and renderer, with keyboard movement and overview controls; it does not connect to Firebase or load/write progress. It is excluded from the production build.
