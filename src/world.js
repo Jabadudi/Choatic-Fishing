@@ -154,7 +154,7 @@ export class World {
   for(const drop of [...this.drops]){
    if(drop.areaId!==this.areaId||(drop.heldUntil??0)>this.elapsed)continue;
    const dx=p.x-drop.x,dy=p.y-drop.y,distance=Math.hypot(dx,dy);
-   if(distance>reach){drop.pull=0;continue;}
+   if(distance>reach||!Wilds.canReach(p,drop,this.areaId)){drop.pull=0;continue;}
    drop.pull=Math.min(900,(drop.pull||0)+1600*dt);const step=drop.pull*dt;
    if(step>=distance-12){this.collectDrop(drop);continue;}
    drop.x+=dx/distance*step;drop.y+=dy/distance*step;
@@ -180,7 +180,7 @@ export class World {
   if(this.adventure){
    if(currentScene(this))return;
    const steps=Math.max(1,Math.ceil(Math.hypot(dx,dy)/5)),sx=dx/steps,sy=dy/steps;
-   for(let i=0;i<steps;i++){if(Wilds.walkable(p.x+sx,p.y,this.areaId)&&(!shoreOnly||Wilds.nearWater(p.x+sx,p.y,this.areaId)))p.x+=sx;if(Wilds.walkable(p.x,p.y+sy,this.areaId)&&(!shoreOnly||Wilds.nearWater(p.x,p.y+sy,this.areaId)))p.y+=sy;}
+   for(let i=0;i<steps;i++){if(Wilds.canTraverse(p.x,p.y,p.x+sx,p.y,this.areaId)&&Wilds.walkable(p.x+sx,p.y,this.areaId)&&(!shoreOnly||Wilds.nearWater(p.x+sx,p.y,this.areaId)))p.x+=sx;if(Wilds.canTraverse(p.x,p.y,p.x,p.y+sy,this.areaId)&&Wilds.walkable(p.x,p.y+sy,this.areaId)&&(!shoreOnly||Wilds.nearWater(p.x,p.y+sy,this.areaId)))p.y+=sy;}
    let next=Wilds.transitionAt(p.x,p.y,this.areaId);
    // Until Chapter 2 ends, Eli stays between the Landing and the Arrival Bay beach.
    if(next&&this.story&&!inlandUnlocked(this.story)&&!SHORE_AREAS.includes(next.areaId)){next=null;const a=Wilds.areaFor(this.areaId);p.x=Math.max(25,Math.min(a.width-25,p.x));p.y=Math.max(25,Math.min(a.height-25,p.y));this.message=storyObjective(this);}

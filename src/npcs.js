@@ -1,16 +1,17 @@
+import {canReach} from './terrain-height.js';
 import {drawVillageCreature} from './village-creature-art.js';
 import {SPRITES} from './sprite-definitions.js';
 import {NPC_TYPES} from './entities.js';
 import {drawEntitySprite} from './sprites.js';
 // Friendly world characters are separate from combat actors and landmark discoveries.
 export const createNpcs=()=>[{id:'mara',name:'Mara',...NPC_TYPES.mara,areaId:'landing',x:1380,y:1810,npc:true,spriteId:'mara',greeting:'Hello!'}];
-export const nearbyNpc=world=>world.adventure?(world.npcs||[]).find(n=>n.areaId===world.areaId&&Math.hypot(n.x-world.player.x,n.y-world.player.y)<=(n.talkRange||95))||null:null;
+export const nearbyNpc=world=>world.adventure?(world.npcs||[]).find(n=>n.areaId===world.areaId&&canReach(world.player,n,world.areaId)&&Math.hypot(n.x-world.player.x,n.y-world.player.y)<=(n.talkRange||95))||null:null;
 export const visibleNpcs=(world,view)=>(world.npcs||[]).filter(n=>n.areaId===world.areaId&&(!view||(n.x>view.left-60&&n.x<view.right+60&&n.y>view.top-40&&n.y<view.bottom+100)));
 export function updateDialogue(world,dt){
  const d=world.dialogue;if(!d)return;
  d.remaining-=dt;
  const n=(world.npcs||[]).find(n=>n.id===d.npcId);
- if(d.remaining<=0||!n||n.areaId!==world.areaId||Math.hypot(n.x-world.player.x,n.y-world.player.y)>150)world.dialogue=null;
+ if(d.remaining<=0||!n||n.areaId!==world.areaId||!canReach(world.player,n,world.areaId)||Math.hypot(n.x-world.player.x,n.y-world.player.y)>150)world.dialogue=null;
 }
 // Sheets with a row per direction need one. A walker that only records facingX walks left or right.
 export const npcDirection=n=>n.direction||(n.animationState==='walk'&&n.facingX?(n.facingX<0?'left':'right'):undefined);

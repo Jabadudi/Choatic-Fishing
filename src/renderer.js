@@ -5,7 +5,7 @@ import {drawWildlife,drawAnimalStatus} from './wildlife-art.js';
 import {drawEntitySprite,drawProp} from './sprites.js';
 import {facingFor} from './entities.js';
 import {drawTerrain} from './terrain.js';
-import {drawWilds,drawWildsLabels,drawDepthSorted,drawExplorer,INTERIOR_AREAS,areaFor} from './wilds.js';
+import {drawWilds,drawWildsLabels,drawDepthSorted,drawExplorer,INTERIOR_AREAS,areaFor,heightAt,elevationFor,projectGround} from './wilds.js';
 import {drawRabbits,drawRabbit,visibleRabbits} from './rabbits.js';
 import {drawAtmosphere} from './atmosphere.js';
 import {visibleNpcs,drawNpc,drawQuestMarker} from './npcs.js';
@@ -17,7 +17,9 @@ import {drawLevelBurst} from './level-up-fx.js';
 // others: players from the shared world standing in this area (hub.js); drawn with the scenery like Eli.
 export function render(ctx,world,view,{others=[]}={}){
  const {elapsed:t,player:p,bobber}=world;
+ const displayView=view;
  const actors=[];
+ if(world.adventure&&elevationFor(world.areaId)&&view)view={...view,top:view.top-700,bottom:view.bottom+700};
  if(world.adventure){
   // Player and rabbits join the scenery in one ground-order pass; feet sit about 12 units below the explorer's centre.
   drawWilds(ctx,world,view);
@@ -29,7 +31,7 @@ export function render(ctx,world,view,{others=[]}={}){
   for(const n of visibleNpcs(world,view))actors.push({y:n.sortY??n.y+14,ref:n});
   for(const a of nightAttackActors(world))actors.push({y:a.y+14,ref:{...a,cutscene:true}});
   drawDepthSorted(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500},actors,(c,ref)=>ref===p?drawPlayer(c,world):ref.remote?drawOtherPlayer(c,ref,t):ref.radio?drawRadioBeside(c,ref,t):ref.cutscene?drawCutsceneActor(c,ref):ref===world.companion?drawFamiliar(c,ref,t):ref.entityType==='pickup'?(ref.item.familiar?drawShard(c,ref,t):drawDrop(c,ref,t)):ref.npc?drawNpc(c,ref,t):ref.species==='rabbit'?drawRabbit(c,ref):drawWildlife(c,ref));
-  for(const n of visibleNpcs(world,view))drawQuestMarker(ctx,n,questMarker(world,n),t);
+  for(const n of visibleNpcs(world,view)){ctx.save();ctx.translate(0,-heightAt(n.x,n.y,world.areaId));drawQuestMarker(ctx,n,questMarker(world,n),t);ctx.restore();}
  }else{drawTerrain(ctx,world);drawRabbits(ctx,world,view);}
   for(const bot of world.actors.filter(actor=>actor!==world.player)){
     if(bot.health<=0)continue;
@@ -41,9 +43,9 @@ export function render(ctx,world,view,{others=[]}={}){
     ctx.font='8px Arial';ctx.fillStyle='#263e35';ctx.fillText(bot.fishing.state!=='idle'?'FISHING':bot.inventory.item?.name||'TO SHORE',bot.x,bot.y+29);
   }
   // Region Core powers: Reedwater's Call is a bending line of core-blue light; Still Water rings Eli while it holds.
-  for(const shot of world.projectiles)if(shot.kind==='line'&&shot.trail?.length>1){ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.shadowColor='#59b9ff';ctx.shadowBlur=10;ctx.strokeStyle='#9ad7ffcc';ctx.lineWidth=3;ctx.beginPath();shot.trail.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();ctx.fillStyle='#e8f7ff';ctx.beginPath();ctx.arc(shot.x,shot.y,4,0,Math.PI*2);ctx.fill();ctx.restore();}
-  if(world.core?.stillWater>0&&world.player.health>0){const p=world.player,fade=Math.min(1,world.core.stillWater/.6);ctx.save();ctx.globalAlpha=.55*fade;ctx.strokeStyle='#9ad7ff';ctx.lineWidth=2;for(let i=0;i<2;i++){const r=26+((t*14+i*11)%22);ctx.beginPath();ctx.ellipse(p.x,p.y+4,r,r*.45,0,0,Math.PI*2);ctx.stroke();}ctx.restore();}
-  for(const shot of world.projectiles){if(shot.kind==='line')continue;ctx.save();ctx.translate(shot.x,shot.y);ctx.rotate(shot.angle);if(drawEntitySprite(ctx,shot.spriteId||`projectile.${shot.kind}`,{x:0,y:0,state:'idle',time:t})){ctx.restore();continue;}ctx.fillStyle=shot.kind==='wave'?'#a0eee2':shot.kind==='bomb'?'#e2c27c':'#fff0c8';if(shot.kind==='wave'){ctx.globalAlpha=.8;ctx.beginPath();ctx.ellipse(0,0,12,shot.radius,0,0,Math.PI*2);ctx.fill();}else if(shot.kind==='bomb'){ctx.beginPath();ctx.arc(0,0,8,0,Math.PI*2);ctx.fill();}else if(shot.name==='Hunting Bow'){ctx.fillStyle='#8a6438';ctx.fillRect(-16,-1,24,2);ctx.fillStyle='#e8e2d0';ctx.beginPath();ctx.moveTo(13,0);ctx.lineTo(6,-4);ctx.lineTo(6,4);ctx.fill();ctx.fillStyle='#d9c27e';ctx.fillRect(-18,-3,5,2);ctx.fillRect(-18,1,5,2);}else ctx.fillRect(-10,-3,20,6);ctx.restore();}
+  for(const shot of world.projectiles)if(shot.kind==='line'&&shot.trail?.length>1){ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.shadowColor='#59b9ff';ctx.shadowBlur=10;ctx.strokeStyle='#9ad7ffcc';ctx.lineWidth=3;ctx.beginPath();shot.trail.forEach((p,i)=>i?ctx.lineTo(p.x,p.y-(shot.elevation||0)):ctx.moveTo(p.x,p.y-(shot.elevation||0)));ctx.stroke();ctx.fillStyle='#e8f7ff';ctx.beginPath();ctx.arc(shot.x,shot.y-(shot.elevation||0),4,0,Math.PI*2);ctx.fill();ctx.restore();}
+  if(world.core?.stillWater>0&&world.player.health>0){const p=world.player,fade=Math.min(1,world.core.stillWater/.6);ctx.save();ctx.globalAlpha=.55*fade;ctx.strokeStyle='#9ad7ff';ctx.lineWidth=2;for(let i=0;i<2;i++){const r=26+((t*14+i*11)%22);ctx.beginPath();ctx.ellipse(p.x,p.y-heightAt(p.x,p.y,world.areaId)+4,r,r*.45,0,0,Math.PI*2);ctx.stroke();}ctx.restore();}
+  for(const shot of world.projectiles){if(shot.kind==='line')continue;ctx.save();ctx.translate(shot.x,shot.y-(shot.elevation||0));ctx.rotate(shot.angle);if(drawEntitySprite(ctx,shot.spriteId||`projectile.${shot.kind}`,{x:0,y:0,state:'idle',time:t})){ctx.restore();continue;}ctx.fillStyle=shot.kind==='wave'?'#a0eee2':shot.kind==='bomb'?'#e2c27c':'#fff0c8';if(shot.kind==='wave'){ctx.globalAlpha=.8;ctx.beginPath();ctx.ellipse(0,0,12,shot.radius,0,0,Math.PI*2);ctx.fill();}else if(shot.kind==='bomb'){ctx.beginPath();ctx.arc(0,0,8,0,Math.PI*2);ctx.fill();}else if(shot.name==='Hunting Bow'){ctx.fillStyle='#8a6438';ctx.fillRect(-16,-1,24,2);ctx.fillStyle='#e8e2d0';ctx.beginPath();ctx.moveTo(13,0);ctx.lineTo(6,-4);ctx.lineTo(6,4);ctx.fill();ctx.fillStyle='#d9c27e';ctx.fillRect(-18,-3,5,2);ctx.fillRect(-18,1,5,2);}else ctx.fillRect(-10,-3,20,6);ctx.restore();}
   if(!world.adventure){
   drawBobber(ctx,world);
   ctx.fillStyle='#243e3a55';ctx.beginPath();ctx.ellipse(p.x,p.y+14,18,8,0,0,Math.PI*2);ctx.fill();
@@ -51,9 +53,9 @@ export function render(ctx,world,view,{others=[]}={}){
   ctx.fillStyle='#edf3df';ctx.font='bold 10px Arial';ctx.fillText('YOU',p.x,p.y-25);
   }
   for(const effect of world.effects){
-    if(effect.burst){if(!world.adventure)drawLevelBurst(ctx,effect,world.player,'back');drawLevelBurst(ctx,effect,world.player);continue;}
+    if(effect.burst){ctx.save();if(world.adventure)ctx.translate(0,-heightAt(effect.x,effect.y,world.areaId));if(!world.adventure)drawLevelBurst(ctx,effect,world.player,'back');drawLevelBurst(ctx,effect,world.player);ctx.restore();continue;}
     const duration=effect.duration||(['defeat','Whirlpool Burst'].includes(effect.name)?.8:.55);
-    const age=Math.max(0,duration-effect.life);ctx.save();ctx.globalAlpha=Math.min(1,effect.life/duration);ctx.translate(effect.x,effect.y);ctx.rotate(effect.angle);
+    const age=Math.max(0,duration-effect.life);ctx.save();ctx.globalAlpha=Math.min(1,effect.life/duration);ctx.translate(effect.x,effect.y-heightAt(effect.x,effect.y,world.areaId));ctx.rotate(effect.angle);
     ctx.strokeStyle='#f3d59d';ctx.fillStyle='#f3d59d';ctx.lineWidth=5;
     if(effect.name==='player-hit'||effect.name==='notice'){ctx.font=`bold ${effect.name==='notice'?22:15}px monospace`;ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#1a0b0b';ctx.fillStyle=effect.name==='notice'?'#ffcf5a':'#ff6b5b';const y=effect.name==='notice'?-Math.min(age,.2)*30:-age*30;ctx.strokeText(effect.label,0,y);ctx.fillText(effect.label,0,y);}
     else if(effect.name==='animal-hit'||effect.name==='hunt'){ctx.font=effect.name==='hunt'?'bold 12px monospace':'bold 14px monospace';ctx.textAlign='center';ctx.fillStyle=effect.name==='hunt'?'#f8e6a7':'#fff4e4';ctx.fillText(effect.label,0,-age*30);}
@@ -73,11 +75,11 @@ export function render(ctx,world,view,{others=[]}={}){
     else{ctx.beginPath();ctx.arc(0,0,effect.name==='Anchor'?72:48,-1+age*2,1+age*2);ctx.stroke();}
     ctx.restore();
   }
-  if(world.adventure){drawWildsLabels(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500});if(view&&!world.defeat&&!INTERIOR_AREAS.includes(world.areaId)&&!cabinDamaged(world.story))drawAtmosphere(ctx,world,view);drawAnimalStatus(ctx,world);if(world.defeat&&view)drawDefeat(ctx,world,view);}
+  if(world.adventure){drawWildsLabels(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500});if(view&&!world.defeat&&!INTERIOR_AREAS.includes(world.areaId)&&!cabinDamaged(world.story))drawAtmosphere(ctx,world,displayView);drawAnimalStatus(ctx,world);if(world.defeat&&view)drawDefeat(ctx,world,displayView);}
 }
 function drawBobber(ctx,world){
  const {elapsed:t,player:p,bobber}=world;if(!bobber)return;
- ctx.strokeStyle='#f1e6c7';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(p.x+Math.cos(p.angle)*23,p.y+Math.sin(p.angle)*23);ctx.lineTo(bobber.x,bobber.y);ctx.stroke();ctx.strokeStyle='#99c8b788';ctx.beginPath();ctx.ellipse(bobber.x,bobber.y+4,12+Math.sin(t*3)*3,5,0,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#ef947a';ctx.beginPath();ctx.arc(bobber.x,bobber.y,5,0,Math.PI*2);ctx.fill();
+ ctx.strokeStyle='#f1e6c7';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(p.x+Math.cos(p.angle)*23,p.y-heightAt(p.x,p.y,world.areaId)+Math.sin(p.angle)*23);ctx.lineTo(bobber.x,bobber.y-heightAt(bobber.x,bobber.y,world.areaId));ctx.stroke();ctx.strokeStyle='#99c8b788';ctx.beginPath();ctx.ellipse(bobber.x,bobber.y-heightAt(bobber.x,bobber.y,world.areaId)+4,12+Math.sin(t*3)*3,5,0,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#ef947a';ctx.beginPath();ctx.arc(bobber.x,bobber.y-heightAt(bobber.x,bobber.y,world.areaId),5,0,Math.PI*2);ctx.fill();
 }
 // The view darkens while Eli is down, then clears as he wakes.
 function drawDefeat(ctx,world,view){
@@ -87,7 +89,7 @@ function drawDefeat(ctx,world,view){
  ctx.font='15px Georgia, serif';ctx.fillStyle='#bfae9c';ctx.fillText(`He will wake at ${areaFor(world.areaId).name}.`,view.left+W/2,view.top+H/2+18);ctx.restore();
 }
 function drawPlayer(ctx,world){
- drawBobber(ctx,world);
+ ctx.save();ctx.translate(0,heightAt(world.player.x,world.player.y,world.areaId));drawBobber(ctx,world);ctx.restore();
  for(const effect of world.effects)if(effect.burst)drawLevelBurst(ctx,effect,world.player,'back');
  // With a line out, Eli faces the cast.
  const p=world.bobber?{...world.player,facing:facingFor(Math.cos(world.player.angle),Math.sin(world.player.angle))}:world.player;

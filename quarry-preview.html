@@ -1,0 +1,18 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Quarry elevation prototype</title>
+<style>*{box-sizing:border-box}body{margin:0;background:#17292c;color:#f0e6cd;font:15px system-ui}header{height:70px;padding:12px 20px;display:flex;align-items:center;gap:18px}strong{font:22px Georgia}small{display:block;color:#bac9b9}button{background:#344d47;border:1px solid #6e8572;color:#f0e6cd;padding:8px 12px;border-radius:5px}canvas{display:block;width:100vw;height:calc(100vh - 110px)}footer{height:40px;padding:8px 20px}#level{color:#f2cf80;margin-left:auto}</style>
+<header><div><strong>Abandoned Quarry · elevation prototype</strong><small>Actual game terrain, movement and collision · local preview · no saved progress</small></div><button id="overview">Overview</button><button id="reset">Return to gate</button><span id="level"></span></header><canvas tabindex="0"></canvas><footer>Move: WASD / arrows · Follow the west cart ramps down · East stairs return to the work terrace</footer>
+<script type="module">
+import {World} from './src/world.js';
+import {render} from './src/renderer.js';
+import {heightAt,areaFor} from './src/wilds.js';
+const canvas=document.querySelector('canvas'),c=canvas.getContext('2d'),w=new World(()=>.4,{adventure:true});
+w.areaId='abandoned-quarry';w.rabbits=[];w.wildlife=[];w.spawns=null;w.npcs=[];w.player.spriteId='eli';
+const area=areaFor(w.areaId),gate=area.fromAtlas([612,154]);Object.assign(w.player,gate);
+let overview=false,last=0,scale=1,ox=0,oy=0;const keys=new Set();
+addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();keys.add(e.key.toLowerCase());});addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));addEventListener('blur',()=>keys.clear());
+document.querySelector('#overview').onclick=()=>{overview=!overview;draw();};document.querySelector('#reset').onclick=()=>{w.areaId='abandoned-quarry';Object.assign(w.player,gate);};
+function draw(){const r=canvas.getBoundingClientRect();canvas.width=Math.round(r.width);canvas.height=Math.round(r.height);const p=w.player;scale=overview?Math.min(r.width/area.width,r.height/area.height):.9;ox=overview?(r.width-area.width*scale)/2:r.width/2-p.x*scale;oy=overview?0:r.height/2-(p.y-heightAt(p.x,p.y,w.areaId))*scale;c.setTransform(1,0,0,1,0,0);c.fillStyle='#244b51';c.fillRect(0,0,r.width,r.height);c.setTransform(scale,0,0,scale,ox,oy);render(c,w,{left:-ox/scale,right:(r.width-ox)/scale,top:-oy/scale,bottom:(r.height-oy)/scale});document.querySelector('#level').textContent=`Height ${(heightAt(p.x,p.y,w.areaId)/96).toFixed(2)} · ${w.areaId}`;}
+function frame(t){const dt=Math.min(.04,(t-last)/1000||0);last=t;const x=Number(keys.has('d')||keys.has('arrowright'))-Number(keys.has('a')||keys.has('arrowleft')),y=Number(keys.has('s')||keys.has('arrowdown'))-Number(keys.has('w')||keys.has('arrowup'));w.update(dt,{left:x<0,right:x>0,up:y<0,down:y>0,held:false,aim:{x:w.player.x+1,y:w.player.y}});draw();requestAnimationFrame(frame);}
+window.quarryDemo={world:w,draw,area,setOverview(value){overview=value;draw();},at(point){w.areaId='abandoned-quarry';Object.assign(w.player,area.fromAtlas(point));draw();}};
+requestAnimationFrame(frame);
+</script></html>

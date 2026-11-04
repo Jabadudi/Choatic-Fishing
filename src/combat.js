@@ -1,7 +1,7 @@
 import {damageAnimal} from './wildlife.js';
 import {huntableInArea} from './entities.js';
 import {artifactBonus,WET_REACH} from './artifacts.js';
-import {waterDistance} from './wilds.js';
+import {waterDistance,canReach,heightAt} from './wilds.js';
 import {stillWaterGuardAmount,afterPlayerHit} from './core-abilities.js';
 export const combatTargets=world=>world.adventure?[...world.actors,...world.animals.filter(a=>huntableInArea(world,a))]:world.actors;
 // Swept collision prevents fast shells or harpoons skipping a small animal between steps.
@@ -34,9 +34,10 @@ export const WEAPON_RUSHES=Object.freeze({
  'Captain’s Sabre':{name:'Tide Lunge',hold:.45,speed:760,time:.28,damage:56,knockback:240,cooldown:3},
  'Greyhorn Spear':{name:'Antler Charge',hold:.45,speed:620,time:.42,damage:50,knockback:340,cooldown:3}
 });
-export function damage(world,target,amount,source,angle,knockback=0){
+export function damage(world,target,amount,source,angle,knockback=0,origin=source){
+ if(world.adventure&&!canReach(origin,target,world.areaId))return false;
  if(target.entityType==='npc')return false;
- if(target.entityType==='animal')return damageAnimal(world,target,amount,source,angle,knockback);
+ if(target.entityType==='animal')return damageAnimal(world,target,amount,source,angle,knockback,origin);
  if(target.health<=0||world.matchState!=='playing')return false;
  if(target.dashRemaining>0)return false;
  // Still Water (a Region Core power) steadies Eli: less damage and no knockback while it holds.
@@ -71,7 +72,7 @@ export function attack(world,actor,item){
  }else{
   // The Stag Crown strengthens arrows from the hunting bow.
   const damage=spec.damage*(item.name==='Hunting Bow'?1+artifactBonus(actor,'stag-crown'):1);
-  world.projectiles.push({x:actor.x,y:actor.y,angle:actor.angle,owner:actor,travel:0,...spec,damage,name:item.name,hit:new Set(),radius:spec.kind==='bomb'?8:5});
+  world.projectiles.push({elevation:world.adventure?heightAt(actor.x,actor.y,world.areaId):0,x:actor.x,y:actor.y,angle:actor.angle,owner:actor,travel:0,...spec,damage,name:item.name,hit:new Set(),radius:spec.kind==='bomb'?8:5});
  }
 }
 export function startRush(world,actor,name){
@@ -97,25 +98,27 @@ export function updateRush(world,actor,dt){
 export function special(world,actor,kind){
  if(actor.health<=0||actor.fishing.state!=='idle'||actor.cooldown>0||!actor.progression.specials[kind]||world.matchState!=='playing')return false;
  actor.progression.specials[kind]--;actor.cooldown=.8;
- if(kind==='tidal')world.projectiles.push({x:actor.x,y:actor.y,angle:actor.angle,owner:actor,travel:0,kind:'wave',name:'Tidal Cannon',speed:360,range:650,damage:65,knockback:320,radius:25,hit:new Set()});
+ if(kind==='tidal')world.projectiles.push({elevation:world.adventure?heightAt(actor.x,actor.y,world.areaId):0,x:actor.x,y:actor.y,angle:actor.angle,owner:actor,travel:0,kind:'wave',name:'Tidal Cannon',speed:360,range:650,damage:65,knockback:320,radius:25,hit:new Set()});
  else{world.effects.push({name:'Whirlpool Burst',x:actor.x,y:actor.y,angle:0,life:.8});for(const target of combatTargets(world)){if(target!==actor&&Math.hypot(target.x-actor.x,target.y-actor.y)<155)damage(world,target,45,actor,Math.atan2(target.y-actor.y,target.x-actor.x),340);}}
  return true;
 }
 export function updateProjectiles(world,dt){
  for(const shot of world.projectiles){
   const startX=shot.x,startY=shot.y;
+  shot.elevation??=world.adventure?heightAt(shot.owner?.x??shot.x,shot.owner?.y??shot.y,world.areaId):0;
   // Reedwater's Call bends toward the foe it was cast at.
   if(shot.homing!==null&&shot.homing!==undefined){const t=combatTargets(world).find(c=>c.id===shot.homing&&c.health>0);if(t){const want=Math.atan2(t.y-shot.y,t.x-shot.x),diff=Math.atan2(Math.sin(want-shot.angle),Math.cos(want-shot.angle)),max=shot.turn*dt;shot.angle+=Math.max(-max,Math.min(max,diff));}}
   const step=Math.min(shot.speed*dt,shot.range-shot.travel);
   shot.x+=Math.cos(shot.angle)*step;shot.y+=Math.sin(shot.angle)*step;shot.travel+=step;
+  if(world.adventure&&!canReach({x:startX,y:startY,elevation:shot.elevation},{x:shot.x,y:shot.y},world.areaId)){shot.done=true;continue;}
   if(shot.trail){shot.trail.push({x:shot.x,y:shot.y});if(shot.trail.length>14)shot.trail.shift();}
   if(shot.kind==='bomb'){
-   if(shot.travel>=shot.range){world.effects.push({name:'explosion',x:shot.x,y:shot.y,angle:0,life:.55});for(const target of combatTargets(world)){if(target!==shot.owner&&Math.hypot(target.x-shot.x,target.y-shot.y)<100)damage(world,target,shot.damage,shot.owner,Math.atan2(target.y-shot.y,target.x-shot.x),shot.knockback);}shot.done=true;}
+   if(shot.travel>=shot.range){world.effects.push({name:'explosion',x:shot.x,y:shot.y,angle:0,life:.55});for(const target of combatTargets(world)){if(target!==shot.owner&&Math.hypot(target.x-shot.x,target.y-shot.y)<100)damage(world,target,shot.damage,shot.owner,Math.atan2(target.y-shot.y,target.x-shot.x),shot.knockback,shot);}shot.done=true;}
   }else{
    // A monster's arrow only ever hits Eli.
    const hits=(shot.hostile?[world.player]:combatTargets(world)).filter(target=>target!==shot.owner&&target.health>0&&!shot.hit.has(target.id)).map(target=>({target,t:shotHit(shot,target,startX,startY)})).filter(hit=>hit.t!==null).sort((a,b)=>a.t-b.t);
    for(const {target} of hits){
-    damage(world,target,shot.damage,shot.owner,shot.angle,shot.knockback);shot.hit.add(target.id);if(shot.kind==='wave')continue;
+    damage(world,target,shot.damage,shot.owner,shot.angle,shot.knockback,shot);shot.hit.add(target.id);if(shot.kind==='wave')continue;
     // A maxed Reedwater's Call passes through its first foe; it then flies on straight.
     if(shot.pierce>0){shot.pierce--;shot.homing=null;break;}
     shot.done=true;break;
