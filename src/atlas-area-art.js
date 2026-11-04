@@ -1,3 +1,5 @@
+import {ATLAS_PROP_ART} from './sprite-definitions.js';
+import {groundPattern} from './ground-textures.js';
 // Art for the atlas-built areas (atlas-area.js): boardwalks, fords, stone bridges and props. Drawing only.
 import {drawEntitySprite,drawProp as drawPropSprite} from './sprites.js';
 const each=(pts,step,fn)=>{for(let i=1;i<pts.length;i++){const [ax,ay]=pts[i-1],[bx,by]=pts[i],len=Math.hypot(bx-ax,by-ay),n=Math.max(1,Math.floor(len/step));for(let j=0;j<n;j++){const t=j/n;fn(ax+(bx-ax)*t,ay+(by-ay)*t,Math.atan2(by-ay,bx-ax),j);}}};
@@ -19,7 +21,9 @@ function tiled(ctx,pts,id,deck,aspect){
 export function drawAtlasGround(ctx,built,left,top,width,height){
  // Painted walkways where the tiles have loaded: stone bridge decks, marsh boardwalks and stepping stones.
  for(const b of built.bridges)if(near(b.pts,b.half,left,top,width,height))b.painted=tiled(ctx,b.pts,'atlas/stone-bridge-h',b.half*2+14,322/125);
- for(const b of built.walks)if(near(b.pts,b.half,left,top,width,height))b.painted=tiled(ctx,b.pts,'atlas/walk-h',b.half*2+12,278/124);
+ const visibleWalks=built.walks.filter(b=>near(b.pts,b.half,left,top,width,height));
+ const woodReady=drawWoodDecks(ctx,visibleWalks.map(b=>({pts:b.pts,width:b.half*2+12})));
+ for(const b of visibleWalks)b.painted=woodReady;
  for(const b of built.bridges){if(!near(b.pts,b.half,left,top,width,height))continue;if(b.painted)continue;const w=b.half*2;
   stroke(ctx,b.pts,w+10,'#3d3a36');stroke(ctx,b.pts,w+4,'#8d877a');stroke(ctx,b.pts,w-6,'#b9b19c');
   each(b.pts,14,(x,y,a)=>{ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.fillStyle='#a39a84';ctx.fillRect(-1,-b.half+5,2,w-10);ctx.restore();});
@@ -44,8 +48,9 @@ function shadow(ctx,x,y,rx,ry){ctx.fillStyle='rgba(20,40,40,.28)';ctx.beginPath(
 function roof(ctx,x,y,w,h,c,d){ctx.fillStyle=d;ctx.beginPath();ctx.moveTo(x-w/2-6,y);ctx.lineTo(x,y-h);ctx.lineTo(x+w/2+6,y);ctx.closePath();ctx.fill();ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(x-w/2-2,y-2);ctx.lineTo(x,y-h+2);ctx.lineTo(x+w/2+2,y-2);ctx.closePath();ctx.fill();}
 // A prop with `scale` is drawn bigger or smaller around its foot.
 export function drawAtlasProp(ctx,p,t=0){
- const s=p.scale||1;if(s===1)return drawProp(ctx,p,t);
- ctx.save();ctx.translate(p.x*(1-s),p.y*(1-s));ctx.scale(s,s);drawProp(ctx,p,t);ctx.restore();
+ const s=p.scale||1,bob=p.art==='moored-rowboat'?Math.sin(t*1.7+p.x*.013)*2.2:0;
+ ctx.save();ctx.translate(p.x,p.y+bob);ctx.scale(s,s);ctx.translate(-p.x,-p.y);drawProp(ctx,p,t);
+ if(p.art==='harbor-lantern'){const glow=.12+.025*Math.sin(t*5.3+p.x);ctx.fillStyle=`rgba(255,205,110,${glow})`;ctx.beginPath();ctx.ellipse(p.x,p.y-65,18,22,0,0,Math.PI*2);ctx.fill();}ctx.restore();
 }
 // Which painted prop (assets/props/atlas/, scripts/prepare-atlas-props.py) stands for a prop kind, and the box it fits in
 // (game px, its foot on the prop's spot). Landmark pieces replace the plain kind where the area text names them.
@@ -56,18 +61,16 @@ const PAINTED={hut:['fisher-hut',110,80],'stilt-hut':['stilt-hut',110,96],tower:
  nest:['heron-nest',60,40],shrine:['shrine',60,70],cart:['cart',80,44],logs:['log-stack',64,42],mine:['mine',100,70],lighthouse:['lighthouse',80,185],
  wreck:['wreck',190,80],gate:['gate',110,100],dock:['jetty',34,90],chimes:['chimes-post',60,72],spring:['spring-pool',110,96]};
 // Hand-placed trees, plants and rocks use the same paintings and sizes as the random scenery (wilds.js).
-const SCENERY_ART={tree:{oak:['oak',150,118],pine:['pine',100,124],birch:['birch',80,118],'dead-tree':['dead-tree',110,114],'chime-tree':['chime-tree',150,140]},
- bush:{bush:['bush',60,40],fern:['fern',56,30],reeds:['reeds',56,38],'marsh-shrub':['marsh-shrub',60,26]},
- boulder:{'mossy-boulder':['mossy-boulder',50,38],'rock-cluster':['rock-cluster',46,26],'sea-rock':['sea-rock',56,34],'mossy-log':['mossy-log',66,28]}};
 function painted(p){
+ if(p.art&&ATLAS_PROP_ART[p.kind]?.[p.art])return ATLAS_PROP_ART[p.kind][p.art];
  const big=(p.scale||1)>=3;
- if(p.kind==='tower'&&p.area==='broken-watch')return ['broken-watch',170,190];
- if(p.kind==='cave'&&p.area==='chimewood')return ['hollow-rock',160,140];
+ if(p.kind==='tower'&&p.area==='broken-watch')return ['atlas/broken-watch',170,190];
+ if(p.kind==='cave'&&p.area==='chimewood')return ['atlas/hollow-rock',160,140];
  if(p.kind==='pillar')return big?['grey-spire',34,80]:p.inWater?['pillar-water',40,76]:PAINTED.pillar;
  if(p.kind==='logs'&&big)return ['fallen-giant',64,40];
  if(p.kind==='wreck'&&p.area==='arrival-bay')return ['dinghy',110,48];
  if(p.kind==='big-tree')return big?['listening-tree',110,110]:p.glow==='#ffd36a'?['goldleaf-tree',150,160]:p.glow==='#cfe8ff'?['hollow-tree',150,160]:PAINTED['big-tree'];
- if(SCENERY_ART[p.kind])return SCENERY_ART[p.kind][p.art]||Object.values(SCENERY_ART[p.kind])[0];
+ if(ATLAS_PROP_ART[p.kind]&&['tree','bush','boulder'].includes(p.kind))return Object.values(ATLAS_PROP_ART[p.kind])[0];
  return PAINTED[p.kind];
 }
 function drawProp(ctx,p,t){
@@ -76,7 +79,8 @@ function drawProp(ctx,p,t){
   // A jetty runs down from its spot into the water.
   const [id,w,h]=art,foot=p.kind==='dock'?y+80:y;
   if(!p.inWater&&p.kind!=='dock')shadow(ctx,x,foot,w*.36,Math.max(5,h*.07));
-  if(drawPropSprite(ctx,`atlas/${id}`,{x,y:foot,w,h}))return;
+  const explicit=!!(p.art&&ATLAS_PROP_ART[p.kind]?.[p.art]);
+  if(drawPropSprite(ctx,explicit||id.startsWith('atlas/')?id:`atlas/${id}`,{x,y:foot,w,h}))return;
  }
  switch(p.kind){
   case 'hut':shadow(ctx,x,y,52,14);R(ctx,'#6a4a2e',x-42,y-48,84,48);R(ctx,'#8a6440',x-40,y-46,80,4);for(let i=0;i<5;i++)R(ctx,'#5a3e26',x-40,y-38+i*8,80,1);R(ctx,'#2d2018',x-9,y-28,18,28);roof(ctx,x,y-46,84,34,p.roof||'#8f5a3c','#5a3524');break;
@@ -118,3 +122,16 @@ function drawProp(ctx,p,t){
   case 'dock':R(ctx,'#4f3a26',x-16,y-10,32,90);for(let i=0;i<9;i++)R(ctx,i%2?'#9a7a52':'#b39066',x-14,y-8+i*10,28,8);break;
  }
 }
+
+// All borders are painted before any deck surface, so separate runs join without dark seams.
+// These are visual widths; collision remains in defineArea's deck geometry.
+export function drawWoodDecks(ctx,decks){
+ const pattern=groundPattern(ctx,'decking',()=>{});if(!pattern)return false;
+ ctx.save();
+ const ribbon=(pts,width,color)=>{ctx.strokeStyle=color;ctx.lineWidth=width;ctx.lineJoin='round';ctx.lineCap='square';ctx.beginPath();pts.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.stroke();};
+ for(const {pts,width}of decks)if(pts.length>1)ribbon(pts,width+6,'#493d30');
+ for(const {pts,width}of decks)if(pts.length>1)ribbon(pts,width,pattern);
+ for(const {pts,width}of decks)each(pts,52,(x,y,a)=>{ctx.save();ctx.translate(x,y);ctx.rotate(a);for(const side of [-1,1]){ctx.fillStyle='#493d30';ctx.fillRect(-3,side*(width/2+1)-3,6,6);ctx.fillStyle='#c1a77a';ctx.fillRect(-2,side*(width/2+1)-3,3,2);}ctx.restore();});
+ ctx.restore();return true;
+}
+export function drawWoodDeck(ctx,pts,width){return pts.length>1&&drawWoodDecks(ctx,[{pts,width}]);}

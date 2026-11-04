@@ -89,12 +89,12 @@ export function regionAt(x,y,id='landing'){
 }
 const COLORS={'Grandpa’s Cabin':['#a17b50','#ae8756','#b18b59'],'The Chief’s House':['#8a5e3c','#9a6a43','#a0714a'],'The Guest Lodge':['#7f5e3d','#8f6a45','#987350'],'Shellback Marsh':['#6f854e','#748b53','#7a9057'],'Willowback Town Square':['#88b447','#8bb748','#90ba4b'],'Willowback Port':['#88b447','#8bb748','#90ba4b'],'Willowback Merchant Quarter':['#88b447','#8bb748','#90ba4b'],'Willowback Farm & Training Grounds':['#8db84a','#91bb4c','#96be50'],'Willowbank Crossroads':['#87ad4c','#8cb452','#93b958'],'Reedwater Shore':['#247b9a','#2989a4','#3193ac'],'Reedwater Landing':['#88b447','#8bb748','#90ba4b'],'Forest Approach':['#7aa344','#7ea846','#82ad47'],'Windchime Path':['#7aa344','#7ea846','#82ad47'],'Springbank':['#88b447','#8bb748','#90ba4b'],'The Drowned Road':['#88b447','#8bb748','#90ba4b']};
 // Atlas areas colour their ground by zone instead of by region name.
-const ZONE_COLORS={meadow:['#88b447','#8bb748','#90ba4b'],clear:['#88b447','#8bb748','#90ba4b'],forest:['#6f9a40','#739e42','#78a345'],sand:['#cdbf85','#d4c68e','#c9ba7f'],rock:['#8f8d7c','#979484','#8a8877'],marsh:['#6f854e','#748b53','#7a9057'],dirt:['#b59a68','#bca170','#b09462'],cliff:['#6f6a5e','#77725f','#686456']};
+const ZONE_COLORS={moss:['#68774c','#738354','#7c8c5b'],leaves:['#947044','#a17b4e','#87643e'],pebbles:['#929082','#a09a8b','#858679'],decking:['#88735a','#927c62','#7f6a54'],meadow:['#88b447','#8bb748','#90ba4b'],clear:['#88b447','#8bb748','#90ba4b'],forest:['#6f9a40','#739e42','#78a345'],sand:['#cdbf85','#d4c68e','#c9ba7f'],rock:['#8f8d7c','#979484','#8a8877'],marsh:['#6f854e','#748b53','#7a9057'],dirt:['#b59a68','#bca170','#b09462'],cliff:['#6f6a5e','#77725f','#686456']};
 export const paletteAt=(x,y,id)=>DELTA[id]?ZONE_COLORS[DELTA[id].zoneAt(x,y)]||ZONE_COLORS.meadow:COLORS[regionAt(x,y,id)];
 function atlasScenery(gx,gy,id){
  const b=DELTA[id],x=gx*72+12+hash(gx,gy)*48,y=gy*72+12+hash(gx,gy,3)*48,r=hash(gx,gy,9);
  if(b.clear(x,y)||waterDistance(x,y,id)<95||roadDistance(x,y,id)<65||b.places.some(p=>Math.hypot(x-p.x,y-p.y)<100))return null;
- const zone=b.zoneAt(x,y);if(zone==='paving'||b.fixedFeatures&&zone==='clear')return null;
+ const zone=b.zoneAt(x,y);if(['paving','moss','leaves','pebbles','decking'].includes(zone)||b.fixedFeatures&&zone==='clear')return null;
  const kind=zone==='forest'?(r<.74?'tree':r<.84?'bush':null):zone==='cliff'?null:zone==='rock'?(r<.3?'rock':null):zone==='sand'||zone==='clear'||zone==='dirt'?(r<.04?'rock':null):zone==='marsh'?(r<.18?'bush':r<.24?'tree':null):(r<.13?'tree':r<.21?'rock':r<.35?'bush':null);
  return kind?{x,y,kind,r:kind==='tree'?12:kind==='rock'?15:0,art:atlasArt(id,zone,kind,hash(gx,gy,31))}:null;
 }
@@ -225,7 +225,7 @@ function staticArea(ctx,left,top,width,height,id){
  for(let y=Math.floor(top/8)*8;y<top+height;y+=8)for(let x=Math.floor(left/8)*8;x<left+width;x+=8){
   const px=x+4,py=y+4,wet=waterDistance(px,py,id),road=roadDistance(px,py,id),r=hash(x,y,4),palette=paletteAt(px,py,id);
   // Visual fringes soften the shoreline and trail without changing collision geometry.
-  const deck=!!DELTA[id]?.deck(px,py),water=wet<0&&!deck,path=!water&&(deck||road<24+r*12),zone=DELTA[id]?.zoneAt(px,py),sand=!water&&!path&&(zone==='sand'||wet< (DELTA[id]?30:coastDistance(px,py)>-70?58:20)+r*8),ground=!water&&!path&&!sand&&(zone==='rock'||zone==='marsh'||zone==='dirt'||zone==='cliff');
+  const deck=!!DELTA[id]?.deck(px,py),water=wet<0&&!deck,path=!water&&(deck||road<24+r*12),zone=DELTA[id]?.zoneAt(px,py),sand=!water&&!path&&(zone==='sand'||wet< (DELTA[id]?30:coastDistance(px,py)>-70?58:20)+r*8),ground=!water&&!path&&!sand&&(zone==='rock'||zone==='marsh'||zone==='dirt'||zone==='cliff'||['moss','leaves','pebbles','decking'].includes(zone));
   // The atlas areas paint their ground and water textures where they have one; every other outdoor area (the Landing,
   // Willowback, the marsh, the Crossroads) paints its water with them and keeps its own ground.
   const gk=atlasTextures&&groundKind(id,{water,path,sand,zone,wet,r,trail:path&&DELTA[id].trailAt(px,py)}),texture=atlasTextures?groundPattern(ctx,gk,markStale,DELTA[id].textures?.[gk]||1)
@@ -499,7 +499,7 @@ function paintBlendedTerrainTile(ctx,left,top,width,height,id){
  const dirt=pathPattern(ctx,markStale),atlasTextures=!!DELTA[id],groups=new Map();
  for(let y=t;y<t+h;y+=TERRAIN_CELL)for(let x=l;x<l+w;x+=TERRAIN_CELL){
   const px=x+TERRAIN_CELL/2,py=y+TERRAIN_CELL/2,wet=waterDistance(px,py,id),road=roadDistance(px,py,id),r=hash(Math.floor(x/8)*8,Math.floor(y/8)*8,4),palette=paletteAt(px,py,id);
-  const deck=!!DELTA[id]?.deck(px,py),water=wet<0&&!deck,path=!water&&(deck||road<24+r*12),zone=DELTA[id]?.zoneAt(px,py),sand=!water&&!path&&(zone==='sand'||wet<(DELTA[id]?30:coastDistance(px,py)>-70?58:20)+r*8),ground=!water&&!path&&!sand&&(zone==='rock'||zone==='marsh'||zone==='dirt'||zone==='cliff');
+  const deck=!!DELTA[id]?.deck(px,py),water=wet<0&&!deck,path=!water&&(deck||road<24+r*12),zone=DELTA[id]?.zoneAt(px,py),sand=!water&&!path&&(zone==='sand'||wet<(DELTA[id]?30:coastDistance(px,py)>-70?58:20)+r*8),ground=!water&&!path&&!sand&&(zone==='rock'||zone==='marsh'||zone==='dirt'||zone==='cliff'||['moss','leaves','pebbles','decking'].includes(zone));
   const gk=atlasTextures&&groundKind(id,{water,path,sand,zone,wet,r,trail:path&&DELTA[id].trailAt(px,py)}),texture=atlasTextures?groundPattern(ctx,gk,markStale,DELTA[id].textures?.[gk]||1):water&&groundPattern(ctx,waterKind(id,wet,r,px,py),markStale);
   let style=texture;
   if(!style)style=path&&dirt?dirt:water?waterColor(wet,id==='landing'&&coastDistance(px,py)>0,id==='marsh'):path?['#d6bd7a','#dfc885','#d9c17e'][Math.floor(r*3)]:sand?(id==='marsh'?['#8c8b60','#a2a074','#929469']:['#c5ba77','#d1c487','#cabe7d'])[Math.floor(r*3)]:ground||!hasGrass?palette[Math.floor(hash(Math.floor(x/48),Math.floor(y/48))*3)]:'grass';

@@ -1,3 +1,4 @@
+import {ATLAS_PROP_ART} from './sprite-definitions.js';
 // Areas built straight from the Reedwater Delta atlas (assets/codex/reedwater-delta-map.jpg, 720 × 480 pixels).
 // Each area is plain data in atlas pixels: a frame cut out of the atlas, a size in world units, and shapes for land
 // and water, trails, boardwalks, fords, props, landmarks and exits. defineArea scales it all into world units and
@@ -18,7 +19,7 @@ const KIND_REACH={tree:true};
 // Props that block walking, as a radius in world units around the prop's foot.
 export const PROP_SOLID={hut:46,'stilt-hut':0,tower:58,arch:0,pillar:16,boat:0,wheel:0,cave:0,tent:34,shell:60,stone:18,sign:0,cairn:16,crane:20,'big-tree':30,ruin:40,lantern:0,well:30,statue:22,bench:0,raft:0,nest:0,heron:0,shrine:28,dock:0,cart:24,logs:22,mine:0,lighthouse:40,wreck:0,gate:0,waterfall:0,tree:14,bush:0,boulder:16};
 // Single trees, plants and rocks placed by hand (the land editor); `art` picks the painting, as in the random scenery.
-export const PROP_ART={tree:['oak','pine','birch','dead-tree','chime-tree'],bush:['bush','fern','reeds','marsh-shrub'],boulder:['mossy-boulder','rock-cluster','sea-rock','mossy-log']};
+export const PROP_ART=Object.fromEntries(Object.entries(ATLAS_PROP_ART).map(([kind,looks])=>[kind,Object.keys(looks)]));
 // An arrival spot is either world units in the target area ({x, y}) or an atlas point ([ax, ay]) that linkEntries
 // converts with the target's own frame, since every area shares the one atlas.
 const entryOf=e=>Array.isArray(e)?{entry:null,entryAtlas:e}:{entry:e?{...e}:null};
