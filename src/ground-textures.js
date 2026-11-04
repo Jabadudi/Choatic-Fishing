@@ -1,3 +1,4 @@
+import {GROUND_TEXTURE_SCALE} from './terrain-style.js';
 // The Reedwater Delta ground and water textures (assets/ground/, cut by scripts/prepare-ground-textures.py), as repeating
 // canvas patterns for the terrain painter. A texture returns null until its image has loaded; the caller then paints
 // flat colour and invalidate() repaints the cached terrain once it arrives.
@@ -6,6 +7,7 @@ export const GROUND_TEXTURES=Object.freeze({forest:'forest-floor',sand:'beach-sa
 const images=new Map();
 // scale shrinks or grows the texture (an atlas area's land can set one per ground, e.g. smaller forest leaves).
 export function groundPattern(ctx,kind,invalidate,scale=1){
+ scale*=GROUND_TEXTURE_SCALE[kind]??1;
  const name=GROUND_TEXTURES[kind];if(!name||typeof Image==='undefined')return null;
  let entry=images.get(name);
  if(!entry){
