@@ -3,7 +3,7 @@ import {GROUND_TEXTURE_SCALE} from './terrain-style.js';
 // canvas patterns for the terrain painter. A texture returns null until its image has loaded; the caller then paints
 // flat colour and invalidate() repaints the cached terrain once it arrives.
 export const GROUND_TEXTURES=Object.freeze({forest:'forest-floor',sand:'beach-sand',rock:'rocky-ground',marsh:'marsh-ground',dirt:'packed-dirt',
- cliff:'cliff-top',road:'old-road',drowned:'drowned-road',shallow:'shallow-water',river:'river-water',sea:'open-sea'});
+ moss:'moss-carpet',leaves:'leaf-litter',pebbles:'river-pebbles',decking:'harbor-deck',cliff:'cliff-top',road:'old-road',drowned:'drowned-road',shallow:'shallow-water',river:'river-water',sea:'open-sea'});
 const images=new Map();
 // scale shrinks or grows the texture (an atlas area's land can set one per ground, e.g. smaller forest leaves).
 export function groundPattern(ctx,kind,invalidate,scale=1){

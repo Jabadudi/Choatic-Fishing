@@ -13,7 +13,7 @@ import {BUILT_DEFS,DELTA_DEFS,LAND_FIELDS} from '../src/delta-areas.js';
 import {PROP_SOLID,PROP_ART} from '../src/atlas-area.js';
 import {GROUND_TEXTURES,TRAIL_STYLES,defaultTrail} from '../src/ground-textures.js';
 
-export const ZONES=['meadow','clear','forest','sand','rock','marsh','dirt','paving'];
+export const ZONES=['meadow','clear','forest','sand','rock','marsh','dirt','paving','moss','leaves','pebbles','decking'];
 export const TEXTURE_KINDS=Object.keys(GROUND_TEXTURES);
 const EDGES=['north','south','west','east'];
 const isNum=v=>typeof v==='number'&&Number.isFinite(v);
