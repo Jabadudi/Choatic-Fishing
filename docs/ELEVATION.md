@@ -26,6 +26,12 @@ The cliff texture was generated with the built-in image generation tool, referen
 
 All geometry is deterministic and cached with the terrain strips. Textured and solid-color fallback rendering use the same silhouette. This is an artwork pass: terrace coordinates, height queries, collision, save data and gameplay remain unchanged.
 
+## Quarry ground surface refinement
+
+`src/quarry-ground-art.js` blends the existing rock and dirt artwork over broad, deterministic mineral and dust patches. Work terraces retain exposed stone while the lower floor uses muted earth rather than a uniform orange fill. Walking routes use a quieter packed surface with feathered shoulders. Small decorative talus fragments collect near terrace boundaries; cracks and sparse weeds break up the remaining floor. Decoration placement excludes water, decks, slopes and the route corridor. These fragments are ground artwork, not pickup entities or obstacles.
+
+This treatment is scoped to Abandoned Quarry. It does not change terrain definitions, collision, interactions, rewards or saves. Ground detail is generated once with the terrain strips, and cached strips align to the same source pixel grid to prevent seams. Existing texture-free drawn fallbacks remain visible.
+
 ## Preview and checks
 
 Run `npm start`, then open `/quarry-preview.html`. This development preview uses the real World and renderer, with keyboard movement and overview controls; it does not connect to Firebase or load/write progress. It is excluded from the production build.
