@@ -33,8 +33,8 @@ test('Town Square lanes are continuous, buildings are solid, and every landmark 
  assert.equal(reachable('village',VILLAGE.spawn).size,placesFor('village').length);
  // No water in the square: fishing is at the Port and on the farm's river.
  for(let x=40;x<1900;x+=60)for(let y=40;y<1140;y+=60)assert.equal(isWater(x,y,'village'),false);
- // The track north into the forest is closed for now.
- assert.equal(transitionAt(690,-4,'village'),null);
+ // The atlas migration opens the existing forest track in both directions.
+ const forest=transitionAt(690,-4,'village');assert.equal(forest.areaId,'forest-edge');assert.ok(walkable(forest.x,forest.y,'forest-edge'));
 });
 test('the Port: one stairway down the cliff to the dock, the Great Pier, and real casts into the lagoon',()=>{
  assert.equal(reachable('village-port',PORT.spawn).size,placesFor('village-port').length);
