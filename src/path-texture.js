@@ -1,3 +1,4 @@
+import {GROUND_TEXTURE_SCALE} from './terrain-style.js';
 // Sample the clear dirt in the supplied scene instead of repeating its entire
 // illustrated road network, which would introduce paths that lead nowhere.
 let image,texture;
@@ -26,5 +27,7 @@ export function pathPattern(ctx,invalidate){
   };
   image.src=new URL('../assets/reedwater-paths.png',import.meta.url).href;
  }
- return texture?ctx.createPattern(texture,'repeat'):null;
+ const pattern=texture?ctx.createPattern(texture,'repeat'):null;
+ if(pattern?.setTransform&&typeof DOMMatrix!=='undefined')pattern.setTransform(new DOMMatrix().scaleSelf(GROUND_TEXTURE_SCALE.path,GROUND_TEXTURE_SCALE.path));
+ return pattern;
 }

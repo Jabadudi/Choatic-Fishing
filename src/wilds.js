@@ -1,3 +1,5 @@
+import {TERRAIN_CELL,TERRAIN_BLEND} from './terrain-style.js';
+import {blurMask} from './terrain-blend.js';
 import {SPRITES} from './sprite-definitions.js';
 import {CABIN_AREA,CABIN_PLACES,cabinInteriorBlocked,cabinBlocked,cabinClearing,drawCabin,drawCabinInterior,drawCamp,drawWeaponRack} from './story-map.js';
 import {cabinDamaged} from './story.js';
@@ -234,8 +236,10 @@ function staticArea(ctx,left,top,width,height,id){
  if(id==='chief-house'){drawChiefHouse(ctx);return;}
  // The lodge's light follows the story, so drawWilds paints it each frame instead of caching it.
  if(id==='guest-lodge')return;
+ const atlasTextures=!!DELTA[id];
+ if(!paintBlendedTerrain(ctx,left,top,width,height,id)){
  const texturedGrass=id!=='marsh'&&drawGrassBase(ctx,left,top,width,height,markStale);
- const dirt=pathPattern(ctx,markStale),atlasTextures=!!DELTA[id];
+ const dirt=pathPattern(ctx,markStale);
  for(let y=Math.floor(top/8)*8;y<top+height;y+=8)for(let x=Math.floor(left/8)*8;x<left+width;x+=8){
   const px=x+4,py=y+4,wet=waterDistance(px,py,id),road=roadDistance(px,py,id),r=hash(x,y,4),palette=paletteAt(px,py,id);
   // Visual fringes soften the shoreline and trail without changing collision geometry.
@@ -252,6 +256,7 @@ function staticArea(ctx,left,top,width,height,id){
    if((!path||!dirt)&&r<.35){ctx.fillStyle=r<.12?'#ac9d65':'#efdaa2';ctx.fillRect(x+2,y+3,r<.12?3:4,2);}
    if(path&&road>21&&r>.4){grassDetail(ctx,x,y,7);if(r>.72){ctx.fillStyle='#80ac3e';ctx.fillRect(x+2,y+1,3,4);ctx.fillStyle='#b1c74c';ctx.fillRect(x+4,y,2,3);}}
   }else if(!texturedGrass&&id!=='marsh')grassDetail(ctx,x,y,9);
+ }
  }
  // Sparse clusters leave the walking routes readable and give the meadow small discoveries.
  for(let y=Math.floor((top-24)/24)*24;y<top+height+24;y+=24)for(let x=Math.floor((left-24)/24)*24;x<left+width+24;x+=24){
@@ -501,3 +506,38 @@ export function paintAtlas(ctx,width,height,player,discovered=new Set(),id='land
  if(player){ctx.fillStyle='#fff4be';ctx.beginPath();ctx.arc(player.x*sx,player.y*sy,5,0,Math.PI*2);ctx.fill();}
 }
 
+
+function paintBlendedTerrainTile(ctx,left,top,width,height,id){
+ // Mix coverage masks while sampling every texture at its original sharpness.
+ // The extra margin prevents the filter from fading the outer edge of the capture.
+ const pad=18,l=Math.floor((left-pad)/2)*2,t=Math.floor((top-pad)/2)*2,w=Math.ceil((width+pad*2+2)/2)*2,h=Math.ceil((height+pad*2+2)/2)*2;
+ const surface=()=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;};
+ const grass=surface(),gc=grass.getContext('2d');gc.translate(-l,-t);
+ const hasGrass=id!=='marsh'&&drawGrassBase(gc,l,t,w,h,markStale);
+ const dirt=pathPattern(ctx,markStale),atlasTextures=!!DELTA[id],groups=new Map();
+ for(let y=t;y<t+h;y+=TERRAIN_CELL)for(let x=l;x<l+w;x+=TERRAIN_CELL){
+  const px=x+TERRAIN_CELL/2,py=y+TERRAIN_CELL/2,wet=waterDistance(px,py,id),road=roadDistance(px,py,id),r=hash(Math.floor(x/8)*8,Math.floor(y/8)*8,4),palette=paletteAt(px,py,id);
+  const deck=id==='marsh'&&onMarshDeck(px,py)||id==='crossroads'&&onCrossroadsDeck(px,py)||id==='village'&&onVillageDeck(px,py)||!!DISTRICTS[id]?.deck(px,py),water=wet<0&&!deck,path=!water&&(deck||road<24+r*12),zone=DELTA[id]?.zoneAt(px,py),sand=!water&&!path&&(zone==='sand'||wet<(DELTA[id]?30:coastDistance(px,py)>-70?58:20)+r*8),ground=!water&&!path&&!sand&&(zone==='rock'||zone==='marsh'||zone==='dirt'||zone==='cliff');
+  const gk=atlasTextures&&groundKind(id,{water,path,sand,zone,wet,r,trail:path&&DELTA[id].trailAt(px,py)}),texture=atlasTextures?groundPattern(ctx,gk,markStale,DELTA[id].textures?.[gk]||1):water&&groundPattern(ctx,waterKind(id,wet,r,px,py),markStale);
+  let style=texture;
+  if(!style)style=path&&dirt?dirt:water?waterColor(wet,id==='landing'&&coastDistance(px,py)>0,id==='marsh'):path?['#d6bd7a','#dfc885','#d9c17e'][Math.floor(r*3)]:sand?(id==='marsh'?['#8c8b60','#a2a074','#929469']:['#c5ba77','#d1c487','#cabe7d'])[Math.floor(r*3)]:ground||!hasGrass?palette[Math.floor(hash(Math.floor(x/48),Math.floor(y/48))*3)]:'grass';
+  let group=groups.get(style);if(!group){const mask=surface(),mc=mask.getContext('2d');mc.fillStyle='white';group={mask,mc};groups.set(style,group);}
+  group.mc.fillRect(x-l,y-t,TERRAIN_CELL,TERRAIN_CELL);
+ }
+ const result=surface(),rc=result.getContext('2d');rc.fillStyle='black';rc.fillRect(0,0,w,h);rc.globalCompositeOperation='lighter';
+ for(const [style,{mask}]of groups){
+  const layer=surface(),lc=layer.getContext('2d');blurMask(mask,lc,TERRAIN_BLEND);lc.globalCompositeOperation='source-in';
+  if(style==='grass')lc.drawImage(grass,0,0);
+  else{lc.translate(-l,-t);lc.fillStyle=style;lc.fillRect(l,t,w,h);}
+  rc.drawImage(layer,0,0);
+ }
+ ctx.save();ctx.beginPath();ctx.rect(left,top,width,height);ctx.clip();ctx.drawImage(result,l,t);ctx.restore();
+}
+
+function paintBlendedTerrain(ctx,left,top,width,height,id){
+ // Keep temporary material masks bounded even for full-area atlas images.
+ if(typeof document==='undefined'||!Number.isFinite(ctx.canvas?.width)||typeof ctx.getImageData!=='function')return false;
+ for(let y=top;y<top+height;y+=512)for(let x=left;x<left+width;x+=512)
+  paintBlendedTerrainTile(ctx,x,y,Math.min(512,left+width-x),Math.min(512,top+height-y),id);
+ return true;
+}

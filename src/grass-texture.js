@@ -1,3 +1,4 @@
+import {GROUND_TEXTURE_SCALE} from './terrain-style.js';
 // Preserve the supplied artwork; mirrored repeats avoid abrupt outer-edge seams.
 let image,texture;
 export function drawGrassBase(ctx,left,top,width,height,invalidate){
@@ -18,5 +19,6 @@ export function drawGrassBase(ctx,left,top,width,height,invalidate){
  if(!texture)return false;
  const pattern=ctx.createPattern(texture,'repeat');
  if(!pattern)return false;
+ if(pattern.setTransform&&typeof DOMMatrix!=='undefined')pattern.setTransform(new DOMMatrix().scaleSelf(GROUND_TEXTURE_SCALE.grass,GROUND_TEXTURE_SCALE.grass));
  ctx.fillStyle=pattern;ctx.fillRect(left,top,width,height);return true;
 }
