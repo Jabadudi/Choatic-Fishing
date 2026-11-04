@@ -3,7 +3,8 @@
 // Exits name their target area; an exit whose target is not built yet is left out until it is.
 import {defineArea} from './atlas-area.js';
 import {LAND_DATA} from './land-data.js';
-const DEFS=[];
+import {MAIN_MAP_DEFS} from './main-map-defs.js';
+const DEFS=[...MAIN_MAP_DEFS];
 const area=def=>DEFS.push(def);
 
 // 18.3 Chimewood: the wooded headland east of Windchime Path. A trail from the Windchime spur winds through chime

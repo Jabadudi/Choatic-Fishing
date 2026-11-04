@@ -1,0 +1,13 @@
+# Outdoor maps and the atlas
+
+Every outdoor map now has a definition in `delta-areas.js` or `main-map-defs.js`, with shipped edits in `land-data.js`. The shared `defineArea` interpreter owns water, trails, crossings, ground patches, landmarks and connections. IDs and world sizes remain compatible with existing saves, quests and resident placements.
+
+The main-map migration covers Windchime Path (18.1), Crossroads (18.2), Willowback Port (12.1), Town Square (12.2), Merchant Quarter (12.3), Farm & Training Grounds (12.4), and Shellback Marsh (13.1). Landing (17) already used atlas terrain. The former closed return lanes from the Town Square to Forest Edge and the Merchant Quarter to Stonefall Creek are now open, as approved by the owner.
+
+The cabin, chief's house and guest lodge interiors retain their room renderers. Unique outdoor story structures, shops, gardens, fences and the training yard retain their existing artwork and interactions. They are a protected scenery/story layer, not imported player state. `fixedFeatures` supplies immutable reference footprints and clears procedural scenery around buildings. Maps with these structures reject resizing because chapter positions remain in world units. Editing a landmark's text or position does not move its protected story structure.
+
+Terrain is published by `scripts/world-editor-snapshot.cjs`. After the game deployment succeeds, the editor's **Refresh from game** imports the additional land definitions without replacing newer drafts. No administrator rewrite of editor drafts or player saves is required. Land, Spawns and Quests share the same saved draft, and shipments continue to use `scripts/land-editor.mjs`.
+
+Crossings normally retain the atlas's square end caps and 30-unit extension. A crossing can explicitly set `extend: 0` and `cap: 'round'` or `'square'` when preserving a former map's end geometry. The editor's ground hints and hitbox overlay honor those settings. `paving` uses the stone-road artwork without spawning loose natural rocks across village squares. A default spawn may be an atlas point or a validated `{x,y}` world point; the latter preserves exact legacy arrival positions.
+
+Validation: `npm test`, `npm run build`, and `scripts/main-map-preview.cjs` (Playwright). The browser check renders all seven maps, checks fresh land overrides in the real runtime, verifies that removing decks does not leave invisible walkable crossings, and writes `preview-land.json` for the editor's cross-repository `scripts/main-map-preview.mjs` check. `BASELINE` can point to a previous checkout for before/after screenshots; `SHOTS` controls output and `CAPTURE_IDS` limits recaptures.

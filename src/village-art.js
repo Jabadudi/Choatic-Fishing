@@ -10,10 +10,11 @@ function lantern(c,x,y){if(drawProp(c,'lantern-post',{x:x+4,y:y+10,w:34,h:56}))r
 function boat(c,x,y,flip=1){if(drawProp(c,'rowing-boat',{x,y:y+18,w:88,h:58,flipX:flip<0}))return;c.save();c.translate(x,y);c.scale(flip,1);ellipse(c,4,6,39,12,'#123d5355');c.fillStyle='#60462f';c.beginPath();c.moveTo(-39,-9);c.lineTo(20,-12);c.lineTo(43,0);c.lineTo(20,12);c.lineTo(-39,9);c.closePath();c.fill();r(c,'#ab8050',-33,-7,53,14);r(c,'#5c442e',-17,-8,4,16);r(c,'#5c442e',8,-8,4,16);r(c,'#d2ac74',-33,-8,55,2);r(c,'#d7c08b',-5,-21,3,43);r(c,'#b88c56',-8,14,9,12);c.restore();}
 // 12.2 Town Square: the worn paving of the Willow Commons, lantern posts, benches, garden plots and the WILLOWBACK sign
 // over the main street. The well, the Great Willow and the notice board are depth-sorted objects.
-export function drawVillageGround(c){
+export function drawVillageGround(c,{terrain=true}={}){
  const {x:cx,y:cy,rx,ry}=COMMONS;
- ellipse(c,cx,cy,rx+10,ry+8,'#b9ae78');
+ if(terrain){ellipse(c,cx,cy,rx+10,ry+8,'#b9ae78');
  for(let y=cy-ry;y<cy+ry;y+=14)for(let x=cx-rx;x<cx+rx;x+=22){if(((x-cx)/rx)**2+((y-cy)/ry)**2>1)continue;const o=y%28?8:0;r(c,(x+y)%3?'#bfb58a':'#a9a17b',x+o,y,20,12);r(c,'#d4c79c',x+o,y,19,2);}
+ }
  for(const [x,y,w,h] of GARDENS){plot(c,x,y,w,h,(x+y)%3);fence(c,x,y,w);}
  for(const [x,y] of [[1030,520],[1600,520],[1030,890],[1600,890],[1760,620],[880,610]])lantern(c,x,y);
  for(const [x,y] of [[1150,610],[1450,610],[1200,820],[1460,820]])bench(c,x,y);
@@ -23,7 +24,6 @@ export function drawVillageGround(c){
  // The sign over the main street, where it leaves for the Merchant Quarter.
  r(c,'#6f5134',1832,520,6,64);r(c,'#6f5134',1900,520,6,64);r(c,'#6f5134',1826,508,86,10);r(c,'#b19058',1834,511,70,15);c.font='bold 9px monospace';c.textAlign='center';c.fillStyle='#3c3c28';c.fillText('MARKET ►',1869,522);
  // The fallen branches across the forest track.
- for(const [x,y,a] of [[660,70,.3],[720,96,-.4]]){c.save();c.translate(x,y);c.rotate(a);r(c,'#5c4128',-46,-5,92,10);r(c,'#7d5c38',-46,-5,92,3);r(c,'#4f7a32',-30,-12,10,8);r(c,'#4f7a32',18,4,12,8);c.restore();}
 }
 function window(c,x,y){r(c,'#5d4932',x-16,y-20,32,29);r(c,'#edc67b',x-12,y-16,24,21);r(c,'#fff0b3',x-11,y-15,9,13);r(c,'#715537',x-1,y-18,3,24);r(c,'#715537',x-13,y-7,26,3);r(c,'#b18b52',x-18,y+8,36,5);}
 // A tall timber watchtower: four legs, a ladder, a railed platform and a plank roof.
@@ -151,8 +151,9 @@ function planks(c,x,y,w,h,vertical=false){
  else for(let xx=x;xx<x+w;xx+=12){r(c,(xx/12|0)%2?'#9c7c50':'#ae8c5b',xx,y,10,h);r(c,'#c5a56d',xx,y,2,h);}
 }
 // 12.1 The Port: the cliff, the upper deck over it, the stairway, the lower dock, the Great Pier and the jetties.
-function port(c){
+function port(c,terrain=true){
  const W=PORT.width;
+ if(terrain){
  // The low rock cliff, from the deck's edge down to the water.
  for(let x=0;x<W;x+=8){const shore=portShore(x);for(let y=PORT_DECK.bottom;y<shore+6;y+=8){const k=((x*7+y*13)%23)/23;r(c,k<.3?'#77736a':k<.7?'#8a867b':'#9b968a',x,y,8,8);if(k>.85)r(c,'#5f5b53',x+2,y+5,5,2);}r(c,'#5a564e',x,shore-2,8,6);r(c,'#cfe3e0',x+(x%16),shore+4,4,2);}
  for(let x=20;x<W;x+=46){r(c,'#4c3a24',x,PORT_DECK.bottom,5,24+((x*31)%30));}
@@ -173,6 +174,7 @@ function port(c){
  r(c,'#4e4935',-4,-31,len+8,62);for(let d=0;d<len;d+=12){r(c,(d/12|0)%2?'#9c7c50':'#ae8c5b',d,-28,10,56);r(c,'#c5a56d',d,-28,2,56);}
  for(let d=40;d<len;d+=90){r(c,'#3e2e1d',d,-34,7,6);r(c,'#3e2e1d',d,28,7,6);}
  c.restore();
+ }
  for(const [x,y] of [[1380,300],[1520,360],[1590,250],[1180,380]])barrel(c,x,y);
  for(const [x,y] of [[300,280],[560,330],[1700,300]])if(!drawProp(c,'net-rack',{x,y:y+30,w:96,h:110})){post(c,x-30,y);post(c,x+30,y);r(c,'#84613c',x-34,y-30,68,4);}
  for(const [x,y] of [[420,640],[1110,640],[980,300],[180,640]])if(!drawProp(c,'rope-coils',{x,y:y+10,w:38,h:26})){c.strokeStyle='#d5bd83';c.lineWidth=3;for(let i=0;i<3;i++){c.beginPath();c.ellipse(x,y,9+i*4,4+i*2,0,0,Math.PI*2);c.stroke();}}
@@ -181,10 +183,11 @@ function port(c){
  for(const [x,y,s] of [[1660,640,16],[1720,700,12],[1580,880,10],[1740,830,14]]){ellipse(c,x,y,s,s*.6,'#6c6a64');ellipse(c,x-3,y-3,s*.6,s*.35,'#8e8b82');}
 }
 // 12.3 The Merchant Quarter: Lantern Square's paving, lantern strings, garden plots and the Willowback Gate.
-function market(c,t=0){
+function market(c,t=0,terrain=true){
  const {x:cx,y:cy,rx,ry}=LANTERN_SQUARE;
- r(c,'#b9ae78',cx-rx-8,cy-ry-8,(rx+8)*2,(ry+8)*2);
+ if(terrain){r(c,'#b9ae78',cx-rx-8,cy-ry-8,(rx+8)*2,(ry+8)*2);
  for(let y=cy-ry;y<cy+ry;y+=14)for(let x=cx-rx;x<cx+rx;x+=22){const o=y%28?8:0;r(c,(x+y)%3?'#bfb58a':'#a9a17b',x+o,y,20,12);r(c,'#d4c79c',x+o,y,19,2);}
+ }
  const corners=[[cx-rx+12,cy-ry+18],[cx+rx-12,cy-ry+18],[cx-rx+12,cy+ry-8],[cx+rx-12,cy+ry-8]];
  for(const [x,y] of corners)lantern(c,x,y);
  c.strokeStyle='#3e392a';c.lineWidth=1;for(const [[x1,y1],[x2,y2]] of [[corners[0],corners[3]],[corners[1],corners[2]]]){c.beginPath();c.moveTo(x1,y1-36);c.quadraticCurveTo((x1+x2)/2,(y1+y2)/2-10,x2,y2-36);c.stroke();for(let i=1;i<8;i++){const k=i/8;r(c,i%2?'#f2c45a':'#e8955a',x1+(x2-x1)*k-2,y1-36+(y2-y1)*k+Math.sin(k*Math.PI)*8-10,5,6);}}
@@ -201,11 +204,10 @@ function market(c,t=0){
  for(const dy of [-75,75]){r(c,'#4a331f',x-9,y+dy-92,18,104);r(c,'#6f5134',x-9,y+dy-92,5,104);r(c,'#5b3e2a',x-13,y+dy-96,26,8);lantern(c,x+22,y+dy+4);}
  r(c,'#6f5134',x-62,y-200,124,26);r(c,'#b19058',x-58,y-197,116,20);c.font='bold 11px monospace';c.textAlign='center';c.fillStyle='#3c2c1c';c.fillText('WILLOWBACK',x,y-183);
  // The cart with a lost wheel, across the Stonefall lane.
- r(c,'#6f5134',820,1320,90,30);r(c,'#8a6640',820,1320,90,6);ellipse(c,830,1356,14,14,'#4a331f');ellipse(c,830,1356,6,6,'#8a6640');ellipse(c,930,1370,13,6,'#4a331f');
 }
 // 12.4 Farm & Training Grounds: fields, scarecrow, hay, the coop yard, the pen and its sheep, the mill wheel and landing.
 // The training yard is drawn each frame by drawTrainingGround, on top of this.
-function farm(c){
+function farm(c,terrain=true){
  const N=BARLEY_NORTH,S=BARLEY_SOUTH,V=VEGETABLE_FIELDS;
  strips(c,N.x,N.y,N.w,N.h);fence(c,N.x,N.y+N.h+14,N.w);
  strips(c,S.x,S.y,S.w,S.h);fence(c,S.x,S.y-6,S.w);
@@ -226,8 +228,8 @@ function farm(c){
  for(let i=0;i<12;i++){c.rotate(Math.PI/6);r(c,'#6f5134',-2,-44,4,44);r(c,'#8a6640',-7,-46,14,6);}
  c.restore();ellipse(c,wx,wy,9,9,'#4a331f');c.strokeStyle='#5c4128';c.lineWidth=4;c.beginPath();c.arc(wx,wy,40,0,Math.PI*2);c.stroke();
  r(c,'#6f5134',730,wy-6,wx-730,8);
- const M=MILL_LANDING;planks(c,M.left,M.top,M.right-M.left,M.bottom-M.top,true);post(c,M.left,M.top+8);post(c,M.right,M.top+8);
+ const M=MILL_LANDING;if(terrain)planks(c,M.left,M.top,M.right-M.left,M.bottom-M.top,true);post(c,M.left,M.top+8);post(c,M.right,M.top+8);
  // The hedge along the south edge.
  for(let x=0;x<2000;x+=26)if(x<870||x>1980){ellipse(c,x+13,2232,18,14,'#3f6a2c');ellipse(c,x+9,2226,10,8,'#5a8a3a');}
 }
-export function drawDistrictGround(c,id){if(id==='village-port')port(c);else if(id==='village-market')market(c);else if(id==='village-farm')farm(c);}
+export function drawDistrictGround(c,id,{terrain=true}={}){if(id==='village-port')port(c,terrain);else if(id==='village-market')market(c,0,terrain);else if(id==='village-farm')farm(c,terrain);}

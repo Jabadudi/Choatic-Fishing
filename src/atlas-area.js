@@ -42,10 +42,10 @@ export function defineArea(def){
  }
  // Crossings run a little past both ends, so they always bite into the dry ground they join.
  const extend=pts=>{if(pts.length<2)return pts;const out=pts.map(p=>[...p]),push=(i,j)=>{const [ax,ay]=out[j],[bx,by]=out[i],l=Math.hypot(bx-ax,by-ay)||1;out[i]=[bx+(bx-ax)/l*30,by+(by-ay)/l*30];};push(0,1);push(out.length-1,out.length-2);return out;};
- const lines=(list,width)=>(list||[]).map(item=>{const raw=Array.isArray(item[0])?item:item.pts,w=(Array.isArray(item[0])?width:item.width||width)*k,pts=extend(Ps(raw)),hit=(Array.isArray(item[0])||item.hit==null?w:item.hit*k)/2;return {pts,half:w/2,hit,box:boxOf(pts,Math.max(w,hit*2)/2)};});
+ const lines=(list,width)=>(list||[]).map(item=>{const raw=Array.isArray(item[0])?item:item.pts,w=(Array.isArray(item[0])?width:item.width||width)*k,pts=item.extend===0?Ps(raw):extend(Ps(raw)),hit=(Array.isArray(item[0])||item.hit==null?w:item.hit*k)/2;return {pts,half:w/2,hit,round:item.cap==='round',box:boxOf(pts,Math.max(w,hit*2)/2)};});
  const walks=lines(def.walks,2.6),fords=lines(def.fords,2.2),bridges=lines(def.bridges,3.2);
  const decks=[...walks,...fords,...bridges];
- const deck=(x,y)=>decks.some(d=>outside(x,y,d.box)===0&&deckDistance(x,y,d.pts)<=d.hit);
+ const deck=(x,y)=>decks.some(d=>outside(x,y,d.box)===0&&(d.round?lineDistance(x,y,d.pts):deckDistance(x,y,d.pts))<=d.hit);
 // A land shape can carry its own ground ({zone:'sand'}); those come after the listed zones, which stay on top.
  for(const c of def.cliffs||[])shapeZones.unshift(['cliff',c]);
  const zones=[...(def.zones||[]),...shapeZones].map(([kind,poly])=>{const p=Ps(poly);return {kind,poly:p,box:boxOf(p)};});
@@ -63,7 +63,7 @@ export function defineArea(def){
  // A door is a circle (at, r) or a line (at → to, r = how close counts as crossing it).
  const portals=(def.portals||[]).map(q=>{const [x,y]=P(q.at);if(!q.to)return {x:Math.round(x),y:Math.round(y),r:q.r||60,target:q.target,label:q.label,quiet:!!q.quiet,...entryOf(q.entry)};
   const [x2,y2]=P(q.to);return {x:Math.round((x+x2)/2),y:Math.round((y+y2)/2),line:[Math.round(x),Math.round(y),Math.round(x2),Math.round(y2)],r:q.r||40,target:q.target,label:q.label,quiet:!!q.quiet,...entryOf(q.entry)};});
- const area={id:def.id,name:def.name,num:def.num,width:W,height:H,seed:def.seed||7400+[...def.id].reduce((a,c)=>a+c.charCodeAt(0),0),spawn:def.spawn?{x:Math.round(P(def.spawn)[0]),y:Math.round(P(def.spawn)[1])}:null,exits,portals,frame:def.frame,within:def.within||null,atlas:true,sea:!!def.sea,fromAtlas:pt=>{const [x,y]=P(pt);return {x:Math.round(x),y:Math.round(y)};}};
+ const area={id:def.id,name:def.name,num:def.num,width:W,height:H,seed:def.seed||7400+[...def.id].reduce((a,c)=>a+c.charCodeAt(0),0),spawn:def.spawn?(Array.isArray(def.spawn)?{x:Math.round(P(def.spawn)[0]),y:Math.round(P(def.spawn)[1])}:{...def.spawn}):null,exits,portals,frame:def.frame,within:def.within||null,atlas:true,sea:!!def.sea,fromAtlas:pt=>{const [x,y]=P(pt);return {x:Math.round(x),y:Math.round(y)};}};
  // Arrivals snap onto the nearest trail, boardwalk or ford, so a diagonal trail still meets the edge where Eli lands.
  area.snap=(x,y)=>{let best=null,bd=170;for(const pts of [...roads,...decks.map(d=>d.pts)])for(let i=1;i<pts.length;i++){const [ax,ay]=pts[i-1],[bx,by]=pts[i],dx=bx-ax,dy=by-ay,l=dx*dx+dy*dy,t=l?Math.max(0,Math.min(1,((x-ax)*dx+(y-ay)*dy)/l)):0,px=ax+t*dx,py=ay+t*dy,d=Math.hypot(x-px,y-py);if(d<bd){bd=d;best={x:Math.round(px),y:Math.round(py)};}}return best||{x,y};};
  // Cliffs and steep rock: dry but solid, except where a trail or stair climbs them.
@@ -71,9 +71,10 @@ export function defineArea(def){
  const onRoad=(x,y)=>roads.some(r=>lineDistance(x,y,r)<30)||deck(x,y);
  const blocked=(x,y)=>solidProps.some(p=>(x-p.x)**2+(y-p.y)**2<(p.r+12)**2)||cliffs.some(c=>outside(x,y,c.box)===0&&inside(x,y,c.poly))&&!onRoad(x,y);
  area.places=places;
- return {area,water,deck,blocked,zoneAt,roads,trailAt,places,props,walks,fords,bridges,toWorld:P,textures:def.textures||null,
+ const fixed=(def.fixedFeatures||[]).map(f=>({at:P(f.at),radius:f.radius||35,box:f.box?Ps(f.box):null}));
+ return {area,water,deck,blocked,zoneAt,roads,trailAt,places,props,walks,fords,bridges,toWorld:P,textures:def.textures||null,fixedFeatures:def.fixedFeatures||null,
   // Ground kept free of random trees and rocks: the walks' ends, landmarks and props.
-  clear:(x,y)=>props.some(p=>Math.hypot(x-p.x,y-p.y)<(p.clear??90))||decks.some(d=>outside(x,y,d.box)<60&&lineDistance(x,y,d.pts)<d.half+50)};
+  clear:(x,y)=>fixed.some(f=>f.box?inside(x,y,f.box):Math.hypot(x-f.at[0],y-f.at[1])<f.radius+25)||props.some(p=>Math.hypot(x-p.x,y-p.y)<(p.clear??90))||decks.some(d=>outside(x,y,d.box)<60&&lineDistance(x,y,d.pts)<d.half+50)};
 }
 // Exits without an explicit entry land just inside the matching exit of the area they lead to.
 export function linkEntries(areas){

@@ -34,8 +34,7 @@ export const AREAS={
  village:VILLAGE,
  ...Object.fromEntries(Object.entries(DISTRICTS).map(([id,d])=>[id,d.area])),
  marsh:MARSH,
- ...Object.fromEntries(Object.entries(DELTA).map(([id,b])=>[id,b.area])),
- windchime:{id:'windchime',name:'Windchime Path',width:1600,height:1200,seed:7321,spawn:{...WINDCHIME_ENTRY},exits:[{edge:'north',from:1080,to:1220,target:'crossroads',entry:{x:800,y:1130},label:'Willowbank Crossroads'},{edge:'south',from:260,to:400,target:'landing',entry:{x:1680,y:120},label:'Reedwater Landing'},{edge:'west',from:190,to:310,target:'stonefall',label:'Stonefall Creek'},{edge:'east',from:340,to:460,target:'chimewood',label:'Chimewood'}]}
+ ...Object.fromEntries(Object.entries(DELTA).map(([id,b])=>[id,b.area]))
 };
 // Atlas areas only keep the exits whose target is built; then every exit without a fixed entry gets one.
 for(const a of Object.values(AREAS))if(a.atlas){a.exits=a.exits.filter(e=>AREAS[e.target]);a.portals=a.portals.filter(e=>AREAS[e.target]);}
@@ -47,26 +46,17 @@ const LANDING_PLACES=DELTA.landing.places;
 // 18.1 Windchime Path (v2): one dirt trail climbing from the Landing in the south-west to the Crossroads in the north-east,
 // through thick woods. Halfway up, the Fork Stones signpost points west to Stonefall Creek; near the top a spur runs east
 // into Chimewood. Neither is open yet, so both forks end in the trees. A short side path opens into a quiet glade.
-const PATH_PLACES=[
- {id:'path-chimes',name:'The Chime Arch',x:350,y:1060,kind:'chimes',text:'Behind you lies Reedwater Landing. Chimes hang from a bent-wood arch over the trail, and the sound of the shore turns into chimes.'},
- {id:'fork-stones',name:'The Fork Stones',x:640,y:420,kind:'sign',text:'Three mossy stones and a signpost. West: Stonefall Creek. North-east: Willowbank Crossroads, where the road divides for the village and the marsh.'},
- {id:'quiet-glade',name:'The Quiet Glade',x:1110,y:720,kind:'glade',text:'A fallen log in a ring of trees. The chimes are faint here. A good place to sit for a minute.'},
- {id:'trail-end',name:'Stonefall Fork',x:180,y:200,kind:'sign',text:'The west fork runs on toward Stonefall Creek. Somewhere ahead, water is falling.'},
- {id:'chimewood-spur',name:'Chimewood Spur',x:1440,y:300,kind:'sign',text:'The spur east disappears into Chimewood. The trees close in, and the chimes in there sound wrong.'}
-];
-const GLADE={x:1110,y:700,rx:150,ry:110};
-const WINDCHIME_TREES=[[470,300],[384,520],[250,640],[200,800],[190,960],[1000,150],[1080,300]];
+const WINDCHIME_TREES=DELTA.windchime.fixedFeatures.map(f=>DELTA.windchime.toWorld(f.at));
 export const LANDMARKS=LANDING_PLACES;
 // Walk-in rooms: no water, scenery, weather or open-air atmosphere.
 export const INTERIOR_AREAS=['cabin','chief-house','guest-lodge'];
 const interior=id=>INTERIOR_AREAS.includes(id);
-export const placesFor=id=>DELTA[id]?DELTA[id].places:DISTRICTS[id]?DISTRICTS[id].places:id==='cabin'?CABIN_PLACES:id==='guest-lodge'?GUEST_LODGE_PLACES:id==='chief-house'?CHIEF_HOUSE_PLACES:id==='marsh'?MARSH_PLACES:id==='village'?VILLAGE_PLACES:id==='crossroads'?CROSSROADS_PLACES:id==='windchime'?PATH_PLACES:LANDING_PLACES;
+export const placesFor=id=>DELTA[id]?DELTA[id].places:id==='cabin'?CABIN_PLACES:id==='guest-lodge'?GUEST_LODGE_PLACES:id==='chief-house'?CHIEF_HOUSE_PLACES:LANDING_PLACES;
 export const areaFor=id=>AREAS[id]||WORLD;
 export const LAKES=[{x:2020,y:1050,rx:130,ry:150},{x:650,y:1910,rx:390,ry:190}];
 export const RIVERS=[[[2370,-100],[2290,500],[2320,1000],[2440,1500],[2310,2300]]];
 export const ROADS=DELTA.landing.roads;
-const PATH_ROADS=[[[330,1200],[348,1060],[303,928],[366,692],[511,510],[711,382],[892,291],[1128,164],[1150,0]],[[711,382],[530,291],[294,264],[40,250],[0,250]],[[1128,164],[1382,273],[1560,390],[1600,400]],[[784,346],[983,600],[1060,680]]];
-const pathsFor=id=>DELTA[id]?DELTA[id].roads:DISTRICTS[id]?DISTRICTS[id].roads:id==='marsh'?MARSH_ROADS:id==='village'?VILLAGE_ROADS:id==='crossroads'?CROSSROADS_ROADS:id==='windchime'?PATH_ROADS:ROADS;
+const pathsFor=id=>DELTA[id]?.roads||ROADS;
 export function hash(x,y,s=0){let h=Math.imul(x+WORLD.seed,374761393)^Math.imul(y+s,668265263);h=Math.imul(h^(h>>>13),1274126177);return ((h^(h>>>16))>>>0)/4294967296;}
 export function ellipseDistance(x,y,l){return (Math.hypot((x-l.x)/l.rx,(y-l.y)/l.ry)-1)*Math.min(l.rx,l.ry);}
 // Segments whose bounding box is already farther than the best match are skipped; the nearest segment, and so the result, is unchanged.
@@ -104,7 +94,8 @@ export const paletteAt=(x,y,id)=>DELTA[id]?ZONE_COLORS[DELTA[id].zoneAt(x,y)]||Z
 function atlasScenery(gx,gy,id){
  const b=DELTA[id],x=gx*72+12+hash(gx,gy)*48,y=gy*72+12+hash(gx,gy,3)*48,r=hash(gx,gy,9);
  if(b.clear(x,y)||waterDistance(x,y,id)<95||roadDistance(x,y,id)<65||b.places.some(p=>Math.hypot(x-p.x,y-p.y)<100))return null;
- const zone=b.zoneAt(x,y),kind=zone==='forest'?(r<.74?'tree':r<.84?'bush':null):zone==='cliff'?null:zone==='rock'?(r<.3?'rock':null):zone==='sand'||zone==='clear'||zone==='dirt'?(r<.04?'rock':null):zone==='marsh'?(r<.18?'bush':r<.24?'tree':null):(r<.13?'tree':r<.21?'rock':r<.35?'bush':null);
+ const zone=b.zoneAt(x,y);if(zone==='paving'||b.fixedFeatures&&zone==='clear')return null;
+ const kind=zone==='forest'?(r<.74?'tree':r<.84?'bush':null):zone==='cliff'?null:zone==='rock'?(r<.3?'rock':null):zone==='sand'||zone==='clear'||zone==='dirt'?(r<.04?'rock':null):zone==='marsh'?(r<.18?'bush':r<.24?'tree':null):(r<.13?'tree':r<.21?'rock':r<.35?'bush':null);
  return kind?{x,y,kind,r:kind==='tree'?12:kind==='rock'?15:0,art:atlasArt(id,zone,kind,hash(gx,gy,31))}:null;
 }
 // The painted tree, plant or rock (assets/props/atlas/) for a spot, with the box it fits in (game px).
@@ -138,17 +129,8 @@ export function sceneryAt(gx,gy,id='landing'){
  return o;
 }
 function findScenery(gx,gy,id){
- if(interior(id)||id==='landing'&&cabinClearing(gx*72+36,gy*72+36))return null;
- if(id==='marsh')return null;
- if(DELTA[id])return atlasScenery(gx,gy,id);
- const x=gx*72+12+hash(gx,gy)*48,y=gy*72+12+hash(gx,gy,3)*48,r=hash(gx,gy,9),region=regionAt(x,y,id);
- if(DISTRICTS[id]?.clear(x,y))return null;
- if(id==='village'&&villageClear(x,y))return null;
- if(id==='windchime'&&ellipseDistance(x,y,GLADE)<0)return null;
- if(id==='crossroads'&&((x>560&&x<900&&y>720&&y<1100)||(x>330&&x<620&&y>820&&y<1010)||(x>1040&&x<1260&&y>960&&y<1100)||(x<380&&y>400&&y<680)))return null;
- if(waterDistance(x,y,id)<95||roadDistance(x,y,id)<65||placesFor(id).some(p=>Math.hypot(x-p.x,y-p.y)<100))return null;
- let kind=region==='Windchime Path'||region==='Forest Approach'?(r<.78?'tree':r<.87?'bush':null):r<.13?'tree':r<.21?'rock':r<.35?'bush':null;
- return kind?{x,y,kind,r:kind==='tree'?12:kind==='rock'?15:0}:null;
+ if(interior(id)||id==='landing'&&cabinClearing(gx*72+36,gy*72+36)||id==='marsh')return null;
+ return DELTA[id]?atlasScenery(gx,gy,id):null;
 }
 function inExit(x,exit){return x>=exit.from+16&&x<=exit.to-16;}
 export function walkable(x,y,id='landing'){
@@ -159,11 +141,11 @@ export function walkable(x,y,id='landing'){
  if(id==='chief-house')return !chiefHouseBlocked(x,y);
  if(id==='guest-lodge')return !guestLodgeBlocked(x,y);
  if(id==='landing'&&cabinBlocked(x,y))return false;
- if(id==='marsh'){if(marshBlocked(x,y))return false;if(onMarshDeck(x,y))return true;}
- if(id==='village'){if(villageBlocked(x,y))return false;if(onVillageDeck(x,y))return true;}
- if(DISTRICTS[id]){if(DISTRICTS[id].blocked(x,y))return false;if(DISTRICTS[id].deck(x,y))return true;}
+ if(id==='marsh'&&marshBlocked(x,y))return false;
+ if(id==='village'&&villageBlocked(x,y))return false;
+ if(DISTRICTS[id]&&(DISTRICTS[id].structuresBlocked||DISTRICTS[id].blocked)(x,y))return false;
  if(DELTA[id]){if(DELTA[id].blocked(x,y))return false;if(DELTA[id].deck(x,y))return true;}
- if(id==='crossroads'){if(crossroadsBlocked(x,y))return false;if(onCrossroadsDeck(x,y))return true;}
+ if(id==='crossroads'&&crossroadsBlocked(x,y))return false;
  if(waterDistance(x,y,id)<15)return false;
  if(roadDistance(x,y,id)<29)return true;
  const gx=Math.floor(x/72),gy=Math.floor(y/72);
@@ -243,7 +225,7 @@ function staticArea(ctx,left,top,width,height,id){
  for(let y=Math.floor(top/8)*8;y<top+height;y+=8)for(let x=Math.floor(left/8)*8;x<left+width;x+=8){
   const px=x+4,py=y+4,wet=waterDistance(px,py,id),road=roadDistance(px,py,id),r=hash(x,y,4),palette=paletteAt(px,py,id);
   // Visual fringes soften the shoreline and trail without changing collision geometry.
-  const deck=id==='marsh'&&onMarshDeck(px,py)||id==='crossroads'&&onCrossroadsDeck(px,py)||id==='village'&&onVillageDeck(px,py)||!!DISTRICTS[id]?.deck(px,py),water=wet<0&&!deck,path=!water&&(deck||road<24+r*12),zone=DELTA[id]?.zoneAt(px,py),sand=!water&&!path&&(zone==='sand'||wet< (DELTA[id]?30:coastDistance(px,py)>-70?58:20)+r*8),ground=!water&&!path&&!sand&&(zone==='rock'||zone==='marsh'||zone==='dirt'||zone==='cliff');
+  const deck=!!DELTA[id]?.deck(px,py),water=wet<0&&!deck,path=!water&&(deck||road<24+r*12),zone=DELTA[id]?.zoneAt(px,py),sand=!water&&!path&&(zone==='sand'||wet< (DELTA[id]?30:coastDistance(px,py)>-70?58:20)+r*8),ground=!water&&!path&&!sand&&(zone==='rock'||zone==='marsh'||zone==='dirt'||zone==='cliff');
   // The atlas areas paint their ground and water textures where they have one; every other outdoor area (the Landing,
   // Willowback, the marsh, the Crossroads) paints its water with them and keeps its own ground.
   const gk=atlasTextures&&groundKind(id,{water,path,sand,zone,wet,r,trail:path&&DELTA[id].trailAt(px,py)}),texture=atlasTextures?groundPattern(ctx,gk,markStale,DELTA[id].textures?.[gk]||1)
@@ -274,8 +256,8 @@ function staticArea(ctx,left,top,width,height,id){
   if(o.art&&drawProp(ctx,o.art.id,{x:-1e4,y:-1e4,w:1,h:1})){groundShadow(ctx,o.x,o.y,o.art.w*(o.kind==='tree'?.24:.36));if(o.kind!=='tree')drawProp(ctx,o.art.id,{x:o.x,y:o.y+3,w:o.art.w,h:o.art.h});continue;}
   if(o.kind==='tree')tree(ctx,o.x,o.y,false,typeof document!=='undefined'?'trunk':'all');else if(o.kind==='rock')rock(ctx,o.x,o.y);else meadowBush(ctx,o.x,o.y);}
  if(id==='marsh')drawMarshGround(ctx,left,top,width,height);
- if(id==='village')drawVillageGround(ctx);
- if(DISTRICTS[id])drawDistrictGround(ctx,id);
+ if(id==='village')drawVillageGround(ctx,{terrain:false});
+ if(DISTRICTS[id])drawDistrictGround(ctx,id,{terrain:false});
  if(DELTA[id])drawAtlasGround(ctx,DELTA[id],left,top,width,height);
  if(id==='landing'){
   // The old road runs out of the sand as an overgrown causeway and on under the lake; a toppled milestone marks it.
@@ -390,7 +372,7 @@ export function drawDepthSorted(ctx,world,view,actors,drawActor,{still=false}={}
 // Shore foam and sparkle positions are found once per chunk on a coarse grid, so the live water layer never samples distance per frame.
 const shores=new Map(),MAX_SHORES=60;
 // Boardwalks, piers and fords stay free of foam and sparkles.
-const onDock=(x,y,id)=>id==='marsh'?onMarshDeck(x,y):id==='village'?onVillageDeck(x,y):id==='crossroads'?onCrossroadsDeck(x,y):DISTRICTS[id]?DISTRICTS[id].deck(x,y):DELTA[id]?DELTA[id].deck(x,y):false;
+const onDock=(x,y,id)=>DELTA[id]?DELTA[id].deck(x,y):false;
 export function shorePoints(id,cx,cy){
  const key=`${id}:${cx},${cy}`;let points=shores.get(key);if(points)return points;
  points={foam:[],sparkle:[]};
@@ -460,7 +442,7 @@ export function drawWilds(ctx,world,view={left:world.player.x-700,right:world.pl
  if(id==='landing'&&view.right>MILESTONE.x-40&&view.left<MILESTONE.x+40&&view.bottom>MILESTONE.y-40&&view.top<MILESTONE.y+40)milestoneGlyph(ctx,world.elapsed||0);
  // Chime posts along the trail up to Windchime Path.
  if(id==='landing')for(const [x,y] of LANDING_CHIMES)if(x>view.left-60&&x<view.right+60&&y>view.top-20&&y<view.bottom+80)chimes(ctx,x,y,(world.elapsed||0)+x*.01);
- if(id==='crossroads')drawCrossroads(ctx,world.elapsed||0);
+ if(id==='crossroads')drawCrossroads(ctx,world.elapsed||0,{terrain:false});
  // Chime trees along the west side of the trail.
  if(id==='windchime')for(const [x,y] of WINDCHIME_TREES)if(x>view.left-60&&x<view.right+60&&y>view.top-20&&y<view.bottom+80)chimes(ctx,x,y,(world.elapsed||0)+x*.01);
 
@@ -517,7 +499,7 @@ function paintBlendedTerrainTile(ctx,left,top,width,height,id){
  const dirt=pathPattern(ctx,markStale),atlasTextures=!!DELTA[id],groups=new Map();
  for(let y=t;y<t+h;y+=TERRAIN_CELL)for(let x=l;x<l+w;x+=TERRAIN_CELL){
   const px=x+TERRAIN_CELL/2,py=y+TERRAIN_CELL/2,wet=waterDistance(px,py,id),road=roadDistance(px,py,id),r=hash(Math.floor(x/8)*8,Math.floor(y/8)*8,4),palette=paletteAt(px,py,id);
-  const deck=id==='marsh'&&onMarshDeck(px,py)||id==='crossroads'&&onCrossroadsDeck(px,py)||id==='village'&&onVillageDeck(px,py)||!!DISTRICTS[id]?.deck(px,py),water=wet<0&&!deck,path=!water&&(deck||road<24+r*12),zone=DELTA[id]?.zoneAt(px,py),sand=!water&&!path&&(zone==='sand'||wet<(DELTA[id]?30:coastDistance(px,py)>-70?58:20)+r*8),ground=!water&&!path&&!sand&&(zone==='rock'||zone==='marsh'||zone==='dirt'||zone==='cliff');
+  const deck=!!DELTA[id]?.deck(px,py),water=wet<0&&!deck,path=!water&&(deck||road<24+r*12),zone=DELTA[id]?.zoneAt(px,py),sand=!water&&!path&&(zone==='sand'||wet<(DELTA[id]?30:coastDistance(px,py)>-70?58:20)+r*8),ground=!water&&!path&&!sand&&(zone==='rock'||zone==='marsh'||zone==='dirt'||zone==='cliff');
   const gk=atlasTextures&&groundKind(id,{water,path,sand,zone,wet,r,trail:path&&DELTA[id].trailAt(px,py)}),texture=atlasTextures?groundPattern(ctx,gk,markStale,DELTA[id].textures?.[gk]||1):water&&groundPattern(ctx,waterKind(id,wet,r,px,py),markStale);
   let style=texture;
   if(!style)style=path&&dirt?dirt:water?waterColor(wet,id==='landing'&&coastDistance(px,py)>0,id==='marsh'):path?['#d6bd7a','#dfc885','#d9c17e'][Math.floor(r*3)]:sand?(id==='marsh'?['#8c8b60','#a2a074','#929469']:['#c5ba77','#d1c487','#cabe7d'])[Math.floor(r*3)]:ground||!hasGrass?palette[Math.floor(hash(Math.floor(x/48),Math.floor(y/48))*3)]:'grass';

@@ -15,8 +15,9 @@ test('Willowback is four connected areas: Port, Town Square, Merchant Quarter, F
  const legs=[['village-port',870,-4,'village'],['village',870,1164,'village-port'],['village',1924,590,'village-market'],['village-market',-4,590,'village'],
   ['village-market',1604,530,'village-farm'],['village-farm',-4,1150,'village-market'],['village-farm',2004,830,'crossroads'],['crossroads',-4,460,'village-farm']];
  for(const [from,x,y,to] of legs){const next=transitionAt(x,y,from);assert.equal(next?.areaId,to,`${from} → ${to}`);assert.ok(walkable(next.x,next.y,to),`${to} entry`);}
- // No way from the Merchant Quarter down to the Port, and nothing north of the square yet.
- assert.ok(!MARKET.exits.some(e=>e.target==='village-port'));assert.deepEqual(AREAS.village.exits.map(e=>e.target).sort(),['village-market','village-port']);
+ // The two former closed lanes now provide return routes to the adjoining atlas maps.
+ assert.ok(!MARKET.exits.some(e=>e.target==='village-port'));assert.deepEqual(AREAS.village.exits.map(e=>e.target).sort(),['forest-edge','village-market','village-port']);
+ assert.equal(transitionAt(850,1404,'village-market')?.areaId,'stonefall');
  for(const id of Object.keys(DISTRICTS)){
   const area=AREAS[id];assert.ok(walkable(area.spawn.x,area.spawn.y,id));assert.equal(regionAt(area.spawn.x,area.spawn.y,id),area.name);
   assert.ok(placesFor(id).length>=5);

@@ -13,7 +13,7 @@ import {BUILT_DEFS,DELTA_DEFS,LAND_FIELDS} from '../src/delta-areas.js';
 import {PROP_SOLID,PROP_ART} from '../src/atlas-area.js';
 import {GROUND_TEXTURES,TRAIL_STYLES,defaultTrail} from '../src/ground-textures.js';
 
-export const ZONES=['meadow','clear','forest','sand','rock','marsh','dirt'];
+export const ZONES=['meadow','clear','forest','sand','rock','marsh','dirt','paving'];
 export const TEXTURE_KINDS=Object.keys(GROUND_TEXTURES);
 const EDGES=['north','south','west','east'];
 const isNum=v=>typeof v==='number'&&Number.isFinite(v);
@@ -37,8 +37,8 @@ export function cleanLand(def,built,notes=[]){
  if(Object.hasOwn(def,'base'))def.base==='land'||def.base==='water'?out.base=def.base:drop('an unknown base');
  if(Object.hasOwn(def,'sea'))out.sea=def.sea===true;
  if(Object.hasOwn(def,'ground'))ZONES.includes(def.ground)?out.ground=def.ground:drop(`ground ${def.ground}`);
- if(Object.hasOwn(def,'size')){const s=def.size;Array.isArray(s)&&isNum(s[0])&&isNum(s[1])?out.size=[Math.round(clamp(s[0],400,6000)),Math.round(clamp(s[1],400,6000))]:drop('a bad size');}
- if(Object.hasOwn(def,'spawn')){if(def.spawn==null)out.spawn=undefined;else{const p=pt(def.spawn);p?out.spawn=p:drop('a bad arrival spot');}}
+ if(Object.hasOwn(def,'size')){const s=def.size;if(built.fixedFeatures?.length&&(!Array.isArray(s)||s[0]!==built.size[0]||s[1]!==built.size[1]))throw Error(`${where}: resizing is unavailable while story structures use fixed world positions.`);Array.isArray(s)&&isNum(s[0])&&isNum(s[1])?out.size=[Math.round(clamp(s[0],400,6000)),Math.round(clamp(s[1],400,6000))]:drop('a bad size');}
+ if(Object.hasOwn(def,'spawn')){if(def.spawn==null)out.spawn=undefined;else if(!Array.isArray(def.spawn)&&isNum(def.spawn.x)&&isNum(def.spawn.y)){const size=out.size||built.size;out.spawn={x:Math.round(clamp(def.spawn.x,24,size[0]-24)),y:Math.round(clamp(def.spawn.y,24,size[1]-24))};}else{const p=pt(def.spawn);p?out.spawn=p:drop('a bad arrival spot');}}
  if(Array.isArray(def.shapes))out.shapes=def.shapes.flatMap((s,i)=>{
   if(!Array.isArray(s)||!['land','water'].includes(s[0])){drop(`shape ${i+1}`);return [];}
   const [op,form,...rest]=s;
@@ -56,7 +56,7 @@ export function cleanLand(def,built,notes=[]){
   return [obj&&Object.hasOwn(TRAIL_STYLES,r.style)?{pts:p,style:r.style}:p];
  });
  for(const k of ['walks','fords','bridges'])if(Array.isArray(def[k]))out[k]=def[k].flatMap((w,i)=>{
-  if(w&&!Array.isArray(w)&&typeof w==='object'){const p=pts(w.pts,2);if(!p||!isNum(w.width)){drop(`${k} ${i+1}`);return [];}const o={pts:p,width:r1(clamp(w.width,.5,20))};if(isNum(w.hit))o.hit=r1(clamp(w.hit,.2,20));return [o];}
+  if(w&&!Array.isArray(w)&&typeof w==='object'){const p=pts(w.pts,2);if(!p||!isNum(w.width)){drop(`${k} ${i+1}`);return [];}const o={pts:p,width:r1(clamp(w.width,.5,20))};if(isNum(w.hit))o.hit=r1(clamp(w.hit,.2,20));if(w.extend===0)o.extend=0;if(['round','square'].includes(w.cap))o.cap=w.cap;return [o];}
   const p=pts(w,2);if(!p){drop(`${k} ${i+1}`);return [];}return [p];
  });
  if(Array.isArray(def.props))out.props=def.props.flatMap((p,i)=>{
@@ -137,7 +137,7 @@ export const LAND_DATA=Object.freeze({${areas.length?'\n'+areas.join(',\n')+'\n'
 
 // What the editor starts from: every atlas area's terrain as the game has it now, plus the choices it offers.
 export function shippedLand(){
- const pick=d=>{const o={id:d.id,name:d.name,num:d.num,frame:d.frame};if(d.isNew){o.isNew=true;if(d.within)o.within=d.within;}for(const k of LAND_FIELDS)if(d[k]!==undefined)o[k]=d[k];return o;};
+ const pick=d=>{const o={id:d.id,name:d.name,num:d.num,frame:d.frame};if(d.fixedFeatures)o.fixedFeatures=d.fixedFeatures;if(d.isNew){o.isNew=true;if(d.within)o.within=d.within;}for(const k of LAND_FIELDS)if(d[k]!==undefined)o[k]=d[k];return o;};
  return {zones:ZONES,textures:TEXTURE_KINDS,trails:Object.keys(TRAIL_STYLES),trailDefault:Object.fromEntries(DELTA_DEFS.map(d=>[d.id,defaultTrail(d.id)])),props:Object.keys(PROP_SOLID),propArt:PROP_ART,propSolid:PROP_SOLID,areas:Object.fromEntries(DELTA_DEFS.map(d=>[d.id,pick(d)]))};
 }
 

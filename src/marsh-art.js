@@ -23,7 +23,7 @@ export function drawMarshGround(c,left,top,width,height){
   else if(d>65&&h>.82){oval(c,px,py,12,5,'#526d45');r(c,'#a8b371',px-7,py-3,5,2);}
   else if(d<0&&d>-150&&h>.8){oval(c,px,py,8,4,'#486f43');r(c,'#819858',px-5,py-3,5,2);if(h>.94){r(c,'#d4c68c',px-1,py-5,4,4);}}
  }
- for(const board of MARSH_BOARDS)for(let i=1;i<board.points.length;i++)crossing(c,board.points[i-1],board.points[i],board.width);
+ // Atlas ground draws the editable boardwalks.
  // Low moorings, a forgotten fish trap, and the ruin's worn stone apron.
  for(const [x,y]of [[1620,1365],[1680,1365],[330,1440],[410,1465]])post(c,x,y,true);
  for(let row=0;row<5;row++)for(let col=0;col<5;col++){const x=1007+col*22+(row%2?6:0),y=1530+row*18;r(c,(row+col)%2?'#8a9479':'#a4ab8b',x,y,20,16);r(c,'#bdbea0',x,y,20,2);if((col+row)%3===0)r(c,'#5f8050',x+2,y+11,9,3);}

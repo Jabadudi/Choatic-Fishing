@@ -1,3 +1,4 @@
+import {DELTA} from './delta-areas.js';
 // The atlas fork between Windchime Path, Willowbank and Shellback Marsh.
 import {drawProp} from './sprites.js';
 import {defineArea} from './atlas-area.js';
@@ -5,27 +6,12 @@ import {defineArea} from './atlas-area.js';
 // Redrawn from the atlas: the river from the village runs through the middle, north-west to south-east, with the
 // marsh reeds on the far bank. The village road follows the south bank to the junction, the trail from Windchime Path
 // comes up from the south, and a plank boardwalk crosses the river north-east toward the marsh.
-const GEO=defineArea({id:'crossroads-geo',frame:[266,350,176,243],size:[1600,1280],base:'land',
- shapes:[['water',[[266,180],[280,187],[292,196],[304,204],[320,209],[336,212],[350,213],[350,243],[338,236],[322,226],[308,217],[295,210],[282,202],[266,193]]]],
- walks:[{pts:[[304,218],[316,212],[328,207],[340,202],[350,199]],width:3.4},{pts:[[325,226],[325,230.5]],width:2.4}]});
-export const BOARDWALK=GEO.walks[0].pts;
-export const CROSSROADS={id:'crossroads',name:'Willowbank Crossroads',width:1600,height:1280,seed:7327,spawn:{x:800,y:1130},exits:[{edge:'south',from:680,to:920,target:'windchime',entry:{x:1150,y:80},label:'Windchime Path'},{edge:'west',from:410,to:510,target:'village-farm',entry:{x:1930,y:830},label:'Willowback'},{edge:'east',from:400,to:490,target:'marsh',entry:{x:140,y:1830},label:'Shellback Marsh'}]};
-export const CROSSROADS_ROADS=[
- [[800,1280],[790,1100],[724,974],[667,821]],
- [[667,821],[476,688],[248,554],[0,439]],
- [[667,821],[560,866],[505,872]],
- [[760,1040],[950,1032],[1124,1030]]
-];
-export const CROSSROADS_PLACES=[
- {id:'crossroads-sign',name:'The Fork',x:700,y:810,kind:'waypost',text:'The weathered arrows point west to Willowback along the river, and north-east over the boardwalk to Shellback Marsh. South, the chimes lead back to Reedwater Landing.'},
- {id:'village-approach',name:'Willowback Approach',x:230,y:590,kind:'village-marker',text:'Cart tracks follow the riverbank west toward Willowback. Apple baskets and a low stone wall mark the village approach. Follow the cart tracks west, past the farms and the training yard, to the Willowback Gate.'},
- {id:'marsh-approach',name:'The Boardwalk',x:1300,y:543,kind:'marsh-marker',text:'A long plank boardwalk on posts carries the trail over the river. Beyond the far bank lie Shellback Marsh and its many waterways. Follow it north-east through the map edge into the wetlands.'},
- {id:'travellers-rest',name:"Travellers’ Rest",x:440,y:930,kind:'rest',text:'A bench beneath the trees, a cold campfire and a little shelter for the rain. Someone has left a coil of fishing line beside the seat.'},
- {id:'reed-pool',name:'Riverside Jetty',x:1124,y:1040,kind:'pool-marker',text:'A short jetty reaches into the river from the south bank. Fish gather in the slow water beside it. It is a good place to cast before choosing a road.'},
- {id:'crossroads-chimes',name:'The Last Chimes',x:850,y:1060,kind:'chimes',text:'The last of the wooden chimes hangs where Windchime Path reaches the fork. From here, the land opens toward the village and the marsh.'}
-];
-export const crossroadsWaterDistance=(x,y)=>GEO.water(x,y);
-export const onCrossroadsDeck=(x,y)=>GEO.deck(x,y);
+export const BOARDWALK=DELTA.crossroads.walks[0]?.pts||[];
+export const CROSSROADS=DELTA.crossroads.area;
+export const CROSSROADS_ROADS=DELTA.crossroads.roads;
+export const CROSSROADS_PLACES=DELTA.crossroads.places;
+export const crossroadsWaterDistance=(x,y)=>DELTA.crossroads.water(x,y);
+export const onCrossroadsDeck=(x,y)=>DELTA.crossroads.deck(x,y);
 // Moved pieces keep their old drawings, shifted: the waypost, the rest stop and the fishing seat.
 const SIGN=[-100,178],REST=[-144,136],SEAT=[-200,72];
 export function crossroadsBlocked(x,y){
@@ -55,13 +41,13 @@ function lantern(c,x,y,t){
  const g=c.createRadialGradient(x,y,1,x,y,38);g.addColorStop(0,'rgba(255,214,133,.32)');g.addColorStop(1,'rgba(255,214,133,0)');c.fillStyle=g;c.fillRect(x-38,y-38,76,76);
  rect(c,'#443a2b',x-7,y-12,14,4);rect(c,'#dfbc70',x-5,y-8,10,14);rect(c,'#ffde91',x-3,y-6,4,9);rect(c,'#443a2b',x-7,y+6,14,3);
 }
-export function drawCrossroads(c,t=0){
+export function drawCrossroads(c,t=0,{terrain=true}={}){
  // West: a modest field wall and baskets south of the village road.
  for(let x=40;x<230;x+=24)for(const y of [620,632]){rect(c,'#667164',x+(y===620?7:0),y,22,12);rect(c,'#a5ab8b',x+(y===620?7:0),y,22,3);if(x%3===1)rect(c,'#678747',x+8,y-2,12,4);}
  post(c,40,400);post(c,40,530);
  for(const [x,y] of [[300,640],[330,650]])if(!drawProp(c,'apple-crate',{x,y:y+13,w:32,h:30})){shadow(c,x,y+9,16,5);rect(c,'#765334',x-12,y-8,25,20);rect(c,'#b38a4c',x-12,y-8,25,4);for(let k=0;k<4;k++){rect(c,'#b16442',x-9+k*6,y-13,5,7);rect(c,'#9ca64e',x-7+k*6,y-15,2,3);}}
  // The boardwalk on posts over the river, and the jetty on the south bank.
- deck(c,BOARDWALK,64);deck(c,[[1124,1050],[1124,955]],44);
+ if(terrain){deck(c,BOARDWALK,64);deck(c,[[1124,1050],[1124,955]],44);}
  // Rest stop: small shingled shelter, a bench and an old stone hearth.
  c.save();c.translate(...REST);
  if(!(drawProp(c,'rest-shelter',{x:584,y:764,w:156,h:126})&&drawProp(c,'bench-backrest',{x:580,y:774,w:110,h:62}))){
