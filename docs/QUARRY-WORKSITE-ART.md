@@ -1,8 +1,8 @@
 # Quarry worksite composition and artwork
 
-The quarry has three main work sites: the loading/cutting bay on the work terrace, the shaft yard at the northeast wall, and the flooded-floor winch station. Timber stores sit near the lower cart-ramp approach; cut blocks are staged on the lower floor. Props cluster around the work they served rather than filling the open floor evenly. Original landmark IDs and exits remain intact.
+The reference-based reconstruction uses a dominant long-boom stone crane on the work terrace, with a cutting bench, short cart rails, cut-block stacks and a small shaft yard. A second crane serves the lower floor. Placements and explicit collision radii live in `src/quarry-elevation.js`; visual scale does not set collision. Tests cover the full descent, floor circuit and crane/stair approaches.
 
-`src/quarry-elevation.js` owns placements and explicit collision radii. The gantry centre is open, with two visible footing blocks owning their own collision. The cutting bench and stored materials have deliberate radii; sprite size does not set them. A route test covers the loading bay, shaft, stair and winch approaches. Art selection, dimensions and asset paths live in `src/sprite-definitions.js`, and loading/anchoring remain in `src/sprites.js`. Existing drawn crane and bench fallbacks remain available. No character animations, rewards or save contracts change.
+Artwork selection and bounds live in `src/sprite-definitions.js`, with loading/anchoring in `src/sprites.js`. Existing drawn fallbacks remain. The scenery library also includes the reusable quarry gantry below; the reconstruction's focal crane uses the original crane painting at an authored scale. No character animations, rewards or save contracts change.
 
 ## Assets and preparation
 

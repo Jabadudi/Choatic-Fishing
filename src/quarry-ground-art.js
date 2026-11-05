@@ -6,17 +6,22 @@ const clamp=x=>Math.max(0,Math.min(1,x));
 export function segmentDistance(x,y,a,b){const dx=b[0]-a[0],dy=b[1]-a[1],d=dx*dx+dy*dy,t=d?clamp(((x-a[0])*dx+(y-a[1])*dy)/d):0;return Math.hypot(x-a[0]-dx*t,y-a[1]-dy*t);}
 export function routeDistance(x,y,trails){let d=Infinity;for(const [a,b]of trails)d=Math.min(d,segmentDistance(x,y,a,b));return d;}
 function pattern(c,p,alpha){if(!p||alpha<=0)return;c.globalAlpha=alpha;c.fillStyle=p;c.fill();c.globalAlpha=1;}
-const BASES={rock:'#918c79',dirt:'#a09070',path:'#ad9e7c'};
+const BASES={rock:'#8c8b82',dirt:'#b38c58',path:'#bb9d6c'};
 export const quarryBase=kind=>BASES[kind];
 export function drawQuarrySurface(c,q,patterns){
- const {x,y,kind}=q,rock=kind==='rock',soil=kind==='dirt',path=kind==='path';
+ const {x,y,kind}=q;
+ if(q.water<0&&q.z<=-480&&!q.deck){
+  const deep=clamp((-q.water-12)/100);c.fillStyle=deep>.7?'#124f50':deep>.3?'#226a61':'#438779';c.fill();
+  pattern(c,patterns.river,.13);if(q.water>-48)pattern(c,patterns.rock,.42);c.fillStyle='rgba(28,120,96,.16)';c.fill();return true;
+ }
+ const rock=kind==='rock',soil=kind==='dirt',path=kind==='path';
  if(!rock&&!soil&&!path)return false;
  // Broad stone exposures and dust deposits replace uniform small-scale texture repetition.
  const broad=field(x,y,220,3)*.65+field(x,y,83,7)*.35;
  const exposure=clamp((broad-.34)*2.5),dust=field(x,y,145,9);
  c.fillStyle=quarryBase(kind);c.fill();
- pattern(c,patterns.rock,path ? .08 : rock ? .23+exposure*.5 : exposure*.38);
- pattern(c,patterns.dirt,path ? .16 : (1-exposure)*.27);
+ pattern(c,patterns.rock,path ? .15 : rock ? .76+exposure*.18 : exposure*.18);
+ pattern(c,patterns.dirt,path ? .45 : rock ? (1-exposure)*.1 : .4);
  c.globalAlpha=path ? .06 : .08+dust*.12;c.fillStyle=rock?'#c0af88':'#c2ab7f';c.fill();c.globalAlpha=1;
  return true;
 }
@@ -24,7 +29,7 @@ export function drawQuarryShoulder(c,q){
  if(!['rock','dirt','grass'].includes(q.kind)||q.ramp)return;
  const edge=43+(field(q.x,q.y,38,5)-.5)*13;
  const fade=clamp((edge-q.routeDistance)/(edge-18));
- if(!fade)return;c.globalAlpha=fade*.5;c.fillStyle='#ad9e7c';c.fill();c.globalAlpha=1;
+ if(!fade)return;c.globalAlpha=fade*.5;c.fillStyle='#bb9d6c';c.fill();c.globalAlpha=1;
 }
 export function quarryGroundDetails(built,trails){
  const e=built.elevation,edges=e.terraces.flatMap(t=>t.points.map((a,i)=>[a,t.points[(i+1)%t.points.length]]));
@@ -44,10 +49,21 @@ export function quarryGroundDetails(built,trails){
   const weed=close&&n<.38||crack&&n<.025;
   details.push({x,y,z,chips,crack,weed,seed:n,row:Math.floor((y+24)/16)*16});
  }
+ const pit=e.terraces.find(t=>t.id==='flooded-pit');
+ if(pit)for(let edge=0;edge<pit.points.length;edge++){
+  const a=pit.points[edge],b=pit.points[(edge+1)%pit.points.length],dx=b[0]-a[0],dy=b[1]-a[1],length=Math.hypot(dx,dy),nx=-dy/length,ny=dx/length;
+  for(let i=0;i<length;i+=62){const t=(i+20)/length;if(t>1)continue;const x=a[0]+dx*t,y=a[1]+dy*t,sign=e.heightAt(x+nx*5,y+ny*5)===-480?1:-1;
+   for(const inset of [22,51]){if(inset===51&&hash(edge,i,8)>.25)continue;const px=x+nx*sign*inset,py=y+ny*sign*inset;
+    if(built.water(px,py)>-5||e.heightAt(px,py)!==-480)continue;
+    details.push({shelf:true,x:px,y:py,z:-480,size:17+hash(edge,i,9)*15,seed:hash(edge,i,10),row:Math.floor((py+24)/16)*16});
+   }
+  }
+ }
  return details;
 }
-export function drawQuarryDetail(c,d,{weed=true}={}){
+export function drawQuarryDetail(c,d,{weed=true,stone=null}={}){
  const {x,y,z,seed}=d,sy=y-z;
+ if(d.shelf){const r=d.size;c.save();c.globalAlpha=.8;c.fillStyle='#20594f';c.beginPath();c.moveTo(x-r,sy-4);c.lineTo(x+r*.7,sy-7);c.lineTo(x+r,sy+10);c.lineTo(x-r*.7,sy+15);c.closePath();c.fill();c.fillStyle=stone||'#4b8873';c.beginPath();c.moveTo(x-r,sy-r*.15);c.lineTo(x-r*.8,sy-r*.65);c.lineTo(x-r*.2,sy-r*.6);c.lineTo(x-r*.1,sy-r*.78);c.lineTo(x+r*.7,sy-r*.65);c.lineTo(x+r*.95,sy-r*.25);c.lineTo(x+r*.7,sy+r*.28);c.lineTo(x-r*.6,sy+r*.42);c.closePath();c.fill();c.fillStyle='rgba(32,125,100,.65)';c.fill();c.strokeStyle='rgba(132,181,143,.5)';c.lineWidth=2;c.beginPath();c.moveTo(x-r,sy-4);c.lineTo(x-r*.6,sy-r*.65);c.lineTo(x+r*.5,sy-r*.7);c.stroke();c.restore();return;}
  if(d.crack){
   c.strokeStyle='rgba(54,53,43,.42)';c.lineWidth=1.5;c.beginPath();c.moveTo(x-19,sy-5);c.lineTo(x-7,sy-1);c.lineTo(x+1,sy-5);c.lineTo(x+18,sy+1);c.moveTo(x-7,sy-1);c.lineTo(x-10,sy+7);c.stroke();
   c.strokeStyle='rgba(195,183,150,.55)';c.lineWidth=1;c.beginPath();c.moveTo(x-18,sy-3);c.lineTo(x-7,sy+1);c.stroke();

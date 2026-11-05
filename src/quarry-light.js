@@ -32,7 +32,7 @@ export function quarryLighting(built){
   if([[18,0],[-18,0],[0,10],[0,-10]].some(([dx,dy])=>built.water(px+dx,py+dy)>-8||built.elevation.heightAt(px+dx,py+dy)!==z))continue;
   ripples.push({x:px,y:py,z,phase:hash(x,y,3),row:Math.floor((py+12)/16)*16});
  }
- const dustSites=[[650,128],[689,122],[684,151]].map(p=>{const [x,y]=built.toWorld(p);return {x,y,z:built.elevation.heightAt(x,y)};});
+ const dustSites=built.props.filter(p=>p.kind==='crane'||p.kind==='mine').slice(0,3).map(({x,y})=>({x,y,z:built.elevation.heightAt(x,y)}));
  return cached={built,shadows,ripples,dustSites};
 }
 export function quarryShade(built,light,x,y,z){

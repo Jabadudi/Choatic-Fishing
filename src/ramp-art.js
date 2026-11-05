@@ -8,7 +8,9 @@ const styles={
  wall:{texture:'cliffFace',fallback:'#7c735e',tint:'rgba(55,50,41,.22)',stroke:'rgba(55,50,41,.45)'},
  cap:{texture:'rock',fallback:'#a89b7d',tint:'rgba(200,182,143,.34)',stroke:'rgba(66,59,45,.5)'},
  stairCap:{texture:'rock',textureAlpha:.25,fallback:'#b4a582',tint:'rgba(200,182,143,.2)',stroke:'rgba(66,59,45,.65)'},
- track:{fill:'rgba(77,65,44,.15)'},rut:{fill:'rgba(75,62,41,.32)'},
+ pierTop:{fill:'#a28759',stroke:'#5e5139'},pierAlt:{fill:'#947a50',stroke:'#5e5139'},pierSide:{fill:'#685438',stroke:'#4f452f'},pile:{fill:'#6d5d3f',stroke:'#443f2d'},pileTop:{fill:'#b29d6a',stroke:'#554b32'},
+ tie:{fill:'#7f6747',stroke:'#514733'},rail:{fill:'#645541',stroke:'#3b3c32'},
+ track:{fill:'rgba(77,65,44,.07)'},rut:{fill:'rgba(75,62,41,.16)'},
  wood:{fill:'#796047',stroke:'#4f4433'},woodSide:{fill:'#544a39'},woodTop:{fill:'#ab9270',stroke:'#69583f'}
 };
 function cut(points,bound,keepAbove){
@@ -17,7 +19,7 @@ function cut(points,bound,keepAbove){
   if(ia)out.push(a);if(ia!==ib){const t=(bound-a.y)/(b.y-a.y);out.push({x:mix(a.x,b.x,t),y:bound,z:mix(a.z,b.z,t)});}
  }return out;
 }
-export function rampArtwork(e){
+export function rampArtwork(e,rails=[]){
  const pieces=[];
  function polygon(points,style,highlight=false){
   const min=Math.min(...points.map(p=>p.y)),max=Math.max(...points.map(p=>p.y));
@@ -32,7 +34,7 @@ export function rampArtwork(e){
   const at=(distance,side=0,height=z(Math.max(0,Math.min(1,distance/L))))=>({x:r.from[0]+ux*distance+nx*side,y:r.from[1]+uy*distance+ny*side,z:height});
   const quad=(a,b,left,right,za,zb)=>[at(a,left,za),at(b,left,zb),at(b,right,zb),at(a,right,za)];
   // Flat threshold aprons tie both ends into their actual floor, without narrowing the entrance.
-  for(const [a,b,height]of [[-24,0,z(0)],[L,L+24,z(1)]]){
+  for(const [a,b,height]of (r.kind==='stairs'?[[-24,0,z(0)],[L,L+24,z(1)]]:[])){
    for(let j=0;j<3;j++)polygon(quad(a,b,-w+2*w*j/3,-w+2*w*(j+1)/3,height,height),'landing',true);
   }
   if(r.kind==='stairs'){
@@ -68,13 +70,27 @@ export function rampArtwork(e){
    }
   }
   // Weathered timber markers at the cart ramp edges. Stair parapets stay stone.
-  if(r.kind!=='stairs')for(const side of [-1,1])for(let i=0;i<=3;i++){
+  if(r.id==='upper-cart-ramp')for(const side of [-1,1])for(let i=0;i<=3;i++){
    const distance=L*i/3,base=at(distance,side*(w+7)),x=base.x,y=base.y,h=Math.max(base.z,e.heightAt(base.x,base.y))+12;
    const p=(dx,dy,z)=>({x:x+dx,y:y+dy,z});
    polygon([p(-4,3,h),p(4,3,h),p(4,3,h+31),p(-4,3,h+31)],'wood');
    polygon([p(4,3,h),p(7,-2,h),p(7,-2,h+31),p(4,3,h+31)],'woodSide');
    polygon([p(-4,3,h+31),p(4,3,h+31),p(7,-2,h+31),p(-1,-2,h+31)],'woodTop');
   }
+ }
+ for(let j=1;j<rails.length;j++){
+  const a=rails[j-1],b=rails[j],dx=b[0]-a[0],dy=b[1]-a[1],length=Math.hypot(dx,dy),nx=-dy/length,ny=dx/length;
+  const at=(d,s)=>({x:a[0]+dx*d+s*nx,y:a[1]+dy*d+s*ny,z:-192});
+  for(let i=0;i<length;i+=24){const u=i/length,v=Math.min(1,(i+5)/length);polygon([at(u,-22),at(v,-22),at(v,22),at(u,22)],'tie');}
+  for(const side of [-1,1])polygon([at(0,side*15-1.5),at(1,side*15-1.5),at(1,side*15+1.5),at(0,side*15+1.5)],'rail',true);
+ }
+ const pier=e.terraces.find(t=>t.id==='wood-pier');
+ if(pier){
+  const p=pier.points,a=[(p[0][0]+p[3][0])/2,(p[0][1]+p[3][1])/2],b=[(p[1][0]+p[2][0])/2,(p[1][1]+p[2][1])/2],dx=b[0]-a[0],dy=b[1]-a[1],length=Math.hypot(dx,dy),nx=-dy/length,ny=dx/length,half=Math.hypot(p[0][0]-p[3][0],p[0][1]-p[3][1])/2,z=pier.z;
+  const at=(d,s,h=z)=>({x:a[0]+dx*d+s*nx,y:a[1]+dy*d+s*ny,z:h});
+  for(let i=0;i<Math.ceil(length/11);i++){const u=i/Math.ceil(length/11),v=(i+1)/Math.ceil(length/11);polygon([at(u,-half),at(v,-half),at(v,half),at(u,half)],i%2?'pierTop':'pierAlt',true);}
+  for(const side of [-1,1])polygon([at(0,side*half),at(1,side*half),at(1,side*half,z-9),at(0,side*half,z-9)],'pierSide');
+  for(const d of [.08,.87])for(const side of [-1,1]){const q=at(d,side*(half+2)),x=q.x,y=q.y;polygon([{x:x-3,y,z:z+13},{x:x+3,y,z:z+13},{x:x+3,y,z:z-96},{x:x-3,y,z:z-96}],'pile');polygon([{x:x-4,y:y-3,z:z+13},{x:x+3,y:y-3,z:z+13},{x:x+4,y:y+3,z:z+13},{x:x-3,y:y+3,z:z+13}],'pileTop');}
  }
  return pieces;
 }

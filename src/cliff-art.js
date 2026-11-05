@@ -3,7 +3,7 @@ const CHUNK=12;
 const noise=(x,y)=>Math.sin(x*1.713+y*.917)*Math.cos(x*.137-y*.733);
 export function cliffPieces(e){
  const pieces=[];
- for(const terrace of e.terraces)for(let edge=0;edge<terrace.points.length;edge++){
+ for(const terrace of e.terraces.filter(t=>t.id!=='wood-pier'))for(let edge=0;edge<terrace.points.length;edge++){
   const a=terrace.points[edge],b=terrace.points[(edge+1)%terrace.points.length],dx=b[0]-a[0],dy=b[1]-a[1],length=Math.hypot(dx,dy);
   if(!length)continue;
   const nx=-dy/length,ny=dx/length,count=Math.ceil(length/CHUNK);
@@ -22,7 +22,7 @@ export function cliffPieces(e){
 function line(c,a,b,color,width){c.strokeStyle=color;c.lineWidth=width;c.beginPath();c.moveTo(...a);c.lineTo(...b);c.stroke();}
 export function drawCliffPiece(c,s,texture,capTexture){
  const {p,q,high,low,nx,ny}=s;
- const lip=p=>3+Math.sin(p[0]*.043+p[1]*.037)*3+noise(...p)*1.3;
+ const lip=p=>4+Math.sin(p[0]*.043+p[1]*.037)*6+noise(...p)*2;
  const a=[p[0]+nx*lip(p),p[1]-high+ny*lip(p)],b=[q[0]+nx*lip(q),q[1]-high+ny*lip(q)];
  const footA=[a[0],p[1]-low],footB=[b[0],q[1]-low];
  // Only a face with its high ground to the north is visible in this projection.
@@ -32,13 +32,16 @@ export function drawCliffPiece(c,s,texture,capTexture){
   c.fillStyle=texture||'#776f5c';c.fillRect(x,top,w,bottom-top+2);
   const light=c.createLinearGradient(0,top,0,bottom);light.addColorStop(0,'rgba(222,202,151,.12)');light.addColorStop(.25,'rgba(47,43,37,.12)');light.addColorStop(1,'rgba(26,32,29,.6)');c.fillStyle=light;c.fillRect(x,top,w,bottom-top+2);
   // Exposed strata share world-space phases, so neighboring pieces form continuous ledges.
-  for(const fraction of [.28,.58,.81]){
+  for(const fraction of [.62]){
    const z=high-(high-low)*fraction,shift=x=>Math.sin(x*.025+fraction*9)*3;
    const u=[a[0],p[1]-z+shift(a[0])],v=[b[0],q[1]-z+shift(b[0])];
    line(c,[u[0],u[1]+3],[v[0],v[1]+3],'rgba(35,32,28,.48)',4);
    line(c,u,v,'rgba(199,174,124,.45)',2);
   }
   if(s.joint){const mid=(high+low)/2;line(c,[a[0]+2,p[1]-high+6],[a[0]-4,p[1]-mid],'rgba(39,38,32,.46)',2);line(c,[a[0]-4,p[1]-mid],[a[0]+1,p[1]-low],'rgba(39,38,32,.46)',2);}
+  if((s.ledge||s.joint&&noise(...p)>.45)&&ny>.2){
+   const length=12+Math.abs(noise(...q))*19;c.strokeStyle=high===0?'#66833d':'#536a43';c.lineWidth=3;c.beginPath();c.moveTo(a[0]+2,a[1]+2);c.quadraticCurveTo(a[0]-2,a[1]+length*.5,a[0]+3,a[1]+length);c.stroke();c.fillStyle='#879750';for(let j=5;j<length;j+=7)c.fillRect(a[0]+(j%2?1:-3),a[1]+j,4,3);
+  }
   c.restore();
   // Contact shadow stays narrow; the floor remains readable next to the rock.
   line(c,[footA[0],footA[1]+4],[footB[0],footB[1]+4],'rgba(35,34,27,.12)',12);
