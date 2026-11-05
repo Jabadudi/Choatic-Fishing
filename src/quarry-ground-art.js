@@ -46,7 +46,7 @@ export function quarryGroundDetails(built,trails){
  }
  return details;
 }
-export function drawQuarryDetail(c,d){
+export function drawQuarryDetail(c,d,{weed=true}={}){
  const {x,y,z,seed}=d,sy=y-z;
  if(d.crack){
   c.strokeStyle='rgba(54,53,43,.42)';c.lineWidth=1.5;c.beginPath();c.moveTo(x-19,sy-5);c.lineTo(x-7,sy-1);c.lineTo(x+1,sy-5);c.lineTo(x+18,sy+1);c.moveTo(x-7,sy-1);c.lineTo(x-10,sy+7);c.stroke();
@@ -58,8 +58,10 @@ export function drawQuarryDetail(c,d){
   c.fillStyle=tone>.55?'#777566':'#9e9780';c.beginPath();c.moveTo(x-r,y);c.lineTo(x-r*.5,y-r*.65);c.lineTo(x+r*.45,y-r*.8);c.lineTo(x+r,y-r*.1);c.lineTo(x+r*.5,y+r*.4);c.lineTo(x-r*.6,y+r*.3);c.closePath();c.fill();
   c.fillStyle=tone>.55?'#aaa48c':'#c0b59a';c.beginPath();c.moveTo(x-r,y);c.lineTo(x-r*.5,y-r*.65);c.lineTo(x+r*.45,y-r*.8);c.lineTo(x+r*.2,y-r*.1);c.closePath();c.fill();
  }
- if(d.weed){
+ if(weed&&d.weed)drawQuarryWeed(c,d,0);
+}
+export function drawQuarryWeed(c,d,t=0){
+ const {x,y,z,seed}=d,sy=y-z,sway=Math.sin(t*1.2+x*.03)*1.6;
   c.strokeStyle='rgba(43,47,29,.24)';c.lineWidth=3;c.beginPath();c.moveTo(x-4,sy+2);c.lineTo(x+5,sy+2);c.stroke();
-  c.lineWidth=1.5;for(let i=-2;i<=2;i++){c.strokeStyle=i%2?'#737c48':'#87925b';c.beginPath();c.moveTo(x,sy);c.quadraticCurveTo(x+i*1.5,sy-4-seed*4,x+i*3,sy-5-Math.abs(i)*1.5);c.stroke();}
- }
+  c.lineWidth=1.5;for(let i=-2;i<=2;i++){c.strokeStyle=i%2?'#737c48':'#87925b';c.beginPath();c.moveTo(x,sy);c.quadraticCurveTo(x+i*1.5,sy-4-seed*4,x+i*3+sway,sy-5-Math.abs(i)*1.5);c.stroke();}
 }

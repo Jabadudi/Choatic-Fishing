@@ -1,3 +1,4 @@
+import {drawQuarryActorShadow} from './quarry-light.js';
 import {elevationFor,heightAt,canTraverse,canReach,projectGround,unprojectGround} from './terrain-height.js';
 export {elevationFor,heightAt,canTraverse,canReach,projectGround,unprojectGround};
 import {elevationBands,drawElevationBand} from './elevation-art.js';
@@ -355,8 +356,9 @@ export function drawDepthSorted(ctx,world,view,actors,drawActor,{still=false}={}
  if(DELTA[id]?.elevation)for(const place of placesFor(id)){const it=slot(n++);it.kind='elevation-landmark';it.y=place.y;it.ref=place;}
  order.length=0;for(let i=0;i<n;i++)order.push(slots[i]);order.sort((a,b)=>a.y-b.y);
  for(const it of order){
-  if(it.kind==='elevation-band'){drawElevationBand(ctx,it.ref);continue;}
+  if(it.kind==='elevation-band'){drawElevationBand(ctx,it.ref,t,still);continue;}
   ctx.save();if(DELTA[id]?.elevation){const x=it.ref?.x??it.x,y=it.ref?.y??it.oy;ctx.translate(0,-heightAt(x,y,id));}
+  if(id==='abandoned-quarry'&&it.kind==='actor')drawQuarryActorShadow(ctx,it.ref,DELTA[id]);
   if(it.kind==='story-cabin')drawCabin(ctx,world.story);
   else if(it.kind==='marsh')drawMarshObject(ctx,it.ref,t);
   else if(it.kind==='village')drawVillageObject(ctx,it.ref,t);

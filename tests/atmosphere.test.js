@@ -23,3 +23,19 @@ test('atmosphere reuses its gradients between frames of the same size',()=>{
  drawAtmosphere(ctx,w,{left:0,top:0,right:960,bottom:720});made=0;w.elapsed=1;
  drawAtmosphere(ctx,w,{left:40,top:30,right:1000,bottom:750});assert.equal(made,0);
 });
+
+// The quarry uses analytic motion: repeated renders must not step particles or touch progress.
+test('quarry lighting motion repeats at a fixed clock without random calls or save changes',async()=>{
+ const {captureSave}=await import('../src/save-format.js'),{DELTA}=await import('../src/delta-areas.js');
+ const {quarryLighting,drawQuarryBandMotion}=await import('../src/quarry-light.js');
+ const built=DELTA['abandoned-quarry'],w=new World(()=>.4,{adventure:true});w.areaId='abandoned-quarry';w.elapsed=4;
+ const calls=[],ctx=new Proxy({},{get:(o,k)=>k in o?o[k]:(...args)=>calls.push([k,args]),set:(o,k,v)=>(o[k]=v,true)});
+ const random=Math.random,before=captureSave(w,'manual',123),view={left:0,top:0,right:2400,bottom:2200};
+ try{
+  Math.random=()=>{throw Error('Drawing consumed randomness');};w.random=Math.random;
+  const light=quarryLighting(built),motion={ripples:light.ripples,weeds:[{x:1000,y:700,z:-96,seed:.3}]};
+  const draw=()=>{calls.length=0;drawAtmosphere(ctx,w,view);drawQuarryBandMotion(ctx,motion,w.elapsed);return structuredClone(calls);};
+  const first=draw();assert.ok(first.length>0);assert.deepEqual(draw(),first);assert.deepEqual(captureSave(w,'manual',123),before);
+  w.elapsed=8;assert.notDeepEqual(draw(),first,'elapsed time animates the visual positions');
+ }finally{Math.random=random;}
+});

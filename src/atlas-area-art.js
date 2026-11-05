@@ -61,7 +61,7 @@ const PAINTED={hut:['fisher-hut',110,80],'stilt-hut':['stilt-hut',110,96],tower:
  nest:['heron-nest',60,40],shrine:['shrine',60,70],cart:['cart',80,44],logs:['log-stack',64,42],mine:['mine',100,70],lighthouse:['lighthouse',80,185],
  wreck:['wreck',190,80],gate:['gate',110,100],dock:['jetty',34,90],chimes:['chimes-post',60,72],spring:['spring-pool',110,96]};
 // Hand-placed trees, plants and rocks use the same paintings and sizes as the random scenery (wilds.js).
-function painted(p){
+export function atlasPropArt(p){
  if(p.art&&ATLAS_PROP_ART[p.kind]?.[p.art])return ATLAS_PROP_ART[p.kind][p.art];
  const big=(p.scale||1)>=3;
  if(p.kind==='tower'&&p.area==='broken-watch')return ['atlas/broken-watch',170,190];
@@ -74,11 +74,11 @@ function painted(p){
  return PAINTED[p.kind];
 }
 function drawProp(ctx,p,t){
- const x=Math.round(p.x),y=Math.round(p.y),art=painted(p);
+ const x=Math.round(p.x),y=Math.round(p.y),art=atlasPropArt(p);
  if(art){
   // A jetty runs down from its spot into the water.
   const [id,w,h]=art,foot=p.kind==='dock'?y+80:y;
-  if(!p.inWater&&p.kind!=='dock')shadow(ctx,x,foot,w*.36,Math.max(5,h*.07));
+  if(!p.inWater&&p.kind!=='dock'){if(p.art==='quarry-gantry'){shadow(ctx,x-w*.36,foot,w*.1,5);shadow(ctx,x+w*.36,foot,w*.1,5);}else shadow(ctx,x,foot,w*.36,Math.max(5,h*.07));}
   const explicit=!!(p.art&&ATLAS_PROP_ART[p.kind]?.[p.art]);
   if(drawPropSprite(ctx,explicit||id.startsWith('atlas/')?id:`atlas/${id}`,{x,y:foot,w,h}))return;
  }

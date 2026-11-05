@@ -44,6 +44,14 @@ Structure polygons are clipped in logical y before projection, keeping foregroun
 
 See [Quarry worksite composition and artwork](QUARRY-WORKSITE-ART.md) for the loading bay, shaft yard, flooded-floor winch, explicit prop collision and generated asset sources/prompts.
 
+## Daylight and restrained motion
+
+`src/quarry-light.js` provides quarry-only directional lighting and analytic ambient motion. A fixed upper-left sun casts terrace shadows and prop silhouettes onto receiving surfaces at their own height. The open gantry casts its legs and crossbeam rather than an opaque rectangular shadow. Character shadows use the same direction; gantry contact shading stays under its two feet.
+
+Water is tinted by depth and cliff shade. Sparse ripple arcs are cached on submerged, uncovered spots and drawn with their correct height projection. Small weed tips sway while their roots stay fixed. Twenty-four possible dust motes drift around the work sites, skipping water and different-height surfaces. A gentle daylight grade replaces the generic quarry leaves/fireflies. Other areas retain their original atmosphere.
+
+All motion is a pure function of world coordinates and `world.elapsed`. Rendering neither steps a particle simulation nor consumes randomness or modifies player progress. Shadows and ripple positions are prepared with the terrain cache; only the small motion overlay is drawn each frame. Still map renders freeze the ripple/weed phase. The atmosphere overlay is hidden on entry to the quarry and resumes normally in other areas.
+
 ## Preview and checks
 
 Run `npm start`, then open `/quarry-preview.html`. This development preview uses the real World and renderer, with keyboard movement and overview controls; it does not connect to Firebase or load/write progress. It is excluded from the production build.
