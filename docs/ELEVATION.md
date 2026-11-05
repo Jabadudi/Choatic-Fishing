@@ -32,6 +32,14 @@ All geometry is deterministic and cached with the terrain strips. Textured and s
 
 This treatment is scoped to Abandoned Quarry. It does not change terrain definitions, collision, interactions, rewards or saves. Ground detail is generated once with the terrain strips, and cached strips align to the same source pixel grid to prevent seams. Existing texture-free drawn fallbacks remain visible.
 
+## Ramp and stair construction
+
+`src/ramp-art.js` builds decorative structure geometry from the existing ramp endpoints, width and grade. Cart ramps have masonry retaining faces, stone coping, flat threshold aprons, paired wheel ruts and weathered timber edge markers. Retaining faces reach adjoining lower ground, and cut faces close the gap to higher ground. Markers stand outside the walking corridor and anchor to the higher of ramp or adjoining floor.
+
+The east stairs use twelve stone treads, shaded risers, highlighted noses, flat landings and thick stone parapets. Their coping follows the higher adjacent ground through the cut. The original continuous gameplay slope is preserved; tread artwork stays within four world units of that slope. No new collision, falling or save state is introduced.
+
+Structure polygons are clipped in logical y before projection, keeping foreground masonry and markers in the same depth order as the player. Edge strokes use original polygon edges so cached strip boundaries do not become false mortar joints. Stone textures use the existing ground loader and drawn fallback colors. No entity sprite mappings change.
+
 ## Preview and checks
 
 Run `npm start`, then open `/quarry-preview.html`. This development preview uses the real World and renderer, with keyboard movement and overview controls; it does not connect to Firebase or load/write progress. It is excluded from the production build.
