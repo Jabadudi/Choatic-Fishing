@@ -40,6 +40,10 @@ The east stairs use twelve stone treads, shaded risers, highlighted noses, flat 
 
 Structure polygons are clipped in logical y before projection, keeping foreground masonry and markers in the same depth order as the player. Edge strokes use original polygon edges so cached strip boundaries do not become false mortar joints. Stone textures use the existing ground loader and drawn fallback colors. No entity sprite mappings change.
 
+## Quarry work sites
+
+See [Quarry worksite composition and artwork](QUARRY-WORKSITE-ART.md) for the loading bay, shaft yard, flooded-floor winch, explicit prop collision and generated asset sources/prompts.
+
 ## Preview and checks
 
 Run `npm start`, then open `/quarry-preview.html`. This development preview uses the real World and renderer, with keyboard movement and overview controls; it does not connect to Firebase or load/write progress. It is excluded from the production build.

@@ -37,3 +37,11 @@ test('old flat maps remain flat and saved positions derive height without a new 
  const w=world([631,129]);assert.ok(walkable(w.player.x,w.player.y,ID));const save=captureSave(w);assert.equal(save.state.player.elevation,undefined);
  const restored=restoreSave(save);assert.equal(restored.areaId,ID);assert.equal(heightAt(restored.player.x,restored.player.y,ID),-96);
 });
+
+test('quarry worksite props preserve access to loading, shaft, stairs and winch approaches',()=>{
+ const w=world([631,129]);
+ for(const at of [[637,130],[645,130],[652,129],[675,129],[690,124],[690,126],[690,142],[682,145],[686,147],[689,149],[689,151]])follow(w,at);
+ const def=DELTA_DEFS.find(d=>d.id===ID);assert.deepEqual(cleanLand(def,def).props,def.props);
+ const feet=point([650,125]);assert.ok(walkable(feet.x,feet.y,ID),'gantry opening remains traversable');
+ const foot=point([646,125]);assert.equal(walkable(foot.x,foot.y,ID),false,'visible gantry footing blocks movement');
+});
