@@ -4,6 +4,7 @@ export {elevationFor,heightAt,canTraverse,canReach,projectGround,unprojectGround
 import {elevationBands,drawElevationBand} from './elevation-art.js';
 import {TERRAIN_CELL,TERRAIN_BLEND} from './terrain-style.js';
 import {blurMask} from './terrain-blend.js';
+import {TerrainCoverageCache} from './terrain-coverage.js';
 import {SPRITES} from './sprite-definitions.js';
 import {CABIN_AREA,CABIN_PLACES,cabinInteriorBlocked,cabinBlocked,cabinClearing,drawCabin,drawCabinInterior,drawCamp,drawWeaponRack} from './story-map.js';
 import {cabinDamaged} from './story.js';
@@ -272,7 +273,7 @@ function staticArea(ctx,left,top,width,height,id){
 // Each chunk also paints a thin strip of its neighbours, so at fractional zoom or camera offsets the
 // edges overlap instead of leaving a half-covered pixel row where the backdrop shows through as a line.
 const chunks=new Map(),CHUNK=512,SEAM=2,MAX_CHUNKS=40,AHEAD=CHUNK/2;
-export const clearTerrainCache=()=>chunks.clear();
+export const clearTerrainCache=()=>{chunks.clear();terrainCoverage.clear();};
 // Image loads arrive in bursts, so they mark the cache stale and the next frame repaints once instead of once per image.
 let stale=false;const staleListeners=new Set(),markStale=()=>{stale=true;for(const fn of staleListeners)fn();};
 // Other caches of painted ground (the area maps) listen so they repaint once late images arrive.
@@ -501,6 +502,7 @@ export function paintAtlas(ctx,width,height,player,discovered=new Set(),id='land
 }
 
 
+const terrainCoverage=new TerrainCoverageCache();
 function paintBlendedTerrainTile(ctx,left,top,width,height,id){
  // Mix coverage masks while sampling every texture at its original sharpness.
  // The extra margin prevents the filter from fading the outer edge of the capture.
@@ -508,22 +510,31 @@ function paintBlendedTerrainTile(ctx,left,top,width,height,id){
  const surface=()=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;};
  const grass=surface(),gc=grass.getContext('2d');gc.translate(-l,-t);
  const hasGrass=id!=='marsh'&&drawGrassBase(gc,l,t,w,h,markStale);
- const dirt=pathPattern(ctx,markStale),atlasTextures=!!DELTA[id],groups=new Map();
- for(let y=t;y<t+h;y+=TERRAIN_CELL)for(let x=l;x<l+w;x+=TERRAIN_CELL){
-  const px=x+TERRAIN_CELL/2,py=y+TERRAIN_CELL/2,wet=waterDistance(px,py,id),road=roadDistance(px,py,id),r=hash(Math.floor(x/8)*8,Math.floor(y/8)*8,4),palette=paletteAt(px,py,id);
-  const deck=!!DELTA[id]?.deck(px,py),water=wet<0&&!deck,path=!water&&(deck||road<24+r*12),zone=DELTA[id]?.zoneAt(px,py),sand=!water&&!path&&(zone==='sand'||wet<(DELTA[id]?30:coastDistance(px,py)>-70?58:20)+r*8),ground=!water&&!path&&!sand&&(zone==='rock'||zone==='marsh'||zone==='dirt'||zone==='cliff'||['moss','leaves','pebbles','decking'].includes(zone));
-  const gk=atlasTextures&&groundKind(id,{water,path,sand,zone,wet,r,trail:path&&DELTA[id].trailAt(px,py)}),texture=atlasTextures?groundPattern(ctx,gk,markStale,DELTA[id].textures?.[gk]||1):water&&groundPattern(ctx,waterKind(id,wet,r,px,py),markStale);
-  let style=texture;
-  if(!style)style=path&&dirt?dirt:water?waterColor(wet,id==='landing'&&coastDistance(px,py)>0,id==='marsh'):path?['#d6bd7a','#dfc885','#d9c17e'][Math.floor(r*3)]:sand?(id==='marsh'?['#8c8b60','#a2a074','#929469']:['#c5ba77','#d1c487','#cabe7d'])[Math.floor(r*3)]:ground||!hasGrass?palette[Math.floor(hash(Math.floor(x/48),Math.floor(y/48))*3)]:'grass';
+ const dirt=pathPattern(ctx,markStale),atlas=DELTA[id],groups=new Map();
+ const coverage=terrainCoverage.get(`${id}:${l},${t},${w},${h}`,l,t,w,h,TERRAIN_CELL,(x,y)=>{
+  const px=x+TERRAIN_CELL/2,py=y+TERRAIN_CELL/2,wet=waterDistance(px,py,id),r=hash(Math.floor(x/8)*8,Math.floor(y/8)*8,4);
+  const deck=!!atlas?.deck(px,py),water=wet<0&&!deck,path=!water&&(deck||roadDistance(px,py,id)<24+r*12);
+  const zone=!water&&!path?atlas?.zoneAt(px,py):undefined,sand=!water&&!path&&(zone==='sand'||wet<(atlas?30:coastDistance(px,py)>-70?58:20)+r*8),ground=!water&&!path&&!sand&&(zone==='rock'||zone==='marsh'||zone==='dirt'||zone==='cliff'||['moss','leaves','pebbles','decking'].includes(zone));
+  const kind=atlas?groundKind(id,{water,path,sand,zone,wet,r,trail:path&&atlas.trailAt(px,py)}):water?waterKind(id,wet,r,px,py):null;
+  const palette=()=>atlas?ZONE_COLORS[zone]||ZONE_COLORS.meadow:paletteAt(px,py,id);
+  const color=water?waterColor(wet,id==='landing'&&coastDistance(px,py)>0,id==='marsh'):path?['#d6bd7a','#dfc885','#d9c17e'][Math.floor(r*3)]:sand?(id==='marsh'?['#8c8b60','#a2a074','#929469']:['#c5ba77','#d1c487','#cabe7d'])[Math.floor(r*3)]:palette()[Math.floor(hash(Math.floor(x/48),Math.floor(y/48))*3)];
+  return `${kind||''}|${path?'path':!water&&!sand&&!ground?'grass':''}|${color}`;
+ });
+ const textures=new Map();
+ for(const [material,runs]of coverage){
+  const [kind,fallback,color]=material.split('|');
+  if(kind&&!textures.has(kind))textures.set(kind,groundPattern(ctx,kind,markStale,atlas?.textures?.[kind]||1));
+  const style=textures.get(kind)||(fallback==='path'&&dirt)||(fallback==='grass'&&hasGrass?'grass':color);
   let group=groups.get(style);if(!group){const mask=surface(),mc=mask.getContext('2d');mc.fillStyle='white';group={mask,mc};groups.set(style,group);}
-  group.mc.fillRect(x-l,y-t,TERRAIN_CELL,TERRAIN_CELL);
+  for(let i=0;i<runs.length;i+=4)group.mc.fillRect(runs[i],runs[i+1],runs[i+2],runs[i+3]);
  }
  const result=surface(),rc=result.getContext('2d');rc.fillStyle='black';rc.fillRect(0,0,w,h);rc.globalCompositeOperation='lighter';
+ const layer=surface(),lc=layer.getContext('2d');
  for(const [style,{mask}]of groups){
-  const layer=surface(),lc=layer.getContext('2d');blurMask(mask,lc,TERRAIN_BLEND);lc.globalCompositeOperation='source-in';
+  lc.save();blurMask(mask,lc,TERRAIN_BLEND);lc.globalCompositeOperation='source-in';
   if(style==='grass')lc.drawImage(grass,0,0);
   else{lc.translate(-l,-t);lc.fillStyle=style;lc.fillRect(l,t,w,h);}
-  rc.drawImage(layer,0,0);
+  rc.drawImage(layer,0,0);lc.restore();
  }
  ctx.save();ctx.beginPath();ctx.rect(left,top,width,height);ctx.clip();ctx.drawImage(result,l,t);ctx.restore();
 }
@@ -531,7 +542,10 @@ function paintBlendedTerrainTile(ctx,left,top,width,height,id){
 function paintBlendedTerrain(ctx,left,top,width,height,id){
  // Keep temporary material masks bounded even for full-area atlas images.
  if(typeof document==='undefined'||!Number.isFinite(ctx.canvas?.width)||typeof ctx.getImageData!=='function')return false;
- for(let y=top;y<top+height;y+=512)for(let x=left;x<left+width;x+=512)
-  paintBlendedTerrainTile(ctx,x,y,Math.min(512,left+width-x),Math.min(512,top+height-y),id);
+ // A live chunk includes its seam gutters (516px). Fit it in one blend tile
+ // instead of creating four padded sets of masks for a 512px tile plus strips.
+ const tile=CHUNK+2*SEAM;
+ for(let y=top;y<top+height;y+=tile)for(let x=left;x<left+width;x+=tile)
+  paintBlendedTerrainTile(ctx,x,y,Math.min(tile,left+width-x),Math.min(tile,top+height-y),id);
  return true;
 }
