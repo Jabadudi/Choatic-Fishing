@@ -30,7 +30,7 @@ export function render(ctx,world,view,{others=[]}={}){
   const radio=radioBesideEli(world);if(radio)actors.push({y:radio.y+8,ref:radio});
   for(const n of visibleNpcs(world,view))actors.push({y:n.sortY??n.y+14,ref:n});
   for(const a of nightAttackActors(world))actors.push({y:a.y+14,ref:{...a,cutscene:true}});
-  drawDepthSorted(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500},actors,(c,ref)=>ref===p?drawPlayer(c,world):ref.remote?drawOtherPlayer(c,ref,t):ref.radio?drawRadioBeside(c,ref,t):ref.cutscene?drawCutsceneActor(c,ref):ref===world.companion?drawFamiliar(c,ref,t):ref.entityType==='pickup'?(ref.item.familiar?drawShard(c,ref,t):drawDrop(c,ref,t)):ref.npc?drawNpc(c,ref,t):ref.species==='rabbit'?drawRabbit(c,ref):drawWildlife(c,ref));
+  drawDepthSorted(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500},actors,(c,ref)=>ref===p?drawPlayer(c,world):ref.remote?drawOtherPlayer(c,ref,t):ref.radio?drawRadioBeside(c,ref,t):ref.cutscene?drawCutsceneActor(c,ref):ref===world.companion?drawFamiliar(c,ref,t):ref.entityType==='pickup'?(ref.item.familiar?drawShard(c,ref,t):drawDrop(c,ref,t)):ref.npc?drawNpc(c,ref,t):ref.species==='rabbit'?drawRabbit(c,ref):drawWildlife(c,ref),{terrainView:displayView||view});
   for(const n of visibleNpcs(world,view)){ctx.save();ctx.translate(0,-heightAt(n.x,n.y,world.areaId));drawQuestMarker(ctx,n,questMarker(world,n),t);ctx.restore();}
  }else{drawTerrain(ctx,world);drawRabbits(ctx,world,view);}
   for(const bot of world.actors.filter(actor=>actor!==world.player)){

@@ -323,7 +323,7 @@ export function crownSprite(big=false){
 const fades=new Map(),slots=[],order=[];let fadeTime=0;
 export const canopyAlpha=(gx,gy)=>fades.get(`${gx},${gy}`)??1;
 export const landmarkCanopyAlpha=id=>fades.get(`landmark:${id}`)??1;
-const slot=i=>{const it=slots[i]??=({y:0,kind:'',x:0,oy:0,key:'',sway:0,big:false,near:false,ref:null,art:null});it.art=null;return it;};
+const slot=i=>{const it=slots[i]??=({y:0,kind:'',x:0,oy:0,key:'',sway:0,big:false,near:false,ref:null,art:null});it.art=null;it.ref=null;return it;};
 const nearActor=(x,y,actors)=>actors.some(a=>Math.abs(a.ref.x-x)<70&&a.ref.y>y-130&&a.ref.y<y+40);
 // A canopy that stands in front of the player and overlaps them eases to 30% so they stay visible.
 function fadeCanopy(key,x,y,big,p,step){
@@ -332,10 +332,12 @@ function fadeCanopy(key,x,y,big,p,step){
 }
 function pushTree(it,x,y,key,sway,big,near){it.kind='tree';it.x=x;it.oy=y;it.y=y;it.key=key;it.sway=sway;it.big=big;it.near=near;}
 // still: a one-off picture (the area maps): canopies stay solid and the live fade state is left alone.
-export function drawDepthSorted(ctx,world,view,actors,drawActor,{still=false}={}){
+export function drawDepthSorted(ctx,world,view,actors,drawActor,{still=false,terrainView=view}={}){
  const id=world.areaId||'landing',p=world.player,sprite=crownSprite(),bigSprite=crownSprite(true),t=world.elapsed||0,step=Math.min(1,Math.max(0,t-fadeTime)*8);if(!still)fadeTime=t;
  let n=0;
- if(DELTA[id]?.elevation)for(const band of elevationBands(DELTA[id]))if(band.bottom>view.top-100&&band.top<view.bottom+100){const it=slot(n++);it.kind='elevation-band';it.y=band.y;it.ref=band;}
+ // Ledges are background, never occluders. Actors cannot be buried by a later
+ // logical terrain row. Physical cliff traversal still belongs to simulation.
+ if(DELTA[id]?.elevation)for(const band of elevationBands(DELTA[id],terrainView))if(band.bottom>terrainView.top-100&&band.top<terrainView.bottom+100)drawElevationBand(ctx,band,t,still);
  for(const a of actors){const it=slot(n++);it.kind='actor';it.y=a.y;it.ref=a.ref;}
  for(let gy=Math.floor(view.top/72)-1;gy<=Math.ceil((view.bottom+100)/72);gy++)for(let gx=Math.floor(view.left/72)-1;gx<=Math.ceil(view.right/72)+1;gx++){
   const o=sceneryAt(gx,gy,id);if(!o||DELTA[id]?.elevation&&(o.x<0||o.y<0||o.x>areaFor(id).width||o.y>areaFor(id).height))continue;
@@ -355,7 +357,13 @@ export function drawDepthSorted(ctx,world,view,actors,drawActor,{still=false}={}
  if(DELTA[id])for(const object of DELTA[id].props)if(object.kind!=='waterfall'&&object.x>view.left-200&&object.x<view.right+200&&object.y>view.top-30&&object.y<view.bottom+220){const it=slot(n++);it.kind='atlas';it.y=object.y;it.ref=object;}
  if(id==='landing'){const it=slot(n++);it.kind='story-cabin';it.y=1515;}
  if(DELTA[id]?.elevation)for(const place of placesFor(id)){const it=slot(n++);it.kind='elevation-landmark';it.y=place.y;it.ref=place;}
- order.length=0;for(let i=0;i<n;i++)order.push(slots[i]);order.sort((a,b)=>a.y-b.y);
+ order.length=0;for(let i=0;i<n;i++)order.push(slots[i]);
+ if(DELTA[id]?.elevation){
+  for(const it of order){const x=it.ref?.x??it.x,y=it.ref?.y??it.oy;it.depth=it.y-heightAt(x,y,id);}
+  order.sort((a,b)=>Number(a.kind==='actor')-Number(b.kind==='actor')||a.depth-b.depth);
+  // Keep the local explorer readable even behind a crane, rim tree or mob.
+  const player=order.findIndex(it=>it.kind==='actor'&&it.ref===p);if(player>=0)order.push(...order.splice(player,1));
+ }else order.sort((a,b)=>a.y-b.y);
  for(const it of order){
   if(it.kind==='elevation-band'){drawElevationBand(ctx,it.ref,t,still);continue;}
   ctx.save();if(DELTA[id]?.elevation){const x=it.ref?.x??it.x,y=it.ref?.y??it.oy;ctx.translate(0,-heightAt(x,y,id));}
