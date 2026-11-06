@@ -38,6 +38,10 @@ export const VILLAGER_LOOKS=[
  ['child-three','#d8a040','#6a4a2c','#c8906a',.7],['child-four','#8fae74','#2a2020','#8a5a3a',.7],['child-five','#c99aa8','#a06030','#f0d0b0',.7]
 ];
 export const SPRITES={
+ 'core.wave':{asset:'core/wave.svg',anchor:[.5,.5],animations:{idle:{frames:[0]}}},
+ 'core.undertow':{asset:'core/undertow.svg',anchor:[.5,.5],animations:{idle:{frames:[0]}}},
+ 'core.hook':{asset:'core/hook.svg',anchor:[.5,.5],animations:{idle:{frames:[0]}}},
+ 'core.ripple':{asset:'core/ripple.svg',anchor:[.5,.5],animations:{idle:{frames:[0]}}},
  // The second rows are runs, used by the guardian familiars. Both sheets face right; the village creatures stay on idle.
  rimejaw:{asset:'story/rimejaw-sheet.png',chromaKey:'green',frames:[[45,35,410,270],[475,35,410,270],[900,35,410,270],[1320,35,440,270],[10,330,292,225],[302,330,292,225],[598,330,292,225],[886,330,292,225],[1174,330,292,225],[1468,330,292,225]],scale:.27,anchor:[.5,1],offset:[0,12],mirror:'right',animations:{idle:{frames:[0,1,2,3],fps:2},walk:{frames:[4,5,6,7,8,9],fps:9}}},
  flitlynx:{asset:'story/flitlynx-sheet.png',chromaKey:'green',frames:[[70,25,330,300],[420,25,330,300],[765,25,330,300],[1110,25,330,300],...[0,1,2,3,4,5].map(i=>[i*256,340,256,290])],scale:.22,anchor:[.5,1],offset:[0,3],mirror:'right',animations:{idle:{frames:[0,1,2,3],fps:3},walk:{frames:[4,5,6,7,8,9],fps:10}}},

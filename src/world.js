@@ -11,7 +11,7 @@ import {Inventory,canUseItem,itemCount,stackable,HEALING} from './inventory.js';
 import {MERCHANTS,findMarks,marksLabel} from './trade.js';
 import {attack,special,updateProjectiles,startRush,updateRush,WEAPON_RUSHES} from './combat.js';
 import {createBosses,updateBosses} from './bosses.js';
-import {createCore,updateCore,useCoreAbility,useCoreSlot} from './core-abilities.js';
+import {createCore,updateCore,useCoreAbility,useCoreSlot,waterstepSpeed} from './core-abilities.js';
 import {facingFor} from './entities.js';
 import {updateBot} from './bots.js';
 import {LAND,CHESTS,LAKES,lakeDistance,isWater,nearWater,walkable} from './terrain.js';
@@ -197,7 +197,7 @@ export class World {
   for(let i=0;i<steps;i++){if(walkable(p.x+sx,p.y)&&(!shoreOnly||nearWater(p.x+sx,p.y)))p.x+=sx;if(walkable(p.x,p.y+sy)&&(!shoreOnly||nearWater(p.x,p.y+sy)))p.y+=sy;}
   if(Math.abs(p.x-x)<1e-8)p.x=x;if(Math.abs(p.y-y)<1e-8)p.y=y;
  }
- enterArea(next,p=this.player,message=null){const previous=this.areaId;this.projectiles=[];this.effects=[];this.dialogue=null;this.areaId=next.areaId;p.x=next.x;p.y=next.y;p.vx=0;p.vy=0;this.cancel();this.message=message||(this.areaId==='crossroads'?'Willowbank Crossroads · West: Willowback · East: Shellback Marsh · South: Windchime Path.':`${Wilds.areaFor(this.areaId).name} · Follow the trail; walk back through the edge to return.`);onStoryAreaChange(this,previous);}
+ enterArea(next,p=this.player,message=null){this.core.undertow=null;this.core.hook=null;this.core.wall=null;const previous=this.areaId;this.projectiles=[];this.effects=[];this.dialogue=null;this.areaId=next.areaId;p.x=next.x;p.y=next.y;p.vx=0;p.vy=0;this.cancel();this.message=message||(this.areaId==='crossroads'?'Willowbank Crossroads · West: Willowback · East: Shellback Marsh · South: Windchime Path.':`${Wilds.areaFor(this.areaId).name} · Follow the trail; walk back through the edge to return.`);onStoryAreaChange(this,previous);}
  castActor(actor,aim){
   if(this.matchState!=='playing'||actor.health<=0||actor.fishing.state!=='idle'||currentScene(this))return false;
   if(this.story&&!rodReady(this.story)){if(actor===this.player)this.message='Grandpa’s fishing rod is on the weapon rack inside the cabin.';return false;}
@@ -239,6 +239,7 @@ export class World {
   }
   for(const bot of this.bots){if(bot.health<=0)continue;if(bot.progression.pendingUpgrades)this.chooseUpgrade(['hermes','health'][Math.floor(this.random()*2)],bot);updateBot(this,bot,dt);const f=bot.fishing;this.advanceFishing(bot,dt,f.state==='reeling'&&f.bar+f.velocity*.2+.135<f.target);}
   updateProjectiles(this,dt);
+  if(this.adventure)updateCore(this,dt);
   updateAnimalCombat(this,dt);
   updateRabbits(this,dt);
   updateWildlife(this,dt);
@@ -246,7 +247,6 @@ export class World {
   updateSpawns(this,dt);
   updateBosses(this,dt);
   updateFamiliar(this,dt);
-  if(this.adventure)updateCore(this,dt);
   if(this.adventure)this.pullDrops(dt);
   updateDialogue(this,dt);
   updateStory(this,dt,Wilds.walkable);
@@ -275,7 +275,7 @@ export class World {
   if(rush&&input.held&&this.fishing.state==='idle'&&p.health>0){p.holdTime=(p.holdTime||0)+dt;if(p.holdTime>=rush.hold&&!p.holdSpent&&startRush(this,p,this.inventory.item.name))p.holdSpent=true;}
   else{p.holdTime=0;p.holdSpent=false;}
   updateRush(this,p,dt);
-  if(!dashing&&!p.rush&&p.health>0&&(this.fishing.state==='idle'||this.fishing.state==='reeling')){const analog=Number.isFinite(input.moveX)&&Number.isFinite(input.moveY),x=analog?input.moveX:Number(input.right)-Number(input.left),y=analog?input.moveY:Number(input.down)-Number(input.up),len=Math.max(1,Math.hypot(x,y)),speed=195*this.progression.speedMultiplier*storySpeed(this)*(p.slowRemaining>0?.5:1);if(x||y){p.facing=facingFor(x,y);p.steppedAt=this.elapsed;}this.move(x/len*speed*dt,y/len*speed*dt,this.fishing.state==='reeling');}
+  if(!dashing&&!p.rush&&p.health>0&&(this.fishing.state==='idle'||this.fishing.state==='reeling')){const analog=Number.isFinite(input.moveX)&&Number.isFinite(input.moveY),x=analog?input.moveX:Number(input.right)-Number(input.left),y=analog?input.moveY:Number(input.down)-Number(input.up),len=Math.max(1,Math.hypot(x,y)),speed=195*this.progression.speedMultiplier*waterstepSpeed(this)*storySpeed(this)*(p.slowRemaining>0?.5:1);if(x||y){p.facing=facingFor(x,y);p.steppedAt=this.elapsed;}this.move(x/len*speed*dt,y/len*speed*dt,this.fishing.state==='reeling');}
   if(p.health>0)this.advanceFishing(p,dt,input.held);
  }
 }

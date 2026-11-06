@@ -1,3 +1,4 @@
+import {drawCoreArt} from './core-art.js';
 import {drawDrop} from './drops.js';
 import {cabinDamaged,pendingScene} from './story.js';
 import {visibleWildlife} from './wildlife.js';
@@ -42,6 +43,7 @@ export function render(ctx,world,view,{others=[]}={}){
     ctx.font='bold 10px Arial';ctx.fillStyle='#fff3db';ctx.fillText(bot.name,bot.x,bot.y-36);
     ctx.font='8px Arial';ctx.fillStyle='#263e35';ctx.fillText(bot.fishing.state!=='idle'?'FISHING':bot.inventory.item?.name||'TO SHORE',bot.x,bot.y+29);
   }
+  drawCoreArt(ctx,world);
   // Region Core powers: Reedwater's Call is a bending line of core-blue light; Still Water rings Eli while it holds.
   for(const shot of world.projectiles)if(shot.kind==='line'&&shot.trail?.length>1){ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.shadowColor='#59b9ff';ctx.shadowBlur=10;ctx.strokeStyle='#9ad7ffcc';ctx.lineWidth=3;ctx.beginPath();shot.trail.forEach((p,i)=>i?ctx.lineTo(p.x,p.y-(shot.elevation||0)):ctx.moveTo(p.x,p.y-(shot.elevation||0)));ctx.stroke();ctx.fillStyle='#e8f7ff';ctx.beginPath();ctx.arc(shot.x,shot.y-(shot.elevation||0),4,0,Math.PI*2);ctx.fill();ctx.restore();}
   if(world.core?.stillWater>0&&world.player.health>0){const p=world.player,fade=Math.min(1,world.core.stillWater/.6);ctx.save();ctx.globalAlpha=.55*fade;ctx.strokeStyle='#9ad7ff';ctx.lineWidth=2;for(let i=0;i<2;i++){const r=26+((t*14+i*11)%22);ctx.beginPath();ctx.ellipse(p.x,p.y-heightAt(p.x,p.y,world.areaId)+4,r,r*.45,0,0,Math.PI*2);ctx.stroke();}ctx.restore();}
@@ -53,6 +55,7 @@ export function render(ctx,world,view,{others=[]}={}){
   ctx.fillStyle='#edf3df';ctx.font='bold 10px Arial';ctx.fillText('YOU',p.x,p.y-25);
   }
   for(const effect of world.effects){
+    if(effect.name==='riverstep-trail'||effect.name==='current-return')continue;
     if(effect.burst){ctx.save();if(world.adventure)ctx.translate(0,-heightAt(effect.x,effect.y,world.areaId));if(!world.adventure)drawLevelBurst(ctx,effect,world.player,'back');drawLevelBurst(ctx,effect,world.player);ctx.restore();continue;}
     const duration=effect.duration||(['defeat','Whirlpool Burst'].includes(effect.name)?.8:.55);
     const age=Math.max(0,duration-effect.life);ctx.save();ctx.globalAlpha=Math.min(1,effect.life/duration);ctx.translate(effect.x,effect.y-heightAt(effect.x,effect.y,world.areaId));ctx.rotate(effect.angle);
