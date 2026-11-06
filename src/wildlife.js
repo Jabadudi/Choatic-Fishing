@@ -1,5 +1,5 @@
 import {damage} from './combat.js';
-import {walkable,isWater,waterDistance,areaFor} from './wilds.js';
+import {walkable,isWater,waterDistance,areaFor,canTraverse,canReach} from './wilds.js';
 import {animalTraits,reactionFor,huntableInArea} from './entities.js';
 import {rollLoot} from './loot.js';
 import {artifactBonus,itemLabel} from './artifacts.js';
@@ -21,8 +21,8 @@ export function moveAnimal(animal,dx,dy){
  const steps=Math.max(1,Math.ceil(Math.hypot(dx,dy)/4)),sx=dx/steps,sy=dy/steps;
  let moved=false;
  for(let i=0;i<steps;i++){
-  if(animalGround(animal,animal.x+sx,animal.y)){animal.x+=sx;moved||=sx!==0;}
-  if(animalGround(animal,animal.x,animal.y+sy)){animal.y+=sy;moved||=sy!==0;}
+  if(canTraverse(animal.x,animal.y,animal.x+sx,animal.y,animal.areaId)&&animalGround(animal,animal.x+sx,animal.y)){animal.x+=sx;moved||=sx!==0;}
+  if(canTraverse(animal.x,animal.y,animal.x,animal.y+sy,animal.areaId)&&animalGround(animal,animal.x,animal.y+sy)){animal.y+=sy;moved||=sy!==0;}
  }
  return moved;
 }
@@ -56,7 +56,8 @@ function dropLoot(world,animal,source){
 }
 // "Shadow Ichor ×3, Drowned Brass" rather than the same name three times.
 const tally=names=>[...new Set(names)].map(n=>{const k=names.filter(m=>m===n).length;return k>1?`${n} ×${k}`:n;}).join(', ');
-export function damageAnimal(world,animal,amount,source,angle,knockback=0){
+export function damageAnimal(world,animal,amount,source,angle,knockback=0,origin=source){
+ if(world.adventure&&!canReach(origin,animal,world.areaId))return false;
  if(world.matchState!=='playing'||source.health<=0||!huntableInArea(world,animal)||!Number.isFinite(amount)||amount<=0)return false;
  const taken=amount*(source.progression?.damageMultiplier??1)*(1+(source.progression?.passive('hunting.damage')??0));
  animal.health=Math.max(0,animal.health-taken);animal.hurtRemaining=.25;animal.alert=3;

@@ -1,3 +1,4 @@
+import {heightAt,unprojectGround,projectGround} from './terrain-height.js';
 import {storyAction,updateStoryAction} from './story-action.js';
 import {matchesBinding,bindingLabel} from './keybinds.js';
 import {preferences} from './preferences.js';
@@ -65,7 +66,7 @@ let promptFrame=null;
 function placePrompt(player){
  const el=$('inspect-place');if(!el||el.hidden||!el.offsetParent)return;
  if(!promptFrame||promptFrame.width!==view.width||promptFrame.height!==view.height){const c=canvas.getBoundingClientRect(),p=el.offsetParent.getBoundingClientRect();promptFrame={width:view.width,height:view.height,x:c.left-p.left,y:c.top-p.top,right:p.width,zoom:parseFloat(getComputedStyle(el).zoom)||1};}
- const f=promptFrame,half=el.offsetWidth*f.zoom/2+6,x=Math.max(half,Math.min(f.right-half,f.x+view.x+player.x*view.scale)),y=f.y+view.y+(player.y-44)*view.scale;
+ const f=promptFrame,half=el.offsetWidth*f.zoom/2+6,x=Math.max(half,Math.min(f.right-half,f.x+view.x+player.x*view.scale)),y=f.y+view.y+(player.y-heightAt(player.x,player.y,world.areaId)-44)*view.scale;
  el.style.setProperty('--eli-x',(x/f.zoom).toFixed(1)+'px');el.style.setProperty('--eli-y',(y/f.zoom).toFixed(1)+'px');
 }
 const elements=new Map();
@@ -113,8 +114,8 @@ addEventListener('keydown',e=>{
 });
 addEventListener('keyup',e=>{keys.delete(e.code);if(matchesBinding('inspect',e.code))spaceHeld=false;});
 let pointer=null;
-function camera(player=world.player){view.x=view.width/2-player.x*view.scale;view.y=view.height/2-player.y*view.scale;if(world.adventure){const a=areaFor(world.areaId);view.x=a.width*view.scale<view.width?(view.width-a.width*view.scale)/2:Math.max(view.width-a.width*view.scale,Math.min(0,view.x));view.y=a.height*view.scale<view.height?(view.height-a.height*view.scale)/2:Math.max(view.height-a.height*view.scale,Math.min(0,view.y));}if(pointer)aim={x:(pointer.x-view.x)/view.scale,y:(pointer.y-view.y)/view.scale};}
-function point(e){const r=canvas.getBoundingClientRect();if(e.pointerType==='touch'){pointer=null;camera();touchState.manualAim={x:(e.clientX-r.left-view.x)/view.scale,y:(e.clientY-r.top-view.y)/view.scale};aim=touchState.manualAim;return;}pointer={x:e.clientX-r.left,y:e.clientY-r.top};camera();world.player.angle=Math.atan2(aim.y-world.player.y,aim.x-world.player.x);}
+function camera(player=world.player){view.x=view.width/2-player.x*view.scale;view.y=view.height/2-(player.y-(world.adventure?heightAt(player.x,player.y,world.areaId):0))*view.scale;if(world.adventure){const a=areaFor(world.areaId);view.x=a.width*view.scale<view.width?(view.width-a.width*view.scale)/2:Math.max(view.width-a.width*view.scale,Math.min(0,view.x));view.y=a.height*view.scale<view.height?(view.height-a.height*view.scale)/2:Math.max(view.height-a.height*view.scale,Math.min(0,view.y));}if(pointer)aim=world.adventure?unprojectGround((pointer.x-view.x)/view.scale,(pointer.y-view.y)/view.scale,world.areaId):{x:(pointer.x-view.x)/view.scale,y:(pointer.y-view.y)/view.scale};}
+function point(e){const r=canvas.getBoundingClientRect();if(e.pointerType==='touch'){pointer=null;camera();touchState.manualAim=world.adventure?unprojectGround((e.clientX-r.left-view.x)/view.scale,(e.clientY-r.top-view.y)/view.scale,world.areaId):{x:(e.clientX-r.left-view.x)/view.scale,y:(e.clientY-r.top-view.y)/view.scale};aim=touchState.manualAim;return;}pointer={x:e.clientX-r.left,y:e.clientY-r.top};camera();world.player.angle=Math.atan2(aim.y-world.player.y,aim.x-world.player.x);}
 canvas.addEventListener('pointermove',e=>{if(e.pointerType!=='touch'||e.buttons)point(e);});
 canvas.addEventListener('pointerdown',e=>{if(e.button!==0||!lobby.world||atlasOpen||settingsUI?.open||storyUI?.open||currentScene(world))return;point(e);if(e.pointerType==='touch'){e.preventDefault();return;}mouseHeld=true;canvas.focus();act('click');});
 addEventListener('pointerup',()=>mouseHeld=false);
@@ -354,7 +355,7 @@ function frame(now){accumulator+=Math.min((now-last)/1000,.1);last=now;while(acc
  const display=lobby.presentation();camera(display?.player||world.player);const dpr=view.dpr;
  ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle=INTERIOR_AREAS.includes(world.areaId)?'#101d20':'#1c4754';ctx.fillRect(0,0,canvas.width,canvas.height);
  ctx.setTransform(dpr*view.scale,0,0,dpr*view.scale,dpr*view.x,dpr*view.y);
- render(ctx,display||world,{left:-view.x/view.scale,top:-view.y/view.scale,right:(view.width-view.x)/view.scale,bottom:(view.height-view.y)/view.scale},{others:hubUI?.others(world)||[]});if(lobby.world?.adventure)placePrompt(display?.player||world.player);drawStoryWeather(ctx,world,{left:-view.x/view.scale,top:-view.y/view.scale,right:(view.width-view.x)/view.scale,bottom:(view.height-view.y)/view.scale},now/1000);syncAtmosphere();if(touchMode&&touchState.manualAim&&lobby.world&&!atlasOpen){const a=touchState.manualAim;ctx.strokeStyle='#fff1bc';ctx.lineWidth=1.5/view.scale;ctx.beginPath();ctx.arc(a.x,a.y,9/view.scale,0,Math.PI*2);ctx.moveTo(a.x-14/view.scale,a.y);ctx.lineTo(a.x+14/view.scale,a.y);ctx.moveTo(a.x,a.y-14/view.scale);ctx.lineTo(a.x,a.y+14/view.scale);ctx.stroke();}if(lobby.world&&now-lastUI>=1000/30){lastUI=now;updateProgression();updateUI();}requestAnimationFrame(frame);
+ render(ctx,display||world,{left:-view.x/view.scale,top:-view.y/view.scale,right:(view.width-view.x)/view.scale,bottom:(view.height-view.y)/view.scale},{others:hubUI?.others(world)||[]});if(lobby.world?.adventure)placePrompt(display?.player||world.player);drawStoryWeather(ctx,world,{left:-view.x/view.scale,top:-view.y/view.scale,right:(view.width-view.x)/view.scale,bottom:(view.height-view.y)/view.scale},now/1000);syncAtmosphere();if(touchMode&&touchState.manualAim&&lobby.world&&!atlasOpen){const a=projectGround(touchState.manualAim.x,touchState.manualAim.y,world.areaId);ctx.strokeStyle='#fff1bc';ctx.lineWidth=1.5/view.scale;ctx.beginPath();ctx.arc(a.x,a.y,9/view.scale,0,Math.PI*2);ctx.moveTo(a.x-14/view.scale,a.y);ctx.lineTo(a.x+14/view.scale,a.y);ctx.moveTo(a.x,a.y-14/view.scale);ctx.lineTo(a.x,a.y+14/view.scale);ctx.stroke();}if(lobby.world&&now-lastUI>=1000/30){lastUI=now;updateProgression();updateUI();}requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
 titleArtReady.then(()=>{titleArtIn=true;(window.requestIdleCallback||setTimeout)(()=>preloadProps());});

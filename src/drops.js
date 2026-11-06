@@ -1,15 +1,15 @@
-import {walkable} from './wilds.js';
+import {walkable,canReach} from './wilds.js';
 import {drawEntitySprite,drawImageAsset} from './sprites.js';
 import {itemAsset} from './item-icons.js';
 import {isArtifact} from './artifacts.js';
 // Artifact drops glow in their rarity colour so a lucky find stands out on the ground.
 export const RARITY_COLORS=Object.freeze({common:'#d9dccf',uncommon:'#7fd18b',rare:'#6fb6ff',epic:'#c58cff',legendary:'#ffb347'});
-export const nearbyDrop=world=>world.adventure?(world.drops||[]).filter(drop=>drop.areaId===world.areaId&&Math.hypot(drop.x-world.player.x,drop.y-world.player.y)<65).sort((a,b)=>Math.hypot(a.x-world.player.x,a.y-world.player.y)-Math.hypot(b.x-world.player.x,b.y-world.player.y))[0]||null:null;
+export const nearbyDrop=world=>world.adventure?(world.drops||[]).filter(drop=>drop.areaId===world.areaId&&canReach(world.player,drop,world.areaId)&&Math.hypot(drop.x-world.player.x,drop.y-world.player.y)<65).sort((a,b)=>Math.hypot(a.x-world.player.x,a.y-world.player.y)-Math.hypot(b.x-world.player.x,b.y-world.player.y))[0]||null:null;
 export function dropItem(world,item){
  const p=world.player;let position=null;
  for(const distance of [40,24,0]){for(const offset of [0,.8,-.8,1.6,-1.6,Math.PI]){
   const x=p.x+Math.cos(p.angle+offset)*distance,y=p.y+Math.sin(p.angle+offset)*distance;
-  if(walkable(x,y,world.areaId)){position={x,y};break;}
+  if(canReach(p,{x,y},world.areaId)&&walkable(x,y,world.areaId)){position={x,y};break;}
  }if(position)break;}
  if(!position)return false;
  const removed=world.inventory.removeId(item.id);if(!removed)return false;

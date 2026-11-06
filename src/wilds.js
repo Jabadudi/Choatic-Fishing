@@ -1,3 +1,7 @@
+import {drawQuarryActorShadow} from './quarry-light.js';
+import {elevationFor,heightAt,canTraverse,canReach,projectGround,unprojectGround} from './terrain-height.js';
+export {elevationFor,heightAt,canTraverse,canReach,projectGround,unprojectGround};
+import {elevationBands,drawElevationBand} from './elevation-art.js';
 import {TERRAIN_CELL,TERRAIN_BLEND} from './terrain-style.js';
 import {blurMask} from './terrain-blend.js';
 import {SPRITES} from './sprite-definitions.js';
@@ -93,7 +97,7 @@ const ZONE_COLORS={moss:['#68774c','#738354','#7c8c5b'],leaves:['#947044','#a17b
 export const paletteAt=(x,y,id)=>DELTA[id]?ZONE_COLORS[DELTA[id].zoneAt(x,y)]||ZONE_COLORS.meadow:COLORS[regionAt(x,y,id)];
 function atlasScenery(gx,gy,id){
  const b=DELTA[id],x=gx*72+12+hash(gx,gy)*48,y=gy*72+12+hash(gx,gy,3)*48,r=hash(gx,gy,9);
- if(b.clear(x,y)||waterDistance(x,y,id)<95||roadDistance(x,y,id)<65||b.places.some(p=>Math.hypot(x-p.x,y-p.y)<100))return null;
+ if(b.elevation&&(b.elevation.heightAt(x,y)!==0||b.elevation.rampAt(x,y))||b.clear(x,y)||waterDistance(x,y,id)<95||roadDistance(x,y,id)<65||b.places.some(p=>Math.hypot(x-p.x,y-p.y)<100))return null;
  const zone=b.zoneAt(x,y);if(['paving','moss','leaves','pebbles','decking'].includes(zone)||b.fixedFeatures&&zone==='clear')return null;
  const kind=zone==='forest'?(r<.74?'tree':r<.84?'bush':null):zone==='cliff'?null:zone==='rock'?(r<.3?'rock':null):zone==='sand'||zone==='clear'||zone==='dirt'?(r<.04?'rock':null):zone==='marsh'?(r<.18?'bush':r<.24?'tree':null):(r<.13?'tree':r<.21?'rock':r<.35?'bush':null);
  return kind?{x,y,kind,r:kind==='tree'?12:kind==='rock'?15:0,art:atlasArt(id,zone,kind,hash(gx,gy,31))}:null;
@@ -160,7 +164,7 @@ export function transitionAt(x,y,id='landing'){
 export function nearestLandmark(x,y,id='landing'){return placesFor(id).find(p=>Math.hypot(x-p.x,y-p.y)<135)||null;}
 // Discovery and the region label use the wide circle above; examining needs Eli right beside the spot.
 export const EXAMINE_RANGE=60;
-export function examinableLandmark(x,y,id='landing'){let best=null,bestD=Infinity;for(const p of placesFor(id)){const d=Math.hypot(x-p.x,y-p.y);if(d<=(p.reach||EXAMINE_RANGE)&&d<bestD){best=p;bestD=d;}}return best;}
+export function examinableLandmark(x,y,id='landing'){let best=null,bestD=Infinity;for(const p of placesFor(id)){const d=Math.hypot(x-p.x,y-p.y);if(canReach({x,y},p,id)&&d<=(p.reach||EXAMINE_RANGE)&&d<bestD){best=p;bestD=d;}}return best;}
 
 const tree=leafyTree,rock=meadowRock;
 // Water deepens in bands away from the shore; the sea sits one band darker than the lakes.
@@ -251,7 +255,7 @@ function staticArea(ctx,left,top,width,height,id){
   else if(wet< -18&&wet> -110&&coastDistance(px,py)<0&&r>.8)lilyPad(ctx,Math.round(px),Math.round(py),r>.93);
   else if(wet< -2&&wet> -16&&r>.55)reeds(ctx,Math.round(px),Math.round(py),x);
  }
- for(let gy=Math.floor(top/72)-2;gy<Math.ceil((top+height)/72)+2;gy++)for(let gx=Math.floor(left/72)-2;gx<Math.ceil((left+width)/72)+2;gx++){const o=sceneryAt(gx,gy,id);if(!o)continue;
+ for(let gy=Math.floor(top/72)-2;gy<Math.ceil((top+height)/72)+2;gy++)for(let gx=Math.floor(left/72)-2;gx<Math.ceil((left+width)/72)+2;gx++){const o=sceneryAt(gx,gy,id);if(!o||DELTA[id]?.elevation&&(o.x<0||o.y<0||o.x>areaFor(id).width||o.y>areaFor(id).height))continue;
   // Painted atlas scenery: the ground shadow here, rocks and plants too; trees stand in the depth-sorted layer.
   if(o.art&&drawProp(ctx,o.art.id,{x:-1e4,y:-1e4,w:1,h:1})){groundShadow(ctx,o.x,o.y,o.art.w*(o.kind==='tree'?.24:.36));if(o.kind!=='tree')drawProp(ctx,o.art.id,{x:o.x,y:o.y+3,w:o.art.w,h:o.art.h});continue;}
   if(o.kind==='tree')tree(ctx,o.x,o.y,false,typeof document!=='undefined'?'trunk':'all');else if(o.kind==='rock')rock(ctx,o.x,o.y);else meadowBush(ctx,o.x,o.y);}
@@ -330,10 +334,11 @@ function pushTree(it,x,y,key,sway,big,near){it.kind='tree';it.x=x;it.oy=y;it.y=y
 export function drawDepthSorted(ctx,world,view,actors,drawActor,{still=false}={}){
  const id=world.areaId||'landing',p=world.player,sprite=crownSprite(),bigSprite=crownSprite(true),t=world.elapsed||0,step=Math.min(1,Math.max(0,t-fadeTime)*8);if(!still)fadeTime=t;
  let n=0;
+ if(DELTA[id]?.elevation)for(const band of elevationBands(DELTA[id]))if(band.bottom>view.top-100&&band.top<view.bottom+100){const it=slot(n++);it.kind='elevation-band';it.y=band.y;it.ref=band;}
  for(const a of actors){const it=slot(n++);it.kind='actor';it.y=a.y;it.ref=a.ref;}
  for(let gy=Math.floor(view.top/72)-1;gy<=Math.ceil((view.bottom+100)/72);gy++)for(let gx=Math.floor(view.left/72)-1;gx<=Math.ceil(view.right/72)+1;gx++){
-  const o=sceneryAt(gx,gy,id);if(!o)continue;
-  const near=nearActor(o.x,o.y,actors);if(o.kind!=='tree'&&!near)continue;if(o.kind==='tree'&&!near&&!sprite)continue;
+  const o=sceneryAt(gx,gy,id);if(!o||DELTA[id]?.elevation&&(o.x<0||o.y<0||o.x>areaFor(id).width||o.y>areaFor(id).height))continue;
+  const near=!!DELTA[id]?.elevation||nearActor(o.x,o.y,actors);if(o.kind!=='tree'&&!near)continue;if(o.kind==='tree'&&!near&&!sprite)continue;
   const it=slot(n++);
   if(o.kind==='tree'){const key=`${gx},${gy}`;pushTree(it,o.x,o.y,key,hash(gx,gy,21)*6,false,near);if(sprite&&!still)fadeCanopy(key,o.x,o.y,false,p,step);}
   else{it.kind=o.kind;it.x=o.x;it.oy=o.y;it.y=o.y+(o.kind==='rock'?8:4);}
@@ -348,11 +353,16 @@ export function drawDepthSorted(ctx,world,view,actors,drawActor,{still=false}={}
  if(id==='village')for(const object of villageObjects)if(object.x>view.left-200&&object.x<view.right+200&&object.y>view.top-30&&object.y<view.bottom+220){const it=slot(n++);it.kind='village';it.y=object.y+18;it.ref=object;}
  if(DELTA[id])for(const object of DELTA[id].props)if(object.kind!=='waterfall'&&object.x>view.left-200&&object.x<view.right+200&&object.y>view.top-30&&object.y<view.bottom+220){const it=slot(n++);it.kind='atlas';it.y=object.y;it.ref=object;}
  if(id==='landing'){const it=slot(n++);it.kind='story-cabin';it.y=1515;}
+ if(DELTA[id]?.elevation)for(const place of placesFor(id)){const it=slot(n++);it.kind='elevation-landmark';it.y=place.y;it.ref=place;}
  order.length=0;for(let i=0;i<n;i++)order.push(slots[i]);order.sort((a,b)=>a.y-b.y);
  for(const it of order){
+  if(it.kind==='elevation-band'){drawElevationBand(ctx,it.ref,t,still);continue;}
+  ctx.save();if(DELTA[id]?.elevation){const x=it.ref?.x??it.x,y=it.ref?.y??it.oy;ctx.translate(0,-heightAt(x,y,id));}
+  if(id==='abandoned-quarry'&&it.kind==='actor')drawQuarryActorShadow(ctx,it.ref,DELTA[id]);
   if(it.kind==='story-cabin')drawCabin(ctx,world.story);
   else if(it.kind==='marsh')drawMarshObject(ctx,it.ref,t);
   else if(it.kind==='village')drawVillageObject(ctx,it.ref,t);
+  else if(it.kind==='elevation-landmark')drawLandmark(ctx,it.ref,t);
   else if(it.kind==='atlas')drawAtlasProp(ctx,it.ref,t);
   else if(it.kind==='actor')drawActor(ctx,it.ref);
   else if(it.art&&drawProp(ctx,it.art.id,{x:-1e4,y:-1e4,w:1,h:1})){
@@ -367,6 +377,7 @@ export function drawDepthSorted(ctx,world,view,actors,drawActor,{still=false}={}
    if(it.near)leafyTree(ctx,it.x,it.oy,it.big,'stem');
    if(crown){const sway=Math.round(Math.sin(t*1.2+it.sway)*1.5);ctx.globalAlpha=still?1:fades.get(it.key)??1;ctx.drawImage(crown,Math.round(it.x)-48*k+sway,Math.round(it.oy)-100*k);ctx.globalAlpha=1;}
   }
+  ctx.restore();
  }
 }
 // Shore foam and sparkle positions are found once per chunk on a coarse grid, so the live water layer never samples distance per frame.
@@ -428,6 +439,7 @@ function drawLandmark(ctx,p,t=0){
 // still: paint the ground straight onto ctx without the chunk cache (the area maps use it, so they never evict the live chunks).
 export function drawWilds(ctx,world,view={left:world.player.x-700,right:world.player.x+700,top:world.player.y-500,bottom:world.player.y+500},{still=false}={}){
  const id=world.areaId||'landing',area=areaFor(id);ctx.imageSmoothingEnabled=false;
+ if(DELTA[id]?.elevation)return;
  if(typeof document!=='undefined'&&!still)drawChunks(ctx,view,id);else staticArea(ctx,view.left,view.top,view.right-view.left,view.bottom-view.top,id);
  if(id==='guest-lodge'){const stage=world.story?.stage;drawGuestLodge(ctx,{night:['ch5-night','ch5-sleep','ch6-night','ch6-complete'].includes(stage),morning:['ch5-morning','ch6-door'].includes(stage)});if(stage==='ch5-morning'&&!world.story.scene)drawFloatingWriting(ctx,world.player,world.elapsed||0);}
  // The training yard in the farm, drawn each frame because its light and props follow the story.
@@ -450,7 +462,7 @@ export function drawWilds(ctx,world,view={left:world.player.x-700,right:world.pl
 // Labels go last so canopies and characters never cover a place name or exit sign.
 export function drawWildsLabels(ctx,world,view){
  const id=world.areaId||'landing',area=areaFor(id);
- for(const p of placesFor(id))if(p.x>view.left-120&&p.x<view.right+120&&p.y>view.top-100&&p.y<view.bottom+100)parchmentTag(ctx,p.x,p.y+34,p.name,labelAlpha(Math.hypot(world.player.x-p.x,world.player.y-p.y)));
+ for(const p of placesFor(id))if(p.x>view.left-120&&p.x<view.right+120&&p.y>view.top-100&&p.y<view.bottom+100)parchmentTag(ctx,p.x,p.y-heightAt(p.x,p.y,id)+34,p.name,labelAlpha(Math.hypot(world.player.x-p.x,world.player.y-p.y)));
  if(id==='crossroads')drawCrossroadsLabels(ctx);
  if(id==='landing'){parchmentTag(ctx,1630,1565,cabinDamaged(world.story)?'The Damaged Cabin':'Grandpa’s Cabin',labelAlpha(Math.hypot(world.player.x-1630,world.player.y-1545)));}
  for(const q of area.portals||[])if(!q.quiet)parchmentTag(ctx,q.x,q.y-q.r-30,`◆ ${q.label}`,labelAlpha(Math.hypot(world.player.x-q.x,world.player.y-q.y)-60));

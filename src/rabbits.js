@@ -1,5 +1,5 @@
 import {animalTraits,reactionFor} from './entities.js';
-import {walkable,waterDistance,areaFor} from './wilds.js';
+import {walkable,waterDistance,areaFor,canTraverse} from './wilds.js';
 import {startingSlots} from './spawn-tables.js';
 
 import {drawEntitySprite,spriteFrame} from './sprites.js';
@@ -28,7 +28,7 @@ function startHop(r,player){
  for(const offset of [turn,.55,-.55,1.1,-1.1,Math.PI]){
   const dx=Math.cos(angle+offset),dy=Math.sin(angle+offset);
   let clear=true;
-  for(let step=1;step<=Math.ceil(distance/5);step++){const d=Math.min(distance,step*5);if(!rabbitGround(r.x+dx*d,r.y+dy*d,r.areaId)){clear=false;break;}}
+  for(let step=1;step<=Math.ceil(distance/5);step++){const d=Math.min(distance,step*5);if(!canTraverse(r.x,r.y,r.x+dx*d,r.y+dy*d,r.areaId)||!rabbitGround(r.x+dx*d,r.y+dy*d,r.areaId)){clear=false;break;}}
   if(!clear)continue;
   r.direction={x:dx,y:dy};r.hopDuration=r.alert>0?.42:.65;r.hopDistance=distance;r.state='hop';r.time=0;return true;
  }
@@ -46,7 +46,7 @@ export function updateRabbits(world,dt){
   if(r.state==='hop'){
    const step=Math.min(dt,Math.max(0,r.hopDuration-(r.time-dt))),distance=r.hopDistance*step/r.hopDuration;
    const count=Math.max(1,Math.ceil(distance/4));
-   for(let i=0;i<count;i++){const x=r.x+r.direction.x*distance/count,y=r.y+r.direction.y*distance/count;if(rabbitGround(x,y,r.areaId)){r.x=x;r.y=y;}else break;}
+   for(let i=0;i<count;i++){const x=r.x+r.direction.x*distance/count,y=r.y+r.direction.y*distance/count;if(canTraverse(r.x,r.y,x,y,r.areaId)&&rabbitGround(x,y,r.areaId)){r.x=x;r.y=y;}else break;}
    if(r.time>=r.hopDuration){if(r.alert>0)startHop(r,world.player);else {r.state='settle';r.time=0;}}
   }else if(r.state==='settle'&&r.time>=.7){r.state='idle';r.time=0;r.wait=1.8+random(r)*2.8;}
   else if(r.state==='idle'&&r.time>=r.wait){r.state='graze';r.time=0;r.wait=1+random(r)*1.4;}

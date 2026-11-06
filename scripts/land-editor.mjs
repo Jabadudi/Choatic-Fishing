@@ -1,3 +1,4 @@
+import {validateElevation,compileElevation} from '../src/elevation.js';
 // The land editor's bridge between the Reedwater Delta Atlas page and the game.
 // The editor lives in the atlas artifact (Edit world → Land). It keeps one document per area in the atlas database's
 // `land` collection, holding that area's terrain as a JSON string in `def`, in atlas pixels like delta-areas.js.
@@ -92,6 +93,19 @@ export function cleanLand(def,built,notes=[]){
   return [o];
  });
  if(Array.isArray(def.portals))out.portals=def.portals.flatMap((q,i)=>{const at=pt(q?.at),l=link(q);if(!at||!l){drop(`portal ${i+1}`);return [];}const to=q?.to==null?null:pt(q.to),o={at,r:Math.round(clamp(isNum(q.r)?q.r:to?40:60,10,300)),target:l.target,label:text(q.label,60)||l.target};if(to)o.to=to;if(q.quiet===true)o.quiet=true;if(l.entry)o.entry=l.entry;return [o];});
+ // Reject malformed elevation as a whole; silently dropping a floor could remove a cliff boundary.
+ if(Object.hasOwn(def,'elevation')){
+  if(def.elevation==null)out.elevation=null;
+  else{
+   const e=def.elevation,level=n=>Number.isInteger(n)&&n>=-6&&n<=6,seen=new Set();
+   if(!e||typeof e!=='object'||!level(e.base??0)||!Array.isArray(e.terraces)||e.terraces.length>32||!Array.isArray(e.ramps||[])||(e.ramps||[]).length>64)throw Error(`${where}: invalid elevation data.`);
+   const terraces=e.terraces.map(t=>{const points=pts(t?.points,3),key=id(t?.id);if(!key||seen.has(key)||!level(t.height)||!points||points.length>64)throw Error(`${where}: invalid elevation terrace.`);seen.add(key);return {id:key,height:t.height,points};});
+   const ramps=(e.ramps||[]).map(r=>{const from=pt(r?.from),to=pt(r?.to),key=id(r?.id);if(!key||seen.has(key)||!from||!to||Math.hypot(to[0]-from[0],to[1]-from[1])<6||!isNum(r.width)||r.width<1||r.width>16||!level(r.fromHeight)||!level(r.toHeight)||!(Math.abs(r.toHeight-r.fromHeight)===1||r.kind==='stairs'&&Math.abs(r.toHeight-r.fromHeight)===2)||!['ramp','stairs'].includes(r.kind))throw Error(`${where}: invalid elevation ramp.`);seen.add(key);return {id:key,from,to,width:r1(r.width),fromHeight:r.fromHeight,toHeight:r.toHeight,kind:r.kind};});
+   out.elevation=validateElevation({base:e.base??0,terraces,ramps});
+   const size=out.size||built.size,sx=size[0]/(X1-X0),sy=size[1]/(Y1-Y0),model=compileElevation(out.elevation,p=>[p[0]*sx,p[1]*sy],(sx+sy)/2);
+   for(const r of model?.ramps||[])if(!model.canTraverse(...r.from,...r.to))throw Error(`${where}: ramp ${r.id} is too steep or crosses an incompatible height.`);
+  }
+ }
  // Ground texture size per ground kind (1 = as painted).
  if(Object.hasOwn(def,'textures')){const t=def.textures;if(t==null)out.textures=undefined;else if(typeof t==='object'){const o={};for(const [k,v] of Object.entries(t))if(TEXTURE_KINDS.includes(k)&&isNum(v)&&v!==1)o[k]=Math.round(clamp(v,.25,3)*100)/100;else drop(`texture size ${k}`);out.textures=Object.keys(o).length?o:undefined;}else drop('bad texture sizes');}
  return out;
@@ -138,7 +152,7 @@ export const LAND_DATA=Object.freeze({${areas.length?'\n'+areas.join(',\n')+'\n'
 // What the editor starts from: every atlas area's terrain as the game has it now, plus the choices it offers.
 export function shippedLand(){
  const pick=d=>{const o={id:d.id,name:d.name,num:d.num,frame:d.frame};if(d.fixedFeatures)o.fixedFeatures=d.fixedFeatures;if(d.isNew){o.isNew=true;if(d.within)o.within=d.within;}for(const k of LAND_FIELDS)if(d[k]!==undefined)o[k]=d[k];return o;};
- return {zones:ZONES,textures:TEXTURE_KINDS,trails:Object.keys(TRAIL_STYLES),trailDefault:Object.fromEntries(DELTA_DEFS.map(d=>[d.id,defaultTrail(d.id)])),props:Object.keys(PROP_SOLID),propArt:PROP_ART,propSolid:PROP_SOLID,areas:Object.fromEntries(DELTA_DEFS.map(d=>[d.id,pick(d)]))};
+ return {elevationVersion:1,zones:ZONES,textures:TEXTURE_KINDS,trails:Object.keys(TRAIL_STYLES),trailDefault:Object.fromEntries(DELTA_DEFS.map(d=>[d.id,defaultTrail(d.id)])),props:Object.keys(PROP_SOLID),propArt:PROP_ART,propSolid:PROP_SOLID,areas:Object.fromEntries(DELTA_DEFS.map(d=>[d.id,pick(d)]))};
 }
 
 async function readDocs(dir){

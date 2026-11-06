@@ -1,3 +1,4 @@
+import {heightAt} from './terrain-height.js';
 import {drawEntitySprite,spriteHasArt} from './sprites.js';
 import {BEHAVIOR_LABELS,facingFor} from './entities.js';
 import {SPRITES} from './sprite-definitions.js';
@@ -95,7 +96,7 @@ export function drawAnimalStatus(c,world){
   // A hidden Mire Walker or a faded Whisperer shows no tag until it is hunting.
   if((a.hidden||a.fade)&&['idle','walk','return'].includes(a.state)&&a.health===a.maxHealth)continue;
   if(a.health===a.maxHealth&&!a.shiny&&!a.boss&&!['notice','chase','attack','strike','roar'].includes(a.state)&&(!near||world.inventory.selected===1))continue;
-  const y=a.y-(STATUS_HEIGHT[a.species]??(a.spriteId==='nightwalker'?66:a.species==='deer'?51:a.species==='rabbit'?42:a.species==='fox'?40:a.species==='boar'?46:a.species==='elk'?96:a.species==='bear'?62:a.species==='heron'?56:a.species==='crab'?30:a.species==='goat'?48:a.species==='otter'?30:a.species==='duck'?38:a.species==='pike'?28:a.species==='seal'?40:33));
+  const y=a.y-heightAt(a.x,a.y,world.areaId)-(STATUS_HEIGHT[a.species]??(a.spriteId==='nightwalker'?66:a.species==='deer'?51:a.species==='rabbit'?42:a.species==='fox'?40:a.species==='boar'?46:a.species==='elk'?96:a.species==='bear'?62:a.species==='heron'?56:a.species==='crab'?30:a.species==='goat'?48:a.species==='otter'?30:a.species==='duck'?38:a.species==='pike'?28:a.species==='seal'?40:33));
   // A boss gets a long bar in its own colour, and its tag says what it is.
   const half=a.boss?60:23;
   c.fillStyle='#19362de8';c.fillRect(a.x-half,y,half*2,a.boss?8:6);c.fillStyle=a.boss?'#d8705a':'#c8d78a';c.fillRect(a.x-half+1,y+1,(half*2-2)*a.health/a.maxHealth,a.boss?6:4);

@@ -1,3 +1,4 @@
+import {QUARRY_DEF} from './quarry-elevation.js';
 // The Reedwater Delta areas built from the atlas sheets (see atlas-area.js for the format). Coordinates are atlas
 // pixels on the 720 × 480 regional atlas; each area's frame is the piece of the atlas it covers.
 // Exits name their target area; an exit whose target is not built yet is left out until it is.
@@ -735,28 +736,7 @@ area({id:'springmouth-cave',num:'7',name:'Springmouth Cave',frame:[586,710,0,96]
 
 // 8 Abandoned Quarry: terraced stone pits, old cranes and collapsed shafts, with a flooded pit at the bottom. Roads cross
 // the pit floor; the landing path comes in from Egret Isles and a bridge crosses the river south to the Broken Watch.
-area({id:'abandoned-quarry',num:'8',name:'Abandoned Quarry',frame:[596,716,96,190],size:[2400,1880],base:'land',ground:'meadow',
- shapes:[
-  ['water',[[596,176],[630,174],[660,180],[690,176],[716,172],[716,190],[596,190]]],
-  ['land',[[624,104],[700,100],[712,130],[700,165],[640,170],[618,150]],{zone:'rock'}],
-  ['water','ellipse',[664,142],7,4]
- ],
- zones:[['dirt',[[640,118],[690,115],[698,140],[680,158],[645,158],[632,140]]],['forest',[[596,96],[620,96],[616,120],[596,124]]],['forest',[[596,164],[618,160],[630,174],[596,176]]]],
- cliffs:[[[686,102],[712,98],[716,124],[702,124]],[[604,110],[620,104],[626,122],[610,128]]],
- roads:[[[670,96],[666,110],[660,124]],[[596,158],[620,156],[640,150],[654,142]],[[630,112],[660,128],[684,140],[700,156]],[[700,112],[680,124],[656,134]],[[650,148],[630,160]],[[700,156],[706,168]]],
- bridges:[[[706,168],[707,190]]],
- props:[{kind:'crane',at:[650,116]},{kind:'crane',at:[694,146]},{kind:'mine',at:[692,116]},{kind:'cart',at:[676,128]},{kind:'logs',at:[626,150]},{kind:'stone',at:[640,138]},{kind:'stone',at:[686,156]},{kind:'gate',at:[618,156]}],
- places:[
-  {id:'quarry-pit',name:'Flooded Pit',at:[664,133],text:'The lowest pit has filled with rain and spring water, deep and green. Something big turns over in it now and then.'},
-  {id:'old-crane',name:'Old Crane',at:[652,121],text:'A wooden crane with a rusted hook, still pointing at a block it never lifted.'},
-  {id:'collapsed-shaft',name:'Collapsed Shaft',at:[690,121],text:'A shaft into the rock, its timbers broken and the way in choked with stone. Cold air seeps between the rocks.'},
-  {id:'quarry-gate',name:'Quarry Gate',at:[624,157],text:'Two leaning posts where a gate used to hang. A faded board says the quarry is closed by order of somebody.'}
- ],
- exits:[
-  {edge:'north',from:665,to:675,target:'springmouth-cave',label:'Springmouth Cave'},
-  {edge:'west',from:152,to:164,target:'egret-isles',label:'Egret Isles'},
-  {edge:'south',from:702,to:712,target:'broken-watch',label:'The Broken Watch'}
- ]});
+area(QUARRY_DEF);
 
 // 14 Heron Islands: wooded islands joined by sandbars, with a heron colony on the biggest. Fords lead north to Egret
 // Isles, west to Stilt Reach, south-west to the Upper Braids and east across the channel to the Broken Watch.
@@ -862,7 +842,7 @@ area({id:'outer-shallows',num:'21',name:'Outer Shallows',frame:[0,180,380,480],s
 
 // The land editor (Reedwater Delta Atlas → Edit world → Land) ships whole terrain fields per area in land-data.js.
 // Each one it holds replaces the same field written above; everything it leaves out stays as written here.
-export const LAND_FIELDS=['base','sea','ground','size','spawn','shapes','zones','cliffs','roads','walks','fords','bridges','props','places','exits','portals','textures'];
+export const LAND_FIELDS=['base','sea','ground','size','spawn','shapes','zones','cliffs','roads','walks','fords','bridges','props','places','exits','portals','textures','elevation'];
 export const BUILT_DEFS=DEFS;
 // New areas made in the atlas (a sub-area given a size, e.g. a cave behind a door) ship whole: their land-data.js entry
 // has isNew and carries its own name, number and frame; `within` is the area it sits inside on the world map.

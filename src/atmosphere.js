@@ -1,3 +1,5 @@
+import {drawQuarryAir} from './quarry-light.js';
+import {DELTA} from './delta-areas.js';
 import {nearWater,regionAt} from './wilds.js';
 // Golden late-afternoon light over the visible view: grade, shafts, drifting motes and a vignette.
 // Particles are view-relative (0..1) so they never leave the screen and are never reallocated.
@@ -66,6 +68,7 @@ function drawShafts(c,W,H,t){
 export function syncAtmosphere(){if(overlay){overlay.root.hidden=!overlayDrawn;overlayDrawn=false;}}
 export function drawAtmosphere(ctx,world,view){
  if(!world.adventure)return;
+ if(world.areaId==='abandoned-quarry'){if(overlay)overlay.root.hidden=true;overlayDrawn=false;drawQuarryAir(ctx,world,view,DELTA[world.areaId]);return;}
  const t=world.elapsed||0,W=view.right-view.left,H=view.bottom-view.top,p=world.player;
  particles??=createParticles();stepParticles(particles,Math.max(0,Math.min(.1,t-lastT)),t);lastT=t;
  const fireflies=nearWater(p.x,p.y,world.areaId)||['Forest Approach','Windchime Path','Shellback Marsh'].includes(regionAt(p.x,p.y,world.areaId))?glow():null;

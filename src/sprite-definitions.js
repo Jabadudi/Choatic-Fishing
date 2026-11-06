@@ -295,17 +295,20 @@ for(const id of ['listening-tree','fallen-giant','hollow-tree','goldleaf-tree','
 for(const id of ['rabbit','fox','deer','boar','elk','bear','heron','crab','goat','otter','duck','pike','seal','turtle','eel','shadow-walker','moonfang','rimejaw','flitlynx'])PROPS[`shard-${id}`]=`items/shard-${id}.webp`;
 
 // Editor-selectable scenery: visual bounds only; PROP_SOLID still owns collision.
+PROPS['atlas/quarry-gantry']='props/atlas/quarry-gantry.webp';
+PROPS['atlas/stonecutting-bench']='props/atlas/stonecutting-bench.webp';
 export const ATLAS_PROP_ART={
+ crane:{crane:['atlas/crane',120,120],'quarry-gantry':['atlas/quarry-gantry',220,195]},
  tree:{oak:['atlas/oak',150,118],pine:['atlas/pine',100,124],birch:['atlas/birch',80,118],'dead-tree':['atlas/dead-tree',110,114],'chime-tree':['atlas/chime-tree',150,140],'goldleaf-tree':['atlas/goldleaf-tree',150,160],'hollow-tree':['atlas/hollow-tree',150,160]},
  bush:{bush:['atlas/bush',60,40],fern:['atlas/fern',56,30],reeds:['atlas/reeds',56,38],'marsh-shrub':['atlas/marsh-shrub',60,26],'flower-box':['flower-box',64,38]},
  boulder:{'mossy-boulder':['atlas/mossy-boulder',50,38],'rock-cluster':['atlas/rock-cluster',46,26],'sea-rock':['atlas/sea-rock',56,34],'mossy-log':['atlas/mossy-log',66,28],'quarry-block':['atlas/quarry-block',58,42]},
  hut:{'fisher-hut':['atlas/fisher-hut',110,80],'lookout-hut':['atlas/lookout-hut',110,100],'boatwright-workshop':['atlas/boatwright-workshop',150,140],'rest-shelter':['rest-shelter',110,88]},
  boat:{'rowing-boat':['rowing-boat',100,60],dinghy:['atlas/dinghy',110,48],'moored-rowboat':['rowing-boat',100,60]},
- bench:{'plank-bench':['plank-bench',80,36],'bench-backrest':['bench-backrest',80,46],'fishing-seat':['fishing-seat',46,44]},
+ bench:{'stonecutting-bench':['atlas/stonecutting-bench',132,96],'plank-bench':['plank-bench',80,36],'bench-backrest':['bench-backrest',80,46],'fishing-seat':['fishing-seat',46,44]},
  lantern:{'lantern-post':['lantern-post',44,90],'harbor-lantern':['lantern-post',44,90]},
  cart:{cart:['atlas/cart',80,44],'apple-crate':['apple-crate',48,42],barrel:['barrel',42,52],'rain-barrel':['rain-barrel',48,52]},
  logs:{'log-stack':['atlas/log-stack',64,42],'firewood-stack':['firewood-stack',64,44]},
- sign:{signpost:['atlas/signpost',44,56],'net-rack':['net-rack',100,80],'rope-coils':['rope-coils',50,28],'fish-trap':['fish-trap',60,40],'fish-stall':['fish-stall',110,90],'produce-stall':['produce-stall',110,90]},
+ sign:{'quarry-water-bucket':['water-bucket-full',34,30],signpost:['atlas/signpost',44,56],'net-rack':['net-rack',100,80],'rope-coils':['rope-coils',50,28],'fish-trap':['fish-trap',60,40],'fish-stall':['fish-stall',110,90],'produce-stall':['produce-stall',110,90]},
  stone:{'standing-stone':['atlas/standing-stone',40,52],'ring-stone':['atlas/ring-stone',62,58]},
  ruin:{'ruin-wall':['atlas/ruin-wall',100,76],aqueduct:['atlas/aqueduct',180,125],'drowned-colonnade':['atlas/drowned-colonnade',170,100]}
 };
