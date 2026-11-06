@@ -12,7 +12,7 @@ Original 2400 x 1880 map bounds and area/landmark IDs remain intact. All three e
 
 ## Rendering and materials
 
-`src/elevation.js` owns pure height queries and validation; `src/atlas-area.js` compiles atlas geometry; `src/terrain-height.js` supplies simulation queries. Swept movement prevents cliff crossing, and combat, projectiles, drops and interactions use reachable height. The renderer subtracts height from y, depth-sorts terrain with actors, and reverses projection for pointer picking.
+`src/elevation.js` owns pure height queries and validation; `src/atlas-area.js` compiles atlas geometry; `src/terrain-height.js` supplies simulation queries. Swept movement prevents cliff crossing, and combat, projectiles, drops and interactions use reachable height. The renderer subtracts height from y, draws terrain before scenery and actors, keeps all actors above ledges and draws the local explorer last, and reverses projection for pointer picking.
 
 `src/elevation-art.js` caches aligned terrain strips. `src/cliff-art.js` follows authored polygon outlines with irregular caps, rock ledges, moss and contact shadows. `src/quarry-ground-art.js` blends broad bedrock plates with dust, dirt and sparse debris, and draws submerged green stone shelves. `src/ramp-art.js` renders retaining masonry, stair treads/risers, timber pier boards/piles and the short cart rails.
 
@@ -27,3 +27,6 @@ Runtime materials are `assets/ground/quarry-bedrock-v2.webp` and `assets/ground/
 Run npm start, then open `/quarry-preview.html`. The preview opens in overview; **Walk view** follows Eli, and **Reference** opens the approved illustration. It uses the real World and renderer, with no Firebase connection or save writes. The preview and reference/source art are excluded from the production build.
 
 Run npm test and npm run build. Tests cover every ramp both ways, the full descent/floor circuit/crane approach, the two-level stairs, pier traversal, cliff collision, combat, canonical exports and save compatibility. The editor repository's `scripts/quarry-elevation-preview.mjs <game-checkout>` checks live keyboard movement, pointer picking and rendering purity while capturing overview/walking views.
+
+
+Quarry visibility and loading: pooled draw slots clear old entity references before reuse. Scenery sorts by projected feet. Terrain geometry is cached independently from image readiness; only the visible projected row range is built and raster memory retains at most 64 rows or the current overview. The renderer supplies the actual camera viewport separately from the expanded actor culling bounds. scripts/quarry-visibility.cjs checks player visibility, stable scenery when actors enter/leave, lazy row generation and zero geometry resampling on texture repaint in real Chrome.
