@@ -30,8 +30,8 @@ texture packs can replace them too.
 ## Dual-grid ground
 
 Areas listed in `DUAL_GROUND` (`src/dual-grid.js`; Glasswater for now) build their ground from layers on a 48-unit
-lattice: the base sheet (`forest-floor.png`, whose fully filled cell repeats under everything), then `sand.png` (sand zones and the shore band), `dirt-path.png` (trails)
-and `water.png` (water). Decks, props, reeds, rocks and scenery are drawn over the tiles as before. In these areas
+lattice: the base sheet (`meadow-grass.png`, whose fully filled cell repeats under everything), then `sand.png` (sand zones and the shore band), `dirt-path.png` (trails)
+`water.png` (shallow water with the shoreline) and `deep-water.png` (water more than 60 units from the shore). Decks, props, reeds, rocks and scenery are drawn over the tiles as before. In these areas
 the water's walking edge uses the same lattice rule as the water tiles (`atlas-area.js`), so the shoreline Eli stops at
 is the drawn one. Until every sheet has loaded the blended ground painter is used. The four ground sheets are
 painted (sources in `art/sprites/terrain/dual-grid/*-source.png`); `scripts/draw-dual-grid.py` keeps the painted ones.

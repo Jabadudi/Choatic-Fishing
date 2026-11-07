@@ -233,7 +233,10 @@ const DUAL_TESTS={
  sand:(x,y,id)=>DELTA[id].zoneAt(x,y)==='sand'||waterDistance(x,y,id)<30,
  dirtPath:(x,y,id)=>roadDistance(x,y,id)<26&&waterDistance(x,y,id)>0,
  water:(x,y,id)=>waterDistance(x,y,id)<0,
+ // Deep water sits inside the shallow band: the shallow sheet's shore edge stays visible around it.
+ deepWater:(x,y,id)=>waterDistance(x,y,id)<-DEEP_WATER,
 };
+const DEEP_WATER=60;
 function dualGround(ctx,left,top,width,height,id){
  const plan=DUAL_GROUND[id];if(!plan||typeof document==='undefined')return false;
  const base=dualGridSheet(plan.base,markStale),sheets=plan.layers.map(k=>dualGridSheet(k,markStale));if(!base||sheets.some(s=>!s))return false;

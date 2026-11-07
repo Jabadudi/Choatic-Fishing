@@ -10,12 +10,12 @@ export const maskAt=(tl,tr,bl,br)=>(tl?1:0)|(tr?2:0)|(bl?4:0)|(br?8:0);
 export function frameCell(mask){const frame=FRAME_BY_MASK[mask];return {column:frame%4,row:Math.floor(frame/4)};}
 
 // The dual-grid sheets the game knows, by name. Files live in assets/ground/dual/ and texture packs may replace them.
-export const DUAL_GRID_SHEETS=Object.freeze({plateauTop:'plateau-top',cliffWall:'cliff-wall',sand:'sand',dirtPath:'dirt-path',water:'water',forestFloor:'forest-floor'});
+export const DUAL_GRID_SHEETS=Object.freeze({plateauTop:'plateau-top',cliffWall:'cliff-wall',sand:'sand',dirtPath:'dirt-path',water:'water',forestFloor:'forest-floor',meadowGrass:'meadow-grass',deepWater:'deep-water'});
 // Areas whose ground is built from dual-grid layers: a base texture, then each sheet over it in order. Water there
 // also walks on the same lattice (atlas-area.js), so the shoreline Eli stops at is the one on screen.
 export const GROUND_CELL=48;
 // base is a dual-grid sheet whose fully filled cell repeats under everything.
-export const DUAL_GROUND=Object.freeze({glasswater:{base:'forestFloor',layers:['sand','dirtPath','water']}});
+export const DUAL_GROUND=Object.freeze({glasswater:{base:'meadowGrass',layers:['sand','dirtPath','water','deepWater']}});
 const sheets=new Map(),listeners=new Set();
 onTexturePackChange(()=>{sheets.clear();listeners.forEach(fn=>fn());});
 export function dualGridSheet(kind,invalidate=()=>{}){
