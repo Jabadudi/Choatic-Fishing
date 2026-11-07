@@ -1,3 +1,4 @@
+import {textureAsset,onTexturePackChange} from './texture-packs.js';
 import {SPRITES,PROPS} from './sprite-definitions.js';
 const images=new Map();
 const keyedImages=new Map();
@@ -21,7 +22,7 @@ export function spriteAssetUrl(asset){
  // Versioned deployment folders also version image requests, even if the filename stays the same.
  const folder=new URL('.',import.meta.url).pathname.split('/').filter(Boolean).at(-1);
  if(folder?.startsWith('game-'))url.searchParams.set('v',folder.slice(5));
- return url.href;
+ return textureAsset(asset,url.href);
 }
 export function frameIndex(definition,state='idle',time=0,{direction,duration}={}){
  const clips=definition.animations||{},clip=clips[`${state}:${direction}`]||clips[state]||clips.idle;
@@ -120,3 +121,5 @@ export function preloadProps(){
  for(const id of Object.keys(PROPS)){const url=spriteAssetUrl(PROPS[id]);if(images.has(url))continue;const img=new Image();img.onload=()=>propListeners.forEach(fn=>fn());images.set(url,img);img.src=url;}
 }
 export const clearSpriteCache=()=>{images.clear();keyedImages.clear();failures.clear();};
+
+onTexturePackChange(()=>{clearSpriteCache();propListeners.forEach(fn=>fn());});

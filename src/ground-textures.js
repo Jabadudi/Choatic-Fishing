@@ -1,19 +1,22 @@
+import {textureAsset,onTexturePackChange} from './texture-packs.js';
 import {GROUND_TEXTURE_SCALE} from './terrain-style.js';
 // The Reedwater Delta ground and water textures (assets/ground/, cut by scripts/prepare-ground-textures.py), as repeating
 // canvas patterns for the terrain painter. A texture returns null until its image has loaded; the caller then paints
 // flat colour and invalidate() repaints the cached terrain once it arrives.
 export const GROUND_TEXTURES=Object.freeze({quarryStone:'quarry-bedrock-v2',cliffFace:'quarry-cliff-v2',forest:'forest-floor',sand:'beach-sand',rock:'rocky-ground',marsh:'marsh-ground',dirt:'packed-dirt',
  moss:'moss-carpet',leaves:'leaf-litter',pebbles:'river-pebbles',decking:'harbor-deck',cliff:'cliff-top',road:'old-road',drowned:'drowned-road',shallow:'shallow-water',river:'river-water',sea:'open-sea'});
-const images=new Map();
+const images=new Map(),invalidators=new Set();
+onTexturePackChange(()=>{images.clear();invalidators.forEach(fn=>fn());});
 // scale shrinks or grows the texture (an atlas area's land can set one per ground, e.g. smaller forest leaves).
 export function groundPattern(ctx,kind,invalidate,scale=1){
+ invalidators.add(invalidate);
  scale*=GROUND_TEXTURE_SCALE[kind]??1;
  const name=GROUND_TEXTURES[kind];if(!name||typeof Image==='undefined')return null;
  let entry=images.get(name);
  if(!entry){
   entry={image:new Image(),ready:false};images.set(name,entry);
   entry.image.onload=()=>{entry.ready=true;invalidate();};
-  entry.image.src=new URL(`../assets/ground/${name}.webp`,import.meta.url).href;
+  entry.image.src=textureAsset(`ground/${name}.webp`,new URL(`../assets/ground/${name}.webp`,import.meta.url).href);
  }
  if(!entry.ready)return null;
  // Patterns belong to one context; each terrain chunk has its own.
