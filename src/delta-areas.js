@@ -565,7 +565,7 @@ area({id:'glasswater',num:'3.2',name:'Glasswater Basin',frame:[2,130,158,214],si
  cliffs:[[[2,158],[14,158],[16,175],[10,190],[12,214],[2,214]]],
  roads:[[[90,158],[99,160],[105,162]],[[109,175],[110,188],[104,198],[90,204],[74,206],[60,206],[56,207]],[[56,207],[57,211],[58,214]]],
  walks:[[[104,190],[98,190]]],
- props:[{kind:'waterfall',at:[84.2,165.5]},{kind:'waterfall',at:[50.3,208.5]},{kind:'hut',at:[117,183]},{kind:'big-tree',at:[65,180],solid:0},{kind:'dock',at:[100,190]}],
+ props:[{kind:'waterfall',at:[84.2,165.5]},{kind:'waterfall',at:[50.3,208.5]},{kind:'hut',at:[117,183],art:'log-cabin'},{kind:'big-tree',at:[65,180],solid:0,art:'round-oak'},{kind:'logs',at:[108,187],art:'log-pile'},{kind:'cart',at:[124,186],art:'wood-barrel'},{kind:'dock',at:[100,190]}],
  places:[
   {id:'glasswater-jetty',name:'Glasswater',at:[100,190],text:'A turquoise pool so clear you can see the fish from the jetty. In the west the Clearwater Shallows are sandy and knee-deep.'},
   {id:'fishing-hut',name:'Fishing Hut',at:[112,190],text:'An empty fishing hut. A net on the wall, a stool by the door, and a kettle that someone meant to come back for.'},

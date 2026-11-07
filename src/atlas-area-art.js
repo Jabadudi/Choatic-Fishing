@@ -63,6 +63,8 @@ const PAINTED={hut:['fisher-hut',110,80],'stilt-hut':['stilt-hut',110,96],tower:
 // Hand-placed trees, plants and rocks use the same paintings and sizes as the random scenery (wilds.js).
 export function atlasPropArt(p){
  if(p.art&&ATLAS_PROP_ART[p.kind]?.[p.art])return ATLAS_PROP_ART[p.kind][p.art];
+ // A painting from another kind's list (e.g. the round oak on a big-tree landmark).
+ if(p.art)for(const list of Object.values(ATLAS_PROP_ART))if(list[p.art])return list[p.art];
  const big=(p.scale||1)>=3;
  if(p.kind==='tower'&&p.area==='broken-watch')return ['atlas/broken-watch',170,190];
  if(p.kind==='cave'&&p.area==='chimewood')return ['atlas/hollow-rock',160,140];
@@ -79,7 +81,7 @@ function drawProp(ctx,p,t){
   // A jetty runs down from its spot into the water.
   const [id,w,h]=art,foot=p.kind==='dock'?y+80:y;
   if(!p.inWater&&p.kind!=='dock'){if(p.art==='quarry-gantry'){shadow(ctx,x-w*.36,foot,w*.1,5);shadow(ctx,x+w*.36,foot,w*.1,5);}else shadow(ctx,x,foot,w*.36,Math.max(5,h*.07));}
-  const explicit=!!(p.art&&ATLAS_PROP_ART[p.kind]?.[p.art]);
+  const explicit=!!(p.art&&ATLAS_PROP_ART[p.kind]?.[p.art])||id.startsWith('atlas/');
   if(drawPropSprite(ctx,explicit||id.startsWith('atlas/')?id:`atlas/${id}`,{x,y:foot,w,h}))return;
  }
  switch(p.kind){

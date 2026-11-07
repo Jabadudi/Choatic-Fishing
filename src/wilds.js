@@ -9,7 +9,7 @@ export const layeredArea=id=>!!DELTA[id]?.elevation&&id!=='abandoned-quarry';
 import {TERRAIN_CELL,TERRAIN_BLEND} from './terrain-style.js';
 import {blurMask} from './terrain-blend.js';
 import {TerrainCoverageCache} from './terrain-coverage.js';
-import {SPRITES} from './sprite-definitions.js';
+import {SPRITES,ATLAS_PROP_ART} from './sprite-definitions.js';
 import {CABIN_AREA,CABIN_PLACES,cabinInteriorBlocked,cabinBlocked,cabinClearing,drawCabin,drawCabinInterior,drawCamp,drawWeaponRack} from './story-map.js';
 import {cabinDamaged} from './story.js';
 import {CHIEF_HOUSE,CHIEF_HOUSE_PLACES,chiefHouseBlocked,drawChiefHouse} from './chief-house.js';
@@ -111,12 +111,15 @@ function atlasScenery(gx,gy,id){
 // The painted tree, plant or rock (assets/props/atlas/) for a spot, with the box it fits in (game px).
 const DARK_WOODS=new Set(['whispering-woods','deep-trail']),COAST=new Set(['arrival-bay','delta-mouth','sandbar-spits','seal-skerries','tidecave-coast','heron-point','outer-shallows','heron-islands']);
 const ATLAS_ART={oak:[150,118],pine:[100,124],birch:[80,118],'dead-tree':[110,114],bush:[60,40],fern:[56,30],reeds:[56,38],'marsh-shrub':[60,26],
- 'mossy-boulder':[50,38],'rock-cluster':[46,26],'mossy-log':[66,28],'sea-rock':[56,34]};
+ 'mossy-boulder':[50,38],'rock-cluster':[46,26],'mossy-log':[66,28],'sea-rock':[56,34],'round-oak':[150,160],'round-bush':[62,46],'grass-rock':[56,32]};
+// Areas on the dual-grid ground use the layered-world paintings where the set has one.
+const LAYERED_ART={oak:'round-oak',bush:'round-bush','mossy-boulder':'grass-rock','rock-cluster':'grass-rock'};
 function atlasArt(id,zone,kind,r){
  const art=kind==='tree'?(zone==='marsh'?'dead-tree':zone==='forest'?(DARK_WOODS.has(id)?(r<.35?'dead-tree':'pine'):r<.4?'pine':r<.8?'oak':'birch'):r<.6?'oak':'birch')
   :kind==='bush'?(zone==='marsh'?(r<.6?'reeds':'marsh-shrub'):zone==='forest'?(r<.5?'bush':'fern'):'bush')
   :zone==='sand'&&COAST.has(id)?'sea-rock':zone==='forest'&&r<.3?'mossy-log':r<.55?'mossy-boulder':'rock-cluster';
- return {id:`atlas/${art}`,w:ATLAS_ART[art][0],h:ATLAS_ART[art][1]};
+ const pick=DUAL_GROUND[id]&&LAYERED_ART[art]||art;
+ return {id:`atlas/${pick}`,w:ATLAS_ART[pick][0],h:ATLAS_ART[pick][1]};
 }
 const groundShadow=(ctx,x,y,rx)=>{ctx.fillStyle='rgba(20,40,30,.28)';ctx.beginPath();ctx.ellipse(x+3,y+2,rx,rx*.32,0,0,Math.PI*2);ctx.fill();};
 export function surfaceAt(x,y,id='landing'){
@@ -273,11 +276,15 @@ function staticArea(ctx,left,top,width,height,id,tiledGround=false){
  }
  }
  // Sparse clusters leave the walking routes readable and give the meadow small discoveries.
+ const layered=!!DUAL_GROUND[id]&&['daisies','water-lily','cattails'].every(k=>drawProp(ctx,`atlas/${k}`,{x:-1e4,y:-1e4,w:1,h:1}));
  for(let y=Math.floor((top-24)/24)*24;y<top+height+24;y+=24)for(let x=Math.floor((left-24)/24)*24;x<left+width+24;x+=24){
   const px=x+hash(x,y)*17,py=y+hash(x,y,2)*17,wet=waterDistance(px,py,id),road=roadDistance(px,py,id),r=hash(x,y,19);
   if(id==='marsh')continue;
   // Flowers grow in grass; the textured sand, stone and marsh of the atlas areas stay bare.
   const bare=atlasTextures&&!['meadow','clear',undefined].includes(DELTA[id].zoneAt(px,py));
+  // The layered-world areas use the painted daisies, water lilies and cattails.
+  if(layered){const art=wet>35&&road>36&&r>.73&&!bare?'daisies':wet< -18&&wet> -110&&r>.92?'water-lily':wet< -2&&wet> -16&&r>.55?'cattails':null;
+   if(art){const [,w,h]=ATLAS_PROP_ART.bush[art];drawProp(ctx,`atlas/${art}`,{x:Math.round(px),y:Math.round(py)+4,w,h});continue;}}
   if(wet>35&&road>36&&r>.73&&!bare){for(let i=0;i<3;i++)wildflower(ctx,Math.round(px+hash(x,i,3)*16),Math.round(py+hash(y,i,4)*13),i!==2);}
   else if(wet>0&&wet<17&&r>.35)rock(ctx,px,py,true);
   else if(wet< -18&&wet> -110&&coastDistance(px,py)<0&&r>.8)lilyPad(ctx,Math.round(px),Math.round(py),r>.93);
