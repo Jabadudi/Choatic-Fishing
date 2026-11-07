@@ -2,6 +2,7 @@ import {damageAnimal} from './wildlife.js';
 import {huntableInArea} from './entities.js';
 import {artifactBonus,WET_REACH} from './artifacts.js';
 import {waterDistance,canReach,heightAt} from './wilds.js';
+import {comboActive,startSwing,noteHit,knockDown,downBonus} from './combo.js';
 import {stillWaterGuardAmount,afterPlayerHit,onCoreLineHit,coreLineMultiplier,waterstepEvasion,corePower,coreGuard,preventCoreDefeat,wallBlocks} from './core-abilities.js';
 export const combatTargets=world=>world.adventure?[...world.actors,...world.animals.filter(a=>huntableInArea(world,a))]:world.actors;
 // Swept collision prevents fast shells or harpoons skipping a small animal between steps.
@@ -73,11 +74,19 @@ export function attack(world,actor,item){
  if(!spec)return;
  if(spec.pose)actor.weaponPose={spriteId:spec.pose,state:'swing',started:world.elapsed,duration:.45};
  if(spec.kind==='melee'){
+  // Eli's melee swings chain into a 3-hit combo in the field (src/combo.js); everyone else swings as before.
+  const swing=comboActive(world,actor)?startSwing(world,actor,actor.cooldown):null;
+  if(swing){world.effects.at(-1).comboStep=swing.step;if(swing.finisher)world.effects.push({name:'combo-finisher',x:actor.x,y:actor.y,angle:actor.angle,range:spec.range,life:.35,duration:.35});}
+  let landed=0;
   for(const target of combatTargets(world)){if(target===actor||target.health<=0)continue;
    const dx=target.x-actor.x,dy=target.y-actor.y,angle=Math.atan2(dy,dx);
    const difference=Math.atan2(Math.sin(angle-actor.angle),Math.cos(angle-actor.angle));
-   if(Math.hypot(dx,dy)<=spec.range+(target.radius||14)&&Math.abs(difference)<=(spec.arc??1.05))damage(world,target,spec.damage,actor,angle,spec.knockback);
+   if(Math.hypot(dx,dy)<=spec.range+(target.radius||14)&&Math.abs(difference)<=(spec.arc??1.05)){
+    const amount=spec.damage*(swing?swing.damage*downBonus(target):1),push=spec.knockback*(swing?swing.knockback:1);
+    if(damage(world,target,amount,actor,angle,push)){landed++;if(swing?.knockdown&&target.health>0)knockDown(world,target,swing.knockdown);}
+   }
   }
+  for(let i=0;i<landed;i++)noteHit(world,actor,{finisher:!!swing?.finisher});
  }else{
   // The Stag Crown strengthens arrows from the hunting bow.
   const damage=spec.damage*(item.name==='Hunting Bow'?1+artifactBonus(actor,'stag-crown'):1);
@@ -99,7 +108,7 @@ export function updateRush(world,actor,dt){
  world.moveActor(actor,Math.cos(r.angle)*rush.speed*step,Math.sin(r.angle)*rush.speed*step,false);
  for(const target of combatTargets(world)){
   if(target===actor||target.health<=0||r.hit.has(target.id))continue;
-  if(Math.hypot(target.x-actor.x,target.y-actor.y)<=(target.radius||14)+34){r.hit.add(target.id);damage(world,target,rush.damage,actor,r.angle,rush.knockback);}
+  if(Math.hypot(target.x-actor.x,target.y-actor.y)<=(target.radius||14)+34){r.hit.add(target.id);if(damage(world,target,rush.damage,actor,r.angle,rush.knockback))noteHit(world,actor);}
  }
  r.remaining-=step;
  if(r.remaining<=1e-9||Math.hypot(actor.x-x,actor.y-y)<rush.speed*step*.2)actor.rush=null;
@@ -128,7 +137,7 @@ export function updateProjectiles(world,dt){
    // A monster's arrow only ever hits Eli.
    const hits=(shot.hostile?[world.player]:combatTargets(world)).filter(target=>target!==shot.owner&&target.health>0&&!shot.hit.has(target.id)).map(target=>({target,t:shotHit(shot,target,startX,startY)})).filter(hit=>hit.t!==null).sort((a,b)=>a.t-b.t);
    for(const {target} of hits){
-    const landed=damage(world,target,shot.damage*(shot.coreSkill?coreLineMultiplier(world):1),shot.owner,shot.angle,shot.knockback,shot);if(landed)onCoreLineHit(world,shot,target);shot.hit.add(target.id);if(shot.kind==='wave')continue;
+    const landed=damage(world,target,shot.damage*(shot.coreSkill?coreLineMultiplier(world):1),shot.owner,shot.angle,shot.knockback,shot);if(landed){onCoreLineHit(world,shot,target);if(shot.owner)noteHit(world,shot.owner,{melee:false});}shot.hit.add(target.id);if(shot.kind==='wave')continue;
     // A maxed Reedwater's Call passes through its first foe; it then flies on straight.
     if(shot.pierce>0){shot.pierce--;shot.homing=null;break;}
     shot.done=true;break;

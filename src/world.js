@@ -10,6 +10,7 @@ import {Progression,XP} from './progression.js';
 import {Inventory,canUseItem,itemCount,stackable,HEALING} from './inventory.js';
 import {MERCHANTS,findMarks,marksLabel} from './trade.js';
 import {attack,special,updateProjectiles,startRush,updateRush,WEAPON_RUSHES} from './combat.js';
+import {hitStopDt,updateCombo} from './combo.js';
 import {createBosses,updateBosses} from './bosses.js';
 import {createCore,updateCore,useCoreAbility,useCoreSlot,waterstepSpeed} from './core-abilities.js';
 import {facingFor} from './entities.js';
@@ -173,7 +174,10 @@ export class World {
   let x=analog?input.moveX:Number(!!input.right)-Number(!!input.left),y=analog?input.moveY:Number(!!input.down)-Number(!!input.up);
   const length=Math.hypot(x,y);
   if(length){x/=length;y/=length;}else{x=Math.cos(this.player.angle);y=Math.sin(this.player.angle);}
-  this.player.dashCharges--;this.dashDirection={x,y};this.dashRemaining=.16;return true;
+  this.player.dashCharges--;this.dashDirection={x,y};this.dashRemaining=.16;
+  // In the field a dash cuts the end of a swing short, so Eli can dodge out of a combo; the chain carries on after it.
+  if(this.adventure&&this.player.comboStep>0)this.player.cooldown=Math.min(this.player.cooldown,.08);
+  return true;
  }
  moveActor(p,dx,dy,shoreOnly){
   if(dx===0&&dy===0)return;
@@ -231,6 +235,8 @@ export class World {
    return;
   }
   if(this.matchState!=='playing')return;
+  // A melee hit that lands freezes the field for a moment (src/combo.js).
+  if(this.adventure){dt=hitStopDt(this,dt);updateCombo(this,dt);}
   this.elapsed+=dt;this.effects=this.effects.filter(effect=>(effect.life-=dt)>0);
   for(const actor of this.actors){actor.cooldown=Math.max(0,actor.cooldown-dt);if(actor.health<=0)continue;if(!this.story)actor.progression.tickUpgrades(dt);actor.health=Math.min(actor.progression.maxHealth,actor.health+dt*(1+actor.progression.passive('health.regen')));this.moveActor(actor,actor.vx*dt,actor.vy*dt,actor.fishing.state!=='idle');actor.vx*=Math.exp(-9*dt);actor.vy*=Math.exp(-9*dt);}
   for(const human of this.humans){

@@ -143,6 +143,8 @@ export function updateWildlife(world,dt){
   a.gap=distance;
   const near=alive&&distance<a.fearRange,close=alive&&distance<startleRange(a),rushed=near&&!(a.calm>0)&&a.closing>rushSpeed(a);
   const reaction=reactionFor(a,{disturbed:close||rushed,provoked:a.behavior==='defensive'?a.anger>0:a.alert>0});
+  // Knocked down by a combo finisher: it lies still and cannot swing until it gets up (src/combo.js).
+  if(a.downRemaining>0){a.downRemaining=Math.max(0,a.downRemaining-dt);a.attackRemaining=0;if(['attack','strike','notice'].includes(a.state)){a.state=a.behavior==='aggressive'?'chase':'idle';a.time=0;}continue;}
   if(a.boss){updateBoss(world,a,dt);continue;}
   if(reaction==='pursue'){updateMonster(world,a,dt);continue;}
   if(reaction==='retaliate'){

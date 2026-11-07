@@ -15,6 +15,7 @@ import {nightAttackActors} from './story-action.js';
 import {drawFamiliar,drawShard} from './familiar-art.js';
 import {drawRadioBeside,radioBesideEli} from './radio-art.js';
 import {drawLevelBurst} from './level-up-fx.js';
+import {comboDisplay} from './combo.js';
 // others: players from the shared world standing in this area (hub.js); drawn with the scenery like Eli.
 export function render(ctx,world,view,{others=[]}={}){
  const {elapsed:t,player:p,bobber}=world;
@@ -60,6 +61,9 @@ export function render(ctx,world,view,{others=[]}={}){
     const duration=effect.duration||(['defeat','Whirlpool Burst'].includes(effect.name)?.8:.55);
     const age=Math.max(0,duration-effect.life);ctx.save();ctx.globalAlpha=Math.min(1,effect.life/duration);ctx.translate(effect.x,effect.y-heightAt(effect.x,effect.y,world.areaId));ctx.rotate(effect.angle);
     ctx.strokeStyle='#f3d59d';ctx.fillStyle='#f3d59d';ctx.lineWidth=5;
+    // Combo finisher: a wide white slash; DOWN pops over a knocked-down foe (src/combo.js).
+    if(effect.name==='combo-finisher'){const k=Math.min(1,age/(duration*.6)),r=(effect.range||70)+18;ctx.strokeStyle='#fffbe8';ctx.lineWidth=9*(1-k)+2;ctx.beginPath();ctx.arc(0,0,r,-1.4,-1.4+2.8*k);ctx.stroke();ctx.restore();continue;}
+    if(effect.name==='down'){ctx.font='bold 16px monospace';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#1a0b0b';ctx.fillStyle='#ffe066';const y=-Math.min(age,.15)*60;ctx.strokeText(effect.label,0,y);ctx.fillText(effect.label,0,y);ctx.restore();continue;}
     if(effect.name==='player-hit'||effect.name==='notice'){ctx.font=`bold ${effect.name==='notice'?22:15}px monospace`;ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#1a0b0b';ctx.fillStyle=effect.name==='notice'?'#ffcf5a':'#ff6b5b';const y=effect.name==='notice'?-Math.min(age,.2)*30:-age*30;ctx.strokeText(effect.label,0,y);ctx.fillText(effect.label,0,y);}
     else if(effect.name==='animal-hit'||effect.name==='hunt'){ctx.font=effect.name==='hunt'?'bold 12px monospace':'bold 14px monospace';ctx.textAlign='center';ctx.fillStyle=effect.name==='hunt'?'#f8e6a7':'#fff4e4';ctx.fillText(effect.label,0,-age*30);}
     else if(['skill','skill-up','level-up'].includes(effect.name)){const big=effect.name!=='skill';ctx.font=`bold ${big?14:12}px monospace`;ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#10261d';ctx.fillStyle=effect.name==='level-up'?'#ffd36e':effect.name==='skill-up'?'#bfe8a0':'#e8f0d0';const y=-age*(big?18:26);ctx.strokeText(effect.label,0,y);ctx.fillText(effect.label,0,y);}
@@ -75,14 +79,27 @@ export function render(ctx,world,view,{others=[]}={}){
     else if(effect.name==='explosion'||effect.name==='defeat'){ctx.beginPath();ctx.arc(0,0,10+age*150,0,Math.PI*2);ctx.stroke();}
     else if(effect.name==='Sardine'){ctx.fillStyle='#b9db8c';ctx.font='bold 25px Arial';ctx.fillText('SNACK',0,-30-age*40);}
     else if(effect.name==='Grappling Squid'){ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(140,0);ctx.stroke();}
-    else{ctx.beginPath();ctx.arc(0,0,effect.name==='Anchor'?72:48,-1+age*2,1+age*2);ctx.stroke();}
+    // The second swing of a combo sweeps back the other way.
+    else{const back=effect.comboStep===2?-1:1;ctx.beginPath();ctx.arc(0,0,effect.name==='Anchor'?72:48,back*(-1+age*2),back*(1+age*2),back<0);ctx.stroke();}
     ctx.restore();
   }
-  if(world.adventure){drawWildsLabels(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500});if(view&&!world.defeat&&!INTERIOR_AREAS.includes(world.areaId)&&!cabinDamaged(world.story))drawAtmosphere(ctx,world,displayView);drawAnimalStatus(ctx,world);if(world.defeat&&view)drawDefeat(ctx,world,displayView);}
+  if(world.adventure){drawWildsLabels(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500});if(view&&!world.defeat&&!INTERIOR_AREAS.includes(world.areaId)&&!cabinDamaged(world.story))drawAtmosphere(ctx,world,displayView);drawAnimalStatus(ctx,world);if(view)drawComboCounter(ctx,world,displayView);if(world.defeat&&view)drawDefeat(ctx,world,displayView);}
 }
 function drawBobber(ctx,world){
  const {elapsed:t,player:p,bobber}=world;if(!bobber)return;
  ctx.strokeStyle='#f1e6c7';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(p.x+Math.cos(p.angle)*23,p.y-heightAt(p.x,p.y,world.areaId)+Math.sin(p.angle)*23);ctx.lineTo(bobber.x,bobber.y-heightAt(bobber.x,bobber.y,world.areaId));ctx.stroke();ctx.strokeStyle='#99c8b788';ctx.beginPath();ctx.ellipse(bobber.x,bobber.y-heightAt(bobber.x,bobber.y,world.areaId)+4,12+Math.sin(t*3)*3,5,0,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#ef947a';ctx.beginPath();ctx.arc(bobber.x,bobber.y-heightAt(bobber.x,bobber.y,world.areaId),5,0,Math.PI*2);ctx.fill();
+}
+// The combo counter sits right of centre while hits keep landing, and pops on each new one.
+function drawComboCounter(ctx,world,view){
+ const c=comboDisplay(world);if(!c)return;
+ const W=view.right-view.left,H=view.bottom-view.top,size=Math.max(26,Math.min(48,W*.045))*(1+c.flash*.8);
+ ctx.save();ctx.globalAlpha=c.fade;ctx.textAlign='right';ctx.lineJoin='round';
+ // Left of the hotbar column and above the attack wheel, so it never sits on either (desktop or phone).
+ const x=view.right-W*.2,y=view.top+H*.32;
+ ctx.font=`900 ${Math.round(size)}px Arial`;ctx.lineWidth=Math.max(4,size*.14);ctx.strokeStyle='#2a1206';ctx.fillStyle=c.count>=30?'#ff8f3a':c.count>=10?'#ffd24a':'#fff3d6';
+ ctx.strokeText(String(c.count),x,y);ctx.fillText(String(c.count),x,y);
+ ctx.font=`bold ${Math.round(size*.36)}px Arial`;ctx.lineWidth=4;ctx.strokeText('HIT COMBO',x,y+size*.45);ctx.fillStyle='#fff3d6';ctx.fillText('HIT COMBO',x,y+size*.45);
+ ctx.restore();
 }
 // The view darkens while Eli is down, then clears as he wakes.
 function drawDefeat(ctx,world,view){

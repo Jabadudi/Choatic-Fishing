@@ -28,7 +28,8 @@ test('melee hunting respects facing and distance, counts one hunt and grants hun
  const w=fresh(),deer=w.wildlife.find(a=>a.species==='deer'&&a.areaId==='landing');
  Object.assign(w.player,{x:deer.x-55,y:deer.y,angle:Math.PI});
  attack(w,w.player,{name:'Anchor'});assert.equal(deer.health,60);
- w.player.angle=0;attack(w,w.player,{name:'Reed Spear'});assert.equal(deer.health,38);assert.ok(deer.alert>0);
+ // The missed Anchor swing still opened Eli's combo, so this is the chain's second hit (x1.1, src/combo.js).
+ w.player.angle=0;attack(w,w.player,{name:'Reed Spear'});assert.equal(deer.health,60-22*1.1);assert.ok(deer.alert>0);
  attack(w,w.player,{name:'Anchor'});assert.equal(deer.health,0);assert.equal(w.hunting.total,1);assert.equal(w.hunting.bySpecies.deer,1);assert.equal(w.progression.totalXp,25);
  assert.equal(damageAnimal(w,deer,100,w.player,0),false);assert.equal(w.progression.totalXp,25);assert.equal(w.progression.eliminations.size,0);
  assert.ok(w.matchState==='playing');
