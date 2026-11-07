@@ -17,3 +17,11 @@ north cliff, stone stairs bring the Upper Falls trail down to the shore, and the
 `assets/ground/earth-cliff.webp` is a placeholder drawn by `scripts/draw-earth-cliff.py`. Replace it with the painted
 tile from the project's layered-world terrain prompts at the same 512 x 512 size (texture packs can replace it too).
 The grass lip along cliff tops and the waterfall curtain are drawn in code.
+
+## Painted stairs and plank walks
+
+Stairs in layered areas use `assets/ground/stone-steps.png` (a stack of six steps, repeated down the flight, as wide as
+the stairs); the drawn treads give way once it has loaded, and the side walls stay. In dual-grid ground areas the
+walkways are laid from `plank-walk.webp` with `plank-walk-start` / `plank-walk-end` post pairs at free ends. Sources:
+`art/sprites/terrain/structures/`. The plank-deck and stone-stairs dual-grid sheets are kept in
+`art/sprites/terrain/dual-grid/` for wide decks and stairways later.

@@ -19,11 +19,27 @@ function tiled(ctx,pts,id,deck,aspect){
  }
  return true;
 }
+// The plank tile is 48 x 41 (deck only); the end pieces are 40 x 75 with the deck in rows 15 to 56.
+function plankWalks(ctx,walks,all){
+ const ready=['plank-walk','plank-walk-start','plank-walk-end'].every(k=>drawPropSprite(ctx,`atlas/${k}`,{x:-1e5,y:-1e5,w:1,h:1}));if(!ready)return false;
+ const joined=(p,self)=>all.some(o=>o!==self&&o.pts.some(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<4));
+ for(const b of walks){
+  const deck=b.half*2+12,k=deck/41;tiled(ctx,b.pts,'atlas/plank-walk',deck,48/41);
+  for(const [end,id] of [[0,'plank-walk-start'],[b.pts.length-1,'plank-walk-end']]){
+   const p=b.pts[end],q=b.pts[end?end-1:1];if(joined(p,b))continue;
+   const a=end?Math.atan2(p[1]-q[1],p[0]-q[0]):Math.atan2(q[1]-p[1],q[0]-p[0]),len=Math.hypot(q[0]-p[0],q[1]-p[1]),x=end?len-20*k:20*k;
+   ctx.save();ctx.translate(end?q[0]:p[0],end?q[1]:p[1]);ctx.rotate(a);drawPropSprite(ctx,`atlas/${id}`,{x,y:deck/2+19*k,w:40*k,h:75*k});ctx.restore();
+  }
+ }
+ return true;
+}
 export function drawAtlasGround(ctx,built,left,top,width,height){
  // Painted walkways where the tiles have loaded: stone bridge decks, marsh boardwalks and stepping stones.
  for(const b of built.bridges)if(near(b.pts,b.half,left,top,width,height))b.painted=tiled(ctx,b.pts,'atlas/stone-bridge-h',b.half*2+14,322/125);
  const visibleWalks=built.walks.filter(b=>near(b.pts,b.half,left,top,width,height));
- const woodReady=drawWoodDecks(ctx,visibleWalks.map(b=>({pts:b.pts,width:b.half*2+12})));
+ // Layered-world areas lay the painted plank bridge: planks along the line, a post pair at each free end.
+ const planks=!!DUAL_GROUND[built.area?.id]&&plankWalks(ctx,visibleWalks,built.walks);
+ const woodReady=planks||drawWoodDecks(ctx,visibleWalks.map(b=>({pts:b.pts,width:b.half*2+12})));
  for(const b of visibleWalks)b.painted=woodReady;
  for(const b of built.bridges){if(!near(b.pts,b.half,left,top,width,height))continue;if(b.painted)continue;const w=b.half*2;
   stroke(ctx,b.pts,w+10,'#3d3a36');stroke(ctx,b.pts,w+4,'#8d877a');stroke(ctx,b.pts,w-6,'#b9b19c');

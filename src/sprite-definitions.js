@@ -297,7 +297,7 @@ for(const id of ['listening-tree','fallen-giant','hollow-tree','goldleaf-tree','
  'tent','cart','log-stack','signpost','heron-nest','turtle-shell','gate','chimes-post','quarry-block','walk-h','walk-v','walk-platform','stone-bridge-h',
  'stone-bridge-v','stepping-stones','stepping-stone','rope-bridge','broken-watch','grey-spire','great-bridge','spring-pool','hollow-rock','drowned-colonnade',
  // Layered-world set (scripts/prepare-layered-props.py), the art style the game is moving to.
- 'log-cabin','round-oak','round-bush','daisies','cattails','water-lily','grass-rock','log-pile','wood-barrel'])PROPS[`atlas/${id}`]=`props/atlas/${id}.webp`;
+ 'log-cabin','round-oak','round-bush','daisies','cattails','water-lily','grass-rock','log-pile','wood-barrel','plank-walk','plank-walk-start','plank-walk-end'])PROPS[`atlas/${id}`]=`props/atlas/${id}.webp`;
 for(const id of ['rabbit','fox','deer','boar','elk','bear','heron','crab','goat','otter','duck','pike','seal','turtle','eel','shadow-walker','moonfang','rimejaw','flitlynx'])PROPS[`shard-${id}`]=`items/shard-${id}.webp`;
 
 // Editor-selectable scenery: visual bounds only; PROP_SOLID still owns collision.

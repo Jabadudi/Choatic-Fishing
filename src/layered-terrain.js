@@ -6,7 +6,7 @@ import {cliffPieces} from './cliff-art.js';
 import {rampArtwork,drawRampPiece} from './ramp-art.js';
 import {groundPattern} from './ground-textures.js';
 import {ELEVATION_GRID} from './elevation.js';
-import {dualGridSheet,drawDualGrid} from './dual-grid.js';
+import {dualGridSheet,drawDualGrid,groundImage} from './dual-grid.js';
 // Dual-grid lattice spacing in world units: one level (96) is one tile of cliff wall.
 export const LAYER_CELL=ELEVATION_GRID;
 
@@ -130,6 +130,22 @@ function paintDualGrid(c,left,top,width,height,built,paintFlat,invalidate,topShe
   c.drawImage(rim,P,P,w,h,left,top,w,h);
  });
  c.restore();
- const patterns={rock:groundPattern(c,'rock',invalidate),cliffFace:groundPattern(c,'earthCliff',invalidate)};
- for(const s of stairs)if(s.bottom>top&&s.top<top+height)drawRampPiece(c,s,patterns);
+ const patterns={rock:groundPattern(c,'rock',invalidate),cliffFace:groundPattern(c,'earthCliff',invalidate)},steps=groundImage('ground/stone-steps.png',invalidate);
+ // With the painted steps loaded, the drawn treads, risers and aprons give way to them; the side walls stay.
+ for(const s of stairs)if(s.bottom>top&&s.top<top+height&&!(steps&&STEP_PIECES.has(s.style)))drawRampPiece(c,s,patterns);
+ if(steps)for(const r of built.elevation.ramps)if(r.kind==='stairs')drawSteps(c,r,steps,top,height);
+}
+const STEP_PIECES=new Set(['tread','riser','landing']);
+// The painted flight (assets/ground/stone-steps.png, a stack of six steps) runs from the top of the stairs to their
+// foot on screen, as wide as the stairs and repeated down their length.
+function drawSteps(c,r,image,top,height){
+ const zf=r.fromHeight*ELEVATION_GRID,zt=r.toHeight*ELEVATION_GRID,[x0,y0]=r.from,[x1,y1]=r.to;
+ // The upper end is the one drawn higher on screen.
+ const a=y0-zf<=y1-zt?[x0,y0-zf]:[x1,y1-zt],b=a[0]===x0&&a[1]===y0-zf?[x1,y1-zt]:[x0,y0-zf];
+ const vx=b[0]-a[0],vy=b[1]-a[1],len=Math.hypot(vx,vy),w=r.width/2;
+ if(Math.max(a[1],b[1])+w<top||Math.min(a[1],b[1])-w>top+height||!len)return;
+ const k=2*w/image.width,tile=image.height*k;
+ c.save();c.translate(a[0],a[1]);c.transform(vy/len,-vx/len,vx/len,vy/len,0,0);c.imageSmoothingEnabled=true;
+ for(let t=0;t<len;t+=tile){const part=Math.min(tile,len-t);c.drawImage(image,0,0,image.width,part/k,-w,t,2*w,part);}
+ c.restore();
 }

@@ -19,10 +19,14 @@ export const DUAL_GROUND=Object.freeze({glasswater:{base:'meadowGrass',layers:['
 const sheets=new Map(),listeners=new Set();
 onTexturePackChange(()=>{sheets.clear();listeners.forEach(fn=>fn());});
 export function dualGridSheet(kind,invalidate=()=>{}){
- const name=DUAL_GRID_SHEETS[kind];if(!name||typeof Image==='undefined')return null;
+ const name=DUAL_GRID_SHEETS[kind];return name?groundImage(`ground/dual/${name}.png`,invalidate):null;
+}
+// Any ground image under assets/ (texture packs may replace it); null until it has loaded.
+export function groundImage(path,invalidate=()=>{}){
+ if(typeof Image==='undefined')return null;
  listeners.add(invalidate);
- let entry=sheets.get(name);
- if(!entry){entry={image:new Image(),ready:false};sheets.set(name,entry);entry.image.onload=()=>{entry.ready=true;invalidate();};entry.image.src=textureAsset(`ground/dual/${name}.png`,new URL(`../assets/ground/dual/${name}.png`,import.meta.url).href);}
+ let entry=sheets.get(path);
+ if(!entry){entry={image:new Image(),ready:false};sheets.set(path,entry);entry.image.onload=()=>{entry.ready=true;invalidate();};entry.image.src=textureAsset(path,new URL(`../assets/${path}`,import.meta.url).href);}
  return entry.ready?entry.image:null;
 }
 
