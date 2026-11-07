@@ -10,7 +10,7 @@ Height, collision and reach still come only from `src/elevation.js`, the same as
 in the world editor (Tools > Elevation & ramps) or in the area's `elevation` field in `src/delta-areas.js`.
 
 Glasswater Basin is the first layered area: the forest north of the pool is one level up, the Middle Falls pour over the
-north cliff, and stairs bring the Upper Falls trail and the fishing hut path down to the shore.
+north cliff, stone stairs bring the Upper Falls trail down to the shore, and the fishing hut sits below the rise.
 
 ## Art
 

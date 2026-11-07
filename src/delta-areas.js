@@ -578,12 +578,11 @@ area({id:'glasswater',num:'3.2',name:'Glasswater Basin',frame:[2,130,158,214],si
   {edge:'south',from:53,to:63,target:'western-falls',label:'Western Falls'}
  ],
  // Layered world test: the forest north of the pool stands one level higher. An earth cliff runs along the north
- // shore with the Middle Falls pouring over it; stone stairs bring the Upper Falls trail and the fishing hut path down.
+ // shore with the Middle Falls pouring over it; stone stairs bring the Upper Falls trail down; the fishing hut sits on the shore below the rise.
  elevation:{base:0,
-  terraces:[{id:'north-rise',height:1,points:[[0,128],[160,128],[160,204],[126,204],[119,200],[113,199],[115.5,186],[114,176],[104,167],[90,164],[78,163],[66,163],[50,165],[30,169],[13,175],[12,218],[0,218]]}],
+  terraces:[{id:'north-rise',height:1,points:[[0,128],[160,128],[160,177],[122,177],[114,176],[104,167],[90,164],[78,163],[66,163],[50,165],[30,169],[13,175],[12,218],[0,218]]}],
   ramps:[
-   {id:'north-stairs',kind:'stairs',from:[105,162],to:[109,175],width:5,fromHeight:1,toHeight:0},
-   {id:'hut-stairs',kind:'stairs',from:[120,190],to:[110,190],width:4,fromHeight:1,toHeight:0}
+   {id:'north-stairs',kind:'stairs',from:[105,162],to:[109,175],width:5,fromHeight:1,toHeight:0}
   ]}
 });
 
