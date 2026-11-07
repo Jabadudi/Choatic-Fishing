@@ -10,11 +10,12 @@ export const maskAt=(tl,tr,bl,br)=>(tl?1:0)|(tr?2:0)|(bl?4:0)|(br?8:0);
 export function frameCell(mask){const frame=FRAME_BY_MASK[mask];return {column:frame%4,row:Math.floor(frame/4)};}
 
 // The dual-grid sheets the game knows, by name. Files live in assets/ground/dual/ and texture packs may replace them.
-export const DUAL_GRID_SHEETS=Object.freeze({plateauTop:'plateau-top',cliffWall:'cliff-wall',sand:'sand',dirtPath:'dirt-path',water:'water'});
+export const DUAL_GRID_SHEETS=Object.freeze({plateauTop:'plateau-top',cliffWall:'cliff-wall',sand:'sand',dirtPath:'dirt-path',water:'water',forestFloor:'forest-floor'});
 // Areas whose ground is built from dual-grid layers: a base texture, then each sheet over it in order. Water there
 // also walks on the same lattice (atlas-area.js), so the shoreline Eli stops at is the one on screen.
 export const GROUND_CELL=48;
-export const DUAL_GROUND=Object.freeze({glasswater:{base:'forest',layers:['sand','dirtPath','water']}});
+// base is a dual-grid sheet whose fully filled cell repeats under everything.
+export const DUAL_GROUND=Object.freeze({glasswater:{base:'forestFloor',layers:['sand','dirtPath','water']}});
 const sheets=new Map(),listeners=new Set();
 onTexturePackChange(()=>{sheets.clear();listeners.forEach(fn=>fn());});
 export function dualGridSheet(kind,invalidate=()=>{}){
@@ -37,4 +38,13 @@ export function drawDualGrid(c,image,inside,{left,top,width,height,cell,dy=0,ski
   const {column,row}=frameCell(mask);
   c.drawImage(image,column*cw,row*ch,cw,ch,i*cell,j*cell+dy,cell,cell);
  }
+}
+
+// The fully filled cell of a sheet as a repeating pattern, one cell per lattice step.
+const fills=new WeakMap();
+export function fullCellPattern(ctx,image,cell){
+ let byCell=fills.get(image);if(!byCell){byCell=new Map();fills.set(image,byCell);}
+ let tile=byCell.get(cell);
+ if(!tile){tile=document.createElement('canvas');tile.width=tile.height=cell;const t=tile.getContext('2d');t.imageSmoothingEnabled=true;const {column,row}=frameCell(15),cw=image.width/4,ch=image.height/4;t.drawImage(image,column*cw,row*ch,cw,ch,0,0,cell,cell);byCell.set(cell,tile);}
+ return ctx.createPattern(tile,'repeat');
 }

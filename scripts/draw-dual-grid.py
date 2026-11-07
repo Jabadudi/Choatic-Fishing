@@ -8,7 +8,7 @@ Writes:
   art/sprites/terrain/dual-grid/dual-grid-template.png  white = terrain, magenta = empty, for image generators
   assets/ground/dual/plateau-top.png   stand-in: grass top of a raised plateau, with a dark rim and hanging lip
   assets/ground/dual/cliff-wall.png    stand-in: earth cliff wall, front-on
-  assets/ground/dual/sand.png, dirt-path.png, water.png   stand-ins for the Glasswater ground layers
+  assets/ground/dual/sand.png, dirt-path.png, water.png, forest-floor.png   stand-ins for the Glasswater ground
 Run: python3 scripts/draw-dual-grid.py
 """
 import math
@@ -139,5 +139,6 @@ import os
 for name, painter in (('plateau-top', grass), ('cliff-wall', wall)):
     if not os.path.exists(f'art/sprites/terrain/dual-grid/{name}-source.png'):
         sheet(painter).save(f'assets/ground/dual/{name}.png')
-for name, painter in (('sand', sand), ('dirt-path', dirt), ('water', water)):
+forest = flat([(78, 102, 52, 255), (70, 92, 46, 255), (104, 84, 52, 255)], (60, 82, 40, 255), (40, 54, 28, 255))
+for name, painter in (('sand', sand), ('dirt-path', dirt), ('water', water), ('forest-floor', forest)):
     sheet(painter).save(f'assets/ground/dual/{name}.png')

@@ -3,7 +3,7 @@ import {elevationFor,heightAt,canTraverse,canReach,projectGround,unprojectGround
 export {elevationFor,heightAt,canTraverse,canReach,projectGround,unprojectGround};
 import {elevationBands,drawElevationBand} from './elevation-art.js';
 import {paintLayered} from './layered-terrain.js';
-import {DUAL_GROUND,GROUND_CELL,dualGridSheet,drawDualGrid} from './dual-grid.js';
+import {DUAL_GROUND,GROUND_CELL,dualGridSheet,drawDualGrid,fullCellPattern} from './dual-grid.js';
 // Elevated atlas areas use the layered painter, except the quarry, which has its own hand-built terrain art.
 export const layeredArea=id=>!!DELTA[id]?.elevation&&id!=='abandoned-quarry';
 import {TERRAIN_CELL,TERRAIN_BLEND} from './terrain-style.js';
@@ -236,9 +236,9 @@ const DUAL_TESTS={
 };
 function dualGround(ctx,left,top,width,height,id){
  const plan=DUAL_GROUND[id];if(!plan||typeof document==='undefined')return false;
- const sheets=plan.layers.map(k=>dualGridSheet(k,markStale));if(sheets.some(s=>!s))return false;
- ctx.save();ctx.fillStyle=groundPattern(ctx,plan.base,markStale,DELTA[id].textures?.[plan.base]||1)||'#54703c';ctx.fillRect(left,top,width,height);
- ctx.imageSmoothingEnabled=true;const C=GROUND_CELL;
+ const base=dualGridSheet(plan.base,markStale),sheets=plan.layers.map(k=>dualGridSheet(k,markStale));if(!base||sheets.some(s=>!s))return false;
+ const C=GROUND_CELL;ctx.save();ctx.fillStyle=fullCellPattern(ctx,base,C);ctx.fillRect(left,top,width,height);
+ ctx.imageSmoothingEnabled=true;
  plan.layers.forEach((k,i)=>drawDualGrid(ctx,sheets[i],(x,y)=>DUAL_TESTS[k](x,y,id),{left:left-C,top:top-C,width:width+2*C,height:height+2*C,cell:C}));
  ctx.restore();return true;
 }
