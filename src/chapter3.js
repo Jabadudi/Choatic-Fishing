@@ -9,13 +9,14 @@ export const TRAVEL_AREAS=['landing','windchime','crossroads','village-farm','vi
 export const CHIEF_AREAS=['village-market','village'];
 export const travelAreas=s=>['ch3-chief','ch3-complete'].includes(s?.stage)?CHIEF_AREAS:TRAVEL_AREAS;
 export const CHAPTER3_ROUTES={
- landing:[{x:1460,y:1134},{x:1620,y:1100},{x:1840,y:894},{x:1940,y:688},{x:1880,y:447},{x:1720,y:241},{x:1680,y:50}],
- windchime:[{x:348,y:1060},{x:303,y:928},{x:366,y:692},{x:511,y:510},{x:711,y:382},{x:892,y:291},{x:1128,y:164},{x:1150,y:50}],
+ // 1.1 runs west to east: from the chimes down round the west side of the cabin, then east along the trail to 1.2.
+ landing:[{x:1460,y:1180},{x:1440,y:1400},{x:1450,y:1590},{x:1900,y:1580},{x:2140,y:1430},{x:2420,y:1340},{x:2740,y:1306},{x:3060,y:1340},{x:3260,y:1358},{x:3540,y:1358},{x:3950,y:1358}],
+ windchime:[{x:80,y:600},{x:580,y:600},{x:1080,y:640},{x:1700,y:600},{x:2400,y:640},{x:3180,y:600},{x:3560,y:600}],
  crossroads:[{x:800,y:1080},{x:760,y:1000},{x:700,y:880},{x:667,y:821},{x:476,y:688},{x:248,y:554},{x:50,y:462}],
  'village-farm':[{x:1800,y:840},{x:1300,y:905},{x:900,y:1015},{x:500,y:1115},{x:50,y:1150}],
  'village-market':[{x:1450,y:540},{x:1300,y:520}]
 };
-export const CHAPTER3_ENTRIES={landing:{x:1390,y:1420},windchime:{x:330,y:1120},crossroads:{x:800,y:1130},'village-farm':{x:1930,y:830},'village-market':{x:1540,y:530},village:{x:1850,y:590}};
+export const CHAPTER3_ENTRIES={landing:{x:1390,y:1420},windchime:{x:80,y:600},crossroads:{x:800,y:1130},'village-farm':{x:1930,y:830},'village-market':{x:1540,y:530},village:{x:1850,y:590}};
 // In the Merchant Quarter: up to the blacksmith's door, where the Rimejaw sleeps.
 export const CREATURE_ROUTE=[{x:1300,y:520},{x:1360,y:420}];
 export const GUARDIAN_SPOT={x:1420,y:390};
@@ -29,7 +30,7 @@ export function chapter3Route(s){
 }
 export const CHAPTER3_OBJECTIVES={
  'ch3-chimes':'Chapter 3 · Follow the girl to the three wooden chimes.',
- 'ch3-travel':'Chapter 3 · Follow your guide north through Windchime Path, then west at the crossroads, past the farms and through the Willowback Gate.',
+ 'ch3-travel':'Chapter 3 · Follow your guide east along the shore and through Windchime Path, then west at the crossroads, past the farms and through the Willowback Gate.',
  'ch3-creatures':'Chapter 3 · Follow the girl to the blacksmith’s house in the Merchant Quarter. Examine the frost-scaled guardian from the street.',
  'ch3-lore':'Chapter 3 · Ask the girl what shadow walkers really are.',
  'ch3-chief':'Chapter 3 · Follow the girl west to the Town Square and the chief’s red house.',

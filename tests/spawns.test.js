@@ -32,7 +32,7 @@ test('a journey starts with the hand-placed animals, and new areas fill when Eli
 test('rolls only fill empty slots, living creatures stay, and the cap is never passed',()=>{
  const w=fresh();Object.assign(w.player,{x:10,y:10});
  const before=inArea(w,'landing');
- for(let i=0;i<50;i++){rollArea(w,'landing');const now=inArea(w,'landing');assert.ok(now.length<=SPAWN_AREAS.landing.cap);assert.equal(new Set(now.map(a=>a.slotId)).size,now.length,'one creature per slot');}
+ for(let i=0;i<50;i++){rollArea(w,'landing');const now=inArea(w,'landing');assert.ok(now.length<=SPAWN_AREAS.landing.cap);assert.equal(new Set(now.map(a=>a.slotId)).size,new Set(now.map(a=>a.packId||a.id)).size,'one creature or one pack per slot');}
  for(const a of before)assert.ok(w.animals.includes(a),`${a.id} stayed`);
 });
 

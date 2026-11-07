@@ -810,3 +810,4 @@ body.touch-mode #chat-box.open{bottom:auto;top:calc(8px + var(--hud-t,0px));tran
 
 .atlas-tabs{display:flex;gap:6px}.atlas-tabs button{background:#33503f;border:1px solid #b6ad81;padding:8px 12px;color:#efe6c5;font:11px Georgia,serif;cursor:pointer}.atlas-tabs button[aria-selected=true]{background:#e9d9ad;color:#2b2414}
 #atlas-canvas{cursor:pointer}
+.version-switch{margin:6px 0 10px;font:13px Georgia,serif;color:#e9dcb8;text-align:center;text-shadow:0 1px 2px #000c}.version-switch a{color:#ffd27a}

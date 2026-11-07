@@ -28,7 +28,8 @@ test('melee hunting respects facing and distance, counts one hunt and grants hun
  const w=fresh(),deer=w.wildlife.find(a=>a.species==='deer'&&a.areaId==='landing');
  Object.assign(w.player,{x:deer.x-55,y:deer.y,angle:Math.PI});
  attack(w,w.player,{name:'Anchor'});assert.equal(deer.health,60);
- w.player.angle=0;attack(w,w.player,{name:'Reed Spear'});assert.equal(deer.health,38);assert.ok(deer.alert>0);
+ // The missed Anchor swing still opened Eli's combo, so this is the chain's second hit (x1.1, src/combo.js).
+ w.player.angle=0;attack(w,w.player,{name:'Reed Spear'});assert.equal(deer.health,60-22*1.1);assert.ok(deer.alert>0);
  attack(w,w.player,{name:'Anchor'});assert.equal(deer.health,0);assert.equal(w.hunting.total,1);assert.equal(w.hunting.bySpecies.deer,1);assert.equal(w.progression.totalXp,25);
  assert.equal(damageAnimal(w,deer,100,w.player,0),false);assert.equal(w.progression.totalXp,25);assert.equal(w.progression.eliminations.size,0);
  assert.ok(w.matchState==='playing');
@@ -61,7 +62,7 @@ test('only animals in the active area can be hit; area travel clears lingering p
  Object.assign(w.player,{x:deer.x-40,y:deer.y,angle:0});attack(w,w.player,{name:'Anchor'});assert.equal(deer.health,60);
  assert.equal(damageAnimal(w,deer,60,w.player,0),false);
  attack(w,w.player,{name:'Harpoon Gun'});assert.ok(w.projectiles.length);
- Object.assign(w.player,{x:1700,y:4});w.move(0,-12,false);assert.equal(w.areaId,'windchime');assert.equal(w.projectiles.length,0);
+ Object.assign(w.player,{x:3996,y:1350});w.move(12,0,false);assert.equal(w.areaId,'windchime');assert.equal(w.projectiles.length,0);
 });
 
 test('deer ignore nearby players, retaliate only after injury, and keep fighting until Eli leaves the area',()=>{
@@ -126,12 +127,14 @@ test('land and water animals respect habitat after attacks; wounded state persis
   damageAnimal(w,a,1,w.player,Math.PI/3,300);
  }
  for(let i=0;i<120*12;i++){
-  const a=w.animals[i%w.animals.length];if(a.areaId==='landing')Object.assign(w.player,{x:a.x-45,y:a.y-20});
+  const list=w.animals.filter(a=>!a.eliteId),a=list[i%list.length];if(a.areaId==='landing')Object.assign(w.player,{x:a.x-45,y:a.y-20});
   w.update(1/120,neutralInput());
   for(const a of w.animals)assert.ok(animalGround(a,a.x,a.y),a.id);
  }
  assert.ok(w.player.health>0);
- const health=w.wildlife[0].health,positions=JSON.stringify(w.animals.filter(a=>a.areaId==='landing'));
- w.areaId='windchime';w.update(.2,neutralInput());assert.equal(JSON.stringify(w.animals.filter(a=>a.areaId==='landing')),positions);
+ // The map's elite, like a boss, leaves with Eli and rises fresh when he comes back; everything else stays as it was.
+ const here=()=>JSON.stringify(w.animals.filter(a=>a.areaId==='landing'&&!a.eliteId));
+ const health=w.wildlife[0].health,positions=here();
+ w.areaId='windchime';w.update(.2,neutralInput());assert.equal(here(),positions);
  w.areaId='landing';assert.equal(w.wildlife[0].health,health);
 });

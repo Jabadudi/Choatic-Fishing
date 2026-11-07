@@ -25,12 +25,13 @@ test('fishing at the spring uses real shoreline geometry and water blocks walkin
 });
 test('walking over connected map edges changes areas and returns without a menu',()=>{
  const world=new World(()=>.1,{adventure:true});world.discovered.add('landing');
- Object.assign(world.player,{x:1700,y:4});world.move(0,-12,false);
- assert.equal(world.areaId,'windchime');assert.deepEqual({x:world.player.x,y:world.player.y},{x:330,y:1120});assert.ok(walkable(world.player.x,world.player.y,world.areaId));
+ Object.assign(world.player,{x:3996,y:1350});world.move(12,0,false);
+ assert.equal(world.areaId,'windchime');assert.ok(walkable(world.player.x,world.player.y,world.areaId));
  world.inventory.receive({name:'Sardine'});world.inventory.assignHotbar(world.inventory.allItems.at(-1).id,2);world.progression.pendingUpgrades=1;world.chooseUpgrade('hermes');
- world.move(0,320,false);assert.equal(world.areaId,'landing');assert.equal(world.player.x,1680);assert.equal(world.player.y,120);assert.ok(world.discovered.has('landing'));
+ Object.assign(world.player,{x:4,y:600});world.move(-12,0,false);assert.equal(world.areaId,'landing');assert.ok(world.player.x>3800);assert.ok(walkable(world.player.x,world.player.y,'landing'));assert.ok(world.discovered.has('landing'));
  assert.equal(world.inventory.item.name,'Sardine');assert.equal(world.progression.upgrades.hermes,1);
- Object.assign(world.player,{x:2400,y:30});world.move(0,-100,false);assert.equal(world.areaId,'landing');assert.ok(world.player.y>=24);assert.equal(transitionAt(2400,-1),null);
+ // The north edge of a field map is a cliff, never a way out.
+ assert.equal(transitionAt(2400,-1),null);
  for(const area of Object.values(AREAS))for(const exit of area.exits)assert.ok(walkable(exit.entry.x,exit.entry.y,exit.target));
 });
 test('scenery is deterministic and rendering keeps a bounded chunk cache',()=>{
@@ -90,15 +91,6 @@ test('the captain leaves no wrecked arrival boat on the shore',()=>{
 
 import {milestoneBreath} from '../src/wilds.js';
 import {DELTA} from '../src/delta-areas.js';
-test('the Drowned Road entrance is an overgrown causeway with a milestone instead of the old pillars',()=>{
- const rects=[],styles=[];
- const c=new Proxy({fillRect(...a){rects.push(a.join());},createLinearGradient:()=>({addColorStop(){}}),createRadialGradient:()=>({addColorStop(){}})},{get:(t,k)=>k in t?t[k]:()=>{},set:(t,k,v)=>{if(k==='fillStyle')styles.push(v);t[k]=v;return true;}});
- const world=new World(()=>0,{adventure:true});world.rabbits=[];
- drawWilds(c,world,{left:880,top:1040,right:1100,bottom:1200});
- assert.ok(!rects.includes('480,1760,12,36')&&!rects.includes('750,1850,12,36'),'old pillars are gone');
- assert.ok(styles.includes('#b8b39a'),'causeway cobbles are painted');
- assert.ok(styles.includes('#7ff0e0'),'milestone glyph is painted');
-});
 test('the milestone glyph breathes on a slow cycle between dim and bright',()=>{
  const period=2*Math.PI/1.6;
  assert.ok(Math.abs(milestoneBreath(0)-.5)<1e-9);

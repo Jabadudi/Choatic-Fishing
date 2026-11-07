@@ -1,6 +1,7 @@
 // The exploring HUD laid out like an action RPG: portrait menu and minimap top-left, quest tracker under them, menu icons top-right,
 // the hotbar down the right edge, health bottom-centre and action buttons bottom-right. It moves the existing HUD pieces into place
 // and adds the pickup feed, first-find card and area banner. It only reads world state; actions go through the callbacks.
+import {mapTitle} from './field-maps.js';
 import {notePickups} from './pickups.js';
 import {setItemIcon} from './item-icons.js';
 import {bindingLabel} from './keybinds.js';
@@ -164,7 +165,7 @@ export function mountHudShell({act,openHelp,examine,openAtlas,openQuests,openWel
    if(!found.hidden&&blocked){found.hidden=true;queue.unshift(showing);showing=null;}
    else if(!found.hidden&&performance.now()>foundUntil){found.hidden=true;showing=null;}
    // Region banner when Eli walks into a new part of the map.
-   const name=regionAt(world.player.x,world.player.y,world.areaId);
+   const name=mapTitle(world.areaId,regionAt(world.player.x,world.player.y,world.areaId));
    if(name!==region){if(region&&!blocked)showBanner('ENTERING',name);region=name;}
   }
  };

@@ -58,3 +58,17 @@ Signed-in players open **Friends**, pick a nickname, add friends by nickname and
 ### Verification
 
 `scripts/database-rules-check.mjs` runs 38 rule cases against the Realtime Database emulator (nicknames, friend requests, impersonation, strangers reading, removed friends). `scripts/hub-preview.cjs` runs four browsers against the emulator with the real rules: nicknames, a request and acceptance, a stranger standing beside them staying invisible, walking with smoothing, AFK, changing areas, phone landscape, and going offline.
+
+
+## Two versions: Regions and Classic
+
+The site root is **The Wilds: Regions** (this branch's game). **The Wilds Classic**, the game as it was before the
+Region restructure, is served at `/classic/`. Each start screen links to the other.
+
+- Classic is built from a fixed commit named in `classic.json` by `scripts/build-classic.mjs` (run in the deploy
+  workflow after `build.mjs`; the checkout uses the full history). Its code is never edited; only its start screen gets
+  the link back. To refresh Classic, change the commit in `classic.json`.
+- Saves never mix. Classic keeps the browser database `the-wilds-progress` and the cloud document `saves/{uid}`, so
+  existing journeys carry on there. Regions uses `the-wilds-progress-regions` and `saves-regions/{uid}`.
+- `firestore.rules` allows both collections. Paste it into Firestore → Rules and click **Publish** once, or Regions
+  cloud saves are refused (local saves still work).

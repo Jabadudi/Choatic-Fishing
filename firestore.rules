@@ -1,10 +1,11 @@
 rules_version = '2';
-// Each signed-in player can read and write only their own cloud save at saves/{uid}.
+// Each signed-in player can read and write only their own cloud saves: saves/{uid} for The Wilds Classic and
+// saves-regions/{uid} for the Regions version. Both hold the same fields. Every other collection stays closed.
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /saves/{uid} {
-      allow read, delete: if request.auth != null && request.auth.uid == uid;
-      allow create, update: if request.auth != null && request.auth.uid == uid
+    match /{collection}/{uid} {
+      allow read, delete: if collection in ['saves', 'saves-regions'] && request.auth != null && request.auth.uid == uid;
+      allow create, update: if collection in ['saves', 'saves-regions'] && request.auth != null && request.auth.uid == uid
         && request.resource.data.keys().hasOnly(['current', 'previous', 'journeyId', 'savedAt', 'device', 'updatedAt'])
         && (!('current' in request.resource.data) || (request.resource.data.current is string && request.resource.data.current.size() < 450000))
         && (!('previous' in request.resource.data) || (request.resource.data.previous is string && request.resource.data.previous.size() < 450000));

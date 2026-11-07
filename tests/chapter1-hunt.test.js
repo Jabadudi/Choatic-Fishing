@@ -18,7 +18,7 @@ function toSupper(w){
 const catchFish=w=>{w.fishing.state='caught';w.fishing.result={name:'Sardine'};w.advanceFishing(w.player,0,false);};
 const count=(w,name)=>w.inventory.countOf(name);
 const deer=w=>w.wildlife.filter(a=>a.id.startsWith('deer-meadow'));
-const hunt=(w,a)=>{w.areaId=a.areaId;while(a.health>0)damageAnimal(w,a,25,w.player,0);};
+const hunt=(w,a)=>{w.areaId=a.areaId;Object.assign(w.player,{x:a.x-40,y:a.y});for(let i=0;i<100&&a.health>0;i++)damageAnimal(w,a,25,w.player,0);assert.ok(a.health<=0,'the hunt lands');};
 
 test('the weapon rack gives the rod first, and the bow only once two Sardines are in the backpack',()=>{
  const w=fresh();toSupper(w);
@@ -30,7 +30,8 @@ test('the weapon rack gives the rod first, and the bow only once two Sardines ar
  assert.equal(storyPrompt(w),'Examine the weapon rack');w.inspect();assert.match(w.message,/two Sardines/);
  catchFish(w);assert.match(storyObjective(w),/\(1\/2\)/);catchFish(w);
  assert.match(storyObjective(w),/Take the hunting bow/);assert.equal(storyPrompt(w),'Take the hunting bow');w.inspect();finish(w);
- const bow=w.inventory.allItems.find(i=>i.name==='Hunting Bow');assert.ok(bow);assert.equal(w.inventory.slots[0],bow);assert.equal(w.inventory.selected,2);
+ const bow=w.inventory.allItems.find(i=>i.name==='Hunting Bow');assert.ok(bow);// Slot 2 holds Eli's starting sword (src/warrior.js), so the bow takes the next one.
+ assert.equal(w.inventory.slots[0].name,'Iron Sword');assert.equal(w.inventory.slots[1],bow);assert.equal(w.inventory.selected,3);
  assert.match(storyObjective(w),/collect 3 Deer Meat \(0\/3\)/);
  // The bow is never used up.
  go(w,'landing',1250,1650);for(let i=0;i<5;i++){w.player.cooldown=0;assert.ok(w.useItem());}assert.equal(count(w,'Hunting Bow'),1);
@@ -95,7 +96,7 @@ test('supper needs two Sardines and three Deer Meat, then cooking trains its own
  for(let i=0;i<2;i++)w.inventory.receive({name:'Sardine'});w.inventory.receive({name:'Deer Meat'});
  w.inspect();assert.match(w.message,/Still needed: 2 Deer Meat/);assert.equal(w.story.scene,null);
  for(let i=0;i<2;i++)w.inventory.receive({name:'Deer Meat'});w.inventory.receive({name:'Deer Hide'});
- w.inspect();assert.equal(w.story.scene,'dinner');assert.deepEqual(w.inventory.allItems.map(i=>i.name),['Deer Hide']);
+ w.inspect();assert.equal(w.story.scene,'dinner');assert.deepEqual(w.inventory.allItems.map(i=>i.name),['Iron Sword','Deer Hide']);
  assert.equal(w.progression.skills.cooking.level,2);finish(w);assert.equal(w.story.stage,'rest');
 });
 

@@ -1,0 +1,1 @@
+{"commit":"5951a829dcbcb0f2000be73620f811afc4a3607f","note":"The Wilds Classic: the live game before the Region restructure (main after PR #116). Served at /classic/ by scripts/build-classic.mjs; it keeps its own saves."}

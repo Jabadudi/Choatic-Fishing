@@ -6,7 +6,7 @@ import {placesFor} from '../src/wilds.js';
 
 test('exploration HUD state: hint timeout, dots, prompt and upgrade bar',()=>{
  const w=new World(()=>0,{adventure:true});
- let s=explorationHud(w,0);assert.equal(s.hintVisible,true);assert.equal(s.dots.length,5);assert.ok(s.dots.every(d=>!d));
+ let s=explorationHud(w,0);assert.equal(s.hintVisible,true);assert.equal(s.dots.length,placesFor('landing').length);assert.ok(s.dots.every(d=>!d));
  assert.equal(explorationHud(w,10).hintVisible,false);
  // Stand on the landmark, wherever the land editor has put it.
  const drowned=placesFor('landing').find(p=>p.id==='drowned');Object.assign(w.player,{x:drowned.x,y:drowned.y});assert.equal(explorationHud(w,0).prompt,'Examine The Drowned Road');

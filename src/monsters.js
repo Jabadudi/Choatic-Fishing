@@ -77,7 +77,7 @@ export function updateMonster(world,a,dt){
  if(target&&fromHome<a.leashRange&&(distance<a.noticeRange||a.alert>0)){
   setState(a,'notice');face(a,p.x,p.y);a.still=true;
   world.effects.push({name:'notice',label:'!',x:a.x,y:a.y-70,angle:0,life:.9,duration:.9});
-  if(!a.noticed){a.noticed=true;world.message=`A ${a.name} has seen you!`;}
+  if(!a.noticed){a.noticed=true;world.message=a.elite?`${a.name} has seen you!`:`A ${a.name} has seen you!`;}
   return;
  }
  if(a.state==='idle'&&a.time>=a.wait){

@@ -2,6 +2,8 @@ import {damageAnimal} from './wildlife.js';
 import {huntableInArea} from './entities.js';
 import {artifactBonus,WET_REACH} from './artifacts.js';
 import {waterDistance,canReach,heightAt} from './wilds.js';
+import {comboActive,startSwing,noteHit,knockDown,downBonus} from './combo.js';
+import {notePlayerHurt} from './field-play.js';
 import {stillWaterGuardAmount,afterPlayerHit,onCoreLineHit,coreLineMultiplier,waterstepEvasion,corePower,coreGuard,preventCoreDefeat,wallBlocks} from './core-abilities.js';
 export const combatTargets=world=>world.adventure?[...world.actors,...world.animals.filter(a=>huntableInArea(world,a))]:world.actors;
 // Swept collision prevents fast shells or harpoons skipping a small animal between steps.
@@ -25,6 +27,8 @@ export const WEAPONS={
  'Hunting Bow':{kind:'projectile',damage:22,speed:620,range:560,knockback:60,cooldown:.7},
  // World boss weapons: never break (PERMANENT_ITEMS). arc is the half-angle a swing covers (1.05 when unset), and pose
  // is Eli's sheet for the swing (src/sprite-definitions.js).
+ // Eli's starting sword (src/warrior.js): an even, quick blade made for the 3-hit combo. It swings the sabre sheet for now.
+ 'Iron Sword':{kind:'melee',damage:30,range:90,knockback:120,cooldown:.45,arc:1.3,pose:'eli-sabre'},
  'Captain’s Sabre':{kind:'melee',damage:40,range:95,knockback:150,cooldown:.5,arc:1.6,pose:'eli-sabre'},
  'Greyhorn Spear':{kind:'melee',damage:36,range:130,knockback:200,cooldown:.55,arc:.6,pose:'eli-spear'}
 };
@@ -53,7 +57,8 @@ export function damage(world,target,amount,source,angle,knockback=0,origin=sourc
  // The Drowned Gorget guards Eli in or beside water; the Spire Bell against anything the shadow has taken.
  const wet=world.adventure&&waterDistance(target.x,target.y,world.areaId)<=WET_REACH,shadow=source.entityType==='animal'&&source.behavior==='aggressive';
  const taken=amount*(target===world.player?1-coreGuard(world):1)*(steady?1-stillWaterGuardAmount(world):1)*(source.progression?.damageMultiplier??1)*(1-target.progression.damageReduction)*(1-artifactBonus(target,'mossback-scute'))*(source.entityType==='animal'?1-target.progression.passive('hunting.hide'):1)*(wet?1-artifactBonus(target,'drowned-gorget'):1)*(shadow?1-artifactBonus(target,'spire-bell'):1);
- target.health=Math.max(0,target.health-taken);
+ const before=target.health;target.health=Math.max(0,target.health-taken);
+ if(target===world.player&&world.adventure)notePlayerHurt(world,before-target.health);
  if(target===world.player&&world.adventure&&target.health===0)preventCoreDefeat(world);
  target.vx+=Math.cos(angle)*knockback;target.vy+=Math.sin(angle)*knockback;
  if(target===world.player&&world.adventure)afterPlayerHit(world);
@@ -73,11 +78,19 @@ export function attack(world,actor,item){
  if(!spec)return;
  if(spec.pose)actor.weaponPose={spriteId:spec.pose,state:'swing',started:world.elapsed,duration:.45};
  if(spec.kind==='melee'){
+  // Eli's melee swings chain into a 3-hit combo in the field (src/combo.js); everyone else swings as before.
+  const swing=comboActive(world,actor)?startSwing(world,actor,actor.cooldown):null;
+  if(swing){world.effects.at(-1).comboStep=swing.step;if(swing.finisher)world.effects.push({name:'combo-finisher',x:actor.x,y:actor.y,angle:actor.angle,range:spec.range,life:.35,duration:.35});}
+  let landed=0;
   for(const target of combatTargets(world)){if(target===actor||target.health<=0)continue;
    const dx=target.x-actor.x,dy=target.y-actor.y,angle=Math.atan2(dy,dx);
    const difference=Math.atan2(Math.sin(angle-actor.angle),Math.cos(angle-actor.angle));
-   if(Math.hypot(dx,dy)<=spec.range+(target.radius||14)&&Math.abs(difference)<=(spec.arc??1.05))damage(world,target,spec.damage,actor,angle,spec.knockback);
+   if(Math.hypot(dx,dy)<=spec.range+(target.radius||14)&&Math.abs(difference)<=(spec.arc??1.05)){
+    const amount=spec.damage*(swing?swing.damage*downBonus(target):1),push=spec.knockback*(swing?swing.knockback:1);
+    if(damage(world,target,amount,actor,angle,push)){landed++;if(swing?.knockdown&&target.health>0)knockDown(world,target,swing.knockdown);}
+   }
   }
+  for(let i=0;i<landed;i++)noteHit(world,actor,{finisher:!!swing?.finisher});
  }else{
   // The Stag Crown strengthens arrows from the hunting bow.
   const damage=spec.damage*(item.name==='Hunting Bow'?1+artifactBonus(actor,'stag-crown'):1);
@@ -99,7 +112,7 @@ export function updateRush(world,actor,dt){
  world.moveActor(actor,Math.cos(r.angle)*rush.speed*step,Math.sin(r.angle)*rush.speed*step,false);
  for(const target of combatTargets(world)){
   if(target===actor||target.health<=0||r.hit.has(target.id))continue;
-  if(Math.hypot(target.x-actor.x,target.y-actor.y)<=(target.radius||14)+34){r.hit.add(target.id);damage(world,target,rush.damage,actor,r.angle,rush.knockback);}
+  if(Math.hypot(target.x-actor.x,target.y-actor.y)<=(target.radius||14)+34){r.hit.add(target.id);if(damage(world,target,rush.damage,actor,r.angle,rush.knockback))noteHit(world,actor);}
  }
  r.remaining-=step;
  if(r.remaining<=1e-9||Math.hypot(actor.x-x,actor.y-y)<rush.speed*step*.2)actor.rush=null;
@@ -128,7 +141,7 @@ export function updateProjectiles(world,dt){
    // A monster's arrow only ever hits Eli.
    const hits=(shot.hostile?[world.player]:combatTargets(world)).filter(target=>target!==shot.owner&&target.health>0&&!shot.hit.has(target.id)).map(target=>({target,t:shotHit(shot,target,startX,startY)})).filter(hit=>hit.t!==null).sort((a,b)=>a.t-b.t);
    for(const {target} of hits){
-    const landed=damage(world,target,shot.damage*(shot.coreSkill?coreLineMultiplier(world):1),shot.owner,shot.angle,shot.knockback,shot);if(landed)onCoreLineHit(world,shot,target);shot.hit.add(target.id);if(shot.kind==='wave')continue;
+    const landed=damage(world,target,shot.damage*(shot.coreSkill?coreLineMultiplier(world):1),shot.owner,shot.angle,shot.knockback,shot);if(landed){onCoreLineHit(world,shot,target);if(shot.owner)noteHit(world,shot.owner,{melee:false});}shot.hit.add(target.id);if(shot.kind==='wave')continue;
     // A maxed Reedwater's Call passes through its first foe; it then flies on straight.
     if(shot.pierce>0){shot.pierce--;shot.homing=null;break;}
     shot.done=true;break;

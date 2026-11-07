@@ -60,9 +60,10 @@ test('minimap dots come from real spawn slots and NPC positions',()=>{
  assert.equal(codexLocations(codexEntry('rabbit')).length,slotsFor('rabbit','land'));
  assert.ok(!listing('rabbit','land').some(id=>['whispering-woods','elk-run','trailhead','deep-trail'].includes(id)),'no rabbits in the deep forest');
  assert.equal(codexLocations(codexEntry('turtle')).length,slotsFor('turtle','water'));
- // Shadow walkers take their share of the land slots: half the marsh, a quarter of the crossroads.
- assert.deepEqual(codexSpawnRates(deer).map(r=>[r.areaId,r.label]).slice(0,9),[['landing','common'],['windchime','common'],['crossroads','uncommon'],['marsh','uncommon'],['stonefall','common'],['stone-clearing','uncommon'],['aqueduct-ruins','common'],['forest-edge','uncommon'],['whispering-woods','uncommon']]);
- assert.deepEqual(codexSpawnRates(codexEntry('shadow-walker')).map(r=>[r.areaId,r.label]).slice(0,4),[['landing','rare'],['windchime','rare'],['crossroads','uncommon'],['marsh','common']]);
+ // Shadow walkers take their share of the land slots: half the marsh, a quarter of the crossroads. The Region 1
+ // field maps share theirs with crabs, boars and the other shadow kinds.
+ assert.deepEqual(codexSpawnRates(deer).map(r=>[r.areaId,r.label]).slice(0,9),[['landing','uncommon'],['windchime','rare'],['crossroads','uncommon'],['marsh','uncommon'],['stonefall','common'],['stone-clearing','uncommon'],['aqueduct-ruins','common'],['forest-edge','uncommon'],['whispering-woods','uncommon']]);
+ assert.deepEqual(codexSpawnRates(codexEntry('shadow-walker')).map(r=>[r.areaId,r.label]).slice(0,4),[['landing','rare'],['windchime','uncommon'],['crossroads','uncommon'],['marsh','common']]);
  assert.deepEqual(codexSpawnRates(codexEntry('eel')).map(r=>r.areaId).slice(0,4),['landing','crossroads','marsh','stone-clearing']);
  assert.deepEqual(codexRegions(codexEntry('blacksmith')),['Willowback Merchant Quarter']);
  assert.deepEqual(codexRegions(codexEntry('emilia')),['The Chief’s House']);

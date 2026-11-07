@@ -35,7 +35,7 @@ test('elevation export is lossless and rejects malformed ramps rather than dropp
  assert.throws(()=>cleanLand({...def,elevation:{...def.elevation,terraces:[{id:'bad',height:NaN,points:[[1,2],[2,3],[3,2]]}]}},def),/elevation terrace/);
 });
 test('old flat maps remain flat and saved positions derive height without a new save field',()=>{
- assert.equal(compileElevation(null),null);assert.equal(heightAt(300,300,'landing'),0);
+ assert.equal(compileElevation(null),null);assert.equal(heightAt(300,300,'chimewood'),0);
  const w=world(Q([600,370],-2));assert.ok(walkable(w.player.x,w.player.y,ID));const save=captureSave(w);assert.equal(save.state.player.elevation,undefined);
  const restored=restoreSave(save);assert.equal(restored.areaId,ID);assert.equal(heightAt(restored.player.x,restored.player.y,ID),-192);
 });

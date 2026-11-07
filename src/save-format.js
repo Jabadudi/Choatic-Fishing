@@ -2,6 +2,7 @@ import {restoreStory,createStoryNpcs,pageForBeat,relocateGuide,LURE,REGION_CORE}
 import {YARD} from './training-ground.js';
 import {World} from './world.js';
 import {AREAS,walkable} from './wilds.js';
+import {stranded} from './terrain-height.js';
 import {animalGround} from './wildlife.js';
 import {SKILL_IDS,skillXpToNext} from './skills.js';
 import {validTree} from './skill-trees.js';
@@ -16,6 +17,9 @@ import {MARKS_LIMIT} from './trade.js';
 import {SIDE_QUEST_IDS,restoreSideQuests} from './side-quests.js';
 import {restoreWell} from './wishing-well.js';
 import {restoreBosses} from './bosses.js';
+import {restoreFieldMaps} from './field-play.js';
+import {applyLevel,MAX_LEVEL} from './field-maps.js';
+import {giveStarterSword} from './warrior.js';
 import {ARTIFACTS,ARTIFACT_SLOT_COUNT,RARITIES,artifactIdFor,normalizeArtifact} from './artifacts.js';
 export const SAVE_VERSION=8;
 export const SAVE_FORMAT='the-wilds-save';
@@ -46,7 +50,9 @@ export function captureSave(world,reason='autosave',now=Date.now()){
   spawns:world.spawns?{seed:world.spawns.seed,next:world.spawns.next,current:world.spawns.current,areas:clone(world.spawns.areas)}:null,
   // Bosses and their adds are not saved: a boss rises fresh when Eli comes back. Only each spot's clock is kept.
   bosses:clone(world.bosses||{}),
-  animals:world.animals.filter(animal=>!animal.bossId).map(animal=>({id:animal.id,slotId:animal.slotId,species:animal.species,shiny:!!animal.shiny,seen:!!animal.seen,...Object.fromEntries(ANIMAL_FIELDS.filter(key=>animal[key]!==undefined).map(key=>[key,clone(animal[key])]))})),
+  // Field map clear progress; elites, like bosses, rise fresh and are not saved.
+  fieldMaps:clone(world.fieldMaps||{}),
+  animals:world.animals.filter(animal=>!animal.bossId&&!animal.eliteId).map(animal=>({id:animal.id,slotId:animal.slotId,species:animal.species,shiny:!!animal.shiny,seen:!!animal.seen,...(animal.level>1?{level:animal.level}:{}),...(animal.packId?{packId:animal.packId}:{}),...Object.fromEntries(ANIMAL_FIELDS.filter(key=>animal[key]!==undefined).map(key=>[key,clone(animal[key])]))})),
   drops:clone(world.drops),nextDropId:world.nextDropId
  }};
 }
@@ -145,7 +151,7 @@ export function restoreSave(input){
  const p=s.player;if(!p||!number(p.x,0,AREAS[s.areaId].width)||!number(p.y,0,AREAS[s.areaId].height)||!number(p.health,0,w.progression.maxHealth)||!number(p.angle,-100,100))fail('Invalid player data.');
  Object.assign(w.player,{x:p.x,y:p.y,angle:p.angle,health:p.health});
  // Old positions blocked by a future map edit safely return to that area's spawn.
- if(!walkable(p.x,p.y,w.areaId))Object.assign(w.player,AREAS[w.areaId].spawn);
+ if(!walkable(p.x,p.y,w.areaId)||stranded(p.x,p.y,w.areaId,AREAS[w.areaId].spawn))Object.assign(w.player,AREAS[w.areaId].spawn);
  for(const key of ['cooldown','dashCharges','dashCooldown'])if(p[key]!==undefined){if(!number(p[key],0,key==='dashCharges'?w.progression.maxDashes:10))fail('Invalid player timers.');w.player[key]=p[key];}
  if(!list(s.catches)||!list(s.discovered,10000)||!list(s.animals,1000)||!list(s.drops))fail('Invalid saved world data.');
  w.catches=clone(s.catches);w.discovered=new Set(s.discovered.filter(id=>typeof id==='string'));
@@ -161,6 +167,7 @@ export function restoreSave(input){
  restoreSpawns(s.spawns,w);
  // Boss spots arrived after save version 8 was set; saves without them have every boss ready to rise.
  restoreBosses(s.bosses,w);
+ restoreFieldMaps(s.fieldMaps,w,fail);
  // Every saved creature is rebuilt in its slot. Migrated saves name the slot of the journey's starting creature.
  const starting=w.animals;w.rabbits=[];w.wildlife=[];const animalIds=new Set();
  for(const saved of s.animals){
@@ -172,6 +179,9 @@ export function restoreSave(input){
   const animal=createCreature(SLOTS[saved.slotId],species,{id:saved.id,shiny:saved.shiny===true});if(!animal)continue;
   const start=starting.find(a=>a.id===saved.id&&a.species===species);if(start)Object.assign(animal,{x:start.x,y:start.y,home:start.home,seed:start.seed,wait:start.wait});
   if(saved.seen===true)animal.seen=true;animalIds.add(saved.id);
+  // A field map monster keeps its level and its pack.
+  if(saved.level!==undefined){if(!Number.isSafeInteger(saved.level)||saved.level<1||saved.level>MAX_LEVEL)fail('Invalid animal state.');applyLevel(animal,saved.level);}
+  if(saved.packId!==undefined){if(typeof saved.packId!=='string'||saved.packId.length>80)fail('Invalid animal state.');animal.packId=saved.packId;}
   if(!number(saved.health,0,animal.maxHealth)||!number(saved.x,0,AREAS[animal.areaId].width)||!number(saved.y,0,AREAS[animal.areaId].height))fail('Invalid animal state.');
   animal.health=saved.health;
   if(animalGround(animal,saved.x,saved.y)){animal.x=saved.x;animal.y=saved.y;}
@@ -190,6 +200,8 @@ export function restoreSave(input){
  if(new Set([...inv.items.map(item=>item.id),...w.drops.map(drop=>drop.item.id)]).size!==inv.items.length+w.drops.length)fail('Duplicate world inventory item.');
  if(new Set(w.drops.map(drop=>drop.id)).size!==w.drops.length)fail('Duplicate dropped item.');
  w.nextDropId=Math.max(Number.isSafeInteger(s.nextDropId)?s.nextDropId:1,...w.drops.map(drop=>/^drop-\d+$/.test(drop.id)?Number(drop.id.slice(5))+1:1));
+ // Eli became a warrior after these saves were made: a journey without his sword gets it back.
+ if(w.story)giveStarterSword(w);
  w.message='Journey restored. Welcome back!';return w;
 }
 export function parseSave(text){if(typeof text!=='string'||text.length>5*1024*1024)fail('Save file is too large.');let save;try{save=JSON.parse(text);}catch{fail('Could not read this file. Choose a valid The Wilds JSON save.');}restoreSave(save);return save;}

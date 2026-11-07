@@ -1,12 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {World} from '../src/world.js';
+import {AREAS} from '../src/wilds.js';
 import {damage,updateProjectiles} from '../src/combat.js';
 import {CORE_TIERS,CORE_SKILLS,CORE_LEVEL_CAP,tierEarned,tierPoints,coreSkillLevel,coreSkillState,coreStat,learnCoreSkill,resetCoreSkills,equipCoreSkill,unequipCoreSkill,coreSlots,slotOpen,validCoreSkills,statLines} from '../src/core-skills.js';
 import {coreWheel,callCost,callDamage,reservesMax,nearLivingWater,RESERVES_MAX} from '../src/core-abilities.js';
 import {captureSave,restoreSave} from '../src/save-format.js';
 import {neutralInput} from '../src/protocol.js';
-const fresh=(level=1)=>{const w=new World(()=>.1,{adventure:true,story:true});w.story.scene=null;w.areaId='landing';w.progression.level=level;w.story.coreIngested=w.story.callAwakened=true;return w;};
+const fresh=(level=1)=>{const w=new World(()=>.1,{adventure:true,story:true});w.story.scene=null;w.areaId='landing';Object.assign(w.player,AREAS.landing.spawn);w.progression.level=level;w.story.coreIngested=w.story.callAwakened=true;return w;};
 const learn=(w,id,n)=>{for(let i=0;i<n;i++)assert.ok(learnCoreSkill(w,id),`${id} point ${i+1}`);};
 
 test('four tiers over Lv 1-150 give 29, 30, 40 and 51 SP, one per level, and each tier fits its skills',()=>{

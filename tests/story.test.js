@@ -20,7 +20,7 @@ test('Chapter 1 flows from arrival through discoveries, dinner, rescue and a per
  const w=fresh();assert.equal(w.player.name,'Eli');assert.equal(w.npcs.length,0);prepareDinner(w);
  go(w,'cabin',100,120);w.inspect();assert.equal(w.story.scene,null);assert.match(w.message,/Still needed: 2 Sardines, 3 Deer Meat/);
  for(let i=0;i<3;i++)w.inventory.receive({name:'Sardine'});for(let i=0;i<3;i++)w.inventory.receive({name:'Deer Meat'});
- w.inspect();assert.deepEqual(w.inventory.allItems.map(i=>i.name),['Sardine']);assert.equal(w.progression.skills.cooking.level,2);assert.equal(w.progression.totalXp,40);finish(w);assert.equal(w.story.stage,'rest');
+ w.inspect();assert.deepEqual(w.inventory.allItems.map(i=>i.name),['Iron Sword','Sardine']);assert.equal(w.progression.skills.cooking.level,2);assert.equal(w.progression.totalXp,40);finish(w);assert.equal(w.story.stage,'rest');
  go(w,'cabin',435,330);assert.equal(storyPrompt(w),'Rest until night');w.inspect();assert.equal(w.story.scene,'storm');
  const saved=restoreSave(captureSave(w));assert.equal(saved.story.scene,'storm');assert.equal(saved.areaId,'cabin');
  finish(saved);assert.equal(saved.story.scene,'awakening');assert.ok(cabinDamaged(saved.story));assert.equal(saved.areaId,'landing');assert.equal(saved.npcs[0].id,'mara');
@@ -38,7 +38,7 @@ test('story scenes freeze simulation and block input actions; save/resume preser
 test('tutorial fishing supplies dinner without granting magical powers or timed upgrades',()=>{
  const w=fresh();prepareDinner(w);go(w,'landing',1250,1850);
  w.fishing.state='caught';w.fishing.result={name:'Anchor'};w.advanceFishing(w.player,0,false);
- assert.equal(w.inventory.allItems[0].name,'Sardine');assert.equal(w.progression.totalXp,30);assert.equal(w.progression.lastBuff,null);
+ assert.equal(w.inventory.allItems[1].name,'Sardine');assert.equal(w.progression.totalXp,30);assert.equal(w.progression.lastBuff,null);
  const remaining=w.progression.upgradeRemaining;w.update(1,neutralInput());assert.equal(w.progression.upgradeRemaining,remaining);
 });
 test('old exploration saves migrate deliberately without replaying the opening or changing existing quests',()=>{

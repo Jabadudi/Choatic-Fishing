@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {World} from '../src/world.js';
+import {AREAS} from '../src/wilds.js';
 import {captureSave,restoreSave} from '../src/save-format.js';
 import {damageAnimal} from '../src/wildlife.js';
 import {damage,attack} from '../src/combat.js';
@@ -9,7 +10,7 @@ import {Fishing} from '../src/fishing.js';
 import {skillXpToNext,SKILL_IDS} from '../src/skills.js';
 import {SKILL_TREES,treePassives,validTree} from '../src/skill-trees.js';
 import {sumPassives,PASSIVES} from '../src/passives.js';
-const fresh=(random=()=>.2)=>{const w=new World(random,{adventure:true,story:true});w.journeyId='tree-test';w.areaId='landing';return w;};
+const fresh=(random=()=>.2)=>{const w=new World(random,{adventure:true,story:true});w.journeyId='tree-test';w.areaId='landing';Object.assign(w.player,AREAS.landing.spawn);return w;};
 const levelTo=(p,id,level)=>{while(p.skills[id].level<level)p.train(id,skillXpToNext(p.skills[id].level));};
 const learnAll=(p,id,talent,times)=>{for(let i=0;i<times;i++)assert.ok(p.learn(id,talent),`${talent} rank ${i+1}`);};
 

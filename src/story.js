@@ -456,7 +456,7 @@ export function restoreStory(data){
  let guide=null;
  if(['ch2-follow','ch2-complete'].includes(data.stage)||villageStory(data)){
   const g=data.guide;
-  const limits={landing:[2800,2200],windchime:[1600,1200],crossroads:[1600,1280],village:[1920,1160],'village-market':[1600,1400],'chief-house':[CHIEF_HOUSE.width,CHIEF_HOUSE.height],[GUEST_LODGE.id]:[GUEST_LODGE.width,GUEST_LODGE.height],[TRAINING_GROUND.id]:[TRAINING_GROUND.width,TRAINING_GROUND.height]},bounds=g&&Object.hasOwn(limits,g.areaId)?limits[g.areaId]:null;
+  const limits={landing:[4000,2200],windchime:[3600,1200],crossroads:[1600,1280],village:[1920,1160],'village-market':[1600,1400],'chief-house':[CHIEF_HOUSE.width,CHIEF_HOUSE.height],[GUEST_LODGE.id]:[GUEST_LODGE.width,GUEST_LODGE.height],[TRAINING_GROUND.id]:[TRAINING_GROUND.width,TRAINING_GROUND.height]},bounds=g&&Object.hasOwn(limits,g.areaId)?limits[g.areaId]:null;
   if(!g||!bounds||!Number.isFinite(g.x)||!Number.isFinite(g.y)||g.x<24||g.x>bounds[0]-24||g.y<24||g.y>bounds[1]-24||!Number.isInteger(g.waypoint)||g.waypoint<0)throw Error('Invalid story guide.');
   const route=villageStory(data)?chapter3Route(data):GUIDE_ROUTE;
   if(g.waypoint>route.length)throw Error('Invalid story guide.');

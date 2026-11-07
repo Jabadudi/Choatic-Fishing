@@ -112,8 +112,8 @@ test('the follower trails the player and reappears beside him after changing are
  const c=w.companion;assert.equal(c.areaId,w.areaId);
  w.player.x+=200;for(let i=0;i<120;i++)updateFamiliar(w,1/60);
  assert.ok(Math.hypot(w.companion.x-w.player.x,w.companion.y-w.player.y)<70);
- w.areaId='windchime';Object.assign(w.player,{x:330,y:1120});updateFamiliar(w,1/60);
- assert.equal(w.companion.areaId,'windchime');assert.ok(Math.hypot(w.companion.x-330,w.companion.y-1120)<60);
+ w.areaId='windchime';Object.assign(w.player,{x:330,y:600});updateFamiliar(w,1/60);
+ assert.equal(w.companion.areaId,'windchime');assert.ok(Math.hypot(w.companion.x-330,w.companion.y-600)<60);
  assert.ok(walkable(w.companion.x,w.companion.y,'windchime'));
 });
 

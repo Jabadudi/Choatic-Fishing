@@ -10,8 +10,7 @@ export const LAND_DATA=Object.freeze({
  },
  "arrival-bay":{
   walks:[{pts:[[251,396],[251,412]],width:3.5},{pts:[[244.6,413.7],[257.6,413.7]],width:3}],
-  props:[{kind:"wreck",at:[226,395]},{kind:"logs",at:[208,393],solid:0},{kind:"logs",at:[280,392],solid:0},{kind:"shell",at:[238,393],solid:0},{kind:"raft",at:[259.7,416.3]}],
-  exits:[{edge:"north",from:180,to:300,target:"landing",label:"Reedwater Landing"}]
+  props:[{kind:"wreck",at:[226,395]},{kind:"logs",at:[208,393],solid:0},{kind:"logs",at:[280,392],solid:0},{kind:"shell",at:[238,393],solid:0},{kind:"raft",at:[259.7,416.3]}]
  },
  "broken-watch":{
   shapes:[["water",[[611.7,185.9],[723.2,186.5],[724.1,196.1],[694,204],[668,208],[644,204],[612.2,206.2]]],["water",[[613.8,218.4],[628,236],[632,262],[628,290],[622.8,315.5],[611,309.9]]],["land",[[650.7,218.4],[659.8,218.7],[669,216.3],[677.7,216.4],[681.6,222],[684.2,233.2],[683.1,237.8],[686,242.7],[686,248],[676.8,248.6],[670.1,247],[657.7,250.9],[652.4,246.1],[654.1,240.4],[654.4,234.4],[648.4,227.7]],{zone:"rock"}]],
@@ -22,8 +21,7 @@ export const LAND_DATA=Object.freeze({
   shapes:[["land",[[319.2,242],[355.9,241.7],[356,262],[360,276],[368,290],[376,302],[384,314],[388,326],[396,340],[390,356],[372,366],[350,372],[321.8,374.9]]],["land",[[394,280],[415.4,272.4],[414.6,321.1],[398,314]]],["water",[[352,248],[366,248],[368,262],[372,280],[366,288],[358,282],[353,268]]]],
   zones:[["sand",[[330,346],[350,343],[366,342],[380,334],[388,324],[396,340],[390,356],[372,366],[350,372],[330,374]]],["rock",[[350,322],[368,320],[376,330],[374,344],[358,346],[350.5,344.3],[348,338]]],["clear",[[336,282],[352,280],[358,296],[346,300],[336,296]]]],
   roads:[[[330,256],[343.9,264.2],[346,272],[350,284],[360,292],[370,296]],[[350,284],[344,298],[340,312],[342,326],[346,338],[350,350],[352,368]],[[395.8,292.1],[406.9,292.4]]],
-  fords:[{pts:[[370.4,294.3],[380,293],[388,293],[397,292]],width:2.9},[[350,366],[351,376]]],
-  exits:[{edge:"west",from:252,to:262,target:"windchime",label:"Windchime Path"},{edge:"east",from:286,to:300,target:"upper-braids",label:"Upper Braids"},{edge:"south",from:346,to:356,target:"seal-skerries",label:"Seal Skerries"},{edge:"west",from:350.5,to:368.4,target:"landing",label:"Reedwater Landing"}]
+  fords:[{pts:[[370.4,294.3],[380,293],[388,293],[397,292]],width:2.9},[[350,366],[351,376]]]
  },
  "deep-trail":{
   roads:[[[82,92],[82,72],[80,56],[76,46],[68,40],[56,34],[44,29],[34,22],[25.8,11.3]],[[66,39],[78,32],[90,26],[101.5,20.8]],[[42,28],[34,30],[27,32]],[[56,34],[50,42],[46,48]]],
@@ -106,13 +104,6 @@ export const LAND_DATA=Object.freeze({
   exits:[{edge:"east",from:19.3,to:28.8,target:"old-roads",label:"Old Roads",entry:[274,26]}],
   portals:[]
  },
- landing:{
-  shapes:[["water",[[191,266.4],[220.7,268.7],[244.3,267.7],[250,285],[244,300],[250,318],[246,334],[236,346],[222,352],[207,356],[186.8,359.6]]],["land","ellipse",[215,295],5,3.5],["land","ellipse",[230,326],3.5,2.5],["land","ellipse",[206,316],3,2.2],["water","ellipse",[296,333],6.5,8.7]],
-  zones:[["sand",[[195,356],[210,354],[225,352],[240,356],[255,358],[262,360],[290,361],[310,357],[335,354],[335,400],[195,400]]],["forest",[[300.4,272.1],[335,272],[335.3,345.8],[320.6,346.7],[309.8,344.1],[310.3,332.5],[308,320.1],[304,313.5],[310.7,309.1],[313.8,299.4],[310.4,293.5],[307.1,291.1],[302.5,283.4]]]],
-  places:[{id:"landing",name:"Reedwater Landing",at:[256,380],text:"The beach below Grandpa’s cabin. South, the sand runs on to the pier at Arrival Bay. North, a worn trail climbs toward the chimes.",kind:"shore"},{id:"drowned",name:"The Drowned Road",at:[247,338.1],text:"Through the shallows, squared stones lead west under the water. This shore was once a street.",kind:"drowned"},{id:"chimes",name:"The Three Chimes",at:[268,338],text:"Three hollow wooden notes drift inland. Follow the worn trail north past the chime posts to enter Windchime Path.",kind:"chimes"},{id:"spring",name:"Reedwater Spring",at:[286,329],text:"Warm water bubbles beneath the reeds. Tiny silver fish gather at the edge of the spring.",kind:"spring"},{id:"tree",name:"The Hollow Tree",at:[311,299],text:"A deer pauses beside the hollow trunk. Your footsteps echo from somewhere deeper in the roots.",kind:"tree"}],
-  exits:[{edge:"north",from:274,to:286,target:"windchime",label:"Windchime Path",entry:{x:330,y:1120}},{edge:"west",from:333,to:343,target:"drowned-road",label:"The Drowned Road"},{edge:"south",from:249.9,to:268.1,target:"arrival-bay",label:"Arrival Bay"},{edge:"east",from:357.7,to:395.3,target:"chimewood",label:"Chimewood"}],
-  portals:[{at:[325,300],r:40,target:"old-roads",label:"Old Roads",entry:[274,26]},{at:[328,350],r:40,target:"tidecave-coast",label:"Tidecave Coast",entry:{x:1400,y:170}}]
- },
  "listening-glade":{
   roads:[[[186,100],[186,94],[183,88],[176,82],[166,78],[156,74]],[[110,92],[114,86],[119,80],[125,75],[131.9,71.4],[139,69.7],[148.3,71.2],[155.1,73.7]],[[192.1,68.6],[195.8,65.9],[200,64],[206,62],[210,62]]],
   props:[{kind:"big-tree",at:[155.1,49.8],scale:3,solid:120,clear:260,glow:"#ffe7a8"},{kind:"logs",at:[134,62],solid:0},{kind:"logs",at:[170,64],solid:0},{kind:"stone",at:[197,68]},{kind:"lantern",at:[150,72]},{kind:"lantern",at:[160,72]}]
@@ -134,7 +125,7 @@ export const LAND_DATA=Object.freeze({
   zones:[["forest",[[262,0],[287.1,-0.1],[286.5,7.6],[282.6,15.2],[274.1,18.4],[274.9,28.8],[270.7,33.9],[270.9,41.1],[269.6,46],[262,46]]],["forest",[[311.8,33.8],[329.5,34],[339.8,29.9],[358,30.2],[360.3,38.6],[362.7,46.2],[318.8,45.5],[309.7,41.3]]],["forest",[[335.8,-0.1],[361.7,-0.1],[359.2,4.2],[358.2,8.3],[347,8.6],[336.6,10.3],[334.1,6.9]]],["rock",[[384,36],[396,36],[398,46],[384,46]]]],
   roads:[[[262,26],[290,24],[320,20],[350,20],[378,22]],[[378,22],[392,30],[408,36],[422,42]],[[300,46],[302,34],[304,23]]],
   exits:[{edge:"south",from:295,to:305,target:"aqueduct-ruins",label:"Aqueduct Ruins"},{edge:"east",from:36,to:46,target:"great-bridge",label:"The Great Bridge"},{edge:"west",from:21.8,to:30.6,target:"hidden-creek",label:"Hidden Creek"}],
-  portals:[{at:[269,26],r:40,target:"landing",label:"Reedwater Landing",entry:[320,300]}]
+  portals:[]
  },
  "sandbar-spits":{
   shapes:[["land",[[464.4,367.8],[483.7,364.8],[492.4,367.4],[495.7,374.1],[488,379.9],[480.3,382.9],[470.2,386.9],[461.9,382.1],[459.7,373.9]]],["land",[[466,402],[480,400],[498,402],[502,410],[490,414],[472,412]],{zone:"rock"}],["land",[[503,413],[511,412],[516,417],[510,421],[502,419]],{zone:"rock"}],["land",[[546,372],[556,368],[562,374],[560,384],[550,384]]],["land",[[544,392],[560,386],[580,384],[590,388],[588,396],[570,400],[552,400]]],["land",[[552.3,398.1],[562,398.2],[564,408],[556,410],[550,406]],{zone:"rock"}]],
@@ -169,7 +160,7 @@ export const LAND_DATA=Object.freeze({
   roads:[[[217.7,220.2],[223.6,233],[242,238],[252,242]],[[268,249],[280,251],[292,252],[304,253]],[[252,242],[258,241],[266,244],[268,249]]],
   fords:[[[236.8,253.6],[237.4,256.2]],[[218.1,257],[218.5,258.5]]],
   places:[{id:"stonefall-pond",name:"Stonefall Pond",at:[266.4,248.6],text:"A spring-fed pond ringed with reeds. Frogs, dragonflies, and a heron that pretends you are not there."},{id:"the-stonefall",name:"The Stonefall",at:[232,250],text:"A field of tumbled boulders, some as big as a house. The creek threads between them toward the cliff."},{id:"stonefall-falls",name:"The Falls",at:[206.4,262.2],text:"The creek pours off the cliff edge into the sea below. Spray hangs in the air."}],
-  exits:[{edge:"east",from:249,to:258,target:"windchime",label:"Windchime Path"},{edge:"north",from:211.2,to:225.2,target:"village-market",label:"Willowback Merchant Quarter"}]
+  exits:[{edge:"north",from:211.2,to:225.2,target:"village-market",label:"Willowback Merchant Quarter"}]
  },
  "tidecave-coast":{
   shapes:[["land",[[575.7,294.6],[727.7,294.9],[728.7,327.6],[704,336],[684,332],[675.4,340.7],[663.6,338.4],[642,336],[620,342],[600,340],[575.3,335.1]],{zone:"forest"}],["land",[[683.7,331.6],[692.4,324.1],[695.9,317.9],[696,310.3],[699.3,306.4],[704.4,306.9],[706.9,309.8],[708.5,315.1],[710.8,323.5],[708.7,332.2],[704.8,343.9],[680.9,343.4],[672.8,340.2]],{zone:"rock"}],["land",[[573.5,346.6],[626,352],[640,362],[616,368],[571.5,361.7]],{zone:"sand"}],["land","ellipse",[664,354],4,3],["land","ellipse",[690,362],3,2]],
@@ -177,8 +168,7 @@ export const LAND_DATA=Object.freeze({
   cliffs:[[[670.6,297],[720.9,297.6],[720,330],[709.1,333.7],[705.5,337],[680.4,335.3],[680.1,325.3],[674,318]]],
   roads:[[[632,300],[630,320],[624.6,337.4]],[[630,320],[656.2,324.8],[678,334],[692,338]]],
   fords:[[[624,339.6],[624,353]]],
-  props:[{kind:"cave",at:[701.5,310.7],scale:1.4},{kind:"stone",at:[664,352]},{kind:"stone",at:[690,360],scale:1.4},{kind:"logs",at:[600,356],solid:0},{kind:"shell",at:[610,360],solid:0}],
-  exits:[{edge:"north",from:627,to:637,target:"broken-watch",label:"The Broken Watch"},{edge:"west",from:348,to:362,target:"sandbar-spits",label:"Sandbar Spits"},{edge:"north",from:645,to:655,target:"landing",label:"Reedwater Landing"}]
+  props:[{kind:"cave",at:[701.5,310.7],scale:1.4},{kind:"stone",at:[664,352]},{kind:"stone",at:[690,360],scale:1.4},{kind:"logs",at:[600,356],solid:0},{kind:"shell",at:[610,360],solid:0}]
  },
  trailhead:{
   shapes:[["water","line",[[22,36],[26,48],[32,62],[36,74],[40,86],[42,98],[42,112]],2.4],["land",[[88,64],[104,62],[110,70],[106,80],[92,84],[84,76]],{zone:"clear"}],["land",[[72,74],[84,72],[88,82],[80,90],[70,86]],{zone:"meadow"}],["land",[[43,93.8],[65.1,84.6],[80.3,89.9],[83.8,98.9],[72.9,105.3],[62,108],[44,110],[42.7,103.6]],{zone:"rock"}]]

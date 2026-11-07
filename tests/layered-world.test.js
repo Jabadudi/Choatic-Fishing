@@ -12,7 +12,7 @@ function follow(w,at){const goal=point(at);for(let i=0;i<2000&&Math.hypot(w.play
 
 test('glasswater elevation is valid and uses the layered painter; the quarry keeps its own art',()=>{
  const def=DELTA_DEFS.find(d=>d.id===ID);assert.deepEqual(validateElevation(def.elevation),def.elevation);
- assert.equal(layeredArea(ID),true);assert.equal(layeredArea('abandoned-quarry'),false);assert.equal(layeredArea('landing'),false);
+ assert.equal(layeredArea(ID),true);assert.equal(layeredArea('abandoned-quarry'),false);assert.equal(layeredArea('landing'),true,'1.1 has its north cliff');assert.equal(layeredArea('chimewood'),false);
 });
 
 test('the forest rise is one level above the pool shore',()=>{

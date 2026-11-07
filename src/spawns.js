@@ -6,6 +6,7 @@ import {animalGround} from './wildlife.js';
 import {areaFor} from './wilds.js';
 import {storyRevealed} from './codex-discovery.js';
 import {preloadSprite} from './sprites.js';
+import {fieldMap,levelAt,applyLevel,fights} from './field-maps.js';
 export const spawnAreaFor=areaId=>{const id=SPAWN_PARENT[areaId]??areaId;return SPAWN_AREAS[id]?id:null;};
 // Only creatures with built behaviour can spawn; the others' weight is shared out to the rest of the table.
 export const spawnable=species=>Object.hasOwn(ANIMAL_TYPES,species);
@@ -60,7 +61,7 @@ export function rollArea(world,areaId){
  const area=SPAWN_AREAS[areaId],spawns=world.spawns;if(!area||!spawns)return [];
  prune(world);
  // Bosses and the adds they call stand outside the area's cap.
- const living=world.animals.filter(a=>a.areaId===areaId&&!a.bossId),taken=new Set(living.map(a=>a.slotId));
+ const living=world.animals.filter(a=>a.areaId===areaId&&!a.bossId&&!a.eliteId),taken=new Set(living.map(a=>a.slotId));
  const story=storyHunt(world),here=spawnAreaFor(world.areaId)===areaId,p=world.player;
  const empty=Object.values(SLOTS).filter(slot=>slot.areaId===areaId&&!taken.has(slot.id));
  // Story slots first so the Chapter 1 deer always fit, then the rest in a seeded order.
@@ -76,6 +77,19 @@ export function rollArea(world,areaId){
   const creature=createCreature(slot,species,{id:`${slot.id}-${spawns.next}`,seed:Math.floor(random(spawns)*4294967295)||1,shiny});
   if(!creature)continue;
   spawns.next++;listFor(world,species).push(creature);born.push(creature);count++;preloadSprite(creature.spriteId);
+  // On a field map the creature gets its level, and a monster comes with its pack (once monsters are awake).
+  const field=fieldMap(areaId);if(!field)continue;
+  const width=areaFor(areaId).width;applyLevel(creature,levelAt(areaId,creature.x,width));
+  if(first||!fights(creature)||!monstersAwake(world)||species==='rabbit')continue;
+  const [lo,hi]=field.pack,size=lo+Math.floor(random(spawns)*(hi-lo+1));creature.packId=creature.id;
+  // The pack fills up to the area's cap, like every other creature.
+  for(let k=1;k<size&&count<area.cap;k++){
+   const angle=k/size*Math.PI*2+random(spawns),r=55+random(spawns)*45,spot={...slot,x:creature.x+Math.cos(angle)*r,y:creature.y+Math.sin(angle)*r};
+   const member=createCreature(spot,species,{id:`${creature.id}-p${k}`,seed:Math.floor(random(spawns)*4294967295)||1,index:k});
+   if(!member)continue;
+   applyLevel(member,levelAt(areaId,member.x,width));member.packId=creature.id;
+   listFor(world,species).push(member);born.push(member);count++;
+  }
  }
  return born;
 }
