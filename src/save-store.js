@@ -1,10 +1,12 @@
 import {captureSave,restoreSave,importantProgress,SAVE_VERSION} from './save-format.js';
+export const SAVE_DATABASE='the-wilds-progress-regions';
 export class IndexedSaveStore{
  constructor(indexedDB=globalThis.indexedDB){this.indexedDB=indexedDB;}
  open(){
   if(!this.promise)this.promise=new Promise((resolve,reject)=>{
    if(!this.indexedDB){reject(Error('Browser storage is unavailable. Export your save to keep a backup.'));return;}
-   const request=this.indexedDB.open('the-wilds-progress',1);
+   // The Regions version keeps its own journey; the classic game (/classic/) still uses 'the-wilds-progress'.
+   const request=this.indexedDB.open(SAVE_DATABASE,1);
    request.onupgradeneeded=()=>request.result.createObjectStore('profiles');
    request.onerror=()=>{this.promise=null;reject(request.error||Error('Could not open save storage.'));};
    request.onblocked=()=>{this.promise=null;reject(Error('Close other game tabs and try again.'));};
