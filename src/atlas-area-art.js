@@ -1,5 +1,6 @@
 import {ATLAS_PROP_ART} from './sprite-definitions.js';
 import {groundPattern} from './ground-textures.js';
+import {DUAL_GROUND} from './dual-grid.js';
 // Art for the atlas-built areas (atlas-area.js): boardwalks, fords, stone bridges and props. Drawing only.
 import {drawEntitySprite,drawProp as drawPropSprite} from './sprites.js';
 const each=(pts,step,fn)=>{for(let i=1;i<pts.length;i++){const [ax,ay]=pts[i-1],[bx,by]=pts[i],len=Math.hypot(bx-ax,by-ay),n=Math.max(1,Math.floor(len/step));for(let j=0;j<n;j++){const t=j/n;fn(ax+(bx-ax)*t,ay+(by-ay)*t,Math.atan2(by-ay,bx-ax),j);}}};
@@ -18,11 +19,27 @@ function tiled(ctx,pts,id,deck,aspect){
  }
  return true;
 }
+// The plank tile is 48 x 41 (deck only); the end pieces are 40 x 75 with the deck in rows 15 to 56.
+function plankWalks(ctx,walks,all){
+ const ready=['plank-walk','plank-walk-start','plank-walk-end'].every(k=>drawPropSprite(ctx,`atlas/${k}`,{x:-1e5,y:-1e5,w:1,h:1}));if(!ready)return false;
+ const joined=(p,self)=>all.some(o=>o!==self&&o.pts.some(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<4));
+ for(const b of walks){
+  const deck=b.half*2+12,k=deck/41;tiled(ctx,b.pts,'atlas/plank-walk',deck,48/41);
+  for(const [end,id] of [[0,'plank-walk-start'],[b.pts.length-1,'plank-walk-end']]){
+   const p=b.pts[end],q=b.pts[end?end-1:1];if(joined(p,b))continue;
+   const a=end?Math.atan2(p[1]-q[1],p[0]-q[0]):Math.atan2(q[1]-p[1],q[0]-p[0]),len=Math.hypot(q[0]-p[0],q[1]-p[1]),x=end?len-20*k:20*k;
+   ctx.save();ctx.translate(end?q[0]:p[0],end?q[1]:p[1]);ctx.rotate(a);drawPropSprite(ctx,`atlas/${id}`,{x,y:deck/2+19*k,w:40*k,h:75*k});ctx.restore();
+  }
+ }
+ return true;
+}
 export function drawAtlasGround(ctx,built,left,top,width,height){
  // Painted walkways where the tiles have loaded: stone bridge decks, marsh boardwalks and stepping stones.
  for(const b of built.bridges)if(near(b.pts,b.half,left,top,width,height))b.painted=tiled(ctx,b.pts,'atlas/stone-bridge-h',b.half*2+14,322/125);
  const visibleWalks=built.walks.filter(b=>near(b.pts,b.half,left,top,width,height));
- const woodReady=drawWoodDecks(ctx,visibleWalks.map(b=>({pts:b.pts,width:b.half*2+12})));
+ // Layered-world areas lay the painted plank bridge: planks along the line, a post pair at each free end.
+ const planks=!!DUAL_GROUND[built.area?.id]&&plankWalks(ctx,visibleWalks,built.walks);
+ const woodReady=planks||drawWoodDecks(ctx,visibleWalks.map(b=>({pts:b.pts,width:b.half*2+12})));
  for(const b of visibleWalks)b.painted=woodReady;
  for(const b of built.bridges){if(!near(b.pts,b.half,left,top,width,height))continue;if(b.painted)continue;const w=b.half*2;
   stroke(ctx,b.pts,w+10,'#3d3a36');stroke(ctx,b.pts,w+4,'#8d877a');stroke(ctx,b.pts,w-6,'#b9b19c');
@@ -69,6 +86,8 @@ export function atlasPropArt(p){
  if(p.kind==='pillar')return big?['grey-spire',34,80]:p.inWater?['pillar-water',40,76]:PAINTED.pillar;
  if(p.kind==='logs'&&big)return ['fallen-giant',64,40];
  if(p.kind==='wreck'&&p.area==='arrival-bay')return ['dinghy',110,48];
+ // Areas on the dual-grid ground use the layered-world round oak for their plain big tree.
+ if(p.kind==='big-tree'&&!big&&!p.glow&&DUAL_GROUND[p.area])return ATLAS_PROP_ART.tree['round-oak'];
  if(p.kind==='big-tree')return big?['listening-tree',110,110]:p.glow==='#ffd36a'?['goldleaf-tree',150,160]:p.glow==='#cfe8ff'?['hollow-tree',150,160]:PAINTED['big-tree'];
  if(ATLAS_PROP_ART[p.kind]&&['tree','bush','boulder'].includes(p.kind))return Object.values(ATLAS_PROP_ART[p.kind])[0];
  return PAINTED[p.kind];
@@ -79,7 +98,7 @@ function drawProp(ctx,p,t){
   // A jetty runs down from its spot into the water.
   const [id,w,h]=art,foot=p.kind==='dock'?y+80:y;
   if(!p.inWater&&p.kind!=='dock'){if(p.art==='quarry-gantry'){shadow(ctx,x-w*.36,foot,w*.1,5);shadow(ctx,x+w*.36,foot,w*.1,5);}else shadow(ctx,x,foot,w*.36,Math.max(5,h*.07));}
-  const explicit=!!(p.art&&ATLAS_PROP_ART[p.kind]?.[p.art]);
+  const explicit=!!(p.art&&ATLAS_PROP_ART[p.kind]?.[p.art])||id.startsWith('atlas/');
   if(drawPropSprite(ctx,explicit||id.startsWith('atlas/')?id:`atlas/${id}`,{x,y:foot,w,h}))return;
  }
  switch(p.kind){

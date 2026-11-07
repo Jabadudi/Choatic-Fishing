@@ -558,14 +558,14 @@ area({id:'glasswater',num:'3.2',name:'Glasswater Basin',frame:[2,130,158,214],si
  shapes:[
   ['land',[[14,176],[50,166],[78,164],[104,168],[116,180],[112,198],[90,208],[60,210],[30,210],[14,204]],{zone:'sand'}],
   ['water',[[20,184],[36,178],[56,172],[74,168],[92,168],[106,176],[108,188],[98,198],[80,202],[62,200],[46,204],[30,204],[20,198]]],
-  ['water','line',[[83,158],[83,164],[84,170]],3],
-  ['water','line',[[48,203],[50,208],[51,214]],2],
+  ['water','line',[[83,158],[83,164],[84,170]],5],
+  ['water','line',[[48,203],[50,208],[51,214]],5],
   ['land',[[58,176],[70,175],[72,183],[60,184]],{zone:'meadow'}]
  ],
  cliffs:[[[2,158],[14,158],[16,175],[10,190],[12,214],[2,214]]],
- roads:[[[90,158],[94,164],[98,170]],[[98,170],[108,178],[110,188],[104,198],[90,204],[74,206],[60,206],[56,207]],[[56,207],[57,211],[58,214]]],
+ roads:[[[90,158],[99,160],[105,162]],[[109,175],[110,188],[104,198],[90,204],[74,206],[60,206],[56,207]],[[56,207],[57,211],[58,214]]],
  walks:[[[104,190],[98,190]]],
- props:[{kind:'waterfall',at:[84.2,165.5]},{kind:'waterfall',at:[50.3,208.5]},{kind:'hut',at:[117,183]},{kind:'big-tree',at:[65,180],solid:0},{kind:'dock',at:[100,190]}],
+ props:[{kind:'waterfall',at:[84.2,165.5]},{kind:'waterfall',at:[50.3,208.5]},{kind:'hut',at:[117,183],art:'log-cabin'},{kind:'big-tree',at:[65,180],solid:0},{kind:'logs',at:[108,187],art:'log-pile'},{kind:'cart',at:[124,186],art:'wood-barrel'},{kind:'dock',at:[100,190]}],
  places:[
   {id:'glasswater-jetty',name:'Glasswater',at:[100,190],text:'A turquoise pool so clear you can see the fish from the jetty. In the west the Clearwater Shallows are sandy and knee-deep.'},
   {id:'fishing-hut',name:'Fishing Hut',at:[112,190],text:'An empty fishing hut. A net on the wall, a stool by the door, and a kettle that someone meant to come back for.'},
@@ -576,7 +576,15 @@ area({id:'glasswater',num:'3.2',name:'Glasswater Basin',frame:[2,130,158,214],si
  exits:[
   {edge:'north',from:87,to:95,target:'upper-falls',label:'Upper Falls'},
   {edge:'south',from:53,to:63,target:'western-falls',label:'Western Falls'}
- ]});
+ ],
+ // Layered world test: the forest north of the pool stands one level higher. An earth cliff runs along the north
+ // shore with the Middle Falls pouring over it; stone stairs bring the Upper Falls trail down; the fishing hut sits on the shore below the rise.
+ elevation:{base:0,
+  terraces:[{id:'north-rise',height:1,points:[[0,128],[160,128],[160,177],[122,177],[114,176],[104,167],[90,164],[78,163],[66,163],[50,165],[30,169],[13,175],[12,218],[0,218]]}],
+  ramps:[
+   {id:'north-stairs',kind:'stairs',from:[105,162],to:[109,175],width:5,fromHeight:1,toHeight:0}
+  ]}
+});
 
 // 11 Western Falls: where the Glasswater staircase reaches the lowlands. The Lower Falls and the Veil Falls drop into
 // the Plunge Pool; a slow river runs south-east past Fallsfoot, a hamlet of stilt houses, to the Drowned Road.
