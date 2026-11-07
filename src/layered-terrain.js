@@ -5,6 +5,10 @@
 import {cliffPieces} from './cliff-art.js';
 import {rampArtwork,drawRampPiece} from './ramp-art.js';
 import {groundPattern} from './ground-textures.js';
+import {polygonContains} from './elevation.js';
+import {dualGridSheet,drawDualGrid} from './dual-grid.js';
+// Dual-grid lattice spacing in world units: one level (96) is two tiles of cliff wall.
+export const LAYER_CELL=48;
 
 const art=new WeakMap();
 let flat=null,mask=null;
@@ -17,7 +21,9 @@ function layout(built){
  const e=built.elevation,levels=[...new Set([e.base||0,...e.terraces.map(t=>t.z)])].sort((a,b)=>a-b);
  const faces=cliffPieces(e).map(s=>{const mx=(s.p[0]+s.q[0])/2,my=(s.p[1]+s.q[1])/2;return {...s,top:built.zoneAt(mx-s.nx*14,my-s.ny*14),y0:Math.min(s.p[1],s.q[1])-s.high-24,y1:Math.max(s.p[1],s.q[1])-s.low+24};});
  const stairs=rampArtwork(e);
- it={levels,faces,stairs};art.set(built,it);return it;
+ // Raised ground for the tiles ignores ramps: stairs are drawn over the cliff they cut through.
+ const ground=(x,y)=>{let z=e.base||0;for(const t of e.terraces)if(polygonContains(x,y,t.points))z=t.z;return z;};
+ it={levels,faces,stairs,ground};art.set(built,it);return it;
 }
 
 // One level's floor in world coordinates. Later terraces override earlier ones, exactly like heightAt.
@@ -72,6 +78,9 @@ function drawFace(c,s,earth){
 // Paints the projected rectangle [left, top, width, height] of a layered area into c (world units, already
 // translated). paintFlat(ctx,left,top,width,height) paints the area's flat ground into ctx.
 export function paintLayered(c,left,top,width,height,built,paintFlat,invalidate=()=>{}){
+ const topSheet=dualGridSheet('plateauTop',invalidate),wallSheet=dualGridSheet('cliffWall',invalidate);
+ if(topSheet&&wallSheet)return paintDualGrid(c,left,top,width,height,built,paintFlat,invalidate,topSheet,wallSheet);
+ // Until the tilesets load: polygon floors and drawn cliff faces.
  const {levels,faces,stairs}=layout(built),w=Math.ceil(width),h=Math.ceil(height);
  flat=scratch(flat,w,h);mask=scratch(mask,w,h);
  const f=flat.getContext('2d'),m=mask.getContext('2d'),earth=groundPattern(c,'earthCliff',invalidate);
@@ -88,3 +97,28 @@ export function paintLayered(c,left,top,width,height,built,paintFlat,invalidate=
  for(const s of stairs)if(s.bottom>top&&s.top<top+height)drawRampPiece(c,s,patterns);
 }
 
+
+// Dual-grid layering. Per level, lowest first: the cliff wall tiles (one row per 48 units of drop) hang below the raised
+// ground, then the area's own ground is cut to the plateau tiles' outline, then the plateau edge tiles are drawn over it.
+function paintDualGrid(c,left,top,width,height,built,paintFlat,invalidate,topSheet,wallSheet){
+ const {levels,stairs,ground}=layout(built),w=Math.ceil(width),h=Math.ceil(height),C=LAYER_CELL;
+ flat=scratch(flat,w,h);mask=scratch(mask,w,h);
+ const f=flat.getContext('2d'),m=mask.getContext('2d');
+ c.save();c.imageSmoothingEnabled=true;m.imageSmoothingEnabled=true;
+ levels.forEach((z,index)=>{
+  f.setTransform(1,0,0,1,0,0);f.clearRect(0,0,w,h);
+  f.setTransform(1,0,0,1,-left,-(top+z));paintFlat(f,left,top+z,width,height);f.setTransform(1,0,0,1,0,0);
+  if(index===0){c.drawImage(flat,0,0,w,h,left,top,w,h);return;}
+  const inside=(x,y)=>ground(x,y)>=z,rows=Math.max(1,Math.round((z-levels[index-1])/C));
+  for(let k=rows;k>=1;k--)drawDualGrid(c,wallSheet,inside,{left:left-C,top:top+z-k*C-C,width:width+2*C,height:height+2*C,cell:C,dy:-z+k*C});
+  m.setTransform(1,0,0,1,0,0);m.clearRect(0,0,w,h);m.setTransform(1,0,0,1,-left,-(top+z));
+  drawDualGrid(m,topSheet,inside,{left:left-C,top:top+z-C,width:width+2*C,height:height+2*C,cell:C});
+  m.setTransform(1,0,0,1,0,0);
+  f.globalCompositeOperation='destination-in';f.drawImage(mask,0,0);f.globalCompositeOperation='source-over';
+  c.drawImage(flat,0,0,w,h,left,top,w,h);
+  drawDualGrid(c,topSheet,inside,{left:left-C,top:top+z-C,width:width+2*C,height:height+2*C,cell:C,dy:-z,skipFull:true});
+ });
+ c.restore();
+ const patterns={rock:groundPattern(c,'rock',invalidate),cliffFace:groundPattern(c,'earthCliff',invalidate)};
+ for(const s of stairs)if(s.bottom>top&&s.top<top+height)drawRampPiece(c,s,patterns);
+}
