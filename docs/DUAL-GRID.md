@@ -34,4 +34,4 @@ lattice: the base sheet (`forest-floor.png`, whose fully filled cell repeats und
 and `water.png` (water). Decks, props, reeds, rocks and scenery are drawn over the tiles as before. In these areas
 the water's walking edge uses the same lattice rule as the water tiles (`atlas-area.js`), so the shoreline Eli stops at
 is the drawn one. Until every sheet has loaded the blended ground painter is used. The four ground sheets are
-stand-ins drawn by `scripts/draw-dual-grid.py` until the painted ones arrive.
+painted (sources in `art/sprites/terrain/dual-grid/*-source.png`); `scripts/draw-dual-grid.py` keeps the painted ones.
