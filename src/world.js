@@ -25,6 +25,7 @@ import {createFamiliars,absorbShard,updateFamiliar,familiarAction} from './famil
 import {noteEncounters} from './codex-discovery.js';
 import {updateDefeat} from './monsters.js';
 import {giveStarterSword} from './warrior.js';
+import {startRegions,updateRegions} from './region-play.js';
 import {createWell,updateWell,nearWell,findWishstone} from './wishing-well.js';
 import {artifactBonus,combineArtifacts,isArtifact,itemLabel,slotArtifact,unslotArtifact,withArticle} from './artifacts.js';
 export {LAND} from './terrain.js';
@@ -36,7 +37,7 @@ export function createActor(id,name,x,y,random){return {id,name,entityType:'play
 // Chapter 1 and 2 happen on the shore: the Landing and the Arrival Bay beach below it.
 const SHORE_AREAS=['landing','arrival-bay'];
 export class World {
- constructor(random=Math.random,{botCount=1,countdownSeconds=5,humans=null,adventure=false,story=false}={}){
+ constructor(random=Math.random,{botCount=1,countdownSeconds=5,humans=null,adventure=false,story=false,regions=false}={}){
   this.random=random;this.player=createActor('player','YOU',480,365,random);
   this.online=!!humans;this.chests=CHESTS.map(c=>({...c,opened:false}));
   const spawns=[{name:'BRINE',x:220,y:180,aim:{x:80,y:180}},{name:'HOOK',x:740,y:180,aim:{x:880,y:180}},{name:'GILL',x:740,y:550,aim:{x:880,y:550}}];
@@ -60,6 +61,8 @@ export class World {
   if(this.story){this.player.name='Eli';this.player.spriteId='eli';this.npcs=[];this.areaId='arrival-bay';Object.assign(this.player,Wilds.AREAS['arrival-bay'].spawn);this.message=storyObjective(this);}
   // Eli is a warrior: every story journey starts with his sword in hand (src/warrior.js).
   if(this.story)giveStarterSword(this);
+  // The Regions game starts on its own first map, with no story (src/region-play.js).
+  if(adventure&&regions)startRegions(this);
  }
  advanceStory(){return advanceStory(this);}
  skipStory(){return skipStory(this);}
@@ -256,7 +259,7 @@ export class World {
   updateDefeat(this,dt);
   updateSpawns(this,dt);
   updateBosses(this,dt);
-  updateFieldMaps(this,dt);
+  updateFieldMaps(this,dt);updateRegions(this);
   updateFamiliar(this,dt);
   if(this.adventure)this.pullDrops(dt);
   updateDialogue(this,dt);

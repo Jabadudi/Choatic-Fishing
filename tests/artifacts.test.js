@@ -17,7 +17,7 @@ const sequence=values=>{let i=0;return ()=>values[i++%values.length];};
 // The spawn plan's new animals (fox through seal) of the spawn plan's new animals, have no artifact yet.
 test('each hunted creature carries one artifact, rolled before its familiar shard',()=>{
  const carriers=Object.entries(LOOT_TABLES).map(([table,entries])=>[table,entries.filter(entry=>entry.artifact).map(entry=>entry.artifact)]);
- assert.deepEqual(Object.fromEntries(carriers),{rabbit:['rabbits-foot'],fox:[],deer:['stag-crown'],boar:[],elk:[],bear:[],heron:[],crab:[],goat:[],otter:[],duck:[],pike:[],seal:[],turtle:['mossback-scute'],eel:['lodestone'],'shadow-walker':['black-light-heart'],
+ assert.deepEqual(Object.fromEntries(carriers),{rabbit:['rabbits-foot'],fox:[],deer:['stag-crown'],boar:[],elk:[],bear:[],heron:[],crab:[],goat:[],otter:[],duck:[],pike:[],seal:[],turtle:['mossback-scute'],eel:['lodestone'],'shadow-walker':['black-light-heart'],slime:[],
   'hollow-stag':[],'gloam-boar':[],stoneshade:[],whisperer:[],'mire-walker':[],'drowned-soldier':[],'ash-archer':[],inkeel:[],
   'drowned-captain':['drowned-gorget'],greyhorn:['spire-bell']});
  for(const id of ARTIFACT_IDS)assert.ok(ARTIFACTS[id].chance>0&&ARTIFACTS[id].chance<1&&ARTIFACTS[id].values.length===RARITIES.length,id);

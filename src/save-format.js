@@ -11,6 +11,7 @@ import {restoreFamiliars} from './familiars.js';
 import {restoreCodex} from './codex-discovery.js';
 import {restoreItemsFound} from './pickups.js';
 import {SLOTS} from './spawn-tables.js';
+import {restoreRegions} from './region-play.js';
 import {createCreature,listFor,restoreSpawns,spawnable} from './spawns.js';
 import {ANIMAL_TYPES} from './entities.js';
 import {MARKS_LIMIT} from './trade.js';
@@ -42,7 +43,7 @@ export function captureSave(world,reason='autosave',now=Date.now()){
  if(!world?.adventure)fail('Only exploration progress can be saved.');
  const p=world.player;
  return {format:SAVE_FORMAT,version:SAVE_VERSION,savedAt:now,reason,journeyId:world.journeyId,state:{
-  areaId:world.areaId,elapsed:world.elapsed,story:world.story?clone(world.story):null,
+  areaId:world.areaId,elapsed:world.elapsed,story:world.story?clone(world.story):null,...(world.regions?{regions:true}:{}),
   player:{x:p.x,y:p.y,angle:p.angle,health:p.health,cooldown:p.cooldown,dashCharges:p.dashCharges,dashCooldown:p.dashCooldown},
   inventory:{items:clone(p.inventory.allItems),hotbar:p.inventory.slots.map(item=>item?.id||null),selected:p.inventory.selected,nextId:p.inventory.nextId,marks:p.inventory.marks,artifacts:[...p.inventory.artifactSlots]},
   progression:{...clone(p.progression),eliminations:[...p.progression.eliminations]},catches:clone(p.catches),
@@ -102,6 +103,9 @@ function moveToNewMaps(s){
  for(const animal of Array.isArray(s.animals)?s.animals:[])if(animal&&SLOTS[animal.slotId]?.areaId==='windchime'){animal.x=SLOTS[animal.slotId].x;animal.y=SLOTS[animal.slotId].y;}
  if(s.story?.guide&&typeof s.story.guide==='object'){if(RENAMED[s.story.guide.areaId]){const g={...s.story.guide};move(g);s.story.guide=g;}relocateGuide(s.story);}
 }
+// The Regions game (main.js) only loads its own journeys; tests and tools leave this unset and load any journey.
+let requiredGame=null;
+export const requireGame=game=>{requiredGame=game;};
 export function restoreSave(input){
  const save=clone(input);inspect(save);
  if(save?.format!==SAVE_FORMAT)fail('This is not a The Wilds save file.');
@@ -123,6 +127,7 @@ export function restoreSave(input){
  if(save.version!==SAVE_VERSION)fail('This save version is not supported. Your existing save was not changed.');
  if(!number(save.savedAt,0,1e16)||typeof save.journeyId!=='string'||save.journeyId.length>120)fail('Invalid save header.');
  const s=save.state;if(!s||!Object.hasOwn(AREAS,s.areaId))fail('Unknown saved area.');
+ if(requiredGame==='regions'&&s.regions!==true)fail('This journey is from an earlier test build. Start a new game.');
  const w=new World(Math.random,{adventure:true});w.journeyId=save.journeyId;w.areaId=s.areaId;w.elapsed=number(s.elapsed)?s.elapsed:0;
  w.story=restoreStory(s.story);
  if(w.story?.guide&&!walkable(w.story.guide.x,w.story.guide.y,w.story.guide.areaId))fail('Invalid story guide position.');
@@ -202,6 +207,8 @@ export function restoreSave(input){
  w.nextDropId=Math.max(Number.isSafeInteger(s.nextDropId)?s.nextDropId:1,...w.drops.map(drop=>/^drop-\d+$/.test(drop.id)?Number(drop.id.slice(5))+1:1));
  // Eli became a warrior after these saves were made: a journey without his sword gets it back.
  if(w.story)giveStarterSword(w);
+ // A Regions journey rebuilds its map's monsters from the field map state.
+ if(s.regions===true)restoreRegions(w);
  w.message='Journey restored. Welcome back!';return w;
 }
 export function parseSave(text){if(typeof text!=='string'||text.length>5*1024*1024)fail('Save file is too large.');let save;try{save=JSON.parse(text);}catch{fail('Could not read this file. Choose a valid The Wilds JSON save.');}restoreSave(save);return save;}

@@ -811,3 +811,11 @@ body.touch-mode #chat-box.open{bottom:auto;top:calc(8px + var(--hud-t,0px));tran
 .atlas-tabs{display:flex;gap:6px}.atlas-tabs button{background:#33503f;border:1px solid #b6ad81;padding:8px 12px;color:#efe6c5;font:11px Georgia,serif;cursor:pointer}.atlas-tabs button[aria-selected=true]{background:#e9d9ad;color:#2b2414}
 #atlas-canvas{cursor:pointer}
 .version-switch{margin:6px 0 10px;font:13px Georgia,serif;color:#e9dcb8;text-align:center;text-shadow:0 1px 2px #000c}.version-switch a{color:#ffd27a}
+
+/* The start screen's game picker: the Regions game (this page) or The Wilds Classic (/classic/). build-classic.mjs
+   gives Classic the same picker with the choice reversed. */
+.game-pick{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:4px 6% 12px}
+.game-pick>*{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border:1px solid #c9a85a88;border-radius:6px;background:#1a120ab3;color:#e9dcb8;font:bold 14px Georgia,serif;text-decoration:none;text-align:center}
+.game-pick small{font:11px Georgia,serif;color:#c8b98f}
+.game-pick .game-pick-on{border-color:#ffd27a;background:#3a2810d9;color:#ffd27a;box-shadow:0 0 0 1px #ffd27a55 inset}
+.game-pick a:hover{border-color:#ffd27a;color:#fff3d6}

@@ -44,6 +44,10 @@ export const ANIMAL_TYPES=Object.freeze({
  // Monster: hunts Eli on sight (src/monsters.js). Slower than Eli at a run, so he can always break away.
  'shadow-walker':{behavior:BEHAVIORS.AGGRESSIVE,spriteId:'nightwalker',name:'Shadow Walker',maxHealth:80,radius:16,habitat:'land',speed:38,fearRange:0,
   noticeRange:240,noticeDelay:.6,loseRange:460,leashRange:620,chaseSpeed:122,attackDamage:16,attackRange:58,attackWindup:.55,attackRecover:.4,attackCooldown:1.5,huntXp:40,loot:'shadow-walker'},
+ // Slime: the first monster of the Regions game. A round, wobbling blob that hops after Eli in bunches of three or
+ // four (src/field-maps.js); weak alone, a nuisance together. Drawn in code (src/slime-art.js), with no sheet.
+ slime:{behavior:BEHAVIORS.AGGRESSIVE,name:'Slime',maxHealth:34,radius:14,habitat:'land',speed:30,fearRange:0,
+  noticeRange:210,noticeDelay:.5,loseRange:420,leashRange:520,chaseSpeed:96,attackDamage:7,attackRange:46,attackWindup:.5,attackRecover:.45,attackCooldown:1.5,huntXp:16,loot:'slime',familiar:false},
  // The shadow walker kinds: the same hunt, each with its own strengths. All stay slower than Eli at a run.
  // Hollow Stag: an infected deer or elk. Gallops after Eli (its sheet has a run row), low health, antler swing.
  'hollow-stag':{...monster('Hollow Stag'),maxHealth:60,radius:18,speed:48,noticeRange:260,chaseSpeed:165,attackDamage:14,attackRange:64,attackWindup:.45,attackRecover:.35,attackCooldown:1.3,huntXp:45,loot:'hollow-stag'},

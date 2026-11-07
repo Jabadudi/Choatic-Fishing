@@ -47,7 +47,8 @@ export function updateWell(world){
  const ledger=wellLedger(world),woke=!well.awake;
  if(woke){
   well.awake=true;well.credited=ledger-STARTING_STONES;
-  world.message=`${world.message?`${world.message} · `:''}The old well on Willow Commons glows a soft blue. ${wishstonesLabel(STARTING_STONES)} wait at its rim.`;
+  // The Regions game has no Willow Commons yet: its well opens quietly from the Well button.
+  if(!world.regions)world.message=`${world.message?`${world.message} · `:''}The old well on Willow Commons glows a soft blue. ${wishstonesLabel(STARTING_STONES)} wait at its rim.`;
  }
  const earned=ledger-well.credited;if(earned<=0)return;
  well.credited=ledger;addStones(well,earned);

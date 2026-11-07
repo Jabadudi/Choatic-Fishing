@@ -15,7 +15,8 @@ export const DUAL_GRID_SHEETS=Object.freeze({plateauTop:'plateau-top',cliffWall:
 // also walks on the same lattice (atlas-area.js), so the shoreline Eli stops at is the one on screen.
 export const GROUND_CELL=48;
 // base is a dual-grid sheet whose fully filled cell repeats under everything.
-export const DUAL_GROUND=Object.freeze({glasswater:{base:'meadowGrass',layers:['sand','dirtPath','water','deepWater']}});
+export const DUAL_GROUND=Object.freeze({glasswater:{base:'meadowGrass',layers:['sand','dirtPath','water','deepWater']},
+ 'dewdrop-meadow':{base:'meadowGrass',layers:['sand','dirtPath','water','deepWater']}});
 const sheets=new Map(),listeners=new Set();
 onTexturePackChange(()=>{sheets.clear();listeners.forEach(fn=>fn());});
 export function dualGridSheet(kind,invalidate=()=>{}){
