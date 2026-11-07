@@ -17,8 +17,11 @@ counted left to right, top to bottom. `art/sprites/terrain/dual-grid/dual-grid-t
 Stairs and the waterfall curtain are still drawn in code over the tiles. Until both sheets load, the earlier polygon
 floors and drawn faces are used.
 
-Collision is unchanged: the height field in `src/elevation.js` follows the editor's polygons, while the tiles follow the
-96-unit lattice, so a drawn edge can sit up to about 48 units from the true edge.
+Walking follows the same grid. For these areas `compileElevation` samples the editor's terraces at the lattice corners
+and gives each spot the highest level whose corners cover it with the tiles' own rule (bilinear weight over one half),
+so the edge Eli stops at is the edge on screen. Inside the plateau outline only an 18-unit rim comes from the plateau
+tiles; further in, the area's own ground shows. The world editor snaps terrace corners to the same grid and marks the
+raised lattice points.
 
 The sheets in `assets/ground/dual/` are painted 1024 x 1024 sheets (sources in `art/sprites/terrain/dual-grid/`).
 `scripts/draw-dual-grid.py` draws the layout template and plain stand-ins. Replacements must keep the same layout;

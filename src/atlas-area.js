@@ -1,4 +1,4 @@
-import {compileElevation} from './elevation.js';
+import {compileElevation,ELEVATION_GRID} from './elevation.js';
 import {ATLAS_PROP_ART} from './sprite-definitions.js';
 // Areas built straight from the Reedwater Delta atlas (assets/codex/reedwater-delta-map.jpg, 720 × 480 pixels).
 // Each area is plain data in atlas pixels: a frame cut out of the atlas, a size in world units, and shapes for land
@@ -27,7 +27,7 @@ const entryOf=e=>Array.isArray(e)?{entry:null,entryAtlas:e}:{entry:e?{...e}:null
 export function defineArea(def){
  const [X0,X1,Y0,Y1]=def.frame,[W,H]=def.size,kx=W/(X1-X0),ky=H/(Y1-Y0),k=(kx+ky)/2;
  const P=([ax,ay])=>[(ax-X0)*kx,(ay-Y0)*ky],Ps=pts=>pts.map(P);
- const elevation=compileElevation(def.elevation,P,k);
+ const elevation=compileElevation(def.elevation,P,k,{grid:def.id==='abandoned-quarry'?0:ELEVATION_GRID});
  const shapeZones=[];
  // Land and water, applied in order: land shapes raise ground out of the water, water shapes cut it away.
  const shapes=(def.shapes||[]).map(([op,form,...rest])=>{

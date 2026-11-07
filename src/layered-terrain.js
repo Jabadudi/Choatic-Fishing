@@ -5,13 +5,15 @@
 import {cliffPieces} from './cliff-art.js';
 import {rampArtwork,drawRampPiece} from './ramp-art.js';
 import {groundPattern} from './ground-textures.js';
-import {polygonContains} from './elevation.js';
+import {ELEVATION_GRID} from './elevation.js';
 import {dualGridSheet,drawDualGrid} from './dual-grid.js';
 // Dual-grid lattice spacing in world units: one level (96) is one tile of cliff wall.
-export const LAYER_CELL=96;
+export const LAYER_CELL=ELEVATION_GRID;
 
 const art=new WeakMap();
-let flat=null,mask=null;
+let flat=null,mask=null,rim=null,inner=null;
+// Only this band along the plateau outline comes from the plateau tiles; inside it the area's own ground shows.
+const RIM=18;
 function scratch(canvas,w,h){canvas??=document.createElement('canvas');if(canvas.width<w)canvas.width=w;if(canvas.height<h)canvas.height=h;return canvas;}
 const noise=(x,y)=>Math.sin(x*1.713+y*.917)*Math.cos(x*.137-y*.733);
 const GRASS_TOPS=new Set(['meadow','clear','forest',undefined,null]);
@@ -22,7 +24,7 @@ function layout(built){
  const faces=cliffPieces(e).map(s=>{const mx=(s.p[0]+s.q[0])/2,my=(s.p[1]+s.q[1])/2;return {...s,top:built.zoneAt(mx-s.nx*14,my-s.ny*14),y0:Math.min(s.p[1],s.q[1])-s.high-24,y1:Math.max(s.p[1],s.q[1])-s.low+24};});
  const stairs=rampArtwork(e);
  // Raised ground for the tiles ignores ramps: stairs are drawn over the cliff they cut through.
- const ground=(x,y)=>{let z=e.base||0;for(const t of e.terraces)if(polygonContains(x,y,t.points))z=t.z;return z;};
+ const ground=e.groundAt;
  it={levels,faces,stairs,ground};art.set(built,it);return it;
 }
 
@@ -101,9 +103,10 @@ export function paintLayered(c,left,top,width,height,built,paintFlat,invalidate=
 // Dual-grid layering. Per level, lowest first: the cliff wall tiles (one row per 48 units of drop) hang below the raised
 // ground, then the area's own ground is cut to the plateau tiles' outline, then the plateau edge tiles are drawn over it.
 function paintDualGrid(c,left,top,width,height,built,paintFlat,invalidate,topSheet,wallSheet){
- const {levels,stairs,ground}=layout(built),w=Math.ceil(width),h=Math.ceil(height),C=LAYER_CELL;
- flat=scratch(flat,w,h);mask=scratch(mask,w,h);
- const f=flat.getContext('2d'),m=mask.getContext('2d');
+ const {levels,stairs,ground}=layout(built),w=Math.ceil(width),h=Math.ceil(height),C=LAYER_CELL,P=RIM+4,W=w+2*P,H=h+2*P;
+ // mask, inner and rim cover the chunk plus a margin, so shrinking the outline never eats in from the chunk's edges.
+ flat=scratch(flat,w,h);mask=scratch(mask,W,H);inner=scratch(inner,W,H);rim=scratch(rim,W,H);
+ const f=flat.getContext('2d'),m=mask.getContext('2d'),n=inner.getContext('2d'),r=rim.getContext('2d');
  c.save();c.imageSmoothingEnabled=true;m.imageSmoothingEnabled=true;
  levels.forEach((z,index)=>{
   f.setTransform(1,0,0,1,0,0);f.clearRect(0,0,w,h);
@@ -111,12 +114,20 @@ function paintDualGrid(c,left,top,width,height,built,paintFlat,invalidate,topShe
   if(index===0){c.drawImage(flat,0,0,w,h,left,top,w,h);return;}
   const inside=(x,y)=>ground(x,y)>=z,rows=Math.max(1,Math.round((z-levels[index-1])/C));
   for(let k=rows;k>=1;k--)drawDualGrid(c,wallSheet,inside,{left:left-C,top:top+z-k*C-C,width:width+2*C,height:height+2*C,cell:C,dy:-z+k*C});
-  m.setTransform(1,0,0,1,0,0);m.clearRect(0,0,w,h);m.setTransform(1,0,0,1,-left,-(top+z));
+  // The plateau tiles over the padded area, in world coordinates of this level.
+  m.setTransform(1,0,0,1,0,0);m.clearRect(0,0,W,H);m.setTransform(1,0,0,1,P-left,P-(top+z));
   drawDualGrid(m,topSheet,inside,{left:left-C,top:top+z-C,width:width+2*C,height:height+2*C,cell:C});
   m.setTransform(1,0,0,1,0,0);
-  f.globalCompositeOperation='destination-in';f.drawImage(mask,0,0);f.globalCompositeOperation='source-over';
+  // The area's own ground, cut to the plateau outline.
+  f.globalCompositeOperation='destination-in';f.drawImage(mask,P,P,w,h,0,0,w,h);f.globalCompositeOperation='source-over';
   c.drawImage(flat,0,0,w,h,left,top,w,h);
-  drawDualGrid(c,topSheet,inside,{left:left-C,top:top+z-C,width:width+2*C,height:height+2*C,cell:C,dy:-z,skipFull:true});
+  // The rim: plateau tiles minus the outline shrunk by RIM, so the tiles' grass never forms square patches inside.
+  n.setTransform(1,0,0,1,0,0);n.clearRect(0,0,W,H);n.drawImage(mask,0,0);n.globalCompositeOperation='destination-in';
+  for(const [dx,dy]of [[RIM,0],[-RIM,0],[0,RIM],[0,-RIM],[RIM*.7,RIM*.7],[-RIM*.7,RIM*.7],[RIM*.7,-RIM*.7],[-RIM*.7,-RIM*.7]])n.drawImage(mask,dx,dy);
+  n.globalCompositeOperation='source-over';
+  r.setTransform(1,0,0,1,0,0);r.clearRect(0,0,W,H);r.drawImage(mask,0,0);
+  r.globalCompositeOperation='destination-out';r.drawImage(inner,0,0);r.globalCompositeOperation='source-over';
+  c.drawImage(rim,P,P,w,h,left,top,w,h);
  });
  c.restore();
  const patterns={rock:groundPattern(c,'rock',invalidate),cliffFace:groundPattern(c,'earthCliff',invalidate)};

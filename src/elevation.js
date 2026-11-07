@@ -1,17 +1,28 @@
 // Gameplay height, in world units. Artwork never defines floors or collision.
 export const ELEVATION_STEP=96;
 export function polygonContains(x,y,points){let hit=false;for(let i=0,j=points.length-1;i<points.length;j=i++){const a=points[i],b=points[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])hit=!hit;}return hit;}
-export function compileElevation(def,point=p=>p,scale=1){
+// Layered areas walk on the same grid their dual-grid tiles are drawn on: ground height is sampled at the corners of a
+// GRID-unit lattice and each spot takes the highest level whose corners cover it (the tiles' bilinear rule), so the
+// edge Eli stops at is the edge on screen. The quarry keeps exact polygon edges (grid 0).
+export const ELEVATION_GRID=96;
+export function compileElevation(def,point=p=>p,scale=1,{grid=0}={}){
  if(!def||!def.terraces?.length&&!def.base)return null;
  const terraces=def.terraces.map(t=>({...t,points:t.points.map(point),z:t.height*ELEVATION_STEP}));
  const ramps=(def.ramps||[]).map(r=>({...r,from:point(r.from),to:point(r.to),width:r.width*scale}));
  function rampAt(x,y){for(const r of ramps){const dx=r.to[0]-r.from[0],dy=r.to[1]-r.from[1],d=dx*dx+dy*dy;if(!d)continue;const t=((x-r.from[0])*dx+(y-r.from[1])*dy)/d;if(t<0||t>1)continue;if(Math.hypot(x-r.from[0]-dx*t,y-r.from[1]-dy*t)<=r.width/2)return {r,t};}return null;}
- function heightAt(x,y){const slope=rampAt(x,y);if(slope)return (slope.r.fromHeight+(slope.r.toHeight-slope.r.fromHeight)*slope.t)*ELEVATION_STEP;let z=(def.base||0)*ELEVATION_STEP;for(const t of terraces)if(polygonContains(x,y,t.points))z=t.z;return z;}
+ function groundAt(x,y){let z=(def.base||0)*ELEVATION_STEP;for(const t of terraces)if(polygonContains(x,y,t.points))z=t.z;return z;}
+ const corners=new Map(),corner=(i,j)=>{const k=i*65537+j;let z=corners.get(k);if(z===undefined){z=groundAt(i*grid,j*grid);corners.set(k,z);}return z;};
+ function gridGround(x,y){
+  const i=Math.floor(x/grid),j=Math.floor(y/grid),u=x/grid-i,v=y/grid-j,c=[[corner(i,j),(1-u)*(1-v)],[corner(i+1,j),u*(1-v)],[corner(i,j+1),(1-u)*v],[corner(i+1,j+1),u*v]];
+  for(const level of [...new Set(c.map(([z])=>z))].sort((a,b)=>b-a))if(c.reduce((sum,[z,w])=>sum+(z>=level?w:0),0)>.5)return level;
+  return Math.min(...c.map(([z])=>z));
+ }
+ function heightAt(x,y){const slope=rampAt(x,y);if(slope)return (slope.r.fromHeight+(slope.r.toHeight-slope.r.fromHeight)*slope.t)*ELEVATION_STEP;return grid?gridGround(x,y):groundAt(x,y);}
  function canTraverse(ax,ay,bx,by){const length=Math.hypot(bx-ax,by-ay),n=Math.max(1,Math.ceil(length/4));let z=heightAt(ax,ay);for(let i=1;i<=n;i++){const next=heightAt(ax+(bx-ax)*i/n,ay+(by-ay)*i/n);if(Math.abs(next-z)>length/n*1.5+.15)return false;z=next;}return true;}
  function canReach(a,b,tolerance=24){const z=Number.isFinite(a.elevation)?a.elevation:heightAt(a.x,a.y),target=Number.isFinite(b.elevation)?b.elevation:heightAt(b.x,b.y);if(Math.abs(z-target)>tolerance)return false;const n=Math.max(1,Math.ceil(Math.hypot(b.x-a.x,b.y-a.y)/8));for(let i=1;i<n;i++)if(Math.abs(heightAt(a.x+(b.x-a.x)*i/n,a.y+(b.y-a.y)*i/n)-z)>tolerance)return false;return true;}
  // Picking follows the frontmost visible surface, matching the terrain painter.
  function unproject(x,screenY){let best=null,error=Infinity;const lo=Math.min(0,...terraces.map(t=>t.z)),hi=Math.max(0,...terraces.map(t=>t.z));for(let y=screenY+lo-2;y<=screenY+hi+2;y+=2){const d=Math.abs(y-heightAt(x,y)-screenY);if(d<=error){best=y;error=d;}}return {x,y:best??screenY};}
- return {base:(def.base||0)*ELEVATION_STEP,terraces,ramps,heightAt,rampAt,canTraverse,canReach,unproject,project:(x,y)=>({x,y:y-heightAt(x,y)})};
+ return {base:(def.base||0)*ELEVATION_STEP,grid,terraces,ramps,heightAt,groundAt,rampAt,canTraverse,canReach,unproject,project:(x,y)=>({x,y:y-heightAt(x,y)})};
 }
 
 const level=n=>Number.isInteger(n)&&n>=-6&&n<=6;
