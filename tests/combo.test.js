@@ -66,3 +66,22 @@ test('the arena keeps its flat swings: no combo, no hit-stop',()=>{
  const w=new World(()=>.2);const target=w.bots[0];Object.assign(w.player,{x:target.x-50,y:target.y,angle:0});
  attack(w,w.player,spear);assert.ok(!w.player.comboStep);assert.ok(!(w.hitStop>0));assert.equal(w.combo,undefined);
 });
+
+test('Eli starts every story journey with his Iron Sword in hand, and older journeys get it on load',async()=>{
+ const {giveStarterSword,STARTER_SWORD}=await import('../src/warrior.js');
+ const {captureSave,restoreSave}=await import('../src/save-format.js');
+ const w=new World(()=>.2,{adventure:true,story:true});w.journeyId='sword-test';
+ const sword=w.inventory.allItems.find(i=>i.name===STARTER_SWORD);assert.ok(sword);
+ assert.equal(w.inventory.item,sword,'held ready from the first moment');assert.equal(giveStarterSword(w),false,'only one');
+ // A save made before Eli carried a sword.
+ w.inventory.removeId(sword.id,Infinity);assert.equal(w.inventory.allItems.length,0);const old=captureSave(w);
+ const restored=restoreSave(old);assert.equal(restored.inventory.allItems.filter(i=>i.name===STARTER_SWORD).length,1);
+ // A plain exploration world (tests, the arena) has no story and no starting sword.
+ assert.equal(new World(()=>.2,{adventure:true}).inventory.allItems.length,0);
+});
+
+test('the Iron Sword never breaks and chains the combo',()=>{
+ const {w,walker}=setup();
+ for(let i=0;i<3;i++){attack(w,w.player,{name:'Iron Sword'});run(w,w.player.cooldown+.01);}
+ assert.equal(walker.maxHealth-walker.health,30+30*1.1+30*1.6);
+});

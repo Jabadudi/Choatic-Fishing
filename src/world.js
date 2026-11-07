@@ -23,6 +23,7 @@ import {createNpcs,nearbyNpc,updateDialogue} from './npcs.js';
 import {createFamiliars,absorbShard,updateFamiliar,familiarAction} from './familiars.js';
 import {noteEncounters} from './codex-discovery.js';
 import {updateDefeat} from './monsters.js';
+import {giveStarterSword} from './warrior.js';
 import {createWell,updateWell,nearWell,findWishstone} from './wishing-well.js';
 import {artifactBonus,combineArtifacts,isArtifact,itemLabel,slotArtifact,unslotArtifact,withArticle} from './artifacts.js';
 export {LAND} from './terrain.js';
@@ -56,6 +57,8 @@ export class World {
   if(adventure)this.player.progression.characterStats=true;
   // A new journey starts on the Arrival Bay pier, where the captain's boat puts Eli ashore.
   if(this.story){this.player.name='Eli';this.player.spriteId='eli';this.npcs=[];this.areaId='arrival-bay';Object.assign(this.player,Wilds.AREAS['arrival-bay'].spawn);this.message=storyObjective(this);}
+  // Eli is a warrior: every story journey starts with his sword in hand (src/warrior.js).
+  if(this.story)giveStarterSword(this);
  }
  advanceStory(){return advanceStory(this);}
  skipStory(){return skipStory(this);}

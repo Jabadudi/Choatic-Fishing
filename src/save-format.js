@@ -16,6 +16,7 @@ import {MARKS_LIMIT} from './trade.js';
 import {SIDE_QUEST_IDS,restoreSideQuests} from './side-quests.js';
 import {restoreWell} from './wishing-well.js';
 import {restoreBosses} from './bosses.js';
+import {giveStarterSword} from './warrior.js';
 import {ARTIFACTS,ARTIFACT_SLOT_COUNT,RARITIES,artifactIdFor,normalizeArtifact} from './artifacts.js';
 export const SAVE_VERSION=8;
 export const SAVE_FORMAT='the-wilds-save';
@@ -190,6 +191,8 @@ export function restoreSave(input){
  if(new Set([...inv.items.map(item=>item.id),...w.drops.map(drop=>drop.item.id)]).size!==inv.items.length+w.drops.length)fail('Duplicate world inventory item.');
  if(new Set(w.drops.map(drop=>drop.id)).size!==w.drops.length)fail('Duplicate dropped item.');
  w.nextDropId=Math.max(Number.isSafeInteger(s.nextDropId)?s.nextDropId:1,...w.drops.map(drop=>/^drop-\d+$/.test(drop.id)?Number(drop.id.slice(5))+1:1));
+ // Eli became a warrior after these saves were made: a journey without his sword gets it back.
+ if(w.story)giveStarterSword(w);
  w.message='Journey restored. Welcome back!';return w;
 }
 export function parseSave(text){if(typeof text!=='string'||text.length>5*1024*1024)fail('Save file is too large.');let save;try{save=JSON.parse(text);}catch{fail('Could not read this file. Choose a valid The Wilds JSON save.');}restoreSave(save);return save;}

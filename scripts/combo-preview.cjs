@@ -1,4 +1,4 @@
-// Local preview of the field combo: a pack of shadow walkers on Reedwater Landing, Eli chaining 3-hit combos with real
+// Local preview of the field combo: a pack of shadow walkers on Reedwater Landing, Eli chaining 3-hit combos with his starting Iron Sword with real
 // clicks, the knockdown on the finisher and the combo counter. OUT=<folder> sets where the screenshots go.
 const {chromium}=require('playwright');
 const assert=require('node:assert/strict');
@@ -22,7 +22,8 @@ const assert=require('node:assert/strict');
    const v=__qa.world,{SLOTS}=await import('/src/spawn-tables.js'),{createCreature}=await import('/src/spawns.js');
    v.areaId='landing';Object.assign(v.player,{x:1500,y:1700,vx:0,vy:0,health:v.progression.maxHealth});v.spawns=null;
    v.wildlife=[0,1,2,3].map(i=>{const a=createCreature(SLOTS['landing-east'],'shadow-walker',{id:'qa-walker-'+i});a.areaId='landing';a.x=1575+(i%2)*30;a.y=1660+i*28;a.home={x:a.x,y:a.y};a.health=a.maxHealth=4000;return a;});
-   v.inventory.receive({name:'Reed Spear',uses:999});const item=v.inventory.allItems.at(-1);item.uses=999;v.inventory.assignHotbar(item.id,2);v.equip(2);
+   // Eli's starting Iron Sword (src/warrior.js) is already in hand.
+   if(v.inventory.item?.name!=='Iron Sword')throw Error('Eli should start with his sword in hand');
   });
   await page.waitForTimeout(300);
   const click=async()=>{const p=await w(()=>{const v=__qa.world,r=document.querySelector('#arena').getBoundingClientRect();return {x:r.left+__qa.view.x+(v.player.x+80)*__qa.view.scale,y:r.top+__qa.view.y+(v.player.y-10)*__qa.view.scale};});await page.mouse.move(p.x,p.y);await page.mouse.down();await page.mouse.up();};

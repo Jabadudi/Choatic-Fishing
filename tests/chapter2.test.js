@@ -31,7 +31,7 @@ test('Chapter 2 conversations preserve the mystery, leave time to explore and gr
  Object.assign(w.player,{x:1250,y:1810});w.inspect();assert.match(w.message,/This is no island/);assert.equal(w.story.stage,stage);
  // Replaying the earlier awakening must never rewind Chapter 2.
  Object.assign(w.player,{x:1730,y:1640});w.inspect();assert.equal(w.story.scene,'awakening');finish(w);assert.equal(w.story.stage,stage);
- assert.equal(w.inventory.allItems.length,1);
+ assert.equal(w.inventory.allItems.length,2,'the lure and Eli’s sword');
 });
 test('guide waits for Eli, pauses while fishing, walks on land and finishes at the inland trail',()=>{
  const w=atCamp();conversations(w);w.inspect();finish(w);assert.equal(w.story.stage,'ch2-follow');
@@ -56,7 +56,7 @@ test('all Chapter 2 dialogue pages resume exactly; guide progress roundtrips thr
 test('version 2 completed Chapter 1 saves unlock Chapter 2 without replaying or replacing the journey',()=>{
  const w=atCamp(),old=captureSave(w);old.version=2;delete old.state.story.guide;
  const restored=restoreSave(old);assert.equal(restored.journeyId,old.journeyId);assert.equal(restored.story.stage,'complete');assert.equal(restored.story.guide,null);
- restored.inspect();assert.equal(restored.story.scene,'ch2-shadow');assert.equal(restored.inventory.allItems.length,1);
+ restored.inspect();assert.equal(restored.story.scene,'ch2-shadow');assert.equal(restored.inventory.allItems.length,2,'the lure and Eli’s sword');
 });
 test('invalid guide and scene states are rejected before replacing a save',()=>{
  const w=atCamp();conversations(w);w.inspect();finish(w);const save=captureSave(w);

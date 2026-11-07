@@ -55,7 +55,7 @@ test('guide waits across exploration detours and forward exits wait for the guid
 test('version 3 Chapter 2 checkpoints migrate guide geography without replay or inventory loss',()=>{
  const w=atTrail(),save=captureSave(w);save.version=3;delete save.state.story.guide.areaId;
  const restored=restoreSave(save);assert.equal(captureSave(restored).version,SAVE_VERSION);assert.equal(restored.story.guide.areaId,'landing');assert.equal(restored.journeyId,w.journeyId);
- restored.inspect();assert.equal(restored.story.scene,'ch3-start');assert.equal(restored.inventory.allItems.length,1);
+ restored.inspect();assert.equal(restored.story.scene,'ch3-start');assert.equal(restored.inventory.allItems.length,2,'the lure and Eli’s sword');
 });
 test('save/resume preserves each map’s guide, creature scene page and village residents',()=>{
  let w=atTrail();throughForest(w);follow(w,()=>w.story.guide.waypoint===chapter3Route(w.story).length);Object.assign(w.player,{x:GUARDIAN_SPOT.x,y:GUARDIAN_SPOT.y+40});w.inspect();w.advanceStory();

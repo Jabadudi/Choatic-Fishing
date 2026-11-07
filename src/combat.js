@@ -26,6 +26,8 @@ export const WEAPONS={
  'Hunting Bow':{kind:'projectile',damage:22,speed:620,range:560,knockback:60,cooldown:.7},
  // World boss weapons: never break (PERMANENT_ITEMS). arc is the half-angle a swing covers (1.05 when unset), and pose
  // is Eli's sheet for the swing (src/sprite-definitions.js).
+ // Eli's starting sword (src/warrior.js): an even, quick blade made for the 3-hit combo. It swings the sabre sheet for now.
+ 'Iron Sword':{kind:'melee',damage:30,range:90,knockback:120,cooldown:.45,arc:1.3,pose:'eli-sabre'},
  'Captain’s Sabre':{kind:'melee',damage:40,range:95,knockback:150,cooldown:.5,arc:1.6,pose:'eli-sabre'},
  'Greyhorn Spear':{kind:'melee',damage:36,range:130,knockback:200,cooldown:.55,arc:.6,pose:'eli-spear'}
 };

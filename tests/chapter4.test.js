@@ -38,9 +38,9 @@ test('Chapter 4 goes inside the chief’s house and plays the meeting as checkpo
 test('the lure becomes the Region Core once Emilia names it, and stays protected',()=>{
  const w=atPorch();w.inspect();
  while(w.story.scene!=='ch4-journey')w.advanceStory();
- const items=w.inventory.allItems;assert.equal(items.length,1);assert.equal(items[0].name,'Region Core');assert.match(items[0].description,/Reedwater/);
- assert.equal(w.backpackAction(items[0].id,'discard'),false);assert.equal(w.inventory.allItems.length,1);
- const restored=restoreSave(captureSave(w));assert.equal(restored.inventory.allItems[0].name,'Region Core');
+ const items=w.inventory.allItems.filter(i=>i.name!=='Iron Sword');assert.equal(items.length,1);assert.equal(items[0].name,'Region Core');assert.match(items[0].description,/Reedwater/);
+ assert.equal(w.backpackAction(items[0].id,'discard'),false);assert.equal(w.inventory.allItems.length,2);
+ const restored=restoreSave(captureSave(w));assert.ok(restored.inventory.allItems.some(i=>i.name==='Region Core'));
 });
 test('Eli can leave the chief’s house and walk back in after the meeting',()=>{
  const w=atPorch();w.inspect();while(w.story.scene)w.advanceStory();
