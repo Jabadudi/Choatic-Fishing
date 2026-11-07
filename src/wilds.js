@@ -2,6 +2,9 @@ import {drawQuarryActorShadow} from './quarry-light.js';
 import {elevationFor,heightAt,canTraverse,canReach,projectGround,unprojectGround} from './terrain-height.js';
 export {elevationFor,heightAt,canTraverse,canReach,projectGround,unprojectGround};
 import {elevationBands,drawElevationBand} from './elevation-art.js';
+import {paintLayered} from './layered-terrain.js';
+// Elevated atlas areas use the layered painter, except the quarry, which has its own hand-built terrain art.
+export const layeredArea=id=>!!DELTA[id]?.elevation&&id!=='abandoned-quarry';
 import {TERRAIN_CELL,TERRAIN_BLEND} from './terrain-style.js';
 import {blurMask} from './terrain-blend.js';
 import {TerrainCoverageCache} from './terrain-coverage.js';
@@ -96,9 +99,10 @@ const COLORS={'Grandpa’s Cabin':['#a17b50','#ae8756','#b18b59'],'The Chief’s
 // Atlas areas colour their ground by zone instead of by region name.
 const ZONE_COLORS={moss:['#68774c','#738354','#7c8c5b'],leaves:['#947044','#a17b4e','#87643e'],pebbles:['#929082','#a09a8b','#858679'],decking:['#88735a','#927c62','#7f6a54'],meadow:['#88b447','#8bb748','#90ba4b'],clear:['#88b447','#8bb748','#90ba4b'],forest:['#6f9a40','#739e42','#78a345'],sand:['#cdbf85','#d4c68e','#c9ba7f'],rock:['#8f8d7c','#979484','#8a8877'],marsh:['#6f854e','#748b53','#7a9057'],dirt:['#b59a68','#bca170','#b09462'],cliff:['#6f6a5e','#77725f','#686456']};
 export const paletteAt=(x,y,id)=>DELTA[id]?ZONE_COLORS[DELTA[id].zoneAt(x,y)]||ZONE_COLORS.meadow:COLORS[regionAt(x,y,id)];
+const nearEdge=(e,x,y)=>{const z=e.heightAt(x,y);return [[0,-110],[0,40],[-50,0],[50,0],[-40,-60],[40,-60]].some(([dx,dy])=>e.heightAt(x+dx,y+dy)!==z);};
 function atlasScenery(gx,gy,id){
  const b=DELTA[id],x=gx*72+12+hash(gx,gy)*48,y=gy*72+12+hash(gx,gy,3)*48,r=hash(gx,gy,9);
- if(b.elevation&&(b.elevation.heightAt(x,y)!==0||b.elevation.rampAt(x,y))||b.clear(x,y)||waterDistance(x,y,id)<95||roadDistance(x,y,id)<65||b.places.some(p=>Math.hypot(x-p.x,y-p.y)<100))return null;
+ if(b.elevation&&(id==='abandoned-quarry'?b.elevation.heightAt(x,y)!==0:nearEdge(b.elevation,x,y))||b.elevation?.rampAt(x,y)||b.clear(x,y)||waterDistance(x,y,id)<95||roadDistance(x,y,id)<65||b.places.some(p=>Math.hypot(x-p.x,y-p.y)<100))return null;
  const zone=b.zoneAt(x,y);if(['paving','moss','leaves','pebbles','decking'].includes(zone)||b.fixedFeatures&&zone==='clear')return null;
  const kind=zone==='forest'?(r<.74?'tree':r<.84?'bush':null):zone==='cliff'?null:zone==='rock'?(r<.3?'rock':null):zone==='sand'||zone==='clear'||zone==='dirt'?(r<.04?'rock':null):zone==='marsh'?(r<.18?'bush':r<.24?'tree':null):(r<.13?'tree':r<.21?'rock':r<.35?'bush':null);
  return kind?{x,y,kind,r:kind==='tree'?12:kind==='rock'?15:0,art:atlasArt(id,zone,kind,hash(gx,gy,31))}:null;
@@ -218,6 +222,9 @@ function milestoneGlyph(ctx,t){
  ctx.restore();
 }
 function reeds(ctx,x,y,seed){for(let i=0;i<4;i++){const h=12+Math.floor(hash(seed,i,8)*10);ctx.fillStyle=i%2?'#6d9a3a':'#8bb04a';ctx.fillRect(x+i*3-4,y-h,2,h);if(i===1){ctx.fillStyle='#6b4a2a';ctx.fillRect(x+i*3-5,y-h-5,4,7);}}}
+function groundArea(ctx,left,top,width,height,id){
+ if(layeredArea(id))paintLayered(ctx,left,top,width,height,DELTA[id],(f,l,t,w,h)=>staticArea(f,l,t,w,h,id),markStale);else staticArea(ctx,left,top,width,height,id);
+}
 function staticArea(ctx,left,top,width,height,id){
  if(id==='cabin'){drawCabinInterior(ctx);return;}
  if(id==='chief-house'){drawChiefHouse(ctx);return;}
@@ -281,7 +288,7 @@ export const onTerrainStale=fn=>staleListeners.add(fn);
 onPropLoad(markStale);
 export const cachedChunkCount=()=>chunks.size;
 function buildChunk(key,cx,cy,id){
- const canvas=document.createElement('canvas');canvas.width=CHUNK+2*SEAM;canvas.height=CHUNK+2*SEAM;const c=canvas.getContext('2d');c.translate(SEAM-cx*CHUNK,SEAM-cy*CHUNK);staticArea(c,cx*CHUNK-SEAM,cy*CHUNK-SEAM,CHUNK+2*SEAM,CHUNK+2*SEAM,id);
+ const canvas=document.createElement('canvas');canvas.width=CHUNK+2*SEAM;canvas.height=CHUNK+2*SEAM;const c=canvas.getContext('2d');c.translate(SEAM-cx*CHUNK,SEAM-cy*CHUNK);groundArea(c,cx*CHUNK-SEAM,cy*CHUNK-SEAM,CHUNK+2*SEAM,CHUNK+2*SEAM,id);
  chunks.set(key,canvas);if(chunks.size>MAX_CHUNKS)chunks.delete(chunks.keys().next().value);return canvas;
 }
 function drawChunks(ctx,view,id){
@@ -337,7 +344,7 @@ export function drawDepthSorted(ctx,world,view,actors,drawActor,{still=false,ter
  let n=0;
  // Ledges are background, never occluders. Actors cannot be buried by a later
  // logical terrain row. Physical cliff traversal still belongs to simulation.
- if(DELTA[id]?.elevation)for(const band of elevationBands(DELTA[id],terrainView))if(band.bottom>terrainView.top-100&&band.top<terrainView.bottom+100)drawElevationBand(ctx,band,t,still);
+ if(DELTA[id]?.elevation&&!layeredArea(id))for(const band of elevationBands(DELTA[id],terrainView))if(band.bottom>terrainView.top-100&&band.top<terrainView.bottom+100)drawElevationBand(ctx,band,t,still);
  for(const a of actors){const it=slot(n++);it.kind='actor';it.y=a.y;it.ref=a.ref;}
  for(let gy=Math.floor(view.top/72)-1;gy<=Math.ceil((view.bottom+100)/72);gy++)for(let gx=Math.floor(view.left/72)-1;gx<=Math.ceil(view.right/72)+1;gx++){
   const o=sceneryAt(gx,gy,id);if(!o||DELTA[id]?.elevation&&(o.x<0||o.y<0||o.x>areaFor(id).width||o.y>areaFor(id).height))continue;
@@ -409,16 +416,29 @@ function waterKind(id,wet,r,x,y){
 }
 // Waterfalls are props in the atlas areas' land ({kind:'waterfall'}), placed and moved in the land editor.
 export function fallsFor(id){return DELTA[id]?DELTA[id].props.filter(p=>p.kind==='waterfall'):[];}
-function drawWater(ctx,world,view,id){
+// Where a waterfall sits on a raised edge, its water keeps falling down the cliff face to the level below.
+const fallDrop=(f,e)=>{let high=-Infinity,low=Infinity,y=f.y;for(let d=-60;d<=60;d+=4){const z=e.heightAt(f.x,f.y+d);if(z>high)high=z;if(z<low){low=z;y=f.y+d;}}return high-low>=40&&e.heightAt(f.x,f.y-60)>e.heightAt(f.x,f.y+60)?{high,low,y}:null;};
+function drawFallCurtain(ctx,f,e,t){
+ const drop=fallDrop(f,e);if(!drop)return;const {high,low,y}=drop;
+ const top=y-high-4,bottom=y-low+6,half=18;
+ ctx.save();const g=ctx.createLinearGradient(0,top,0,bottom);g.addColorStop(0,'#9fe3ea');g.addColorStop(.5,'#5cc0cf');g.addColorStop(1,'#cdf3f2');
+ ctx.fillStyle=g;ctx.fillRect(f.x-half,top,half*2,bottom-top);
+ ctx.fillStyle='rgba(255,255,255,.75)';
+ for(let i=0;i<7;i++){const x=f.x-half+3+i*5.2,phase=(t*90+i*37)%(bottom-top);for(const o of [0,(bottom-top)/2]){const yy=top+(phase+o)%(bottom-top);ctx.fillRect(Math.round(x),Math.round(yy),2,10);}}
+ ctx.strokeStyle='rgba(30,70,80,.6)';ctx.lineWidth=1.5;ctx.strokeRect(f.x-half,top,half*2,bottom-top);
+ ctx.fillStyle='rgba(255,255,255,.85)';for(let i=0;i<6;i++){const a=t*3+i;ctx.beginPath();ctx.arc(f.x-half+4+i*6.4,bottom+Math.sin(a)*1.5,3+Math.sin(a*1.7)*1,0,Math.PI*2);ctx.fill();}
+ ctx.restore();
+}
+function drawWater(ctx,world,view,id,keep=null){
  if(id==='windchime'||interior(id))return;const t=world.elapsed||0;ctx.save();
- for(const f of fallsFor(id))if(f.x>view.left-80&&f.x<view.right+80&&f.y>view.top-80&&f.y<view.bottom+80)drawEntitySprite(ctx,'waterfall',{x:f.x,y:f.y,state:'idle',time:t+f.x*.01});
+ for(const f of fallsFor(id))if((!keep||keep(f.x,f.y)&&!fallDrop(f,DELTA[id].elevation))&&f.x>view.left-80&&f.x<view.right+80&&f.y>view.top-80&&f.y<view.bottom+80)drawEntitySprite(ctx,'waterfall',{x:f.x,y:f.y,state:'idle',time:t+f.x*.01});
  for(let cy=Math.floor(view.top/CHUNK);cy<=Math.floor(view.bottom/CHUNK);cy++)for(let cx=Math.floor(view.left/CHUNK);cx<=Math.floor(view.right/CHUNK);cx++){
   const {foam,sparkle}=shorePoints(id,cx,cy);
   ctx.fillStyle='#fffff5';
-  for(const [x,y,d]of foam){if(d< -1-3.5*(1+Math.sin(t*1.6+x*.03)))continue;ctx.globalAlpha=.55+.3*Math.sin(t*2+x*.1);ctx.fillRect(x,y,8,2);}
+  for(const [x,y,d]of foam){if(keep&&!keep(x,y))continue;if(d< -1-3.5*(1+Math.sin(t*1.6+x*.03)))continue;ctx.globalAlpha=.55+.3*Math.sin(t*2+x*.1);ctx.fillRect(x,y,8,2);}
   // Each glint eases in and out over ~0.6s on a slow 25s cycle, so the water twinkles gently rather than flickering.
   ctx.fillStyle='#fffadc';
-  for(const [x,y,phase]of sparkle){const k=(phase+t*.04)%1;if(k<.025){const a=Math.sin(Math.PI*k/.025);ctx.globalAlpha=.55*a;ctx.fillRect(x,y,2,2);if(a>.7){ctx.globalAlpha=.25*a;ctx.fillRect(x-1,y,4,2);ctx.fillRect(x,y-1,2,4);}}}
+  for(const [x,y,phase]of sparkle){if(keep&&!keep(x,y))continue;const k=(phase+t*.04)%1;if(k<.025){const a=Math.sin(Math.PI*k/.025);ctx.globalAlpha=.55*a;ctx.fillRect(x,y,2,2);if(a>.7){ctx.globalAlpha=.25*a;ctx.fillRect(x-1,y,4,2);ctx.fillRect(x,y-1,2,4);}}}
  }
  ctx.restore();
 }
@@ -448,8 +468,11 @@ function drawLandmark(ctx,p,t=0){
 // still: paint the ground straight onto ctx without the chunk cache (the area maps use it, so they never evict the live chunks).
 export function drawWilds(ctx,world,view={left:world.player.x-700,right:world.player.x+700,top:world.player.y-500,bottom:world.player.y+500},{still=false}={}){
  const id=world.areaId||'landing',area=areaFor(id);ctx.imageSmoothingEnabled=false;
- if(DELTA[id]?.elevation)return;
- if(typeof document!=='undefined'&&!still)drawChunks(ctx,view,id);else staticArea(ctx,view.left,view.top,view.right-view.left,view.bottom-view.top,id);
+ if(DELTA[id]?.elevation&&!layeredArea(id))return;
+ if(typeof document!=='undefined'&&!still)drawChunks(ctx,view,id);else groundArea(ctx,view.left,view.top,view.right-view.left,view.bottom-view.top,id);
+ // Layered areas: water glints and falls are drawn on the level they belong to; landmarks join the depth sort.
+ if(layeredArea(id)){const e=DELTA[id].elevation;for(const z of [...new Set([e.base,...e.terraces.map(t=>t.z)])]){ctx.save();ctx.translate(0,-z);drawWater(ctx,world,{...view,top:view.top+z,bottom:view.bottom+z},id,(x,y)=>e.heightAt(x,y)===z);ctx.restore();}
+  for(const f of fallsFor(id))drawFallCurtain(ctx,f,e,world.elapsed||0);return;}
  if(id==='guest-lodge'){const stage=world.story?.stage;drawGuestLodge(ctx,{night:['ch5-night','ch5-sleep','ch6-night','ch6-complete'].includes(stage),morning:['ch5-morning','ch6-door'].includes(stage)});if(stage==='ch5-morning'&&!world.story.scene)drawFloatingWriting(ctx,world.player,world.elapsed||0);}
  // The training yard in the farm, drawn each frame because its light and props follow the story.
  if(id===FARM_ID&&view.right>YARD.x&&view.left<YARD.x+YARD.w&&view.bottom>YARD.y&&view.top<YARD.y+YARD.h+60){ctx.save();ctx.translate(YARD.x,YARD.y);drawTrainingGround(ctx,{t:world.elapsed||0,sword:['ch6-buckets'].includes(world.story?.stage)});ctx.restore();}
@@ -475,7 +498,7 @@ export function drawWildsLabels(ctx,world,view){
  if(id==='crossroads')drawCrossroadsLabels(ctx);
  if(id==='landing'){parchmentTag(ctx,1630,1565,cabinDamaged(world.story)?'The Damaged Cabin':'Grandpa’s Cabin',labelAlpha(Math.hypot(world.player.x-1630,world.player.y-1545)));}
  for(const q of area.portals||[])if(!q.quiet)parchmentTag(ctx,q.x,q.y-q.r-30,`◆ ${q.label}`,labelAlpha(Math.hypot(world.player.x-q.x,world.player.y-q.y)-60));
- for(const exit of area.exits){const horizontal=exit.edge==='east'||exit.edge==='west',x=horizontal?(exit.edge==='east'?area.width-160:160):(exit.from+exit.to)/2,y=horizontal?(exit.from+exit.to)/2:exit.edge==='north'?110:(interior(id)?area.height-45:area.height-200);parchmentTag(ctx,x,y-12,`${{north:'↑',south:'↓',west:'←',east:'→'}[exit.edge]} ${exit.label}`,1);}
+ for(const exit of area.exits){const horizontal=exit.edge==='east'||exit.edge==='west',x=horizontal?(exit.edge==='east'?area.width-160:160):(exit.from+exit.to)/2,y=horizontal?(exit.from+exit.to)/2:exit.edge==='north'?110:(interior(id)?area.height-45:area.height-200);parchmentTag(ctx,x,y-12-heightAt(x,y,id),`${{north:'↑',south:'↓',west:'←',east:'→'}[exit.edge]} ${exit.label}`,1);}
 }
 export function drawExplorer(ctx,p,time=0){
  // Simulation records the last step's facing and time; a recent step plays the walk for that direction.

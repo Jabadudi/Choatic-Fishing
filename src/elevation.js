@@ -11,7 +11,7 @@ export function compileElevation(def,point=p=>p,scale=1){
  function canReach(a,b,tolerance=24){const z=Number.isFinite(a.elevation)?a.elevation:heightAt(a.x,a.y),target=Number.isFinite(b.elevation)?b.elevation:heightAt(b.x,b.y);if(Math.abs(z-target)>tolerance)return false;const n=Math.max(1,Math.ceil(Math.hypot(b.x-a.x,b.y-a.y)/8));for(let i=1;i<n;i++)if(Math.abs(heightAt(a.x+(b.x-a.x)*i/n,a.y+(b.y-a.y)*i/n)-z)>tolerance)return false;return true;}
  // Picking follows the frontmost visible surface, matching the terrain painter.
  function unproject(x,screenY){let best=null,error=Infinity;const lo=Math.min(0,...terraces.map(t=>t.z)),hi=Math.max(0,...terraces.map(t=>t.z));for(let y=screenY+lo-2;y<=screenY+hi+2;y+=2){const d=Math.abs(y-heightAt(x,y)-screenY);if(d<=error){best=y;error=d;}}return {x,y:best??screenY};}
- return {terraces,ramps,heightAt,rampAt,canTraverse,canReach,unproject,project:(x,y)=>({x,y:y-heightAt(x,y)})};
+ return {base:(def.base||0)*ELEVATION_STEP,terraces,ramps,heightAt,rampAt,canTraverse,canReach,unproject,project:(x,y)=>({x,y:y-heightAt(x,y)})};
 }
 
 const level=n=>Number.isInteger(n)&&n>=-6&&n<=6;

@@ -2,7 +2,7 @@ import {SPRITES,PROPS} from './sprite-definitions.js';
 // Explicit artwork categories. No effects, projectiles, pickups, portraits or weapon attack sheets.
 const excluded=new Set(['pickup','ash-arrow','eli-sabre','eli-spear','moonfang-charge']);
 const entityAssets=Object.entries(SPRITES).filter(([id,s])=>s.asset&&!excluded.has(id)&&!id.startsWith('core.')&&!id.startsWith('projectile.')&&!id.endsWith('-portrait')&&!id.endsWith('-illustration')).map(([,s])=>s.asset);
-const groundNames=['quarry-bedrock-v2','quarry-cliff-v2','forest-floor','beach-sand','rocky-ground','marsh-ground','packed-dirt','moss-carpet','leaf-litter','river-pebbles','harbor-deck','cliff-top','old-road','drowned-road','shallow-water','river-water','open-sea'];
+const groundNames=['quarry-bedrock-v2','quarry-cliff-v2','earth-cliff','forest-floor','beach-sand','rocky-ground','marsh-ground','packed-dirt','moss-carpet','leaf-litter','river-pebbles','harbor-deck','cliff-top','old-road','drowned-road','shallow-water','river-water','open-sea'];
 export const TEXTURE_PACK_ASSETS=Object.freeze([...new Set([...entityAssets,...Object.values(PROPS),...groundNames.map(n=>`ground/${n}.webp`)])]);
 const allowed=new Set(TEXTURE_PACK_ASSETS);
 // Texture packs contain artwork only. World geometry, collision and saves remain independent.

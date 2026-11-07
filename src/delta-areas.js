@@ -563,7 +563,7 @@ area({id:'glasswater',num:'3.2',name:'Glasswater Basin',frame:[2,130,158,214],si
   ['land',[[58,176],[70,175],[72,183],[60,184]],{zone:'meadow'}]
  ],
  cliffs:[[[2,158],[14,158],[16,175],[10,190],[12,214],[2,214]]],
- roads:[[[90,158],[94,164],[98,170]],[[98,170],[108,178],[110,188],[104,198],[90,204],[74,206],[60,206],[56,207]],[[56,207],[57,211],[58,214]]],
+ roads:[[[90,158],[99,160],[105,162]],[[109,175],[110,188],[104,198],[90,204],[74,206],[60,206],[56,207]],[[56,207],[57,211],[58,214]]],
  walks:[[[104,190],[98,190]]],
  props:[{kind:'waterfall',at:[84.2,165.5]},{kind:'waterfall',at:[50.3,208.5]},{kind:'hut',at:[117,183]},{kind:'big-tree',at:[65,180],solid:0},{kind:'dock',at:[100,190]}],
  places:[
@@ -576,7 +576,16 @@ area({id:'glasswater',num:'3.2',name:'Glasswater Basin',frame:[2,130,158,214],si
  exits:[
   {edge:'north',from:87,to:95,target:'upper-falls',label:'Upper Falls'},
   {edge:'south',from:53,to:63,target:'western-falls',label:'Western Falls'}
- ]});
+ ],
+ // Layered world test: the forest north of the pool stands one level higher. An earth cliff runs along the north
+ // shore with the Middle Falls pouring over it; stone stairs bring the Upper Falls trail and the fishing hut path down.
+ elevation:{base:0,
+  terraces:[{id:'north-rise',height:1,points:[[0,128],[160,128],[160,204],[126,204],[119,200],[113,199],[115.5,186],[114,176],[104,167],[90,164],[78,163],[66,163],[50,165],[30,169],[13,175],[12,218],[0,218]]}],
+  ramps:[
+   {id:'north-stairs',kind:'stairs',from:[105,162],to:[109,175],width:5,fromHeight:1,toHeight:0},
+   {id:'hut-stairs',kind:'stairs',from:[120,190],to:[110,190],width:4,fromHeight:1,toHeight:0}
+  ]}
+});
 
 // 11 Western Falls: where the Glasswater staircase reaches the lowlands. The Lower Falls and the Veil Falls drop into
 // the Plunge Pool; a slow river runs south-east past Fallsfoot, a hamlet of stilt houses, to the Drowned Road.
