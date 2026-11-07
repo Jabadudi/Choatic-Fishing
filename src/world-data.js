@@ -4,8 +4,8 @@
 export const WORLD_DATA=Object.freeze({
  settings:{awaySeconds:30,clearance:350,shiny:{chance:0.01,loot:4,health:1.5,huntXp:2,seenRange:520}},
  spawnAreas:{
-  landing:{cap:12,chance:0.65,respawnSeconds:60,tables:{land:{deer:40,rabbit:55,"shadow-walker":5},water:{eel:55,turtle:45}}},
-  windchime:{cap:5,chance:0.55,respawnSeconds:75,tables:{land:{deer:45,rabbit:40,"shadow-walker":15}}},
+  landing:{cap:16,chance:0.65,respawnSeconds:60,tables:{land:{boar:10,crab:20,deer:30,rabbit:30,"shadow-walker":10},water:{eel:55,turtle:45}}},
+  windchime:{cap:16,chance:0.7,respawnSeconds:60,tables:{land:{boar:25,deer:15,"gloam-boar":15,rabbit:10,"shadow-walker":20,whisperer:15}}},
   crossroads:{cap:4,chance:0.5,respawnSeconds:90,tables:{land:{deer:30,rabbit:45,"shadow-walker":25},water:{eel:100}}},
   marsh:{cap:8,chance:0.55,respawnSeconds:75,tables:{land:{deer:25,rabbit:25,"shadow-walker":50},water:{eel:40,turtle:60}}},
   stonefall:{cap:4,chance:0.5,respawnSeconds:75,tables:{land:{deer:40,rabbit:45,"shadow-walker":15}}},
@@ -65,6 +65,11 @@ export const WORLD_DATA=Object.freeze({
   {id:"windchime-west",areaId:"windchime",habitat:"land",x:300,y:300},
   {id:"windchime-glade",areaId:"windchime",habitat:"land",x:1180,y:760},
   {id:"windchime-south",areaId:"windchime",habitat:"land",x:560,y:820},
+  {id:"windchime-glade-east",areaId:"windchime",habitat:"land",x:1750,y:560},
+  {id:"windchime-ridge",areaId:"windchime",habitat:"land",x:2200,y:700},
+  {id:"windchime-fork-west",areaId:"windchime",habitat:"land",x:2500,y:560},
+  {id:"windchime-fork",areaId:"windchime",habitat:"land",x:3050,y:700},
+  {id:"windchime-east",areaId:"windchime",habitat:"land",x:3350,y:560},
   {id:"crossroads-north",areaId:"crossroads",habitat:"land",x:1200,y:300},
   {id:"crossroads-west",areaId:"crossroads",habitat:"land",x:300,y:800},
   {id:"crossroads-middle",areaId:"crossroads",habitat:"land",x:1000,y:600},

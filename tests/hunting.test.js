@@ -127,12 +127,14 @@ test('land and water animals respect habitat after attacks; wounded state persis
   damageAnimal(w,a,1,w.player,Math.PI/3,300);
  }
  for(let i=0;i<120*12;i++){
-  const a=w.animals[i%w.animals.length];if(a.areaId==='landing')Object.assign(w.player,{x:a.x-45,y:a.y-20});
+  const list=w.animals.filter(a=>!a.eliteId),a=list[i%list.length];if(a.areaId==='landing')Object.assign(w.player,{x:a.x-45,y:a.y-20});
   w.update(1/120,neutralInput());
   for(const a of w.animals)assert.ok(animalGround(a,a.x,a.y),a.id);
  }
  assert.ok(w.player.health>0);
- const health=w.wildlife[0].health,positions=JSON.stringify(w.animals.filter(a=>a.areaId==='landing'));
- w.areaId='windchime';w.update(.2,neutralInput());assert.equal(JSON.stringify(w.animals.filter(a=>a.areaId==='landing')),positions);
+ // The map's elite, like a boss, leaves with Eli and rises fresh when he comes back; everything else stays as it was.
+ const here=()=>JSON.stringify(w.animals.filter(a=>a.areaId==='landing'&&!a.eliteId));
+ const health=w.wildlife[0].health,positions=here();
+ w.areaId='windchime';w.update(.2,neutralInput());assert.equal(here(),positions);
  w.areaId='landing';assert.equal(w.wildlife[0].health,health);
 });

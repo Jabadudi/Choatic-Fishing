@@ -13,6 +13,8 @@ export const COMBO=Object.freeze({
  ]),
  // A knocked-down foe takes this much extra damage.
  downBonus:.25,
+ // An elite stays down for this share of the usual time.
+ eliteDown:.7,
  // The counter resets this long after the last hit that landed.
  counterSeconds:2.5,
  // Every milestone hits in one combo pays bonus Hunting XP.
@@ -31,11 +33,13 @@ export function startSwing(world,actor,cooldown){
  actor.comboStep=step;actor.cooldown=cooldown*spec.cooldown;actor.comboUntil=world.elapsed+actor.cooldown+COMBO.window;
  return {step,...spec,finisher:step===COMBO.steps.length};
 }
-// A foe that can be knocked down: field wildlife and monsters, never a boss or a rabbit.
-export const canKnockDown=(world,target)=>target.entityType==='animal'&&!target.boss&&!target.elite&&target.health>0&&(world.wildlife||[]).includes(target);
+// A foe that can be knocked down: field wildlife, monsters and elites, never a boss or a rabbit.
+export const canKnockDown=(world,target)=>target.entityType==='animal'&&!target.boss&&target.health>0&&(world.wildlife||[]).includes(target);
 export const downBonus=target=>target.downRemaining>0?1+COMBO.downBonus:1;
 export function knockDown(world,target,seconds){
  if(!canKnockDown(world,target))return false;
+ // An elite is only down for a short window: that is when Mudshell's shell is open.
+ if(target.elite)seconds*=COMBO.eliteDown;
  target.downRemaining=Math.max(target.downRemaining||0,seconds);target.attackRemaining=0;
  world.effects.push({name:'down',label:'DOWN',x:target.x,y:target.y-48,angle:0,life:.8,duration:.8});
  return true;

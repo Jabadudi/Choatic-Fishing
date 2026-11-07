@@ -12,6 +12,7 @@ import {MERCHANTS,findMarks,marksLabel} from './trade.js';
 import {attack,special,updateProjectiles,startRush,updateRush,WEAPON_RUSHES} from './combat.js';
 import {hitStopDt,updateCombo} from './combo.js';
 import {createBosses,updateBosses} from './bosses.js';
+import {createFieldMaps,updateFieldMaps} from './field-play.js';
 import {createCore,updateCore,useCoreAbility,useCoreSlot,waterstepSpeed} from './core-abilities.js';
 import {facingFor} from './entities.js';
 import {updateBot} from './bots.js';
@@ -51,7 +52,7 @@ export class World {
   }
   this.story=adventure&&story?createStory():null;this.adventure=adventure;this.drops=[];this.nextDropId=1;
   if(adventure)this.player.inventory=new Inventory({separateStorage:true});
-  this.rabbits=adventure?createRabbits():[];this.wildlife=adventure?createWildlife():[];this.hunting={total:0,bySpecies:{},shiny:{seen:{},hunted:{}}};this.spawns=adventure?createSpawns():null;this.bosses=createBosses();this.familiars=createFamiliars();this.core=createCore();this.companion=null;this.codex=new Set();this.itemsFound=new Set();this.well=createWell();
+  this.rabbits=adventure?createRabbits():[];this.wildlife=adventure?createWildlife():[];this.hunting={total:0,bySpecies:{},shiny:{seen:{},hunted:{}}};this.spawns=adventure?createSpawns():null;this.bosses=createBosses();this.fieldMaps=adventure?createFieldMaps():null;this.familiars=createFamiliars();this.core=createCore();this.companion=null;this.codex=new Set();this.itemsFound=new Set();this.well=createWell();
   this.npcs=adventure?createNpcs():[];this.dialogue=null;this.quests=createQuests();
   if(adventure){this.areaId='landing';Object.assign(this.player,Wilds.SPAWN);this.bots=[];this.actors=[this.player];this.humans=[this.player];this.chests=[];this.countdownRemaining=0;this.matchState='playing';this.discovered=new Set();this.message='Welcome to Reedwater Landing. Follow the north trail to walk into Windchime Path. M opens the area map.';}
   if(adventure)this.player.progression.characterStats=true;
@@ -255,6 +256,7 @@ export class World {
   updateDefeat(this,dt);
   updateSpawns(this,dt);
   updateBosses(this,dt);
+  updateFieldMaps(this,dt);
   updateFamiliar(this,dt);
   if(this.adventure)this.pullDrops(dt);
   updateDialogue(this,dt);

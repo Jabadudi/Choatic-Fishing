@@ -8,6 +8,7 @@ import {huntProgress} from './side-quests.js';
 import {startingSlots,SHINY} from './spawn-tables.js';
 import {updateMonster} from './monsters.js';
 import {updateBoss,bossDefeated} from './bosses.js';
+import {fieldKill} from './field-play.js';
 
 export function animalGround(animal,x,y){
  const area=areaFor(animal.areaId),margin=animal.species==='rabbit'?80:Math.max(30,animal.radius+10);
@@ -57,10 +58,21 @@ function dropLoot(world,animal,source){
 }
 // "Shadow Ichor ×3, Drowned Brass" rather than the same name three times.
 const tally=names=>[...new Set(names)].map(n=>{const k=names.filter(m=>m===n).length;return k>1?`${n} ×${k}`:n;}).join(', ');
+// A pack fights together: hurting one turns the rest of it on the attacker.
+function rousePack(world,animal,source){
+ if(!animal.packId)return;
+ for(const a of world.wildlife){
+  if(a===animal||a.packId!==animal.packId||a.health<=0||a.areaId!==animal.areaId)continue;
+  a.alert=3;a.threat={x:source.x,y:source.y};
+  if(a.behavior==='defensive'){a.attackerId=source.id;a.anger=1;}
+ }
+}
 export function damageAnimal(world,animal,amount,source,angle,knockback=0,origin=source){
  if(world.adventure&&!canReach(origin,animal,world.areaId))return false;
  if(world.matchState!=='playing'||source.health<=0||!huntableInArea(world,animal)||!Number.isFinite(amount)||amount<=0)return false;
- const taken=amount*(source.progression?.damageMultiplier??1)*(1+(source.progression?.passive('hunting.damage')??0));
+ // An armoured elite (Mudshell) takes full damage only while a combo finisher has it down.
+ const armor=animal.armor&&!(animal.downRemaining>0)?animal.armor:1;
+ const taken=amount*armor*(source.progression?.damageMultiplier??1)*(1+(source.progression?.passive('hunting.damage')??0));
  animal.health=Math.max(0,animal.health-taken);animal.hurtRemaining=.25;animal.alert=3;
  // A defensive animal that is already fighting stands its ground: hits do not push it back, so they cannot spoil its swing.
  const fighting=animal.behavior==='defensive'&&animal.anger>0;
@@ -68,7 +80,7 @@ export function damageAnimal(world,animal,amount,source,angle,knockback=0,origin
   // A bear rears and roars the first time it is hurt, before it comes after its attacker.
   if(animal.roar&&!fighting&&animal.health>0){animal.roarRemaining=animal.roar;animal.time=0;}
   animal.attackerId=source.id;animal.anger=1;
- }animal.threat={x:source.x,y:source.y};
+ }animal.threat={x:source.x,y:source.y};rousePack(world,animal,source);
  // A boss is far too heavy to be shoved far.
  if(!fighting){const shove=knockback*(animal.boss?.08:.45);animal.vx+=Math.cos(angle)*shove;animal.vy+=Math.sin(angle)*shove;}
  if(animal.species==='rabbit'){animal.state='idle';animal.time=0;}
@@ -86,8 +98,8 @@ export function damageAnimal(world,animal,amount,source,angle,knockback=0,origin
    // A familiar of the same kind takes on the shiny's gold for good.
    if(world.companion?.id===animal.loot)world.companion.shiny=true;
   }
-  const quest=huntProgress(world,animal.species),boss=animal.boss?bossDefeated(world,animal):'';
-  world.message=`${boss||`${animal.name} ${animal.behavior==='aggressive'?'defeated':'hunted'}`} · +${trained?.amount??animal.huntXp} Hunting XP${loot.length?` · Dropped ${tally(loot)}`:''}${quest?` · ${quest}`:''}${trained?.text?` · ${trained.text}`:''}`;
+  const quest=huntProgress(world,animal.species),boss=animal.boss?bossDefeated(world,animal):'',cleared=fieldKill(world,animal);
+  world.message=`${boss||`${animal.name} ${animal.behavior==='aggressive'?'defeated':'hunted'}`} · +${trained?.amount??animal.huntXp} Hunting XP${loot.length?` · Dropped ${tally(loot)}`:''}${quest?` · ${quest}`:''}${trained?.text?` · ${trained.text}`:''}${cleared?` · ${cleared}`:''}`;
  }
  return true;
 }

@@ -59,6 +59,8 @@ export function animalPose(a){
  return {state:a.state,time:t};
 }
 export function drawWildlife(c,a){
+ // An elite is its kind drawn bigger and tinted, scaled about its feet.
+ if(a.scale&&!a.scaled){c.save();c.translate(a.x,a.y);c.scale(a.scale,a.scale);c.translate(-a.x,-a.y);if(a.tint&&a.health>0)c.filter=a.tint;drawWildlife(c,{...a,scaled:true});c.restore();return;}
  if(a.shiny&&!a.plain){drawShiny(c,a,(globalThis.performance?.now()??0)/1000,l=>drawWildlife(l,{...a,plain:true}));return;}
  const {x,y}=a,t=a.time||0;
  c.save();if(a.health<=0)c.globalAlpha=Math.min(1,a.deathRemaining);else if(a.hurtRemaining>0)c.globalAlpha=.55;
@@ -97,14 +99,16 @@ export function drawAnimalStatus(c,world){
   const near=Math.hypot(a.x-world.player.x,a.y-world.player.y)<150;
   // A hidden Mire Walker or a faded Whisperer shows no tag until it is hunting.
   if((a.hidden||a.fade)&&['idle','walk','return'].includes(a.state)&&a.health===a.maxHealth)continue;
-  if(a.health===a.maxHealth&&!a.shiny&&!a.boss&&!['notice','chase','attack','strike','roar'].includes(a.state)&&(!near||world.inventory.selected===1))continue;
-  const y=a.y-heightAt(a.x,a.y,world.areaId)-(STATUS_HEIGHT[a.species]??(a.spriteId==='nightwalker'?66:a.species==='deer'?51:a.species==='rabbit'?42:a.species==='fox'?40:a.species==='boar'?46:a.species==='elk'?96:a.species==='bear'?62:a.species==='heron'?56:a.species==='crab'?30:a.species==='goat'?48:a.species==='otter'?30:a.species==='duck'?38:a.species==='pike'?28:a.species==='seal'?40:33));
-  // A boss gets a long bar in its own colour, and its tag says what it is.
-  const half=a.boss?60:23;
-  c.fillStyle='#19362de8';c.fillRect(a.x-half,y,half*2,a.boss?8:6);c.fillStyle=a.boss?'#d8705a':'#c8d78a';c.fillRect(a.x-half+1,y+1,(half*2-2)*a.health/a.maxHealth,a.boss?6:4);
-  c.font=a.boss?'bold 13px monospace':'12px monospace';c.textAlign='center';const tag=a.boss?`${a.name} · World boss`:`${a.name} · ${BEHAVIOR_LABELS[a.behavior]||a.behavior}`;
-  // A shiny's tag is gold with a dark edge so it reads on bright grass.
-  if(a.shiny){c.lineWidth=3;c.strokeStyle='#10261d';c.strokeText(tag,a.x,y-5);}
-  c.fillStyle=a.shiny?SHINY_GOLD:'#fff0cd';c.fillText(tag,a.x,y-5);
+  if(a.health===a.maxHealth&&!a.shiny&&!a.boss&&!a.elite&&!['notice','chase','attack','strike','roar'].includes(a.state)&&(!near||world.inventory.selected===1))continue;
+  let y=a.y-heightAt(a.x,a.y,world.areaId)-(STATUS_HEIGHT[a.species]??(a.spriteId==='nightwalker'?66:a.species==='deer'?51:a.species==='rabbit'?42:a.species==='fox'?40:a.species==='boar'?46:a.species==='elk'?96:a.species==='bear'?62:a.species==='heron'?56:a.species==='crab'?30:a.species==='goat'?48:a.species==='otter'?30:a.species==='duck'?38:a.species==='pike'?28:a.species==='seal'?40:33));
+  // A boss gets a long bar in its own colour, and its tag says what it is. An elite stands taller, with a gold name.
+  const lift=a.scale?(a.y-y)*(a.scale-1):0;y-=lift;
+  const big=a.boss||a.elite,half=a.boss?60:a.elite?42:23;
+  c.fillStyle='#19362de8';c.fillRect(a.x-half,y,half*2,big?8:6);c.fillStyle=a.boss?'#d8705a':a.elite?'#e0a640':'#c8d78a';c.fillRect(a.x-half+1,y+1,(half*2-2)*a.health/a.maxHealth,big?6:4);
+  c.font=big?'bold 13px monospace':'12px monospace';c.textAlign='center';const lv=a.level?`Lv ${a.level} `:'';
+  const tag=a.boss?`${a.name} · World boss`:a.elite?`${lv}${a.name} · Elite`:`${lv}${a.name} · ${BEHAVIOR_LABELS[a.behavior]||a.behavior}`;
+  // A shiny's or an elite's tag is gold with a dark edge so it reads on bright grass.
+  const gold=a.shiny||a.elite;if(gold){c.lineWidth=3;c.strokeStyle='#10261d';c.strokeText(tag,a.x,y-5);}
+  c.fillStyle=gold?SHINY_GOLD:'#fff0cd';c.fillText(tag,a.x,y-5);
  }
 }

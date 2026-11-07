@@ -1,3 +1,4 @@
+import {mapTitle} from './field-maps.js';
 import {heightAt,unprojectGround,projectGround} from './terrain-height.js';
 import {storyAction,updateStoryAction} from './story-action.js';
 import {matchesBinding,bindingLabel} from './keybinds.js';
@@ -206,7 +207,7 @@ function updateUI(){
  setText($('status'),status);
  if(world.adventure){
   const places=placesFor(world.areaId),place=nearestLandmark(world.player.x,world.player.y,world.areaId);
-  setText($('region-name'),regionAt(world.player.x,world.player.y,world.areaId));
+  setText($('region-name'),mapTitle(world.areaId,regionAt(world.player.x,world.player.y,world.areaId)));
   const purse=String(world.inventory.marks||0),purseText=$('purse-hud').lastChild;if(purseText.textContent!==purse){purseText.textContent=purse;$('purse-hud').setAttribute('aria-label',marksLabel(world.inventory.marks||0));}
   setText($('discovery-count'),`${places.filter(p=>world.discovered.has(p.id)).length} / ${places.length} places found here`);
   setText(document.querySelector('.atlas-heading h2'),areaFor(atlasFocus?.areaId||world.areaId).name);

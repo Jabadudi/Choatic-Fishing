@@ -17,6 +17,8 @@ import {MARKS_LIMIT} from './trade.js';
 import {SIDE_QUEST_IDS,restoreSideQuests} from './side-quests.js';
 import {restoreWell} from './wishing-well.js';
 import {restoreBosses} from './bosses.js';
+import {restoreFieldMaps} from './field-play.js';
+import {applyLevel,MAX_LEVEL} from './field-maps.js';
 import {giveStarterSword} from './warrior.js';
 import {ARTIFACTS,ARTIFACT_SLOT_COUNT,RARITIES,artifactIdFor,normalizeArtifact} from './artifacts.js';
 export const SAVE_VERSION=8;
@@ -48,7 +50,9 @@ export function captureSave(world,reason='autosave',now=Date.now()){
   spawns:world.spawns?{seed:world.spawns.seed,next:world.spawns.next,current:world.spawns.current,areas:clone(world.spawns.areas)}:null,
   // Bosses and their adds are not saved: a boss rises fresh when Eli comes back. Only each spot's clock is kept.
   bosses:clone(world.bosses||{}),
-  animals:world.animals.filter(animal=>!animal.bossId).map(animal=>({id:animal.id,slotId:animal.slotId,species:animal.species,shiny:!!animal.shiny,seen:!!animal.seen,...Object.fromEntries(ANIMAL_FIELDS.filter(key=>animal[key]!==undefined).map(key=>[key,clone(animal[key])]))})),
+  // Field map clear progress; elites, like bosses, rise fresh and are not saved.
+  fieldMaps:clone(world.fieldMaps||{}),
+  animals:world.animals.filter(animal=>!animal.bossId&&!animal.eliteId).map(animal=>({id:animal.id,slotId:animal.slotId,species:animal.species,shiny:!!animal.shiny,seen:!!animal.seen,...(animal.level>1?{level:animal.level}:{}),...(animal.packId?{packId:animal.packId}:{}),...Object.fromEntries(ANIMAL_FIELDS.filter(key=>animal[key]!==undefined).map(key=>[key,clone(animal[key])]))})),
   drops:clone(world.drops),nextDropId:world.nextDropId
  }};
 }
@@ -163,6 +167,7 @@ export function restoreSave(input){
  restoreSpawns(s.spawns,w);
  // Boss spots arrived after save version 8 was set; saves without them have every boss ready to rise.
  restoreBosses(s.bosses,w);
+ restoreFieldMaps(s.fieldMaps,w,fail);
  // Every saved creature is rebuilt in its slot. Migrated saves name the slot of the journey's starting creature.
  const starting=w.animals;w.rabbits=[];w.wildlife=[];const animalIds=new Set();
  for(const saved of s.animals){
@@ -174,6 +179,9 @@ export function restoreSave(input){
   const animal=createCreature(SLOTS[saved.slotId],species,{id:saved.id,shiny:saved.shiny===true});if(!animal)continue;
   const start=starting.find(a=>a.id===saved.id&&a.species===species);if(start)Object.assign(animal,{x:start.x,y:start.y,home:start.home,seed:start.seed,wait:start.wait});
   if(saved.seen===true)animal.seen=true;animalIds.add(saved.id);
+  // A field map monster keeps its level and its pack.
+  if(saved.level!==undefined){if(!Number.isSafeInteger(saved.level)||saved.level<1||saved.level>MAX_LEVEL)fail('Invalid animal state.');applyLevel(animal,saved.level);}
+  if(saved.packId!==undefined){if(typeof saved.packId!=='string'||saved.packId.length>80)fail('Invalid animal state.');animal.packId=saved.packId;}
   if(!number(saved.health,0,animal.maxHealth)||!number(saved.x,0,AREAS[animal.areaId].width)||!number(saved.y,0,AREAS[animal.areaId].height))fail('Invalid animal state.');
   animal.health=saved.health;
   if(animalGround(animal,saved.x,saved.y)){animal.x=saved.x;animal.y=saved.y;}

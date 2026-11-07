@@ -1,3 +1,4 @@
+import {fieldProgress} from './field-play.js';
 import {drawCoreArt} from './core-art.js';
 import {drawDrop} from './drops.js';
 import {cabinDamaged,pendingScene} from './story.js';
@@ -83,7 +84,7 @@ export function render(ctx,world,view,{others=[]}={}){
     else{const back=effect.comboStep===2?-1:1;ctx.beginPath();ctx.arc(0,0,effect.name==='Anchor'?72:48,back*(-1+age*2),back*(1+age*2),back<0);ctx.stroke();}
     ctx.restore();
   }
-  if(world.adventure){drawWildsLabels(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500});if(view&&!world.defeat&&!INTERIOR_AREAS.includes(world.areaId)&&!cabinDamaged(world.story))drawAtmosphere(ctx,world,displayView);drawAnimalStatus(ctx,world);if(view)drawComboCounter(ctx,world,displayView);if(world.defeat&&view)drawDefeat(ctx,world,displayView);}
+  if(world.adventure){drawWildsLabels(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500});if(view&&!world.defeat&&!INTERIOR_AREAS.includes(world.areaId)&&!cabinDamaged(world.story))drawAtmosphere(ctx,world,displayView);drawAnimalStatus(ctx,world);if(view){drawFieldProgress(ctx,world,displayView);drawComboCounter(ctx,world,displayView);drawFieldClear(ctx,world,displayView);}if(world.defeat&&view)drawDefeat(ctx,world,displayView);}
 }
 function drawBobber(ctx,world){
  const {elapsed:t,player:p,bobber}=world;if(!bobber)return;
@@ -99,6 +100,31 @@ function drawComboCounter(ctx,world,view){
  ctx.font=`900 ${Math.round(size)}px Arial`;ctx.lineWidth=Math.max(4,size*.14);ctx.strokeStyle='#2a1206';ctx.fillStyle=c.count>=30?'#ff8f3a':c.count>=10?'#ffd24a':'#fff3d6';
  ctx.strokeText(String(c.count),x,y);ctx.fillText(String(c.count),x,y);
  ctx.font=`bold ${Math.round(size*.36)}px Arial`;ctx.lineWidth=4;ctx.strokeText('HIT COMBO',x,y+size*.45);ctx.fillStyle='#fff3d6';ctx.fillText('HIT COMBO',x,y+size*.45);
+ ctx.restore();
+}
+// The field map's clear goal, top centre: monsters defeated, whether the elite has fallen, and the best rank so far.
+function drawFieldProgress(ctx,world,view){
+ const f=fieldProgress(world);if(!f||world.fieldClear)return;
+ const W=view.right-view.left,size=Math.max(11,Math.min(14,W*.011)),x=view.left+W/2,y=view.top+size*2.2;
+ const text=`${f.code} · Monsters ${f.kills}/${f.goal} · ${f.eliteName} ${f.elite?'✓':'—'}${f.best?` · Best ${f.best}`:''}`;
+ ctx.save();ctx.font=`bold ${Math.round(size)}px Georgia, serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+ const w=(ctx.measureText?.(text)?.width||text.length*size*.6)+size*1.6,h=size*1.9;
+ ctx.fillStyle='#1d2a22cc';ctx.fillRect(x-w/2,y-h/2,w,h);ctx.strokeStyle='#c9a85a';ctx.lineWidth=1;ctx.strokeRect(x-w/2+.5,y-h/2+.5,w-1,h-1);
+ ctx.fillStyle=f.kills>=f.goal&&!f.elite?'#ffd24a':'#f3e6bf';ctx.fillText(text,x,y+1);ctx.restore();
+}
+const RANK_COLORS={S:'#ffcf3a',A:'#9fe0ff',B:'#b8e08a',C:'#e8d8c0'};
+// The clear banner: the map's name, the rank in big letters, how it was earned, and the first-clear reward.
+function drawFieldClear(ctx,world,view){
+ const c=world.fieldClear;if(!c)return;
+ const age=c.duration-c.remaining,fade=Math.min(1,age/.35,c.remaining/.6),W=view.right-view.left,H=view.bottom-view.top,x=view.left+W/2,y=view.top+H*.3,k=Math.max(.7,Math.min(1.2,W/1100));
+ ctx.save();ctx.globalAlpha=Math.max(0,fade);ctx.textAlign='center';ctx.lineJoin='round';
+ ctx.fillStyle='#10180fcc';ctx.fillRect(view.left,y-70*k,W,(c.reward?168:146)*k);
+ ctx.font=`bold ${Math.round(16*k)}px Georgia, serif`;ctx.fillStyle='#e9d8a8';ctx.fillText(`${c.code} ${c.name.toUpperCase()} CLEARED`,x,y-42*k);
+ const pop=1+Math.max(0,.35-age)*1.6;ctx.font=`900 ${Math.round(64*k*pop)}px Arial`;ctx.lineWidth=8*k;ctx.strokeStyle='#2a1206';ctx.fillStyle=RANK_COLORS[c.rank]||'#fff';
+ ctx.strokeText(`RANK ${c.rank}`,x,y+22*k);ctx.fillText(`RANK ${c.rank}`,x,y+22*k);
+ const m=Math.floor(c.seconds/60),s=String(Math.floor(c.seconds%60)).padStart(2,'0');
+ ctx.font=`${Math.round(14*k)}px Georgia, serif`;ctx.fillStyle='#f3e6bf';ctx.fillText(`Time ${m}:${s} · Damage taken ${c.damage} · Best combo ${c.combo}`,x,y+52*k);
+ if(c.reward){ctx.fillStyle='#ffd24a';ctx.fillText(`First clear: +${c.reward.wishstones} Wishstone · +${c.reward.marks} reed marks`,x,y+76*k);}
  ctx.restore();
 }
 // The view darkens while Eli is down, then clears as he wakes.
