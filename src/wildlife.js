@@ -18,6 +18,7 @@ export function animalGround(animal,x,y){
  return walkable(x,y,animal.areaId)||!!animal.wades&&isWater(x,y,animal.areaId)&&waterDistance(x,y,animal.areaId)>-animal.wades;
 }
 export function moveAnimal(animal,dx,dy){
+ dx*=animal.coreMoveMultiplier??1;dy*=animal.coreMoveMultiplier??1;
  const steps=Math.max(1,Math.ceil(Math.hypot(dx,dy)/4)),sx=dx/steps,sy=dy/steps;
  let moved=false;
  for(let i=0;i<steps;i++){

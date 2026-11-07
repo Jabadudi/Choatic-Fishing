@@ -35,8 +35,8 @@ test('SP spends only in its own tier, skills stop at their max and requirements 
  learn(w,'reeds-call',9);assert.equal(coreSkillLevel(w,'reeds-call'),10);assert.equal(coreSkillState(w,'reeds-call'),'maxed');
  assert.equal(callDamage(w),66);assert.equal(callCost(w),nearLivingWater(w)?7:21);
  learn(w,'deep-reserves',1);assert.equal(tierPoints(w,1),0);assert.equal(coreSkillState(w,'deep-reserves'),'broke');
- assert.equal(coreSkillState(w,'undertow'),'unbuilt');
- w.progression.level=30;assert.equal(tierPoints(w,2),1);assert.equal(coreSkillState(w,'set-the-hook'),'unbuilt');
+ assert.equal(coreSkillState(w,'undertow'),'tier');
+ w.progression.level=30;assert.equal(tierPoints(w,2),1);assert.equal(coreSkillState(w,'set-the-hook'),'open');
  assert.deepEqual(statLines('still-water',1),['Lasts 5s','Damage taken −25%','Cooldown 18s']);
 });
 
@@ -95,7 +95,7 @@ test('Core skills save and load, and bad or overspent data is refused',()=>{
  restored.story.coreIngested=true;assert.equal(coreSkillLevel(restored,'still-water'),3);
  assert.equal(validCoreSkills({levels:{'still-water':2}},1),false,'more SP than Lv 1 gives');
  assert.equal(validCoreSkills({levels:{'still-water':10}},40),false,'past max');
- assert.equal(validCoreSkills({levels:{undertow:1}},40),false,'not built');
+ assert.equal(validCoreSkills({levels:{undertow:1}},40),true,'second advancement is built');
  assert.equal(validCoreSkills({levels:{},slots:['deep-reserves',null,null,null]},40),false,'passive in a slot');
  assert.equal(validCoreSkills({levels:{},slots:['still-water','still-water',null,null]},40),false,'twice');
  // Saves from before Core skills keep every point unspent.

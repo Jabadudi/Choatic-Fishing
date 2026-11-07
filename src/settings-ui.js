@@ -1,3 +1,4 @@
+import {mountTexturePackControls} from './texture-packs.js';
 import {BINDING_ACTIONS,DEFAULT_BINDINGS,rebind,validBinding,keyLabel} from './input-bindings.js';
 import {preferences,DIALOGUE_THEMES,UI_SCALE_MIN,uiScaleLimit} from './preferences.js';
 import {dialogueMarkup,setDialogueText,drawDialoguePortrait} from './dialogue-view.js';
@@ -57,5 +58,5 @@ export function mountSettings({onOpen=()=>{},onClose=()=>{}}={}){
  const close=()=>{capturing=null;dialog.close();};button.onclick=show;q('close-settings').onclick=close;
  dialog.addEventListener('close',()=>{capturing=null;cancelAnimationFrame(portraitFrame);onClose();});
  document.addEventListener('keydown',e=>{if(e.code==='F10'&&!e.repeat){e.preventDefault();e.stopPropagation();dialog.open?close():show();}},true);
- preferences.subscribe(refresh);refresh();return {show,close,get open(){return dialog.open;}};
+ mountTexturePackControls(q('settings-display'));preferences.subscribe(refresh);refresh();return {show,close,get open(){return dialog.open;}};
 }

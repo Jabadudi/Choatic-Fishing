@@ -28,29 +28,30 @@ export const CORE_SKILLS=Object.freeze([
  {id:'deep-reserves',name:'Deep Reserves',tier:1,type:'passive',max:6,built:true,
   description:'Learning to heed the hollow. More reserves, and they come back faster.',
   stats:{reserves:[5,30],regen:[.05,.3]}},
- {id:'undertow',name:'Undertow',tier:2,type:'active',max:10,built:false,
+ {id:'undertow',name:'Undertow',tier:2,type:'active',max:10,built:true,stats:{cost:[24,18],cooldown:[14,10],duration:[3,5],radius:[100,140],pull:[55,90],slow:[.25,.45]},
   description:'Eli plants the rod and the ground turns to a whirl of river water that drags foes in and slows them.'},
- {id:'set-the-hook',name:'Set the Hook',tier:2,type:'active',max:10,requires:{skill:'reeds-call',level:10},built:false,
+ {id:'set-the-hook',name:'Set the Hook',tier:2,type:'active',max:10,requires:{skill:'reeds-call',level:10},built:true,stats:{cost:[18,12],cooldown:[8,5],damage:[20,44],pull:[100,180]},
   description:'The line latches the first foe it hits. Light foes are reeled in; heavy ones pull Eli to them.'},
- {id:'riverstep',name:'Riverstep',tier:2,type:'buff',max:5,built:false,
-  description:'Eli moves like the current. Faster steps, quicker dashes, and a wet trail behind him.'},
- {id:'reading-the-current',name:'Reading the Current',tier:2,type:'passive',max:5,requires:{skill:'set-the-hook',level:1},built:false,
+ // Keep the original ID so existing learned levels and equipped slots survive the display rename.
+ {id:'riverstep',name:'Waterstep',tier:2,type:'buff',max:5,built:true,stats:{cost:[20,16],cooldown:[24,18],duration:[6,10],speed:[.15,.3],evasion:[.1,.2],passiveSpeed:[.03,.06],passiveEvasion:[.02,.05]},
+  description:'Learning Waterstep permanently grants a little movement speed and evasion. Activate it for additional speed and evasion, leaving a wet trail behind Eli. Evasion avoids a hit and its knockback or grab.'},
+ {id:'reading-the-current',name:'Reading the Current',tier:2,type:'passive',max:5,requires:{skill:'set-the-hook',level:1},built:true,stats:{damage:[.08,.2],restore:[2,5]},
   description:'Core lines hit harder and give some strength back.'},
- {id:'tidewall',name:'Tidewall',tier:3,type:'active',max:10,built:false,
+ {id:'tidewall',name:'Tidewall',tier:3,type:'active',max:10,built:true,stats:{cost:[25,18],cooldown:[18,12],duration:[4,7],slow:[.3,.5]},
   description:'A curved wall of water rises in front of Eli, stopping arrows and slowing foes who push through.'},
- {id:'floodline',name:'Floodline',tier:3,type:'active',max:15,requires:{skill:'reeds-call',level:10},built:false,
+ {id:'floodline',name:'Floodline',tier:3,type:'active',max:15,requires:{skill:'reeds-call',level:10},built:true,stats:{cost:[35,24],cooldown:[7,4],damage:[28,60]},
   description:'Three lines fan out at once, each bending toward a different foe.'},
- {id:'core-flare',name:'Core Flare',tier:3,type:'buff',max:5,built:false,
-  description:'Eli lets the core shine. Stronger, but every shadow walker nearby sees the light.'},
- {id:'herons-patience',name:'Heron’s Patience',tier:3,type:'passive',max:10,built:false,
-  description:'Standing still gathers the core, like a heron waiting over water.'},
- {id:'reedwater-rising',name:'Reedwater Rising',tier:4,type:'active',max:20,built:false,
+ {id:'core-flare',name:'Core Flare',tier:3,type:'buff',max:5,built:true,stats:{cost:[25,20],cooldown:[30,22],duration:[120,120],power:[.15,.35]},
+  description:'Eli lets the core shine, increasing the damage he deals for 2 minutes.'},
+ {id:'herons-patience',name:'Heron’s Patience',tier:3,type:'passive',max:10,built:true,stats:{regen:[2,6]},
+  description:'Eli continuously restores additional reserves each second on top of his normal refill, including while moving and fighting.'},
+ {id:'reedwater-rising',name:'Reedwater Rising',tier:4,type:'active',max:20,built:true,stats:{cost:[60,40],cooldown:[40,25],damage:[90,180]},
   description:'The river rises behind Eli and rolls forward as one wave.'},
- {id:'land-remembers',name:'The Land Remembers',tier:4,type:'passive',max:5,requires:{skill:'steady-heart',level:5},built:false,
+ {id:'land-remembers',name:'The Land Remembers',tier:4,type:'passive',max:5,requires:{skill:'steady-heart',level:5},built:true,stats:{cooldown:[180,120],duration:[3,6]},
   description:'A hit that would defeat Eli leaves him standing, and Still Water fires.'},
- {id:'delta-bond',name:'Delta Bond',tier:4,type:'passive',max:15,built:false,
+ {id:'delta-bond',name:'Delta Bond',tier:4,type:'passive',max:15,built:true,stats:{power:[.05,.2],guard:[.05,.15]},
   description:'Beside living water Eli is part of the land: he hits harder and takes less.'},
- {id:'chosen-of-reedwater',name:'Chosen of Reedwater',tier:4,type:'buff',max:10,requires:{skill:'core-flare',level:5},built:false,
+ {id:'chosen-of-reedwater',name:'Chosen of Reedwater',tier:4,type:'buff',max:10,requires:{skill:'core-flare',level:5},built:true,stats:{cost:[70,50],cooldown:[90,60],duration:[8,12],power:[.3,.6],guard:[.15,.3]},
   description:'The core’s full voice. Short, rare and decisive.'}
 ]);
 const SKILL=Object.fromEntries(CORE_SKILLS.map(s=>[s.id,s]));
@@ -85,7 +86,12 @@ export function statLines(id,level){
   case 'still-water':return [`Lasts ${sec(at('duration'))}`,`Damage taken −${pct(at('guard'))}`,`Cooldown ${sec(at('cooldown'))}`];
   case 'steady-heart':return [`Still Water for ${sec(at('duration'))}`,`At most once every ${sec(at('cooldown'))}`];
   case 'deep-reserves':return [`Max reserves +${Math.round(at('reserves'))}`,`Reserves refill ${pct(at('regen'))} faster`];
-  default:return [];
+  case 'undertow':return [`Radius ${Math.round(at('radius'))} · lasts ${sec(at('duration'))}`,`Pull ${Math.round(at('pull'))}/s · slow ${pct(at('slow'))}`,`Cost ${Math.round(at('cost'))} · cooldown ${sec(at('cooldown'))}`];
+  case 'set-the-hook':return [`Damage ${Math.round(at('damage'))} · reel ${Math.round(at('pull'))}`,`Cost ${Math.round(at('cost'))} · cooldown ${sec(at('cooldown'))}`];
+  case 'riverstep':return [`Passive: movement +${pct(at('passiveSpeed'))} · evasion ${pct(at('passiveEvasion'))}`,`Active adds: movement +${pct(at('speed'))} · evasion ${pct(at('evasion'))}`,`Lasts ${sec(at('duration'))}`,`Cost ${Math.round(at('cost'))} · cooldown ${sec(at('cooldown'))}`];
+  case 'herons-patience':return [`Additional reserves per second: ${Math.round(at('regen')*10)/10}`,'Always active once learned'];
+  case 'reading-the-current':return [`Core line damage +${pct(at('damage'))}`,`Restore ${Math.round(at('restore'))} reserves per hit`];
+  default:return Object.keys(s.stats).map(key=>{const value=at(key);return `${key.replace(/([A-Z])/g,' $1')}: ${['power','guard','slow'].includes(key)?pct(value):Math.round(value*100)/100}`;});
  }
 }
 export const coreMaxed=(world,id)=>{const s=SKILL[id];return !!s&&coreSkillLevel(world,id)>=s.max;};

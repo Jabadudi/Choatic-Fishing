@@ -44,7 +44,7 @@ export function updateRabbits(world,dt){
   if(close){if(disturbed)r.alert=Math.max(r.alert,1.3);if(r.state!=='hop')startHop(r,world.player);}
   r.time+=dt;
   if(r.state==='hop'){
-   const step=Math.min(dt,Math.max(0,r.hopDuration-(r.time-dt))),distance=r.hopDistance*step/r.hopDuration;
+   const step=Math.min(dt,Math.max(0,r.hopDuration-(r.time-dt))),distance=r.hopDistance*step/r.hopDuration*(r.coreMoveMultiplier??1);
    const count=Math.max(1,Math.ceil(distance/4));
    for(let i=0;i<count;i++){const x=r.x+r.direction.x*distance/count,y=r.y+r.direction.y*distance/count;if(canTraverse(r.x,r.y,x,y,r.areaId)&&rabbitGround(x,y,r.areaId)){r.x=x;r.y=y;}else break;}
    if(r.time>=r.hopDuration){if(r.alert>0)startHop(r,world.player);else {r.state='settle';r.time=0;}}
