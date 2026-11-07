@@ -1,5 +1,6 @@
 import {ATLAS_PROP_ART} from './sprite-definitions.js';
 import {groundPattern} from './ground-textures.js';
+import {DUAL_GROUND} from './dual-grid.js';
 // Art for the atlas-built areas (atlas-area.js): boardwalks, fords, stone bridges and props. Drawing only.
 import {drawEntitySprite,drawProp as drawPropSprite} from './sprites.js';
 const each=(pts,step,fn)=>{for(let i=1;i<pts.length;i++){const [ax,ay]=pts[i-1],[bx,by]=pts[i],len=Math.hypot(bx-ax,by-ay),n=Math.max(1,Math.floor(len/step));for(let j=0;j<n;j++){const t=j/n;fn(ax+(bx-ax)*t,ay+(by-ay)*t,Math.atan2(by-ay,bx-ax),j);}}};
@@ -63,14 +64,14 @@ const PAINTED={hut:['fisher-hut',110,80],'stilt-hut':['stilt-hut',110,96],tower:
 // Hand-placed trees, plants and rocks use the same paintings and sizes as the random scenery (wilds.js).
 export function atlasPropArt(p){
  if(p.art&&ATLAS_PROP_ART[p.kind]?.[p.art])return ATLAS_PROP_ART[p.kind][p.art];
- // A painting from another kind's list (e.g. the round oak on a big-tree landmark).
- if(p.art)for(const list of Object.values(ATLAS_PROP_ART))if(list[p.art])return list[p.art];
  const big=(p.scale||1)>=3;
  if(p.kind==='tower'&&p.area==='broken-watch')return ['atlas/broken-watch',170,190];
  if(p.kind==='cave'&&p.area==='chimewood')return ['atlas/hollow-rock',160,140];
  if(p.kind==='pillar')return big?['grey-spire',34,80]:p.inWater?['pillar-water',40,76]:PAINTED.pillar;
  if(p.kind==='logs'&&big)return ['fallen-giant',64,40];
  if(p.kind==='wreck'&&p.area==='arrival-bay')return ['dinghy',110,48];
+ // Areas on the dual-grid ground use the layered-world round oak for their plain big tree.
+ if(p.kind==='big-tree'&&!big&&!p.glow&&DUAL_GROUND[p.area])return ATLAS_PROP_ART.tree['round-oak'];
  if(p.kind==='big-tree')return big?['listening-tree',110,110]:p.glow==='#ffd36a'?['goldleaf-tree',150,160]:p.glow==='#cfe8ff'?['hollow-tree',150,160]:PAINTED['big-tree'];
  if(ATLAS_PROP_ART[p.kind]&&['tree','bush','boulder'].includes(p.kind))return Object.values(ATLAS_PROP_ART[p.kind])[0];
  return PAINTED[p.kind];
