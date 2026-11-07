@@ -7,8 +7,8 @@ import {rampArtwork,drawRampPiece} from './ramp-art.js';
 import {groundPattern} from './ground-textures.js';
 import {polygonContains} from './elevation.js';
 import {dualGridSheet,drawDualGrid} from './dual-grid.js';
-// Dual-grid lattice spacing in world units: one level (96) is two tiles of cliff wall.
-export const LAYER_CELL=48;
+// Dual-grid lattice spacing in world units: one level (96) is one tile of cliff wall.
+export const LAYER_CELL=96;
 
 const art=new WeakMap();
 let flat=null,mask=null;

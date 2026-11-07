@@ -8,9 +8,9 @@ counted left to right, top to bottom. `art/sprites/terrain/dual-grid/dual-grid-t
 
 ## Layered areas
 
-`src/layered-terrain.js` draws raised ground with two sheets on a 48-unit lattice:
+`src/layered-terrain.js` draws raised ground with two sheets on a 96-unit lattice (one tile per level):
 
-- `assets/ground/dual/cliff-wall.png`: the earth wall, drawn in rows below each raised level (two rows per level).
+- `assets/ground/dual/cliff-wall.png`: the earth wall, drawn in rows below each raised level (one row per level).
 - `assets/ground/dual/plateau-top.png`: the plateau outline. Its shape cuts the area's own painted ground, and its edge
   pieces (rim and grass lip) are drawn over it.
 
@@ -18,7 +18,8 @@ Stairs and the waterfall curtain are still drawn in code over the tiles. Until b
 floors and drawn faces are used.
 
 Collision is unchanged: the height field in `src/elevation.js` follows the editor's polygons, while the tiles follow the
-48-unit lattice, so a drawn edge can sit up to about 24 units from the true edge.
+96-unit lattice, so a drawn edge can sit up to about 48 units from the true edge.
 
-The sheets in `assets/ground/dual/` are stand-ins drawn by `scripts/draw-dual-grid.py`. Replace them with painted
-1024 x 1024 sheets in the same layout; texture packs can replace them too.
+The sheets in `assets/ground/dual/` are painted 1024 x 1024 sheets (sources in `art/sprites/terrain/dual-grid/`).
+`scripts/draw-dual-grid.py` draws the layout template and plain stand-ins. Replacements must keep the same layout;
+texture packs can replace them too.
