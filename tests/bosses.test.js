@@ -165,8 +165,9 @@ test('the Drowned Gorget guards Eli by the water and the Spire Bell against shad
   const h=w.player.health;damage(w,w.player,50,source,0);return h-w.player.health;
  };
  const shadow={entityType:'animal',behavior:'aggressive'},deer={entityType:'animal',behavior:'defensive'};
- const dry=w=>{for(let x=200;x<3000;x+=40)for(let y=200;y<2000;y+=40)if(walkable(x,y,'landing')&&waterDistance(x,y,'landing')>400)return {x,y};};
- const shore=w=>{for(let x=200;x<3000;x+=20)for(let y=200;y<2000;y+=20)if(walkable(x,y,'landing')&&waterDistance(x,y,'landing')<40&&waterDistance(x,y,'landing')>0)return {x,y};};
+ // Below the north cliff, at the level the test's shadow walker stands on.
+ const dry=w=>{for(let x=200;x<3000;x+=40)for(let y=950;y<2000;y+=40)if(walkable(x,y,'landing')&&waterDistance(x,y,'landing')>400)return {x,y};};
+ const shore=w=>{for(let x=200;x<3000;x+=20)for(let y=950;y<2000;y+=20)if(walkable(x,y,'landing')&&waterDistance(x,y,'landing')<40&&waterDistance(x,y,'landing')>0)return {x,y};};
  const plain=hit(null,shadow,dry);
  assert.ok(hit('drowned-gorget',shadow,shore)<plain);assert.equal(hit('drowned-gorget',shadow,dry),plain);
  assert.ok(hit('spire-bell',shadow,dry)<plain);

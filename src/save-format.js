@@ -2,6 +2,7 @@ import {restoreStory,createStoryNpcs,pageForBeat,relocateGuide,LURE,REGION_CORE}
 import {YARD} from './training-ground.js';
 import {World} from './world.js';
 import {AREAS,walkable} from './wilds.js';
+import {stranded} from './terrain-height.js';
 import {animalGround} from './wildlife.js';
 import {SKILL_IDS,skillXpToNext} from './skills.js';
 import {validTree} from './skill-trees.js';
@@ -146,7 +147,7 @@ export function restoreSave(input){
  const p=s.player;if(!p||!number(p.x,0,AREAS[s.areaId].width)||!number(p.y,0,AREAS[s.areaId].height)||!number(p.health,0,w.progression.maxHealth)||!number(p.angle,-100,100))fail('Invalid player data.');
  Object.assign(w.player,{x:p.x,y:p.y,angle:p.angle,health:p.health});
  // Old positions blocked by a future map edit safely return to that area's spawn.
- if(!walkable(p.x,p.y,w.areaId))Object.assign(w.player,AREAS[w.areaId].spawn);
+ if(!walkable(p.x,p.y,w.areaId)||stranded(p.x,p.y,w.areaId,AREAS[w.areaId].spawn))Object.assign(w.player,AREAS[w.areaId].spawn);
  for(const key of ['cooldown','dashCharges','dashCooldown'])if(p[key]!==undefined){if(!number(p[key],0,key==='dashCharges'?w.progression.maxDashes:10))fail('Invalid player timers.');w.player[key]=p[key];}
  if(!list(s.catches)||!list(s.discovered,10000)||!list(s.animals,1000)||!list(s.drops))fail('Invalid saved world data.');
  w.catches=clone(s.catches);w.discovered=new Set(s.discovered.filter(id=>typeof id==='string'));

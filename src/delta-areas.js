@@ -26,7 +26,6 @@ area({id:'chimewood',num:'18.3',name:'Chimewood',frame:[330,405,248,376],size:[1
   {id:'chime-beach',name:'Chime Beach',at:[345,358],text:'A quiet strip of sand facing south. Out on the water, West Holm and its seals.'}
  ],
  exits:[
-  {edge:'west',from:252,to:262,target:'windchime',label:'Windchime Path'},
   {edge:'east',from:286,to:300,target:'upper-braids',label:'Upper Braids'},
   {edge:'south',from:346,to:356,target:'seal-skerries',label:'Seal Skerries'}
  ]});
@@ -640,45 +639,57 @@ area({id:'drowned-road',num:'16',name:'The Drowned Road',frame:[0,235,265,395],s
   {id:'gull-islet',name:'Gull Islet',at:[118,360],text:'A grassy islet where gulls sit in rows and argue about everything.'}
  ],
  exits:[
-  {edge:'east',from:335,to:347,target:'landing',label:'Reedwater Landing'},
+  // The east edge led to Reedwater Landing before the Landing became field map 1.1; the Drowned Road returns as a later map.
   {edge:'north',from:8,to:40,target:'western-falls',label:'Western Falls'}
  ]});
 
 // 22 Arrival Bay: a walkable beach along the north (tide pools, driftwood, the wrecked dinghy) and the bay Eli rowed
 // across in Chapter 1. The Mistline in the south stops every boat.
-// 17 Reedwater Landing: where Grandpa's cabin stands. The west third is a turquoise lagoon with islets and drowned
-// pillars; the old road's paving runs out through the shallows as a causeway to the Drowned Road. The middle is open
-// meadow where the trail climbs north past the chimes to Windchime Path, the east is thick woods with the warm spring
-// and the hollow tree, and the south is one long beach that runs on to the pier at Arrival Bay.
-// Same size as the hand-built Landing it replaces, so the cabin and the Chapter 1 and 2 staging stay where they were.
-area({id:'landing',num:'17',name:'Reedwater Landing',frame:[195,335,272,400],size:[2800,2200],base:'land',ground:'meadow',seed:7319,spawn:[256,377],
+// 1.1 Reedwater Landing (atlas 17): the first field map, laid out west to east like every field map (Region 1 plan).
+// West: the Arrival Bay beach and the turquoise lagoon with its islets and drowned pillars. Then Grandpa's cabin and
+// the beach below it, the Three Chimes meadow and the warm spring, the east woods with the Hollow Tree, and last the
+// Drowned Causeway, a paved spit through the shallows where Mudshell waits before the way on to 1.2 Windchime Path.
+// An earth cliff runs the whole north side (the meadow above it is out of reach) and the sea runs the whole south side.
+// The frame only grows east, so the cabin and the Chapter 1 and 2 staging keep their world positions.
+area({id:'landing',num:'1.1',name:'Reedwater Landing',frame:[195,395,272,400],size:[4000,2200],base:'land',ground:'meadow',seed:7319,spawn:[256,377],
  shapes:[
-  ['water',[[195,272],[246,272],[250,285],[244,300],[250,318],[246,334],[236,346],[222,352],[207,356],[195,358]]],
-  ['land','ellipse',[215,295],5,3.5],['land','ellipse',[230,326],3.5,2.5],['land','ellipse',[206,316],3,2.2],
-  ['water','ellipse',[296,333],6.5,8.7]
+  ['water',[[195,323],[247,323],[250,330],[246,336],[240,344],[232,350],[220,356],[207,362],[195,366]]],
+  ['land','ellipse',[214,338],5,3.5],['land','ellipse',[230,346],3.2,2.3],
+  ['water','ellipse',[296,334],6,7],
+  // The sea along the whole south side.
+  ['water',[[195,388],[230,387],[265,389],[300,387.5],[335,389],[365,387],[395,388.5],[395,400],[195,400]]],
+  // The shallows around the Drowned Causeway, and the paved spit through them.
+  ['water',[[360,325],[395,325],[395,389],[360,389],[356,372],[357,344]]],
+  ['land',[[350,341],[372,339.5],[395,340],[395,362],[372,363],[350,361]],{zone:'rock'}]
  ],
- zones:[['sand',[[195,356],[210,354],[225,352],[240,356],[255,358],[262,360],[290,361],[310,357],[335,354],[335,400],[195,400]]],
-  ['forest',[[250,272],[274,272],[271,290],[262,300],[252,296]]],
-  ['forest',[[298,272],[335,272],[335,350],[318,352],[304,344],[300,320],[302,296]]],
+ zones:[['sand',[[195,366],[215,364],[240,366],[262,368],[290,368],[315,366],[340,367],[360,366],[360,400],[195,400]]],
+  ['forest',[[195,272],[395,272],[395,325],[195,325]]],
+  ['forest',[[318,324],[356,324],[356,366],[318,366],[326,350]]],
   ['forest',[[236,344],[252,345],[254,352],[240,354]]]],
- roads:[[[258,400],[258,370],[260,356],[266,345],[276,336],[287,324],[292,312],[289,298],[281,286],[280,272]],
-  [[266,345],[256,340],[248,338]],[[259,364],[268,363],[276.5,362]],[[287,324],[286,329]],[[290,303],[300,301],[308,300]]],
- fords:[{pts:[[248,338],[238,338],[226,337.5],[212,338],[195,338]],width:2.6}],
- props:[{kind:'boat',at:[306,379]},{kind:'stone',at:[322,368]},{kind:'stone',at:[327,374]},{kind:'stone',at:[200,364]},
-  {kind:'pillar',at:[212,333.5]},{kind:'pillar',at:[224,342.5]},{kind:'pillar',at:[203,342.5]},
-  {kind:'logs',at:[236,367],solid:0},{kind:'logs',at:[293,368],solid:0}],
+ roads:[[[195,378],[212,376],[232,371],[252,367.5],[268,365],[290,363],[302,355],[316,350],[332,348],[348,350],[358,351],[372,351],[395,351]],
+  [[268,365],[268,352],[268,342]],[[259,364],[268,363],[276.5,362]],[[286,345],[290,350],[302,355]]],
+ fords:[{pts:[[248,338],[238,338],[226,338],[219,338]],width:2.6}],
+ props:[{kind:'boat',at:[306,379]},{kind:'stone',at:[322,370]},{kind:'stone',at:[327,375]},{kind:'stone',at:[200,370]},
+  {kind:'pillar',at:[212,333.5]},{kind:'pillar',at:[224,342.5]},{kind:'pillar',at:[203,345]},
+  {kind:'pillar',at:[363,337]},{kind:'pillar',at:[376,336.5]},{kind:'pillar',at:[388,365]},{kind:'pillar',at:[366,365.5]},
+  {kind:'logs',at:[236,369],solid:0},{kind:'logs',at:[293,370],solid:0}],
  places:[
-  {id:'landing',name:'Reedwater Landing',at:[256,380],kind:'shore',text:'The beach below Grandpa’s cabin. South, the sand runs on to the pier at Arrival Bay. North, a worn trail climbs toward the chimes.'},
+  {id:'landing',name:'Reedwater Landing',at:[256,380],kind:'shore',text:'The beach below Grandpa’s cabin. West, the sand runs back to the pier at Arrival Bay. East, the trail runs past the chimes toward the woods.'},
   {id:'drowned',name:'The Drowned Road',at:[249,343],kind:'drowned',text:'Through the shallows, squared stones lead west under the water. This shore was once a street.'},
-  {id:'chimes',name:'The Three Chimes',at:[268,338],kind:'chimes',text:'Three hollow wooden notes drift inland. Follow the worn trail north past the chime posts to enter Windchime Path.'},
-  {id:'spring',name:'Reedwater Spring',at:[286,329],kind:'spring',text:'Warm water bubbles beneath the reeds. Tiny silver fish gather at the edge of the spring.'},
-  {id:'tree',name:'The Hollow Tree',at:[311,299],kind:'tree',text:'A deer pauses beside the hollow trunk. Your footsteps echo from somewhere deeper in the roots.'}
+  {id:'chimes',name:'The Three Chimes',at:[268,338],kind:'chimes',text:'Three hollow wooden notes drift down from the cliff. The trail runs east past the chime posts toward the woods.'},
+  {id:'spring',name:'Reedwater Spring',at:[288,333],kind:'spring',text:'Warm water bubbles beneath the reeds. Tiny silver fish gather at the edge of the spring.'},
+  {id:'tree',name:'The Hollow Tree',at:[340,337],kind:'tree',text:'A deer pauses beside the hollow trunk. Your footsteps echo from somewhere deeper in the roots.'},
+  {id:'drowned-causeway',name:'The Drowned Causeway',at:[378,351],kind:'drowned',text:'Old paving runs on through the shallows, cracked and crusted with barnacles. Something big has been sunning itself out here.'}
  ],
  exits:[
-  {edge:'north',from:274,to:286,target:'windchime',entry:{x:330,y:1120},label:'Windchime Path'},
-  {edge:'west',from:333,to:343,target:'drowned-road',label:'The Drowned Road'},
-  {edge:'south',from:205,to:300,target:'arrival-bay',label:'Arrival Bay'}
- ]});
+  {edge:'west',from:367,to:387,target:'arrival-bay',label:'Arrival Bay'},
+  {edge:'east',from:344,to:358,target:'windchime',label:'1.2 Windchime Path'}
+ ],
+ // The north cliff: everything above it stands one level up and out of reach.
+ elevation:{base:0,
+  terraces:[{id:'north-cliff',height:1,points:[[195,272],[395,272],[395,324],[380,325],[365,323.5],[350,324.5],[335,323],[320,322.5],[305,322],[290,323],[275,322.5],[260,323],[248,322.5],[235,323],[220,322.5],[205,323],[195,322.5]]}],
+  ramps:[]}
+});
 
 area({id:'arrival-bay',num:'22',name:'Arrival Bay',frame:[180,300,385,470],size:[2400,1700],base:'water',ground:'sand',sea:true,spawn:[251,402],
  shapes:[
@@ -698,7 +709,7 @@ area({id:'arrival-bay',num:'22',name:'Arrival Bay',frame:[180,300,385,470],size:
   {id:'tide-pools',name:'Tide Pools',at:[268,393],text:'Rock pools left by the tide, full of little crabs and anemones that close up when your shadow falls on them.'},
   {id:'mistline',name:'The Mistline',at:[251,412],text:'Far out in the south, a wall of mist lies on the water. Every boat that tries it comes back the same way it went.'}
  ],
- exits:[{edge:'north',from:200,to:290,target:'landing',label:'Reedwater Landing'}]});
+ exits:[{edge:'east',from:386,to:397,target:'landing',label:'1.1 Reedwater Landing'}]});
 
 // 5.2 Old Roads: open meadow north of the ruins where two old paved roads cross. One runs east to the river and on to
 // the Great Bridge; the north edge is the top of the atlas and leads nowhere.

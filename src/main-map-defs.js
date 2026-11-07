@@ -2,28 +2,38 @@
 // Fixed story structures are reference markers; chapter code still owns their interactions.
 export const MAIN_MAP_DEFS=[
  {
+  // 1.2 Windchime Path: a forest gorge laid out west to east like every field map (Region 1 plan). From 1.1 in the
+  // west: the Chime Arch clearing, the Quiet Glade, stairs up to the Stonefall Overlook, then the Fork Stones, where
+  // Hollowbranch waits before the way on to 1.3 Willowbank Crossroads. Earth cliffs run the north side and the
+  // rapids the south side. The frame only grows east, so the old west half keeps its world positions.
   id:"windchime",
-  num:"18.1",
+  num:"1.2",
   name:"Windchime Path",
-  frame:[266,346,243,303],
-  size:[1600,1200],
+  frame:[266,446,243,303],
+  size:[3600,1200],
   seed:7321,
   base:"land",
   ground:"forest",
-  spawn:{"x":330,"y":1120},
-  shapes:[],
-  zones:[["clear",[[329,278],[328.9,278.9],[328.6,279.7],[328.2,280.5],[327.6,281.2],[326.8,281.9],[325.9,282.4],[324.9,282.9],[323.8,283.2],[322.7,283.4],[321.5,283.5],[320.3,283.4],[319.2,283.2],[318.1,282.9],[317.1,282.4],[316.2,281.9],[315.4,281.2],[314.8,280.5],[314.4,279.7],[314.1,278.9],[314,278],[314.1,277.1],[314.4,276.3],[314.8,275.5],[315.4,274.8],[316.2,274.1],[317.1,273.6],[318.1,273.1],[319.2,272.8],[320.3,272.6],[321.5,272.5],[322.7,272.6],[323.8,272.8],[324.9,273.1],[325.9,273.6],[326.8,274.1],[327.6,274.8],[328.2,275.5],[328.6,276.3],[328.9,277.1]]]],
+  spawn:{"x":80,"y":600},
+  shapes:[["water",[[266,294],[290,295.5],[315,294],[340,295],[365,294],[390,295.5],[415,294],[446,295],[446,303],[266,303]]]],
+  zones:[["clear",[[295.0,273.0],[293.4,277.5],[289.0,280.8],[283.0,282.0],[277.0,280.8],[272.6,277.5],[271.0,273.0],[272.6,268.5],[277.0,265.2],[283.0,264.0],[289.0,265.2],[293.4,268.5]]],["clear",[[350.0,273.0],[348.0,278.0],[342.5,281.7],[335.0,283.0],[327.5,281.7],[322.0,278.0],[320.0,273.0],[322.0,268.0],[327.5,264.3],[335.0,263.0],[342.5,264.3],[348.0,268.0]]],["clear",[[424.0,273.0],[421.5,278.8],[414.5,283.0],[405.0,284.5],[395.5,283.0],[388.5,278.8],[386.0,273.0],[388.5,267.2],[395.5,263.0],[405.0,261.5],[414.5,263.0],[421.5,267.2]]],["clear",[[352,252],[372,252],[372,263],[352,263]]],["rock",[[266,289],[446,289],[446,295],[266,295]]]],
   cliffs:[],
-  roads:[[[282.5,303],[283.4,296],[281.2,289.4],[284.3,277.6],[291.6,268.5],[301.6,262.1],[310.6,257.6],[322.4,251.2],[323.5,243]],[[301.6,262.1],[292.5,257.6],[280.7,256.2],[268,255.5],[266,255.5]],[[322.4,251.2],[335.1,256.7],[344,262.5],[346,263]],[[305.2,260.3],[315.2,273],[319,277]]],
+  roads:[[[266,273],[275,273],[283,271],[295,274],[310,276],[322,273],[335,272],[350,275],[362,273],[375,271],[390,273],[405,274],[420,273],[446,273]],[[362,273],[362,268]]],
   walks:[],
   fords:[],
   bridges:[],
-  props:[],
-  places:[{"id":"path-chimes","name":"The Chime Arch","at":[283.5,296],"kind":"chimes","text":"Behind you lies Reedwater Landing. Chimes hang from a bent-wood arch over the trail, and the sound of the shore turns into chimes."},{"id":"fork-stones","name":"The Fork Stones","at":[298,264],"kind":"sign","text":"Three mossy stones and a signpost. West: Stonefall Creek. North-east: Willowbank Crossroads, where the road divides for the village and the marsh."},{"id":"quiet-glade","name":"The Quiet Glade","at":[321.5,279],"kind":"glade","text":"A fallen log in a ring of trees. The chimes are faint here. A good place to sit for a minute."},{"id":"trail-end","name":"Stonefall Fork","at":[275,253],"kind":"sign","text":"The west fork runs on toward Stonefall Creek. Somewhere ahead, water is falling."},{"id":"chimewood-spur","name":"Chimewood Spur","at":[338,258],"kind":"sign","text":"The spur east disappears into Chimewood. The trees close in, and the chimes in there sound wrong."}],
-  exits:[{"edge":"north","from":320,"to":327,"target":"crossroads","entry":{"x":800,"y":1130},"label":"Willowbank Crossroads"},{"edge":"south","from":279,"to":286,"target":"landing","entry":{"x":1680,"y":120},"label":"Reedwater Landing"},{"edge":"west","from":252.5,"to":258.5,"target":"stonefall","label":"Stonefall Creek","entry":{"x":1391,"y":462}},{"edge":"east","from":260,"to":266,"target":"chimewood","label":"Chimewood","entry":{"x":90,"y":177}}],
+  props:[{"kind":"bench","at":[338,270]},{"kind":"stone","at":[401,268]},{"kind":"stone","at":[409,268.5]},{"kind":"stone","at":[405,277]},{"kind":"lantern","at":[300,271]},{"kind":"lantern","at":[380,270]}],
+  places:[{"id":"path-chimes","name":"The Chime Arch","at":[281,268],"kind":"chimes","text":"Behind you lies Reedwater Landing. Chimes hang from a bent-wood arch over the trail, and the sound of the shore turns into chimes."},{"id":"quiet-glade","name":"The Quiet Glade","at":[335,272],"kind":"glade","text":"A fallen log in a ring of trees. The chimes are faint here, and something big has been rooting up the moss."},{"id":"trail-end","name":"Stonefall Overlook","at":[362,256],"kind":"sign","text":"From the top of the steps you can see west over the trees to Stonefall Creek, where the water drops off the cliff in a white thread."},{"id":"fork-stones","name":"The Fork Stones","at":[405,272],"kind":"sign","text":"Three mossy stones and a signpost, the antlers of something huge scraped across all three. East: Willowbank Crossroads, where the road divides for the village and the marsh."}],
+  exits:[{"edge":"west","from":265,"to":281,"target":"landing","label":"1.1 Reedwater Landing"},{"edge":"east","from":266,"to":280,"target":"crossroads","entry":{"x":800,"y":1130},"label":"1.3 Willowbank Crossroads"}],
   portals:[],
-  fixedFeatures:[{"id":"chime-tree-0","label":"Story chime tree","at":[289.5,258],"radius":25},{"id":"chime-tree-1","label":"Story chime tree","at":[285.2,269],"radius":25},{"id":"chime-tree-2","label":"Story chime tree","at":[278.5,275],"radius":25},{"id":"chime-tree-3","label":"Story chime tree","at":[276,283],"radius":25},{"id":"chime-tree-4","label":"Story chime tree","at":[275.5,291],"radius":25},{"id":"chime-tree-5","label":"Story chime tree","at":[316,250.5],"radius":25},{"id":"chime-tree-6","label":"Story chime tree","at":[320,258],"radius":25}]
+  fixedFeatures:[{"id":"chime-tree-0","label":"Story chime tree","at":[277,264],"radius":25},{"id":"chime-tree-1","label":"Story chime tree","at":[286,263.5],"radius":25},{"id":"chime-tree-2","label":"Story chime tree","at":[292,267],"radius":25},{"id":"chime-tree-3","label":"Story chime tree","at":[318,268],"radius":25},{"id":"chime-tree-4","label":"Story chime tree","at":[355,268],"radius":25},{"id":"chime-tree-5","label":"Story chime tree","at":[388,267],"radius":25},{"id":"chime-tree-6","label":"Story chime tree","at":[425,268],"radius":25}],
+  // The north cliff stands two levels up and out of reach; a lower ledge in front of it is the Stonefall Overlook,
+  // reached by stairs from the trail.
+  elevation:{base:0,
+   terraces:[{id:"north-cliff",height:2,points:[[266,243],[446,243],[446,252],[430,253],[415,251.5],[400,252.5],[385,252],[372,251.5],[352,251.5],[340,253],[325,251.5],[310,252.5],[295,252],[280,253],[266,252]]},{id:"overlook",height:1,points:[[352,251],[372,251],[372,263],[352,263]]}],
+   ramps:[{id:"overlook-stairs",kind:"stairs",from:[362,262],to:[362,269],width:4,fromHeight:1,toHeight:0}]}
  },
+
  {
   id:"crossroads",
   num:"18.2",
@@ -43,7 +53,7 @@ export const MAIN_MAP_DEFS=[
   bridges:[],
   props:[],
   places:[{"id":"crossroads-sign","name":"The Fork","at":[302.8,218.4],"kind":"waypost","text":"The weathered arrows point west to Willowback along the river, and north-east over the boardwalk to Shellback Marsh. South, the chimes lead back to Reedwater Landing."},{"id":"village-approach","name":"Willowback Approach","at":[278.1,206.9],"kind":"village-marker","text":"Cart tracks follow the riverbank west toward Willowback. Apple baskets and a low stone wall mark the village approach. Follow the cart tracks west, past the farms and the training yard, to the Willowback Gate."},{"id":"marsh-approach","name":"The Boardwalk","at":[334.3,204.4],"kind":"marsh-marker","text":"A long plank boardwalk on posts carries the trail over the river. Beyond the far bank lie Shellback Marsh and its many waterways. Follow it north-east through the map edge into the wetlands."},{"id":"travellers-rest","name":"Travellers’ Rest","at":[289.1,224.7],"kind":"rest","text":"A bench beneath the trees, a cold campfire and a little shelter for the rain. Someone has left a coil of fishing line beside the seat."},{"id":"reed-pool","name":"Riverside Jetty","at":[325,230.4],"kind":"pool-marker","text":"A short jetty reaches into the river from the south bank. Fish gather in the slow water beside it. It is a good place to cast before choosing a road."},{"id":"crossroads-chimes","name":"The Last Chimes","at":[310.6,231.5],"kind":"chimes","text":"The last of the wooden chimes hangs where Windchime Path reaches the fork. From here, the land opens toward the village and the marsh."}],
-  exits:[{"edge":"south","from":301.7,"to":314.3,"target":"windchime","entry":{"x":1150,"y":80},"label":"Windchime Path"},{"edge":"west","from":197.5,"to":202.7,"target":"village-farm","entry":{"x":1930,"y":830},"label":"Willowback"},{"edge":"east","from":196.9,"to":201.6,"target":"marsh","entry":{"x":140,"y":1830},"label":"Shellback Marsh"}],
+  exits:[{"edge":"south","from":301.7,"to":314.3,"target":"windchime","entry":{"x":3540,"y":600},"label":"1.2 Windchime Path"},{"edge":"west","from":197.5,"to":202.7,"target":"village-farm","entry":{"x":1930,"y":830},"label":"Willowback"},{"edge":"east","from":196.9,"to":201.6,"target":"marsh","entry":{"x":140,"y":1830},"label":"Shellback Marsh"}],
   portals:[],
   fixedFeatures:[{"id":"crossroads-rest","label":"Travellers’ Rest","at":[289.1,224.7],"radius":35},{"id":"crossroads-waypost","label":"The Fork waypost","at":[302.8,218.4],"radius":35}]
  },

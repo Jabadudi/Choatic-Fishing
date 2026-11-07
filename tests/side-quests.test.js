@@ -22,7 +22,7 @@ const goTo=(w,id)=>{const n=w.npcs.find(n=>n.id===id);w.areaId=n.areaId;Object.a
 function hunt(w,species,times){
  for(let i=0;i<times;i++){
   // The same creature stands in for a fresh one each time; respawning is the spawner's business, not this test's.
-  const animal=w.animals.find(a=>a.species===species);Object.assign(animal,{health:animal.maxHealth,state:'idle'});w.areaId=animal.areaId;
+  const animal=w.animals.find(a=>a.species===species);Object.assign(animal,{health:animal.maxHealth,state:'idle'});w.areaId=animal.areaId;Object.assign(w.player,{x:animal.x-40,y:animal.y});
   assert.ok(damageAnimal(w,animal,9999,w.player,0));
  }
 }

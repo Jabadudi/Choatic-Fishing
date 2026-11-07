@@ -28,7 +28,7 @@ test('journey roundtrip restores progression, quest, inventory references, drops
  restored.update(1/120,neutralInput());assert.equal(restored.rabbits[0].health,0);
 });
 test('restore preserves area and protects against changed-map positions and unsupported or malicious saves',()=>{
- const w=fresh();w.areaId='windchime';Object.assign(w.player,{x:330,y:1120});const save=captureSave(w);
+ const w=fresh();w.areaId='windchime';Object.assign(w.player,{x:330,y:600});const save=captureSave(w);
  assert.equal(restoreSave(save).areaId,'windchime');
  const bad=copy(save);bad.version=99;assert.throws(()=>restoreSave(bad),/newer/);
  bad.version=0;assert.throws(()=>restoreSave(bad),/not supported/);
@@ -36,8 +36,11 @@ test('restore preserves area and protects against changed-map positions and unsu
  assert.throws(()=>parseSave('not json'));assert.throws(()=>parseSave('{"__proto__":{"bad":true}}'),/invalid fields/);
  assert.throws(()=>parseSave('x'.repeat(5*1024*1024+1)),/too large/);
  assert.equal(w.inventory.allItems.length,0);
- const blocked=copy(save);blocked.state.areaId='landing';blocked.state.player.x=400;blocked.state.player.y=500;
+ const blocked=copy(save);blocked.state.areaId='landing';blocked.state.player.x=400;blocked.state.player.y=1300;
  assert.deepEqual({x:restoreSave(blocked).player.x,y:restoreSave(blocked).player.y},AREAS.landing.spawn);
+ // A spot that is now on top of 1.1's north cliff, with no way down.
+ const high=copy(save);high.state.areaId='landing';high.state.player.x=1300;high.state.player.y=500;
+ assert.deepEqual({x:restoreSave(high).player.x,y:restoreSave(high).player.y},AREAS.landing.spawn);
 });
 test('manual save stays separate while current autosave and three older backups rotate atomically',async()=>{
  const store=new MemoryStore();let now=1700000000000;const manager=new SaveManager(store,()=>{},()=>now),w=fresh();await manager.begin(w);

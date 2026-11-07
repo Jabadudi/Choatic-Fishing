@@ -25,12 +25,12 @@ function follow(w,until,max=10000){
 function throughForest(w){
  assert.equal(storyPrompt(w),'Continue toward the village');w.inspect();finish(w);
  follow(w,()=>!!currentScene(w));assert.equal(w.story.scene,'ch3-chimes');finish(w);
- // North up the Landing and Windchime Path, west at the crossroads and along the farm road to the Willowback Gate.
+ // East along 1.1 Reedwater Landing and 1.2 Windchime Path, west at the crossroads and along the farm road to the Willowback Gate.
  for(const area of ['landing','windchime','crossroads','village-farm']){
   follow(w,()=>w.story.guide.waypoint===CHAPTER3_ROUTES[area].length);
   if(area==='crossroads'){Object.assign(w.player,{x:1,y:460});w.move(-8,0,false);}
   else if(area==='village-farm'){Object.assign(w.player,{x:1,y:1150});w.move(-8,0,false);}
-  else {Object.assign(w.player,{x:area==='landing'?1700:1150,y:1});w.move(0,-8,false);}
+  else {Object.assign(w.player,area==='landing'?{x:3999,y:1358}:{x:3599,y:600});w.move(8,0,false);}
   assert.equal(w.story.guide.areaId,w.areaId);assert.ok(walkable(w.player.x,w.player.y,w.areaId));
  }
  follow(w,()=>!!currentScene(w));assert.equal(w.story.scene,'ch3-arrival');finish(w);
@@ -48,9 +48,9 @@ test('Chapter 3 follows connected maps, discovers the village creatures and ends
  const restored=restoreSave(captureSave(w));assert.equal(restored.story.stage,'ch3-complete');assert.deepEqual(restored.story.guide,w.story.guide);assert.equal(restored.npcs.length,1+createVillageResidents().length);
 });
 test('guide waits across exploration detours and forward exits wait for the guide',()=>{
- const w=atTrail();w.inspect();finish(w);Object.assign(w.player,{x:1700,y:1});w.move(0,-8,false);assert.equal(w.areaId,'landing');assert.match(w.message,/guide/);
+ const w=atTrail();w.inspect();finish(w);Object.assign(w.player,{x:3999,y:1358});w.move(8,0,false);assert.equal(w.areaId,'landing');assert.match(w.message,/guide/);
  const previous=structuredClone(w.story.guide);w.areaId='windchime';w.update(1,neutralInput());assert.deepEqual(w.story.guide,previous);
- w.areaId='landing';Object.assign(w.player,{x:500,y:500});w.update(1,neutralInput());assert.deepEqual(w.story.guide,previous);
+ w.areaId='landing';Object.assign(w.player,{x:1200,y:1800});w.update(1,neutralInput());assert.deepEqual(w.story.guide,previous);
 });
 test('version 3 Chapter 2 checkpoints migrate guide geography without replay or inventory loss',()=>{
  const w=atTrail(),save=captureSave(w);save.version=3;delete save.state.story.guide.areaId;

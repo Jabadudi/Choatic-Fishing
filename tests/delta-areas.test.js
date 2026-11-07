@@ -24,23 +24,24 @@ test('every exit into an atlas area has a way back',()=>{
  // Rooms open from a door prompt, not an exit.
  for(const a of Object.values(AREAS))if(!INTERIOR_AREAS.includes(a.id))for(const e of ways(a.id))if(DELTA[e.target])assert.ok(ways(e.target).some(b=>b.target===a.id),`${e.target} leads back to ${a.id}`);
 });
-test('Eli walks from Windchime Path into Chimewood and back',()=>{
- const w=new World(()=>.1,{adventure:true});w.areaId='windchime';Object.assign(w.player,{x:1590,y:400});w.move(20,0,false);
- assert.equal(w.areaId,'chimewood');assert.ok(walkable(w.player.x,w.player.y,'chimewood'));
- Object.assign(w.player,{x:10,y:120});w.move(-20,0,false);assert.equal(w.areaId,'windchime');
-});
-test('Eli walks west from the Landing over the causeway into the Drowned Road, and south down the beach to Arrival Bay',()=>{
- const w=new World(()=>.1,{adventure:true});w.areaId='landing';Object.assign(w.player,{x:10,y:1134});w.move(-20,0,false);
- assert.equal(w.areaId,'drowned-road');assert.ok(walkable(w.player.x,w.player.y,'drowned-road'));
- w.areaId='landing';Object.assign(w.player,{x:1260,y:2190});w.move(0,20,false);
+test('the Region 1 field maps run west to east: Arrival Bay, 1.1 Reedwater Landing, 1.2 Windchime Path',()=>{
+ const w=new World(()=>.1,{adventure:true});w.areaId='landing';
+ // East over the Drowned Causeway into 1.2, and back.
+ Object.assign(w.player,{x:3990,y:1350});w.move(20,0,false);
+ assert.equal(w.areaId,'windchime');assert.ok(walkable(w.player.x,w.player.y,'windchime'));
+ Object.assign(w.player,{x:10,y:600});w.move(-20,0,false);assert.equal(w.areaId,'landing');assert.ok(walkable(w.player.x,w.player.y,'landing'));
+ // West along the beach to Arrival Bay, and back.
+ Object.assign(w.player,{x:10,y:1800});w.move(-20,0,false);
  assert.equal(w.areaId,'arrival-bay');assert.ok(walkable(w.player.x,w.player.y,'arrival-bay'));
+ Object.assign(w.player,{x:AREAS['arrival-bay'].width-10,y:130});w.move(20,0,false);assert.equal(w.areaId,'landing');
  assert.equal(placesFor('landing').some(p=>p.travel),false,'the pier and its rowboat are in Arrival Bay now');
+ // The old side roads (north to 1.2, west to the Drowned Road) are gone; they come back as later field maps.
+ for(const a of ['landing','windchime'])assert.deepEqual(AREAS[a].exits.map(e=>e.edge).sort(),['east','west']);
 });
 test('a new journey starts on the Arrival Bay pier, and Chapter 1 keeps Eli on the shore',()=>{
  const w=new World(()=>.1,{adventure:true,story:true});
  assert.equal(w.areaId,'arrival-bay');assert.deepEqual({x:w.player.x,y:w.player.y},AREAS['arrival-bay'].spawn);assert.ok(walkable(w.player.x,w.player.y,'arrival-bay'));
  const pier=placesFor('arrival-bay').find(p=>p.id==='arrival-pier');Object.assign(w.player,{x:pier.x,y:pier.y});w.story.scene=null;
  assert.ok(w.inspect());assert.equal(w.areaId,'arrival-bay','no rowing away before Chapter 2 ends');
- Object.assign(w.player,{x:1300,y:30});w.move(0,-40,false);assert.equal(w.areaId,'landing');
- Object.assign(w.player,{x:10,y:1134});w.move(-20,0,false);assert.equal(w.areaId,'landing','the Drowned Road waits until Chapter 2 ends');
+ Object.assign(w.player,{x:AREAS['arrival-bay'].width-10,y:130});w.move(20,0,false);assert.equal(w.areaId,'landing');
 });

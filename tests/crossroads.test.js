@@ -4,20 +4,18 @@ import {World} from '../src/world.js';
 import {walkable,isWater,transitionAt,placesFor,paintAtlas,drawWilds,clearTerrainCache} from '../src/wilds.js';
 import {CROSSROADS_ROADS,CROSSROADS_PLACES} from '../src/crossroads.js';
 
-test('Windchime north opens into the crossroads and south returns with equipment and discoveries',()=>{
+test('1.2 Windchime Path opens east into the crossroads and the crossroads returns south with equipment and discoveries',()=>{
  const w=new World(()=>.1,{adventure:true});w.areaId='windchime';
  w.inventory.receive({name:'Reed Spear'});w.inventory.assignHotbar(w.inventory.allItems.at(-1).id,2);w.discovered.add('landing');
- Object.assign(w.player,{x:1150,y:4});w.move(0,-12,false);
+ Object.assign(w.player,{x:3596,y:600});w.move(12,0,false);
  assert.equal(w.areaId,'crossroads');assert.equal(w.player.x,800);assert.equal(w.player.y,1130);
  assert.ok(walkable(w.player.x,w.player.y,w.areaId));assert.match(w.message,/West.*East/);
  Object.assign(w.player,{x:800,y:1276});w.move(0,12,false);
- assert.equal(w.areaId,'windchime');assert.equal(w.player.y,80);
+ assert.equal(w.areaId,'windchime');assert.deepEqual({x:w.player.x,y:w.player.y},{x:3540,y:600});
  assert.equal(w.inventory.item.name,'Reed Spear');assert.ok(w.discovered.has('landing'));
- // Windchime Path v2: the trail climbs diagonally from the Chime Arch to the north-east exit, with its forks walkable.
- for(const road of [[[330,1170],[348,1060],[303,928],[366,692],[511,510],[711,382],[892,291],[1128,164],[1150,0]],[[711,382],[530,291],[294,264],[60,250]],[[1128,164],[1382,273],[1550,390]]])
-  for(let i=1;i<road.length;i++)for(let k=0;k<=40;k++){const t=k/40,x=road[i-1][0]+(road[i][0]-road[i-1][0])*t,y=road[i-1][1]+(road[i][1]-road[i-1][1])*t;if(y<4)continue;assert.ok(walkable(x,y,'windchime'),`${x},${y}`);}
- // The forks lead west to Stonefall Creek and east to Chimewood.
- assert.equal(transitionAt(-4,250,'windchime').areaId,'stonefall');assert.equal(transitionAt(1604,400,'windchime').areaId,'chimewood');
+ // A field map runs west to east: the trail crosses the whole band, from 1.1 in the west to the crossroads in the east.
+ for(let x=40;x<3580;x+=20)assert.ok([560,580,600,620,640].some(y=>walkable(x,y,'windchime')),`trail at ${x}`);
+ assert.equal(transitionAt(-4,600,'windchime').areaId,'landing');assert.equal(transitionAt(3604,600,'windchime').areaId,'crossroads');
 });
 
 test('every crossroads walking route is continuous and its six landmarks can be approached',()=>{

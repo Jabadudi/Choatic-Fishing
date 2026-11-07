@@ -18,7 +18,7 @@ function toSupper(w){
 const catchFish=w=>{w.fishing.state='caught';w.fishing.result={name:'Sardine'};w.advanceFishing(w.player,0,false);};
 const count=(w,name)=>w.inventory.countOf(name);
 const deer=w=>w.wildlife.filter(a=>a.id.startsWith('deer-meadow'));
-const hunt=(w,a)=>{w.areaId=a.areaId;while(a.health>0)damageAnimal(w,a,25,w.player,0);};
+const hunt=(w,a)=>{w.areaId=a.areaId;Object.assign(w.player,{x:a.x-40,y:a.y});for(let i=0;i<100&&a.health>0;i++)damageAnimal(w,a,25,w.player,0);assert.ok(a.health<=0,'the hunt lands');};
 
 test('the weapon rack gives the rod first, and the bow only once two Sardines are in the backpack',()=>{
  const w=fresh();toSupper(w);
