@@ -26,3 +26,12 @@ raised lattice points.
 The sheets in `assets/ground/dual/` are painted 1024 x 1024 sheets (sources in `art/sprites/terrain/dual-grid/`).
 `scripts/draw-dual-grid.py` draws the layout template and plain stand-ins. Replacements must keep the same layout;
 texture packs can replace them too.
+
+## Dual-grid ground
+
+Areas listed in `DUAL_GROUND` (`src/dual-grid.js`; Glasswater for now) build their ground from layers on a 48-unit
+lattice: the base texture (forest floor), then `sand.png` (sand zones and the shore band), `dirt-path.png` (trails)
+and `water.png` (water). Decks, props, reeds, rocks and scenery are drawn over the tiles as before. In these areas
+the water's walking edge uses the same lattice rule as the water tiles (`atlas-area.js`), so the shoreline Eli stops at
+is the drawn one. Until every sheet has loaded the blended ground painter is used. The three ground sheets are
+stand-ins drawn by `scripts/draw-dual-grid.py` until the painted ones arrive.

@@ -1,4 +1,5 @@
 import {compileElevation,ELEVATION_GRID} from './elevation.js';
+import {DUAL_GROUND,GROUND_CELL} from './dual-grid.js';
 import {ATLAS_PROP_ART} from './sprite-definitions.js';
 // Areas built straight from the Reedwater Delta atlas (assets/codex/reedwater-delta-map.jpg, 720 × 480 pixels).
 // Each area is plain data in atlas pixels: a frame cut out of the atlas, a size in world units, and shapes for land
@@ -36,13 +37,20 @@ export function defineArea(def){
   const poly=Ps(form);if(rest[0]?.zone)shapeZones.push([rest[0].zone,form]);return {op,box:boxOf(poly),sd:(x,y)=>polygonDistance(x,y,poly)};
  });
  const land=def.base!=='water';
- function water(x,y){
+ let water=function(x,y){
   let v=land?4000:-4000;
   // A shape whose box is far away cannot change the answer; inside its box it always might (overlapping shapes
   // would otherwise leave a seam along the inner edge).
   for(const s of shapes){const far=outside(x,y,s.box);if(s.op==='land'){if(far>0&&v>=-far)continue;v=Math.max(v,s.sd(x,y));}else{if(far>0&&v<=far)continue;v=Math.min(v,-s.sd(x,y));}}
   return v;
- }
+ };
+ // Dual-grid ground: water is sampled at the lattice corners and a spot is water where the water corners weigh more
+ // than half, the same rule the water tiles are drawn with. Inside or outside a whole cell the true distance is kept.
+ const exact=water;
+ if(DUAL_GROUND[def.id]){const C=GROUND_CELL,corners=new Map(),at=(i,j)=>{const key=i*65537+j;let v=corners.get(key);if(v===undefined){v=exact(i*C,j*C)<0;corners.set(key,v);}return v;};
+  water=(x,y)=>{const i=Math.floor(x/C),j=Math.floor(y/C),u=x/C-i,v=y/C-j,a=at(i,j),b=at(i+1,j),c=at(i,j+1),d=at(i+1,j+1),d0=exact(x,y);
+   if(a&&b&&c&&d)return Math.min(d0,-1);if(!a&&!b&&!c&&!d)return Math.max(d0,1);
+   const wet=a*(1-u)*(1-v)+b*u*(1-v)+c*(1-u)*v+d*u*v;return (.5-wet)*C;};}
  // Crossings run a little past both ends, so they always bite into the dry ground they join.
  const extend=pts=>{if(pts.length<2)return pts;const out=pts.map(p=>[...p]),push=(i,j)=>{const [ax,ay]=out[j],[bx,by]=out[i],l=Math.hypot(bx-ax,by-ay)||1;out[i]=[bx+(bx-ax)/l*30,by+(by-ay)/l*30];};push(0,1);push(out.length-1,out.length-2);return out;};
  const lines=(list,width)=>(list||[]).map(item=>{const raw=Array.isArray(item[0])?item:item.pts,w=(Array.isArray(item[0])?width:item.width||width)*k,pts=item.extend===0?Ps(raw):extend(Ps(raw)),hit=(Array.isArray(item[0])||item.hit==null?w:item.hit*k)/2;return {pts,half:w/2,hit,round:item.cap==='round',box:boxOf(pts,Math.max(w,hit*2)/2)};});

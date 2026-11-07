@@ -32,3 +32,13 @@ test('both exits stay reachable: Upper Falls trail to the Western Falls trail th
  const w=world([92,159]);for(const at of [[99,160],[105,162],[109,175],[111,182],[110,196],[104,199],[90,205],[70,207],[58,212]])follow(w,at);
  assert.ok(walkable(w.player.x,w.player.y,ID));assert.equal(heightAt(w.player.x,w.player.y,ID),0);
 });
+
+test('glasswater water follows the dual-grid water tiles: wet where the water corners weigh more than half',async()=>{
+ const {GROUND_CELL:C}=await import('../src/dual-grid.js');let checked=0;
+ for(let x=10;x<b.area.width;x+=37)for(let y=10;y<b.area.height;y+=29){
+  const i=Math.floor(x/C),j=Math.floor(y/C),u=x/C-i,v=y/C-j,w=(a,c)=>b.water(a*C,c*C)<0;
+  const wet=w(i,j)*(1-u)*(1-v)+w(i+1,j)*u*(1-v)+w(i,j+1)*(1-u)*v+w(i+1,j+1)*u*v;
+  if(Math.abs(wet-.5)<.02)continue;assert.equal(b.water(x,y)<0,wet>.5,`water at ${x},${y}`);checked++;
+ }
+ assert.ok(checked>1000);
+});

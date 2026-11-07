@@ -3,6 +3,7 @@ import {elevationFor,heightAt,canTraverse,canReach,projectGround,unprojectGround
 export {elevationFor,heightAt,canTraverse,canReach,projectGround,unprojectGround};
 import {elevationBands,drawElevationBand} from './elevation-art.js';
 import {paintLayered} from './layered-terrain.js';
+import {DUAL_GROUND,GROUND_CELL,dualGridSheet,drawDualGrid} from './dual-grid.js';
 // Elevated atlas areas use the layered painter, except the quarry, which has its own hand-built terrain art.
 export const layeredArea=id=>!!DELTA[id]?.elevation&&id!=='abandoned-quarry';
 import {TERRAIN_CELL,TERRAIN_BLEND} from './terrain-style.js';
@@ -223,15 +224,31 @@ function milestoneGlyph(ctx,t){
 }
 function reeds(ctx,x,y,seed){for(let i=0;i<4;i++){const h=12+Math.floor(hash(seed,i,8)*10);ctx.fillStyle=i%2?'#6d9a3a':'#8bb04a';ctx.fillRect(x+i*3-4,y-h,2,h);if(i===1){ctx.fillStyle='#6b4a2a';ctx.fillRect(x+i*3-5,y-h-5,4,7);}}}
 function groundArea(ctx,left,top,width,height,id){
- if(layeredArea(id))paintLayered(ctx,left,top,width,height,DELTA[id],(f,l,t,w,h)=>staticArea(f,l,t,w,h,id),markStale);else staticArea(ctx,left,top,width,height,id);
+ const flat=(f,l,t,w,h)=>{const tiled=dualGround(f,l,t,w,h,id);staticArea(f,l,t,w,h,id,tiled);};
+ if(layeredArea(id))paintLayered(ctx,left,top,width,height,DELTA[id],flat,markStale);else flat(ctx,left,top,width,height);
 }
-function staticArea(ctx,left,top,width,height,id){
+// Dual-grid ground (DUAL_GROUND areas): the base texture, then sand, paths and water as dual-grid tile layers. Returns
+// false until every sheet has loaded; the blended painter is used meanwhile.
+const DUAL_TESTS={
+ sand:(x,y,id)=>DELTA[id].zoneAt(x,y)==='sand'||waterDistance(x,y,id)<30,
+ dirtPath:(x,y,id)=>roadDistance(x,y,id)<26&&waterDistance(x,y,id)>0,
+ water:(x,y,id)=>waterDistance(x,y,id)<0,
+};
+function dualGround(ctx,left,top,width,height,id){
+ const plan=DUAL_GROUND[id];if(!plan||typeof document==='undefined')return false;
+ const sheets=plan.layers.map(k=>dualGridSheet(k,markStale));if(sheets.some(s=>!s))return false;
+ ctx.save();ctx.fillStyle=groundPattern(ctx,plan.base,markStale,DELTA[id].textures?.[plan.base]||1)||'#54703c';ctx.fillRect(left,top,width,height);
+ ctx.imageSmoothingEnabled=true;const C=GROUND_CELL;
+ plan.layers.forEach((k,i)=>drawDualGrid(ctx,sheets[i],(x,y)=>DUAL_TESTS[k](x,y,id),{left:left-C,top:top-C,width:width+2*C,height:height+2*C,cell:C}));
+ ctx.restore();return true;
+}
+function staticArea(ctx,left,top,width,height,id,tiledGround=false){
  if(id==='cabin'){drawCabinInterior(ctx);return;}
  if(id==='chief-house'){drawChiefHouse(ctx);return;}
  // The lodge's light follows the story, so drawWilds paints it each frame instead of caching it.
  if(id==='guest-lodge')return;
  const atlasTextures=!!DELTA[id];
- if(!paintBlendedTerrain(ctx,left,top,width,height,id)){
+ if(!tiledGround&&!paintBlendedTerrain(ctx,left,top,width,height,id)){
  const texturedGrass=id!=='marsh'&&drawGrassBase(ctx,left,top,width,height,markStale);
  const dirt=pathPattern(ctx,markStale);
  for(let y=Math.floor(top/8)*8;y<top+height;y+=8)for(let x=Math.floor(left/8)*8;x<left+width;x+=8){

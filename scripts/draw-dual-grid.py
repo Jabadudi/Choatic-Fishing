@@ -8,6 +8,7 @@ Writes:
   art/sprites/terrain/dual-grid/dual-grid-template.png  white = terrain, magenta = empty, for image generators
   assets/ground/dual/plateau-top.png   stand-in: grass top of a raised plateau, with a dark rim and hanging lip
   assets/ground/dual/cliff-wall.png    stand-in: earth cliff wall, front-on
+  assets/ground/dual/sand.png, dirt-path.png, water.png   stand-ins for the Glasswater ground layers
 Run: python3 scripts/draw-dual-grid.py
 """
 import math
@@ -106,6 +107,25 @@ def template(mask, g, x, y):
     return (255, 255, 255, 255)
 
 
+def near_edge(g, x, y, r):
+    return any(edge(g, x, y, dx, dy) for dx in range(-r, r + 1) for dy in range(-r, r + 1) if abs(dx) + abs(dy) == r)
+
+
+def flat(colors, rim, outline):
+    def paint(mask, g, x, y):
+        if near_edge(g, x, y, 1):
+            return outline
+        if near_edge(g, x, y, 2):
+            return rim
+        n = NOISE[y][x]
+        return colors[0] if n < .6 else colors[1] if n < .9 else colors[2]
+    return paint
+
+
+sand = flat([(222, 196, 136, 255), (212, 184, 124, 255), (236, 214, 160, 255)], (196, 168, 110, 255), (150, 120, 72, 255))
+dirt = flat([(184, 146, 96, 255), (172, 134, 86, 255), (198, 162, 110, 255)], (146, 110, 68, 255), (104, 80, 50, 255))
+water = flat([(52, 160, 170, 255), (46, 148, 160, 255), (84, 186, 192, 255)], (150, 222, 220, 255), (240, 250, 246, 255))
+
 tpl = sheet(template)
 bg = Image.new('RGBA', tpl.size, (255, 0, 255, 255))
 bg.alpha_composite(tpl)
@@ -115,5 +135,9 @@ for i in range(0, bg.size[0], 256):       # thin cell borders
         px[i, j] = (0, 0, 0, 255)
         px[j, i] = (0, 0, 0, 255)
 bg.convert('RGB').save('art/sprites/terrain/dual-grid/dual-grid-template.png')
-sheet(grass).save('assets/ground/dual/plateau-top.png')
-sheet(wall).save('assets/ground/dual/cliff-wall.png')
+import os
+for name, painter in (('plateau-top', grass), ('cliff-wall', wall)):
+    if not os.path.exists(f'art/sprites/terrain/dual-grid/{name}-source.png'):
+        sheet(painter).save(f'assets/ground/dual/{name}.png')
+for name, painter in (('sand', sand), ('dirt-path', dirt), ('water', water)):
+    sheet(painter).save(f'assets/ground/dual/{name}.png')
