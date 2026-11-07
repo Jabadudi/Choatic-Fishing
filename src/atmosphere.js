@@ -53,8 +53,10 @@ export function mountAtmosphere(parent){
 const OVERLAY_SCALE=.5;
 function paintOverlay(ctx,W,H){
  const o=overlay,k=ctx.getTransform?.(),pixels=(k?Math.hypot(k.a,k.b):1)*OVERLAY_SCALE,w=Math.max(1,Math.ceil(W*pixels)),h=Math.max(1,Math.ceil(H*pixels));
- if(o.W===W&&o.H===H&&o.shafts.width===w&&o.shafts.height===h)return;
- o.W=W;o.H=H;
+ // View extents are subtracted from moving world coordinates. Ignore floating
+ // point noise so a camera pan cannot repeatedly recreate the overlay canvases.
+ if(Math.abs(o.W-W)<.001&&Math.abs(o.H-H)<.001&&o.pixels===pixels)return;
+ o.W=W;o.H=H;o.pixels=pixels;
  for(const [c,fill] of [[o.warm,'warm'],[o.cool,'cool'],[o.shafts,null],[o.vignette,'vignette']]){
   c.width=w;c.height=h;const l=c.getContext('2d');l.setTransform(w/W,0,0,h/H,0,0);
   if(fill){l.fillStyle=makeGradients(l,W,H)[fill];l.fillRect(0,0,W,H);}

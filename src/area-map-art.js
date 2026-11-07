@@ -7,6 +7,7 @@ const MAX_SIDE=1600,MAX_SCALE=.35,TILE=256,KEEP=4;
 // id → {canvas, scale, todo: tiles left to paint, story}
 const maps=new Map();
 let busy=false;
+let detailedMap=null;
 const idle=typeof window==='undefined'?null:window.requestIdleCallback?fn=>window.requestIdleCallback(fn,{timeout:300}):fn=>setTimeout(fn,30);
 
 // Late images (grass, props) mean the art painted so far is missing pieces: start again.
@@ -16,7 +17,7 @@ function tilesFor(area){const out=[];for(let y=0;y<area.height;y+=TILE)for(let x
 
 // The map for an area: {canvas, scale}, the canvas at scale pixels per world unit. Painting carries on in the background.
 // story: the journey's story state, for the few props that follow it (the cabin, the training yard).
-export function areaMap(id,story=null){
+export function areaMap(id,story=null,{detail=true}={}){
  const area=areaFor(id);let m=maps.get(area.id);
  if(m){maps.delete(area.id);maps.set(area.id,m);}
  else{
@@ -29,16 +30,17 @@ export function areaMap(id,story=null){
  }
  // The cabin, camp and training yard follow the story: a new stage repaints the area, keeping the old picture meanwhile.
  if(area.id!=='guest-lodge'&&(story?.stage??null)!==(m.story?.stage??null))m.todo=tilesFor(area);
- m.story=story;schedule();
+ m.story=story;
+ if(detail){detailedMap=m;schedule();}
  return m;
 }
 export const areaMapReady=id=>!maps.get(areaFor(id).id)?.todo.length;
+export function pauseAreaMapPainting(){detailedMap=null;}
 
 function schedule(){
  if(busy||!idle)return;
- // Most recently asked-for area first: that is the one on screen.
- const m=[...maps.values()].reverse().find(m=>m.todo.length);if(!m)return;
- busy=true;idle(()=>{busy=false;paintTile(m);schedule();});
+ if(!detailedMap?.todo.length)return;
+ busy=true;idle(()=>{busy=false;if(detailedMap)paintTile(detailedMap);schedule();});
 }
 // Each tile is painted at full size on a scratch canvas, then shrunk onto the map in one smooth step; painting the
 // small cells straight at map scale leaves a faint grid where their edges blend.
