@@ -8,8 +8,9 @@ import {bindingLabel} from './keybinds.js';
 import {regionAt} from './wilds.js';
 import {FAMILIARS} from './familiars.js';
 import {wishstonesLabel} from './wishing-well.js';
-import {coreWheel,RESERVES_MAX,abilityUnlocked,reservesMax} from './core-abilities.js';
+import {coreWheel,RESERVES_MAX,reservesMax} from './core-abilities.js';
 import {dashMeter} from './hud.js';
+import {CORE_LEVEL_CAP} from './core-skills.js';
 const svg=(body,size=24)=>`<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
 const el=(tag,className,text)=>{const node=document.createElement(tag);if(className)node.className=className;if(text!==undefined)node.textContent=text;return node;};
 const ICONS={
@@ -27,6 +28,12 @@ const ICONS={
  empty:'<circle cx="12" cy="12" r="7" stroke-dasharray="2.5 2.5"/><path d="M12 9v6M9 12h6"/>',
  sealed:'<rect x="6" y="11" width="12" height="9" rx="1.5"/><path d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3M12 14.5v2"/>'
 };
+// The EXP hover card: exact experience in this level, what is left, and the percent, like an MMO's EXP bar tooltip.
+export function expDetails(p,cap=CORE_LEVEL_CAP){
+ if(p.level>=cap)return {fraction:1,percent:'MAX',lines:[`Lv. ${p.level} · Max level`,'No more EXP to earn']};
+ const need=p.xpToNextLevel,have=Math.max(0,Math.min(p.xp,need)),fraction=need>0?have/need:0,percent=`${(Math.floor(fraction*1000)/10).toFixed(1)}%`;
+ return {fraction,percent,lines:[`EXP ${have.toLocaleString('en-US')} / ${need.toLocaleString('en-US')} (${percent})`,`${(need-have).toLocaleString('en-US')} more to reach Lv. ${p.level+1}`]};
+}
 // A story objective reads "Chapter 5 · Mara is waiting…"; the part before the first dot becomes the tracker's heading.
 export function splitObjective(text,fallback){
  const at=text.indexOf(' · ');
@@ -40,9 +47,11 @@ export function mountHudShell({act,openHelp,examine,openAtlas,openQuests,openWel
 <div id="hud-tracker"><button class="hud-quest story" hidden><i aria-hidden="true"></i><b></b><span></span></button><button class="hud-quest side" hidden><i aria-hidden="true"></i><b></b><span></span></button></div>
 <div id="hud-feed" aria-live="polite"></div>
 <div id="hud-icons"><button id="hud-well" class="hud-icon" hidden aria-label="Open the Wishing Well">${svg(ICONS.well,20)}<span>Well</span></button></div>
-<div id="hud-vitals"><div class="hud-level"><b id="hud-name">Eli</b> · <span id="hud-level">Lv. 1</span></div><div id="hud-xp" aria-hidden="true"><i></i></div></div>
+<div id="hud-vitals" class="hud-plate"><div class="hud-plate-head"><span id="hud-level">Lv.1</span><b id="hud-name">Eli</b></div><div class="hud-plate-body"><div id="hud-mp" class="plate-row mp" role="progressbar" aria-label="Mana" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><span class="hp-label">MP</span><span class="plate-text">100 / 100</span><div class="hp-track"><i></i></div></div><div id="hud-xp" class="plate-row xp exp-hover" tabindex="0" role="progressbar" aria-label="Experience" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span class="hp-label">EXP</span><span class="plate-text">0.0%</span><div class="hp-track"><i></i></div></div></div></div>
+<div id="hud-exp-edge" class="exp-hover" tabindex="0" aria-label="Experience"><i></i><span></span></div>
+<div id="hud-exp-ring" aria-hidden="true"></div>
+<div id="hud-exp-tip" role="tooltip" hidden><b></b><span></span></div>
 <div id="hud-actions">
- <div class="hud-reserves" hidden aria-label="Reserves"><i></i></div>
  <button class="hud-act side talk desk" data-act="talk" aria-label="Talk or examine">${svg(ICONS.talk)}<kbd></kbd><small>Talk</small></button>
  <button class="hud-act ring core" style="--a:180deg" data-act="core-slot-0" data-core-slot="0" data-core="still-water" aria-label="Still Water"><span class="hud-core-icon">${svg(ICONS['still-water'])}</span><i class="hud-cd"></i><kbd></kbd><small>Still Water</small></button>
  <button class="hud-act ring core" style="--a:135deg" data-act="core-slot-1" data-core-slot="1" data-core="reeds-call" aria-label="Reedwater’s Call"><span class="hud-core-icon">${svg(ICONS['reeds-call'])}</span><i class="hud-cd"></i><kbd></kbd><small>Call</small></button>
@@ -64,7 +73,25 @@ export function mountHudShell({act,openHelp,examine,openAtlas,openQuests,openWel
  const stones=el('p');stones.id='hud-stones';stones.title='Wishstones';stones.innerHTML='<span class="wishstone-icon" style="width:14px;height:11px" aria-hidden="true"></span><span></span>';
  wallet.append($('purse-hud'),stones);icons.prepend(wallet);
  for(const id of ['open-chat','open-players','open-quests','open-codex','open-skills','open-backpack'])if($(id)){$(id).classList.add('hud-icon');icons.append($(id));}
- const vitals=$('hud-vitals');vitals.insertBefore($('player-hp'),$('hud-xp'));vitals.append(document.querySelector('.dash-mini'));
+ const vitals=$('hud-vitals'),plate=vitals.querySelector('.hud-plate-body');$('player-hp').classList.add('plate-row','hp');plate.prepend($('player-hp'));vitals.append(document.querySelector('.dash-mini'));
+ // EXP: three looks to choose from (data-exp on the shell: edge, plate, ring). Hovering or tapping any of them shows the exact numbers.
+ shell.dataset.exp=(()=>{try{return localStorage.getItem('wilds-exp-style')||'plate';}catch{return 'plate';}})();
+ const tip=$('hud-exp-tip');let tipFor=null,tipUntil=0;
+ // The shell may be zoomed on big screens, so screen pixels are turned back into the shell's own pixels.
+ const placeTip=target=>{const r=(target.id==='hud-xp'?vitals:target).getBoundingClientRect(),box=shell.getBoundingClientRect(),t=tip.getBoundingClientRect(),k=(t.width/(tip.offsetWidth||t.width))*(parseFloat(getComputedStyle(shell).zoom)||1)/(box.width/(shell.offsetWidth||box.width)||1)||1,w=t.width/k,h=t.height/k,W=box.width/k;
+  let x=(r.left-box.left+r.width/2)/k-w/2,y=(r.top-box.top)/k-h-8;if(y<4)y=(r.bottom-box.top)/k+8;
+  if(target.id==='hud-exp-edge'&&pointer)x=(pointer.x-box.left)/k-w/2;
+  tip.style.left=`${Math.max(4,Math.min(W-w-4,x))}px`;tip.style.top=`${y}px`;};
+ let pointer=null;
+ const showTip=(target,ms=0)=>{tipFor=target;tipUntil=ms?performance.now()+ms:0;fillTip();tip.hidden=false;placeTip(target);};
+ const hideTip=()=>{tipFor=null;tip.hidden=true;};
+ for(const t of [$('hud-xp'),$('hud-exp-edge'),$('hud-menu')]){
+  t.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse'&&(t.id!=='hud-menu'||shell.dataset.exp==='ring'))showTip(t);});
+  t.addEventListener('pointermove',e=>{pointer={x:e.clientX};if(tipFor===t)placeTip(t);});
+  t.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse'&&tipFor===t)hideTip();});
+  if(t.id!=='hud-menu'){t.addEventListener('focus',()=>showTip(t));t.addEventListener('blur',hideTip);t.addEventListener('pointerup',e=>{if(e.pointerType!=='mouse'){pointer={x:e.clientX};showTip(t,2600);}});}
+ }
+ const fillTip=()=>{if(!world)return;const d=expDetails(world.progression);setText(tip.firstElementChild,d.lines[0]);setText(tip.lastElementChild,d.lines[1]);};
  const hotbar=document.querySelector('.hotbar'),pager=el('button','hotbar-pager','1–4');pager.id='hotbar-pager';pager.setAttribute('aria-label','Show hotbar slots 5 to 7');hotbar.append(pager);
  let page=1,selected=0;
  pager.onclick=()=>{page=page===1?2:1;draw();};
@@ -94,6 +121,7 @@ export function mountHudShell({act,openHelp,examine,openAtlas,openQuests,openWel
  let world=null,carried=null,region='',queue=[],foundUntil=0,sheetWorld=null,showing=null;
  found.onclick=()=>{found.hidden=true;showing=null;};
  function setText(node,text){if(node.textContent!==text)node.textContent=text;}
+ function setWidth(node,width){if(node.style.width!==width)node.style.width=width;}
  function refreshSheet(){
   if(!sheetWorld)return;const w=sheetWorld,p=w.progression;
   setText(sheet.querySelector('h2'),w.player.name||'Eli');setText(sheet.querySelector('.hud-sheet-where'),`Level ${p.level} · ${$('region-name').textContent}`);
@@ -119,8 +147,16 @@ export function mountHudShell({act,openHelp,examine,openAtlas,openQuests,openWel
    shell.hidden=!visible;if(!visible){if(sheet.open)sheet.close();return;}
    if(next!==world){world=next;carried=null;region='';queue=[];found.hidden=true;feed.replaceChildren();}
    sheetWorld=world;const p=world.progression,touch=isTouch();
-   setText($('hud-level'),`Lv. ${p.level}`);setText($('hud-name'),world.player.name||'Eli');
-   const xp=$('hud-xp').firstElementChild,xpWidth=`${Math.min(100,p.xp/p.xpToNextLevel*100)}%`;if(xp.style.width!==xpWidth)xp.style.width=xpWidth;
+   setText($('hud-level'),`Lv.${p.level}`);setText($('hud-name'),world.player.name||'Eli');
+   // Player plate: HP is kept up to date by main.js; MP is the Region Core's reserves; EXP shows in whichever look is chosen.
+   const mpMax=reservesMax(world),mp=Math.max(0,Math.min(mpMax,world.core?.reserves??RESERVES_MAX)),mpRow=$('hud-mp');
+   setText(mpRow.querySelector('.plate-text'),`${Math.floor(mp)} / ${mpMax}`);setWidth(mpRow.querySelector('i'),`${mp/mpMax*100}%`);
+   if(mpRow.getAttribute('aria-valuenow')!==String(Math.floor(mp))){mpRow.setAttribute('aria-valuenow',String(Math.floor(mp)));mpRow.setAttribute('aria-valuemax',String(mpMax));}
+   const exp=expDetails(p),expWidth=`${exp.fraction*100}%`,xpRow=$('hud-xp'),edge=$('hud-exp-edge');
+   setWidth(xpRow.querySelector('i'),expWidth);setText(xpRow.querySelector('.plate-text'),exp.percent);setWidth(edge.firstElementChild,expWidth);setText(edge.lastElementChild,`EXP ${exp.percent}`);
+   const ring=$('hud-exp-ring'),deg=`${Math.round(exp.fraction*360)}deg`;if(ring.style.getPropertyValue('--exp')!==deg)ring.style.setProperty('--exp',deg);
+   if(xpRow.getAttribute('aria-valuenow')!==String(Math.round(exp.fraction*100)))xpRow.setAttribute('aria-valuenow',String(Math.round(exp.fraction*100)));
+   if(tipFor){if(tipUntil&&performance.now()>tipUntil)hideTip();else fillTip();}
    // Tracker: the story first in gold, then the active side mission in blue.
    const [story,side]=tracker.children;
    for(const [card,text,fallback] of [[story,hud.storyTrack||hud.quest,'Eli’s Journey'],[side,hud.sideQuest,'Side mission']]){
@@ -153,8 +189,6 @@ export function mountHudShell({act,openHelp,examine,openAtlas,openQuests,openWel
    dash.classList.toggle('waiting',!dm.ready);
    const charges=dash.querySelector('.hud-charges');charges.hidden=dm.max<2;if(!charges.hidden)setText(charges,String(dm.charges));
    const dashLabel=dm.ready?(dm.remaining>0?`Dash, ${dm.charges} of ${dm.max} ready`:'Dash'):`Dash recharging, ${dm.seconds.toFixed(1)} seconds`;if(dash.getAttribute('aria-label')!==dashLabel)dash.setAttribute('aria-label',dashLabel);
-   const reserves=actions.querySelector('.hud-reserves');reserves.hidden=!abilityUnlocked(world,'reeds-call');
-   if(!reserves.hidden){const w=`${Math.round((world.core?.reserves??RESERVES_MAX)/reservesMax(world)*100)}%`;if(reserves.firstElementChild.style.width!==w)reserves.firstElementChild.style.width=w;}
    const keys={'core-slot-0':'tidal','core-slot-1':'whirlpool',talk:'inspect',use:rod?'fish':'use',dash:'dash'};
    for(const b of actions.querySelectorAll('[data-act]')){const k=b.querySelector('kbd');if(k)setText(k,touch?'':b.dataset.act==='use'?'Click':!keys[b.dataset.act]?'':bindingLabel(keys[b.dataset.act]).replace(/^(Left|Right) /,''));}
    // Pickups and first finds.
