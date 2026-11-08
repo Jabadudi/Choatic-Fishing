@@ -896,6 +896,12 @@ body.touch-mode #chat-box.open{bottom:auto;top:calc(8px + var(--hud-t,0px));tran
 #book-sheet .book-stats span{background:var(--bk-card);border:1px solid var(--bk-rule);border-radius:6px;padding:6px 8px;display:flex;flex-direction:column}
 #book-sheet .book-stats small{font:700 10px Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--bk-soft)}
 #book-sheet .book-stats b{font:800 18px Arial,sans-serif;font-variant-numeric:tabular-nums}
+#book-sheet .book-stats em{font:600 10px Arial,sans-serif;font-style:normal;color:var(--bk-soft)}
+#book-sheet .book-attack{position:relative;border:1px solid var(--bk-rule);border-radius:8px;background:radial-gradient(ellipse at 50% 85%,#fffaf0,#efe1c2);overflow:hidden}
+#book-sheet .book-attack canvas{display:block;width:100%;height:auto;aspect-ratio:2/1;image-rendering:pixelated}
+#book-sheet .book-attack-name{position:absolute;left:10px;top:8px;font:700 13px Georgia,serif;letter-spacing:.04em;color:var(--bk-ink)}
+#book-sheet .book-facts{margin:0;padding:0;list-style:none;display:grid;gap:3px;font:13px Arial,sans-serif}
+#book-sheet .book-facts b{display:inline-block;min-width:96px;font:700 11px Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--bk-soft)}
 #book-sheet .book-drops,#book-sheet .book-passives,#book-sheet .book-goals{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
 #book-sheet .book-drops li{display:grid;grid-template-columns:36px 1fr auto;gap:10px;align-items:center;background:var(--bk-card);border:1px solid var(--bk-rule);border-radius:6px;padding:6px 10px}
 #book-sheet .book-icon{width:36px;height:36px;display:grid;place-items:center;border-radius:6px;background:#e9d7ad;font-size:18px}
