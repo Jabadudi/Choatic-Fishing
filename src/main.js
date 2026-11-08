@@ -27,6 +27,7 @@ import {mountSkills} from './skills-ui.js';
 import {mountCodex} from './codex-ui.js';
 import {mountQuests} from './quest-ui.js';
 import {mountRadio} from './radio-ui.js';
+import {mountDungeon} from './dungeon-ui.js';
 import {setItemIcon} from './item-icons.js';
 import {TouchInput,mountMobileControls,gameScale} from './mobile.js';
 import {mountScreenControls} from './fullscreen.js';
@@ -50,7 +51,7 @@ import {installPressGuard} from './press-guard.js';
 let world=new World(Math.random,{botCount:0});
 const canvas=document.querySelector('#arena'),ctx=canvas.getContext('2d',{alpha:false});
 const touchState=new TouchInput(),touchMedia=matchMedia('(any-pointer: coarse), (max-width: 700px)');
-let hudUI=null,radioUI=null,tradeUI=null,wellUI=null,questUI=null,backpackUI=null,skillsUI=null,codexUI=null,saveUI=null,storyUI=null,settingsUI=null,hubUI=null,chatUI=null,helpUI=null;
+let hudUI=null,radioUI=null,tradeUI=null,wellUI=null,questUI=null,backpackUI=null,skillsUI=null,codexUI=null,saveUI=null,storyUI=null,settingsUI=null,hubUI=null,chatUI=null,helpUI=null,dungeonUI=null;
 installPressGuard();
 let touchMode=touchMedia.matches,touchUI=null;document.body.classList.toggle('touch-mode',touchMode);
 // Keep the explorer readable on a narrow portrait viewport.
@@ -98,6 +99,7 @@ addEventListener('keydown',e=>{
   if(matchesBinding('map',e.code)&&lobby.world?.adventure&&!e.repeat){e.preventDefault();toggleAtlas();return;}
   if(matchesBinding('radio',e.code)&&lobby.world?.adventure&&!e.repeat){e.preventDefault();radioUI.toggle();return;}
   if(atlasOpen){if(e.code==='Escape'){e.preventDefault();toggleAtlas(false);}return;}
+  if(!e.repeat&&!e.target.closest?.('input,textarea')&&dungeonUI?.key(e.code)){e.preventDefault();return;}
   // Enter opens chat; / opens it ready for a command unless the player bound / to something else.
   if((e.code==='Enter'||e.code==='Slash'&&!Object.values(preferences.value.keybinds).includes('Slash'))&&lobby.world?.adventure&&chatUI?.available&&!e.repeat&&!e.target.closest('input,textarea')){e.preventDefault();release();chatUI.show(e.code==='Slash'?'/':'');return;}
   if(e.target.closest('.music-hud, #lobby-screen')||!lobby.world)return;
@@ -178,6 +180,7 @@ function updateUI(){
  skillsUI?.update(!!lobby.world?.adventure&&!atlasOpen&&world.player.health>0);
  codexUI?.update(!!lobby.world?.adventure&&!atlasOpen&&world.player.health>0);
  questUI?.update(!!lobby.world?.adventure&&!atlasOpen&&world.player.health>0);
+ dungeonUI?.update(!!lobby.world?.adventure&&!!world.regions&&!atlasOpen&&world.player.health>0);
  hubUI?.update(!!lobby.world?.adventure&&!atlasOpen);
  chatUI?.update(!!lobby.world?.adventure&&!atlasOpen&&!currentScene(world)&&!storyUI?.open);
  setText($('close-atlas'),touchMode?'Close':`Close · ${bindingLabel('map')} / Esc`);
@@ -351,13 +354,14 @@ function refreshKeyHints(){
 refreshKeyHints();
 mountScreenControls({onChange:()=>release()});
 helpUI=mountControlsHelp({isTouch:()=>touchMode,onOpen:()=>{release();backpackUI?.close();skillsUI?.close();codexUI?.close();questUI?.close();toggleAtlas(false);},onClose:()=>{release();canvas.focus();}});
+dungeonUI=mountDungeon({getWorld:()=>world,onChange:()=>{release();canvas.focus();}});
 settingsUI=mountSettings({onOpen:()=>{release();backpackUI?.close();skillsUI?.close();codexUI?.close();questUI?.close();toggleAtlas(false);},onClose:()=>{release();if(!storyUI?.open)canvas.focus();}});
 hudUI=mountHudShell({act,openHelp:()=>helpUI.show(),examine:()=>{world.inspect();canvas.focus();},openAtlas:()=>toggleAtlas(true),openQuests:mode=>mode==='drawer'?questUI.showDrawer():questUI.showLog(mode),openWell:()=>wellUI.show(),openRadio:()=>radioUI.show(),isTouch:()=>touchMode});
 storyUI=mountStory({getWorld:()=>lobby.world,onAdvance:()=>{release();lastAtlasDraw=0;canvas.focus();},onSettings:()=>settingsUI.show(),isSettingsOpen:()=>settingsUI.open});
 document.addEventListener('click',e=>{if(e.target.closest('button')&&!e.target.closest('#story-scene,#settings-sfx-test'))playSfx('ui');});
 updateLobby();
 let accumulator=0,last=performance.now(),lastUI=0,lastRender=0,titleArtIn=false;
-function frame(now){accumulator+=Math.min((now-last)/1000,.1);last=now;while(accumulator>=1/120){if(!hudUI?.open&&!hubUI?.open&&!backpackUI?.open&&!tradeUI?.open&&!wellUI?.open&&!radioUI?.open&&!skillsUI?.open&&!codexUI?.open&&!questUI?.open&&!saveUI?.open&&!settingsUI?.open&&!helpUI?.open&&!document.hidden){if(storyAction(lobby.world))updateStoryAction(lobby.world,1/120);else if(!storyUI?.open){lobby.tick(1/120,currentInput());observeGameSounds(lobby.world);}}accumulator-=1/120;}
+function frame(now){accumulator+=Math.min((now-last)/1000,.1);last=now;while(accumulator>=1/120){if(!hudUI?.open&&!hubUI?.open&&!backpackUI?.open&&!tradeUI?.open&&!wellUI?.open&&!radioUI?.open&&!skillsUI?.open&&!codexUI?.open&&!questUI?.open&&!saveUI?.open&&!settingsUI?.open&&!helpUI?.open&&!dungeonUI?.open&&!document.hidden){if(storyAction(lobby.world))updateStoryAction(lobby.world,1/120);else if(!storyUI?.open){lobby.tick(1/120,currentInput());observeGameSounds(lobby.world);}}accumulator-=1/120;}
  if(lobby.world)world=lobby.world;
  // Cap drawing near 60fps on faster screens. Safari and Firefox round frame times to whole milliseconds, so a
  // 60Hz frame can read as 16ms; the cap must sit well below 16.7ms or it drops every third frame there.

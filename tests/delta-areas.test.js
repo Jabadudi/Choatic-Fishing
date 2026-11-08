@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import {AREAS,walkable,placesFor,transitionAt,EXAMINE_RANGE,INTERIOR_AREAS} from '../src/wilds.js';
 import {DELTA} from '../src/delta-areas.js';
 import {World} from '../src/world.js';
-import {REGION_START} from '../src/region-play.js';
 
 // Everything Eli can reach on foot from where he arrives, on a 16-unit grid.
 function reach(id,start){
@@ -13,8 +12,8 @@ function reach(id,start){
  return (x,y,r)=>{for(let gy=Math.max(0,Math.floor((y-r)/S));gy<=Math.min(rows-1,Math.ceil((y+r)/S));gy++)for(let gx=Math.max(0,Math.floor((x-r)/S));gx<=Math.min(cols-1,Math.ceil((x+r)/S));gx++)if(seen[gy*cols+gx]&&Math.hypot(gx*S-x,gy*S-y)<=r)return true;return false;};
 }
 for(const id of Object.keys(DELTA))test(`${AREAS[id].name}: every landmark and exit can be reached on foot`,()=>{
- const a=AREAS[id],links=[...a.exits,...a.portals,...placesFor(id).filter(p=>p.travel).map(p=>p.travel)];// The Regions game's first map is where a journey starts; its way on east is still to be built.
- if(id!==REGION_START)assert.ok(links.length>0,'has a way in');
+ const a=AREAS[id],links=[...a.exits,...a.portals,...placesFor(id).filter(p=>p.travel).map(p=>p.travel)];// Wilds Camp is where a Regions journey starts; its way out is the dungeon portal (src/dungeon.js), not an exit.
+ if(id!=='wilds-camp')assert.ok(links.length>0,'has a way in');
  for(const e of links){assert.ok(e.entry,`arrival in ${e.target}`);assert.ok(walkable(e.entry.x,e.entry.y,e.target),`entry into ${e.target} is walkable`);assert.equal(transitionAt(e.entry.x,e.entry.y,e.target),null,`arriving in ${e.target} does not bounce straight on`);}
  const reached=reach(id,a.spawn);
  for(const p of placesFor(id))assert.ok(reached(p.x,p.y,EXAMINE_RANGE),`${p.name} can be examined`);
@@ -23,8 +22,8 @@ for(const id of Object.keys(DELTA))test(`${AREAS[id].name}: every landmark and e
 });
 test('every exit into an atlas area has a way back',()=>{
  const ways=id=>[...AREAS[id].exits,...(AREAS[id].portals||[]),...placesFor(id).filter(p=>p.travel).map(p=>p.travel)];
- // Rooms open from a door prompt, not an exit.
- for(const a of Object.values(AREAS))if(!INTERIOR_AREAS.includes(a.id))for(const e of ways(a.id))if(DELTA[e.target])assert.ok(ways(e.target).some(b=>b.target===a.id),`${e.target} leads back to ${a.id}`);
+ // Rooms open from a door prompt, not an exit. Wilds Camp is left by its dungeon portal.
+ for(const a of Object.values(AREAS))if(!INTERIOR_AREAS.includes(a.id))for(const e of ways(a.id))if(DELTA[e.target]&&e.target!=='wilds-camp')assert.ok(ways(e.target).some(b=>b.target===a.id),`${e.target} leads back to ${a.id}`);
 });
 test('the Region 1 field maps run west to east: Arrival Bay, 1.1 Reedwater Landing, 1.2 Windchime Path',()=>{
  const w=new World(()=>.1,{adventure:true});w.areaId='landing';

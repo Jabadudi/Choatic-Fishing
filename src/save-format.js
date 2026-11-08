@@ -12,6 +12,7 @@ import {restoreCodex} from './codex-discovery.js';
 import {restoreItemsFound} from './pickups.js';
 import {SLOTS} from './spawn-tables.js';
 import {restoreRegions} from './region-play.js';
+import {restoreDungeon,saveDungeon} from './dungeon.js';
 import {createCreature,listFor,restoreSpawns,spawnable} from './spawns.js';
 import {ANIMAL_TYPES} from './entities.js';
 import {MARKS_LIMIT} from './trade.js';
@@ -52,7 +53,7 @@ export function captureSave(world,reason='autosave',now=Date.now()){
   // Bosses and their adds are not saved: a boss rises fresh when Eli comes back. Only each spot's clock is kept.
   bosses:clone(world.bosses||{}),
   // Field map clear progress; elites, like bosses, rise fresh and are not saved.
-  fieldMaps:clone(world.fieldMaps||{}),
+  fieldMaps:clone(world.fieldMaps||{}),...(world.regions?{dungeon:saveDungeon(world)}:{}),
   animals:world.animals.filter(animal=>!animal.bossId&&!animal.eliteId).map(animal=>({id:animal.id,slotId:animal.slotId,species:animal.species,shiny:!!animal.shiny,seen:!!animal.seen,...(animal.level>1?{level:animal.level}:{}),...(animal.packId?{packId:animal.packId}:{}),...Object.fromEntries(ANIMAL_FIELDS.filter(key=>animal[key]!==undefined).map(key=>[key,clone(animal[key])]))})),
   drops:clone(world.drops),nextDropId:world.nextDropId
  }};
@@ -208,7 +209,7 @@ export function restoreSave(input){
  // Eli became a warrior after these saves were made: a journey without his sword gets it back.
  if(w.story)giveStarterSword(w);
  // A Regions journey rebuilds its map's monsters from the field map state.
- if(s.regions===true)restoreRegions(w);
+ if(s.regions===true){restoreDungeon(s.dungeon,w,fail);restoreRegions(w);}
  w.message='Journey restored. Welcome back!';return w;
 }
 export function parseSave(text){if(typeof text!=='string'||text.length>5*1024*1024)fail('Save file is too large.');let save;try{save=JSON.parse(text);}catch{fail('Could not read this file. Choose a valid The Wilds JSON save.');}restoreSave(save);return save;}

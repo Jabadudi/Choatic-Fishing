@@ -154,6 +154,21 @@ function drawProp(ctx,p,t){
   case 'mine':R(ctx,'#3a3530',x-40,y-60,80,60);R(ctx,'#14110e',x-26,y-48,52,48);R(ctx,'#5a3e26',x-32,y-56,8,56);R(ctx,'#5a3e26',x+24,y-56,8,56);R(ctx,'#5a3e26',x-34,y-60,68,8);break;
   case 'lighthouse':shadow(ctx,x,y,40,12);R(ctx,'#d8d2c0',x-24,y-170,48,170);for(let i=0;i<4;i++)R(ctx,'#a0403a',x-24,y-150+i*40,48,14);R(ctx,'#3a3530',x-30,y-196,60,26);R(ctx,'#ffe9a0',x-16,y-192,32,18);break;
   case 'wreck':ctx.save();ctx.translate(x,y);ctx.rotate(p.angle||-.3);ctx.fillStyle='#3e2b1c';ctx.beginPath();ctx.ellipse(0,0,80,26,0,0,Math.PI);ctx.fill();for(let i=-3;i<=3;i++)R(ctx,'#5a3e26',i*20-3,-30,6,30);R(ctx,'#5a3e26',-4,-90,8,90);ctx.restore();break;
+  // The dungeon portal in Wilds Camp: a mossy stone arch round a slowly swirling blue light.
+  case 'portal':{const pulse=.5+.5*Math.sin(t*2.2);
+   ctx.save();const g=ctx.createRadialGradient?ctx.createRadialGradient(x,y-62,6,x,y-58,64):null;
+   if(g){g.addColorStop(0,'#f2fdff');g.addColorStop(.35,'#7fe0ff');g.addColorStop(.8,'#1f6fa8');g.addColorStop(1,'#0c2f52');ctx.fillStyle=g;}else ctx.fillStyle='#3aa6d8';
+   ctx.beginPath();ctx.moveTo(x-38,y);ctx.lineTo(x-38,y-70);ctx.arc(x,y-70,38,Math.PI,0);ctx.lineTo(x+38,y);ctx.closePath();ctx.fill();
+   ctx.strokeStyle=`rgba(220,250,255,${.35+.3*pulse})`;ctx.lineWidth=2;for(let i=0;i<3;i++){ctx.beginPath();ctx.ellipse(x,y-58,8+i*10+pulse*4,14+i*14+pulse*5,t*.8+i,0,Math.PI*2);ctx.stroke();}
+   ctx.fillStyle=`rgba(127,224,255,${.18+.12*pulse})`;ctx.beginPath();ctx.ellipse(x,y-58,70,86,0,0,Math.PI*2);ctx.fill();
+   ctx.restore();
+   // The stone arch.
+   ctx.fillStyle='#6f6a60';ctx.fillRect(x-52,y-74,16,74);ctx.fillRect(x+36,y-74,16,74);
+   ctx.strokeStyle='#6f6a60';ctx.lineWidth=16;ctx.beginPath();ctx.arc(x,y-72,44,Math.PI,0);ctx.stroke();
+   ctx.strokeStyle='#8e887a';ctx.lineWidth=4;ctx.beginPath();ctx.arc(x,y-74,48,Math.PI*1.05,-.05);ctx.stroke();
+   ctx.fillStyle='#5f8a4a';ctx.fillRect(x-52,y-30,9,12);ctx.fillRect(x+43,y-52,9,10);ctx.fillRect(x-20,y-122,14,6);
+   for(const [dx,dy] of [[-44,-6],[44,-4]]){ctx.fillStyle='#8e887a';ctx.fillRect(x+dx-10,y+dy-4,20,8);}
+   break;}
   case 'gate':for(const dx of [-50,40]){R(ctx,'#4a301c',x+dx,y-70,10,70);}R(ctx,'#8a6038',x-56,y-76,112,8);break;
   case 'dock':R(ctx,'#4f3a26',x-16,y-10,32,90);for(let i=0;i<9;i++)R(ctx,i%2?'#9a7a52':'#b39066',x-14,y-8+i*10,28,8);break;
  }

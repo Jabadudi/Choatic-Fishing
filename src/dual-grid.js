@@ -18,6 +18,7 @@ export const DUAL_GRID_SHEETS=Object.freeze({plateauTop:'plateau-top',cliffWall:
 export const GROUND_CELL=48;
 // base is a dual-grid sheet whose fully filled cell repeats under everything.
 export const DUAL_GROUND=Object.freeze({glasswater:{base:'meadowGrass',layers:['sand','dirtPath','water','deepWater']},
+ 'wilds-camp':{base:'plateauTop',baseCell:96,layers:['sand','dirtPath','water','deepWater']},
  'dewdrop-meadow':{base:'plateauTop',baseCell:96,layers:['sand','dirtPath','water','deepWater']},
  'mossroot-trail':{base:'plateauTop',baseCell:96,layers:['sand','dirtPath','water','deepWater']},
  'saltspray-shore':{base:'plateauTop',baseCell:96,layers:['sand','dirtPath','water','deepWater']}});
