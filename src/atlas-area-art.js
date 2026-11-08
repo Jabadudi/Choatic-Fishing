@@ -158,8 +158,8 @@ function drawProp(ctx,p,t){
   case 'portal':{const pulse=.5+.5*Math.sin(t*2.2);
    // Netanel's painted portal: 16 frames of the swirl at 10 a second, with a soft glow on the ground round it.
    if(drawPropSprite(ctx,`portal/${Math.floor(t*10)%16}`,{x:-1e5,y:-1e5,w:1,h:1})){
-    ctx.save();ctx.fillStyle=`rgba(127,224,255,${.14+.1*pulse})`;ctx.beginPath();ctx.ellipse(x,y-64,82,92,0,0,Math.PI*2);ctx.fill();ctx.restore();
-    drawPropSprite(ctx,`portal/${Math.floor(t*10)%16}`,{x,y:y+4,w:134,h:147});portalName(ctx,p,x,y-152);break;
+    ctx.save();ctx.fillStyle=`rgba(127,224,255,${.14+.1*pulse})`;ctx.beginPath();ctx.ellipse(x,y-48,62,69,0,0,Math.PI*2);ctx.fill();ctx.restore();
+    drawPropSprite(ctx,`portal/${Math.floor(t*10)%16}`,{x,y:y+4,w:100,h:110});portalName(ctx,p,x,y-118);break;
    }
    ctx.save();const g=ctx.createRadialGradient?ctx.createRadialGradient(x,y-62,6,x,y-58,64):null;
    if(g){g.addColorStop(0,'#f2fdff');g.addColorStop(.35,'#7fe0ff');g.addColorStop(.8,'#1f6fa8');g.addColorStop(1,'#0c2f52');ctx.fillStyle=g;}else ctx.fillStyle='#3aa6d8';
