@@ -1,5 +1,5 @@
 import {drawSlime} from './slime-art.js';
-import {drawStump} from './stump-art.js';
+import {drawSheetCreature,sheetCreature} from './sheet-creature-art.js';
 import {heightAt} from './terrain-height.js';
 import {drawEntitySprite,spriteHasArt} from './sprites.js';
 import {BEHAVIOR_LABELS,facingFor} from './entities.js';
@@ -70,7 +70,7 @@ export function drawWildlife(c,a){
  if(a.visibility!==undefined&&a.health>0)c.globalAlpha*=a.visibility;
  // A slime is drawn from its painted poses in src/slime-art.js.
  if(a.species==='slime'){drawSlime(c,a);c.restore();return;}
- if(a.species==='stump'){drawStump(c,a);c.restore();return;}
+ if(sheetCreature(a)){drawSheetCreature(c,a);c.restore();return;}
  if(drawEntitySprite(c,a.spriteId,{x,y,...animalPose(a),facingX:a.direction.x,direction:facingFor(a.direction.x,a.direction.y)})){c.restore();return;}
  // A creature with its own sheet that has not arrived yet shows only its shadow on the ground, not a stand-in shape.
  if(spriteHasArt(a.spriteId)&&!['deer','turtle'].includes(a.species)&&a.spriteId!=='nightwalker'){
@@ -97,7 +97,7 @@ export function drawWildlife(c,a){
  c.restore();
 }
 // How high the health bar sits above each shadow walker kind's feet.
-const STATUS_HEIGHT={slime:44,stump:64,'drowned-captain':86,greyhorn:134,'hollow-stag':98,'gloam-boar':42,stoneshade:96,whisperer:76,'mire-walker':64,'drowned-soldier':64,'ash-archer':62,inkeel:44};
+const STATUS_HEIGHT={slime:44,stump:38,'shore-crab':44,'boss-crab':112,'drowned-captain':86,greyhorn:134,'hollow-stag':98,'gloam-boar':42,stoneshade:96,whisperer:76,'mire-walker':64,'drowned-soldier':64,'ash-archer':62,inkeel:44};
 export function drawAnimalStatus(c,world){
  for(const a of world.animals){
   if(a.health<=0||a.areaId!==world.areaId)continue;
@@ -111,7 +111,7 @@ export function drawAnimalStatus(c,world){
   const big=a.boss||a.elite,half=a.boss?60:a.elite?42:23;
   c.fillStyle='#19362de8';c.fillRect(a.x-half,y,half*2,big?8:6);c.fillStyle=a.boss?'#d8705a':a.elite?'#e0a640':'#c8d78a';c.fillRect(a.x-half+1,y+1,(half*2-2)*a.health/a.maxHealth,big?6:4);
   c.font=big?'bold 13px monospace':'12px monospace';c.textAlign='center';const lv=a.level?`Lv ${a.level} `:'';
-  const tag=a.boss?`${a.name} · World boss`:a.elite?`${lv}${a.name} · Elite`:world.regions?`${lv}${a.name}`:`${lv}${a.name} · ${BEHAVIOR_LABELS[a.behavior]||a.behavior}`;
+  const tag=a.boss?`${a.name} · World boss`:a.elite?`${lv}${a.name} · ${world.regions?'Boss':'Elite'}`:world.regions?`${lv}${a.name}`:`${lv}${a.name} · ${BEHAVIOR_LABELS[a.behavior]||a.behavior}`;
   // A shiny's or an elite's tag is gold with a dark edge so it reads on bright grass.
   const gold=a.shiny||a.elite;if(gold){c.lineWidth=3;c.strokeStyle='#10261d';c.strokeText(tag,a.x,y-5);}
   c.fillStyle=gold?SHINY_GOLD:'#fff0cd';c.fillText(tag,a.x,y-5);

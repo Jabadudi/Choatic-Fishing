@@ -108,7 +108,7 @@ function drawFieldProgress(ctx,world,view){
  if(f.species){drawRankTracker(ctx,f,view);return;}
  const W=view.right-view.left,size=Math.max(11,Math.min(14,W*.011)),x=view.left+W/2,y=view.top+size*2.2;
  // A bunch map (Regions) has no elite: its pill counts its own monsters, then says the gate is open.
- const text=f.species?(f.clears?`${f.code} · Cleared · Rank ${f.best} · The gate east is open`:`${f.code} · Slimes ${f.kills}/${f.goal}`):`${f.code} · Monsters ${f.kills}/${f.goal} · ${f.eliteName} ${f.elite?'✓':'—'}${f.best?` · Best ${f.best}`:''}`;
+ const text=f.species?(f.clears?`${f.code} · Cleared · Rank ${f.best} · The gate east is open`:`${f.code} · Monsters ${f.kills}/${f.goal}`):`${f.code} · Monsters ${f.kills}/${f.goal} · ${f.eliteName} ${f.elite?'✓':'—'}${f.best?` · Best ${f.best}`:''}`;
  ctx.save();ctx.font=`bold ${Math.round(size)}px Georgia, serif`;ctx.textAlign='center';ctx.textBaseline='middle';
  const w=(ctx.measureText?.(text)?.width||text.length*size*.6)+size*1.6,h=size*1.9;
  ctx.fillStyle='#1d2a22cc';ctx.fillRect(x-w/2,y-h/2,w,h);ctx.strokeStyle='#c9a85a';ctx.lineWidth=1;ctx.strokeRect(x-w/2+.5,y-h/2+.5,w-1,h-1);

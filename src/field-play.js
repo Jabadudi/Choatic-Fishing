@@ -17,12 +17,17 @@ export const createFieldMaps=()=>Object.fromEntries(Object.entries(FIELD_MAPS).m
 export function createBunches(world,id){
  const f=fieldMap(id),state=stateFor(world,id);if(!f?.bunches)return [];
  const down=new Set(state?.defeated||[]),out=[],width=areaFor(id).width;
- f.bunches.forEach(([x,y,count],b)=>{
+ // A bunch may name its own kind and level ([x, y, count, species, {level, boss}]): a map's boss stands alone that
+ // way, counted in the kill goal like everyone else.
+ f.bunches.forEach(([x,y,count,species=f.species,extra={}],b)=>{
   for(let i=0;i<count;i++){
    const slimeId=`${id}:${b+1}-${i+1}`;if(down.has(slimeId))continue;
    const angle=i/count*Math.PI*2+b*.9,r=count>1?46:0;
-   const a=createCreature({id:slimeId,areaId:id,habitat:'land',x:x+Math.cos(angle)*r,y:y+Math.sin(angle)*r*.7},f.species,{id:slimeId,seed:(b*977+i*131+17)>>>0,index:i});
-   if(!a)continue;applyLevel(a,levelAt(id,x,width));a.packId=`${id}:${b+1}`;a.bunch=true;out.push(a);
+   const a=createCreature({id:slimeId,areaId:id,habitat:'land',x:x+Math.cos(angle)*r,y:y+Math.sin(angle)*r*.7},species,{id:slimeId,seed:(b*977+i*131+17)>>>0,index:i});
+   if(!a)continue;applyLevel(a,extra.level??levelAt(id,x,width));a.packId=`${id}:${b+1}`;a.bunch=true;
+   // The boss gets the elite's long gold bar and name, a short knockdown, and a shell that halves every hit until then.
+   if(extra.boss)Object.assign(a,{elite:true,armor:extra.armor??.5});
+   out.push(a);
   }
  });
  return out;

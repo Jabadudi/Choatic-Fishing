@@ -18,7 +18,8 @@ export const GROUND_CELL=48;
 // base is a dual-grid sheet whose fully filled cell repeats under everything.
 export const DUAL_GROUND=Object.freeze({glasswater:{base:'meadowGrass',layers:['sand','dirtPath','water','deepWater']},
  'dewdrop-meadow':{base:'plateauTop',layers:['sand','dirtPath','water','deepWater']},
- 'mossroot-trail':{base:'plateauTop',layers:['sand','dirtPath','water','deepWater']}});
+ 'mossroot-trail':{base:'plateauTop',layers:['sand','dirtPath','water','deepWater']},
+ 'saltspray-shore':{base:'plateauTop',layers:['sand','dirtPath','water','deepWater']}});
 const sheets=new Map(),listeners=new Set();
 onTexturePackChange(()=>{sheets.clear();listeners.forEach(fn=>fn());});
 export function dualGridSheet(kind,invalidate=()=>{}){

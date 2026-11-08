@@ -9,7 +9,7 @@ import {ANIMAL_TYPES} from './entities.js';
 import {createBunches,mapCleared,fieldProgress} from './field-play.js';
 import {giveStarterSword} from './warrior.js';
 export const REGION_START='dewdrop-meadow';
-// The Regions maps in order, west to east: 1.1 Dewdrop Meadow, 1.2 Mossroot Trail.
+// The Regions maps in order, west to east: 1.1 Dewdrop Meadow, 1.2 Mossroot Trail, 1.3 Saltspray Shore.
 export const REGION_MAPS=Object.freeze(Object.keys(FIELD_MAPS).filter(id=>FIELD_MAPS[id].bunches).sort((a,b)=>FIELD_MAPS[a].code.localeCompare(FIELD_MAPS[b].code,undefined,{numeric:true})));
 // Every map's monsters, each in its own area; only the map Eli stands in moves and fights.
 const allBunches=world=>REGION_MAPS.flatMap(id=>createBunches(world,id));
