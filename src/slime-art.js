@@ -1,6 +1,7 @@
 // Chibi slimes for the Regions game, drawn in code: a round jelly dome with a glossy shine, big sparkly eyes and pink
 // cheeks. It squashes and stretches as it hops, rears back through its windup, and splats flat when defeated.
 // Each slime gets one of a few soft colours from its seed. Drawing only; the slime's stats are in src/entities.js.
+import {castShadow} from './ground-shadow.js';
 const COLORS=[
  {body:'#7fd36a',dark:'#4f9f45',light:'#c4f3a6'},
  {body:'#6fc3e8',dark:'#3f8cb8',light:'#bfe9fb'},
@@ -21,7 +22,7 @@ export function drawSlime(c,a){
  const x=Math.round(a.x),y=Math.round(a.y),R=17;
  c.save();c.translate(x,y);
  // Shadow on the ground, smaller while the slime is in the air.
- c.fillStyle='#0000002e';c.beginPath();c.ellipse(0,1,R*1.1*(1-lift/40),R*.38*(1-lift/40),0,0,Math.PI*2);c.fill();
+ if(!dead)castShadow(c,0,1,R*1.05*(1-lift/40),{strength:1-lift/30});
  c.translate(0,-lift);if(a.direction?.x<0)c.scale(-1,1);c.scale(sx,sy);
  // Body: a jelly dome, darker at the rim.
  const g=c.createRadialGradient?c.createRadialGradient(-4,-16,2,0,-9,R*1.5):null;
