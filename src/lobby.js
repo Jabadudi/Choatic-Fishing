@@ -73,7 +73,7 @@ export class Lobby {
  action(action,input){if(!this.world)return;if(this.mode==='guest')this.send(this.connection,{type:'action',action,input});else applyAction(this.world,this.world.player.id,action,input);}
  tick(dt,input){
   this.sendClock+=dt;
-  if(this.mode==='guest'&&this.world){const key=[input.left,input.right,input.up,input.down,input.held].join(':');if(key!==this.lastInputKey&&this.send(this.connection,{type:'input',input})){this.lastInputKey=key;this.sendClock=0;}}
+  if(this.mode==='guest'&&this.world){const key=[input.left,input.right,input.up,input.down,input.held,input.attackHeld].join(':');if(key!==this.lastInputKey&&this.send(this.connection,{type:'input',input})){this.lastInputKey=key;this.sendClock=0;}}
   if(this.mode==='solo'){this.world.update(dt,input);return;}
   if(this.mode==='host'&&this.world){
    for(const id of Object.keys(this.inputs))if(performance.now()-(this.lastSeen[id]||0)>500)this.inputs[id]=neutralInput();

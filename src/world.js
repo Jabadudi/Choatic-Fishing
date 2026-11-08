@@ -9,7 +9,7 @@ import {Fishing,ITEMS} from './fishing.js';
 import {Progression,XP} from './progression.js';
 import {Inventory,canUseItem,itemCount,stackable,HEALING} from './inventory.js';
 import {MERCHANTS,findMarks,marksLabel} from './trade.js';
-import {attack,special,updateProjectiles,startRush,updateRush,WEAPON_RUSHES} from './combat.js';
+import {attack,special,updateProjectiles,startRush,updateRush,WEAPON_RUSHES,holdRepeats} from './combat.js';
 import {hitStopDt,updateCombo} from './combo.js';
 import {createBosses,updateBosses} from './bosses.js';
 import {createFieldMaps,updateFieldMaps} from './field-play.js';
@@ -292,6 +292,9 @@ export class World {
   if(rush&&input.held&&this.fishing.state==='idle'&&p.health>0){p.holdTime=(p.holdTime||0)+dt;if(p.holdTime>=rush.hold&&!p.holdSpent&&startRush(this,p,this.inventory.item.name))p.holdSpent=true;}
   else{p.holdTime=0;p.holdSpent=false;}
   updateRush(this,p,dt);
+  // Holding the attack button keeps a sword or bow swinging/firing as soon as it recovers, so the combo carries on.
+  // Boss weapons keep their hold-to-rush move instead.
+  if(!rush&&input.attackHeld&&holdRepeats(this.inventory.selected>1?this.inventory.item:null)&&!p.rush&&p.cooldown<=0&&this.fishing.state==='idle'&&p.health>0)this.useItem();
   if(!dashing&&!p.rush&&p.health>0&&(this.fishing.state==='idle'||this.fishing.state==='reeling')){const analog=Number.isFinite(input.moveX)&&Number.isFinite(input.moveY),x=analog?input.moveX:Number(input.right)-Number(input.left),y=analog?input.moveY:Number(input.down)-Number(input.up),len=Math.max(1,Math.hypot(x,y)),speed=195*this.progression.speedMultiplier*waterstepSpeed(this)*storySpeed(this)*(p.slowRemaining>0?.5:1);if(x||y){p.facing=facingFor(x,y);p.steppedAt=this.elapsed;}this.move(x/len*speed*dt,y/len*speed*dt,this.fishing.state==='reeling');}
   if(p.health>0)this.advanceFishing(p,dt,input.held);
  }

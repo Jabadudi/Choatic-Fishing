@@ -38,6 +38,8 @@ export const WEAPON_RUSHES=Object.freeze({
  'Captain’s Sabre':{name:'Tide Lunge',hold:.45,speed:760,time:.28,damage:56,knockback:240,cooldown:3},
  'Greyhorn Spear':{name:'Antler Charge',hold:.45,speed:620,time:.42,damage:50,knockback:340,cooldown:3}
 });
+// Weapons that keep attacking while the attack button is held: blades and bows, not thrown bombs or junk.
+export const holdRepeats=item=>!!item&&!WEAPON_RUSHES[item.name]&&['melee','projectile'].includes(WEAPONS[item.name]?.kind)&&item.name!=='Old Boot';
 export function damage(world,target,amount,source,angle,knockback=0,origin=source){
  if(world.adventure&&!canReach(origin,target,world.areaId))return false;
  if(target.entityType==='npc')return false;

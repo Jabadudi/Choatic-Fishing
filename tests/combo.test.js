@@ -104,3 +104,24 @@ test('Stun is a stat: base chance, raised by familiars and area sets, capped',()
  p.familiar={stun:.06};p.collection={health:0,damage:0,stun:.05};assert.ok(Math.abs(p.stun-(STUN.base+.11))<1e-9);
  p.familiar={stun:5};assert.equal(p.stun,STUN.max);
 });
+
+// Puts a weapon in Eli's hands from the first hotbar slot.
+const hold=(w,name)=>{const inv=w.inventory;inv.receive({name});inv.assignHotbar(inv.allItems.at(-1).id,2);inv.equip(2);};
+
+test('holding the attack button keeps the sword swinging through the whole combo, and letting go stops it',()=>{
+ const {w,walker}=setup();
+ hold(w,'Iron Sword');
+ const held={...idle(w),attackHeld:true,aim:{x:walker.x,y:walker.y}},steps=new Set();
+ const start=walker.health;
+ for(let t=0;t<3;t+=1/60){w.update(1/60,held);steps.add(w.player.comboStep);}
+ assert.ok(walker.health<start,'held swings land');assert.deepEqual([...steps].filter(Boolean).sort(),[1,2,3]);
+ const after=walker.health;run(w,2);assert.equal(walker.health,after,'no swing once the button is up');
+});
+
+test('holding attack with the bow keeps loosing arrows',()=>{
+ const {w}=setup();
+ hold(w,'Hunting Bow');
+ let shots=0;const held={...idle(w),attackHeld:true};
+ for(let t=0;t<2.5;t+=1/60){const before=w.projectiles.length;w.update(1/60,held);if(w.projectiles.length>before)shots++;}
+ assert.ok(shots>=3,`expected several arrows, got ${shots}`);
+});
