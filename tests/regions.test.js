@@ -4,7 +4,7 @@ import {World} from '../src/world.js';
 import {AREAS} from '../src/wilds.js';
 import {FIELD_MAPS} from '../src/field-maps.js';
 import {fieldProgress} from '../src/field-play.js';
-import {REGION_START,GATE_REACH} from '../src/region-play.js';
+import {REGION_START,REGION_MAPS,GATE_REACH} from '../src/region-play.js';
 import {damageAnimal} from '../src/wildlife.js';
 import {captureSave,restoreSave,requireGame} from '../src/save-format.js';
 import {STARTER_SWORD} from '../src/warrior.js';
@@ -58,4 +58,24 @@ test('a Regions save keeps the slimes that are down, and the Regions page refuse
  const bad=structuredClone(save);bad.state.fieldMaps[REGION_START].defeated.push('dewdrop-meadow:99-1');assert.throws(()=>restoreSave(bad),/field map/);
  const old=new World(()=>.3,{adventure:true,story:true});old.journeyId='old';const story=captureSave(old);
  try{requireGame('regions');assert.throws(()=>restoreSave(story),/earlier test build/);assert.ok(restoreSave(save).regions);}finally{requireGame(null);}
+});
+
+test('1.1 opens east into 1.2 Mossroot Trail once cleared; its stumplings are its own kill goal',()=>{
+ const w=regions(),a=AREAS[REGION_START],next='mossroot-trail',f=FIELD_MAPS[next];
+ assert.deepEqual(REGION_MAPS,[REGION_START,next]);
+ // Shut while slimes are left: Eli stays in 1.1 at the edge.
+ Object.assign(w.player,{x:a.width-10,y:380});w.moveActor(w.player,40,0);
+ assert.equal(w.areaId,REGION_START);assert.match(w.message,/gate is sealed/);
+ for(const s of slimes(w))kill(w,s);
+ Object.assign(w.player,{x:a.width-10,y:380});w.moveActor(w.player,40,0);
+ assert.equal(w.areaId,next);assert.ok(w.player.x<300);assert.match(w.message,/^1\.2 Mossroot Trail · Defeat every stumpling/);
+ const stumps=w.wildlife.filter(s=>s.areaId===next&&s.health>0);
+ assert.ok(stumps.every(s=>s.species==='stump'&&s.level>=2&&s.level<=4));
+ assert.equal(stumps.length,f.clear.kills);assert.equal(fieldProgress(w).goal,stumps.length);assert.equal(fieldProgress(w).kills,0);
+ // Back west is always open, and 1.1 stays cleared.
+ Object.assign(w.player,{x:10,y:380});w.moveActor(w.player,-40,0);assert.equal(w.areaId,REGION_START);assert.match(w.message,/Cleared/);
+ // Saves remember both maps.
+ w.areaId=next;kill(w,stumps[0]);const r=restoreSave(captureSave(w));
+ assert.equal(r.areaId,next);assert.equal(r.wildlife.filter(s=>s.areaId===next&&s.health>0).length,stumps.length-1);
+ assert.equal(r.wildlife.filter(s=>s.areaId===REGION_START&&s.health>0).length,0);
 });

@@ -9,9 +9,13 @@
 // world units, and do not come back: the kill goal is the number of slimes placed, so clearing the map means every
 // slime is down. No elite yet.
 const DEWDROP_BUNCHES=Object.freeze([[620,400,3],[1000,250,4],[1380,470,3],[1760,330,4],[2150,490,4],[2540,280,3],[2920,470,4],[3320,320,3],[3660,470,4]]);
+// Regions 1.2 Mossroot Trail: stumplings in bunches the same way, a little stronger (Lv 2-4).
+const MOSSROOT_BUNCHES=Object.freeze([[600,420,3],[1080,300,4],[1400,470,3],[1760,300,4],[2120,460,4],[2500,290,3],[2880,470,4],[3280,320,4],[3640,450,3]]);
 export const FIELD_MAPS=Object.freeze({
  'dewdrop-meadow':Object.freeze({code:'1.1',region:1,levels:[1,2],species:'slime',bunches:DEWDROP_BUNCHES,elite:null,
   clear:Object.freeze({kills:DEWDROP_BUNCHES.reduce((n,b)=>n+b[2],0),reward:Object.freeze({wishstones:1,marks:30})})}),
+ 'mossroot-trail':Object.freeze({code:'1.2',region:1,levels:[2,4],species:'stump',bunches:MOSSROOT_BUNCHES,elite:null,
+  clear:Object.freeze({kills:MOSSROOT_BUNCHES.reduce((n,b)=>n+b[2],0),reward:Object.freeze({wishstones:1,marks:40})})}),
  landing:Object.freeze({code:'1.1',region:1,levels:[1,2],pack:[3,4],
   // A giant shore crab on the Drowned Causeway. Its shell halves every hit until a combo finisher knocks it down.
   elite:Object.freeze({id:'mudshell',species:'crab',name:'Mudshell',level:3,x:3600,y:1350,scale:2.4,health:3,damage:1.6,armor:.5,

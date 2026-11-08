@@ -48,6 +48,10 @@ export const ANIMAL_TYPES=Object.freeze({
  // four (src/field-maps.js); weak alone, a nuisance together. Drawn from its painted poses (src/slime-art.js).
  slime:{behavior:BEHAVIORS.AGGRESSIVE,name:'Slime',maxHealth:34,radius:14,habitat:'land',speed:30,fearRange:0,
   noticeRange:210,noticeDelay:.5,loseRange:420,leashRange:520,chaseSpeed:96,attackDamage:7,attackRange:46,attackWindup:.5,attackRecover:.45,attackCooldown:1.5,huntXp:16,loot:'slime',familiar:false},
+ // Regions 1.2: a walking tree stump with a sprout on top. Slower than a slime and tougher, it plods up and swings a
+ // root-arm. Stands in bunches like the slimes. Drawn from its painted sheet (src/stump-art.js).
+ stump:{behavior:BEHAVIORS.AGGRESSIVE,name:'Stumpling',maxHealth:52,radius:16,habitat:'land',speed:24,fearRange:0,
+  noticeRange:220,noticeDelay:.6,loseRange:420,leashRange:520,chaseSpeed:82,attackDamage:9,attackRange:50,attackWindup:.6,attackRecover:.5,attackCooldown:1.7,huntXp:24,loot:'stump',familiar:false},
  // The shadow walker kinds: the same hunt, each with its own strengths. All stay slower than Eli at a run.
  // Hollow Stag: an infected deer or elk. Gallops after Eli (its sheet has a run row), low health, antler swing.
  'hollow-stag':{...monster('Hollow Stag'),maxHealth:60,radius:18,speed:48,noticeRange:260,chaseSpeed:165,attackDamage:14,attackRange:64,attackWindup:.45,attackRecover:.35,attackCooldown:1.3,huntXp:45,loot:'hollow-stag'},

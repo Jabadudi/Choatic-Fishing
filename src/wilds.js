@@ -1,6 +1,7 @@
 import {drawQuarryActorShadow} from './quarry-light.js';
 import {castShadow,shadowPass,muteShadows,contactShadow} from './ground-shadow.js';
 import {slimeShadow} from './slime-art.js';
+import {stumpShadow} from './stump-art.js';
 import {elevationFor,heightAt,canTraverse,canReach,projectGround,unprojectGround} from './terrain-height.js';
 export {elevationFor,heightAt,canTraverse,canReach,projectGround,unprojectGround};
 import {elevationBands,drawElevationBand} from './elevation-art.js';
@@ -421,7 +422,7 @@ export function drawDepthSorted(ctx,world,view,actors,drawActor,{still=false,ter
   const x=it.ref?.x??it.x,y=it.ref?.y??it.oy;s.save();s.translate(0,-heightAt(x,y,id));
   if(it.kind==='atlas')propShadow(s,it.ref);
   else if(it.kind==='actor'){const a=it.ref;
-   if(a.species==='slime'){const o=slimeShadow(a);if(o)contactShadow(s,o.x,o.y,o.rx,o.ry);}
+   if(a.species==='slime'||a.species==='stump'){const o=(a.species==='slime'?slimeShadow:stumpShadow)(a);if(o)contactShadow(s,o.x,o.y,o.rx,o.ry);}
    else if((a===p||a.npc||a.remote||a.cutscene)&&(a.health===undefined||a.health>0))contactShadow(s,Math.round(a.x),Math.round(a.y)+14,11,4);}
   s.restore();}});
  muteShadows(!!cast);
