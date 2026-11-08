@@ -297,7 +297,8 @@ for(const id of ['listening-tree','fallen-giant','hollow-tree','goldleaf-tree','
  'tent','cart','log-stack','signpost','heron-nest','turtle-shell','gate','chimes-post','quarry-block','walk-h','walk-v','walk-platform','stone-bridge-h',
  'stone-bridge-v','stepping-stones','stepping-stone','rope-bridge','broken-watch','grey-spire','great-bridge','spring-pool','hollow-rock','drowned-colonnade',
  // Layered-world set (scripts/prepare-layered-props.py), the art style the game is moving to.
- 'log-cabin','round-oak','round-bush','daisies','cattails','water-lily','grass-rock','log-pile','wood-barrel','plank-walk','plank-walk-start','plank-walk-end'])PROPS[`atlas/${id}`]=`props/atlas/${id}.webp`;
+ 'log-cabin','round-oak','round-bush','daisies','cattails','water-lily','grass-rock','log-pile','wood-barrel','plank-walk','plank-walk-start','plank-walk-end',
+ 'grass-tuft','grass-clump','grass-sprigs','grass-tall','white-flowers','yellow-flowers','lavender','pink-flowers','grey-rock','pebbles','sandstone-rock','mossy-rock','leafy-bush','dark-bush','small-bush','berry-bush'])PROPS[`atlas/${id}`]=`props/atlas/${id}.webp`;
 for(const id of ['rabbit','fox','deer','boar','elk','bear','heron','crab','goat','otter','duck','pike','seal','turtle','eel','shadow-walker','moonfang','rimejaw','flitlynx'])PROPS[`shard-${id}`]=`items/shard-${id}.webp`;
 
 // Editor-selectable scenery: visual bounds only; PROP_SOLID still owns collision.
@@ -306,8 +307,10 @@ PROPS['atlas/stonecutting-bench']='props/atlas/stonecutting-bench.webp';
 export const ATLAS_PROP_ART={
  crane:{crane:['atlas/crane',120,120],'quarry-gantry':['atlas/quarry-gantry',220,195]},
  tree:{oak:['atlas/oak',150,118],pine:['atlas/pine',100,124],birch:['atlas/birch',80,118],'dead-tree':['atlas/dead-tree',110,114],'chime-tree':['atlas/chime-tree',150,140],'goldleaf-tree':['atlas/goldleaf-tree',150,160],'hollow-tree':['atlas/hollow-tree',150,160],'round-oak':['atlas/round-oak',150,160]},
- bush:{bush:['atlas/bush',60,40],fern:['atlas/fern',56,30],reeds:['atlas/reeds',56,38],'marsh-shrub':['atlas/marsh-shrub',60,26],'flower-box':['flower-box',64,38],'round-bush':['atlas/round-bush',62,46],daisies:['atlas/daisies',42,30],cattails:['atlas/cattails',34,40],'water-lily':['atlas/water-lily',38,29]},
- boulder:{'mossy-boulder':['atlas/mossy-boulder',50,38],'rock-cluster':['atlas/rock-cluster',46,26],'sea-rock':['atlas/sea-rock',56,34],'mossy-log':['atlas/mossy-log',66,28],'quarry-block':['atlas/quarry-block',58,42],'grass-rock':['atlas/grass-rock',56,32]},
+ bush:{bush:['atlas/bush',60,40],fern:['atlas/fern',56,30],reeds:['atlas/reeds',56,38],'marsh-shrub':['atlas/marsh-shrub',60,26],'flower-box':['flower-box',64,38],'round-bush':['atlas/round-bush',62,46],daisies:['atlas/daisies',42,30],cattails:['atlas/cattails',34,40],'water-lily':['atlas/water-lily',38,29],
+  // Netanel's meadow sheet (scripts/prepare-meadow-props.py): grass tufts, wildflowers and bushes.
+  'grass-tuft':['atlas/grass-tuft',29,28],'grass-clump':['atlas/grass-clump',46,31],'grass-sprigs':['atlas/grass-sprigs',40,24],'grass-tall':['atlas/grass-tall',35,37],'white-flowers':['atlas/white-flowers',39,29],'yellow-flowers':['atlas/yellow-flowers',37,34],'lavender':['atlas/lavender',43,40],'pink-flowers':['atlas/pink-flowers',38,33],'leafy-bush':['atlas/leafy-bush',66,57],'dark-bush':['atlas/dark-bush',78,50],'small-bush':['atlas/small-bush',60,42],'berry-bush':['atlas/berry-bush',70,50]},
+ boulder:{'mossy-boulder':['atlas/mossy-boulder',50,38],'rock-cluster':['atlas/rock-cluster',46,26],'sea-rock':['atlas/sea-rock',56,34],'mossy-log':['atlas/mossy-log',66,28],'quarry-block':['atlas/quarry-block',58,42],'grass-rock':['atlas/grass-rock',56,32],'grey-rock':['atlas/grey-rock',52,41],'pebbles':['atlas/pebbles',44,28],'sandstone-rock':['atlas/sandstone-rock',58,36],'mossy-rock':['atlas/mossy-rock',58,41]},
  hut:{'fisher-hut':['atlas/fisher-hut',110,80],'lookout-hut':['atlas/lookout-hut',110,100],'boatwright-workshop':['atlas/boatwright-workshop',150,140],'rest-shelter':['rest-shelter',110,88],'log-cabin':['atlas/log-cabin',170,162]},
  boat:{'rowing-boat':['rowing-boat',100,60],dinghy:['atlas/dinghy',110,48],'moored-rowboat':['rowing-boat',100,60]},
  bench:{'stonecutting-bench':['atlas/stonecutting-bench',132,96],'plank-bench':['plank-bench',80,36],'bench-backrest':['bench-backrest',80,46],'fishing-seat':['fishing-seat',46,44]},

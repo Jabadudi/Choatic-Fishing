@@ -95,7 +95,7 @@ export function atlasPropArt(p){
  return PAINTED[p.kind];
 }
 // Plants that lie flat on the ground or the water cast no shadow.
-const FLAT_ART=new Set(['daisies','water-lily','cattails','reeds']);
+const FLAT_ART=new Set(['daisies','water-lily','cattails','reeds','grass-tuft','grass-clump','grass-sprigs','grass-tall','white-flowers','yellow-flowers','lavender','pink-flowers']);
 function drawProp(ctx,p,t){
  const x=Math.round(p.x),y=Math.round(p.y),art=atlasPropArt(p);
  if(art){
