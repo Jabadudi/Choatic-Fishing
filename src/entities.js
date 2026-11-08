@@ -45,7 +45,7 @@ export const ANIMAL_TYPES=Object.freeze({
  'shadow-walker':{behavior:BEHAVIORS.AGGRESSIVE,spriteId:'nightwalker',name:'Shadow Walker',maxHealth:80,radius:16,habitat:'land',speed:38,fearRange:0,
   noticeRange:240,noticeDelay:.6,loseRange:460,leashRange:620,chaseSpeed:122,attackDamage:16,attackRange:58,attackWindup:.55,attackRecover:.4,attackCooldown:1.5,huntXp:40,loot:'shadow-walker'},
  // Slime: the first monster of the Regions game. A round, wobbling blob that hops after Eli in bunches of three or
- // four (src/field-maps.js); weak alone, a nuisance together. Drawn in code (src/slime-art.js), with no sheet.
+ // four (src/field-maps.js); weak alone, a nuisance together. Drawn from its painted poses (src/slime-art.js).
  slime:{behavior:BEHAVIORS.AGGRESSIVE,name:'Slime',maxHealth:34,radius:14,habitat:'land',speed:30,fearRange:0,
   noticeRange:210,noticeDelay:.5,loseRange:420,leashRange:520,chaseSpeed:96,attackDamage:7,attackRange:46,attackWindup:.5,attackRecover:.45,attackCooldown:1.5,huntXp:16,loot:'slime',familiar:false},
  // The shadow walker kinds: the same hunt, each with its own strengths. All stay slower than Eli at a run.

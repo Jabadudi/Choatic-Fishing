@@ -67,7 +67,7 @@ export function drawWildlife(c,a){
  c.save();if(a.health<=0)c.globalAlpha=Math.min(1,a.deathRemaining);else if(a.hurtRemaining>0)c.globalAlpha=.55;
  // A Whisperer is faint until it hunts.
  if(a.visibility!==undefined&&a.health>0)c.globalAlpha*=a.visibility;
- // A slime has no sheet: it is drawn in code (src/slime-art.js).
+ // A slime is drawn from its painted poses in src/slime-art.js.
  if(a.species==='slime'){drawSlime(c,a);c.restore();return;}
  if(drawEntitySprite(c,a.spriteId,{x,y,...animalPose(a),facingX:a.direction.x,direction:facingFor(a.direction.x,a.direction.y)})){c.restore();return;}
  // A creature with its own sheet that has not arrived yet shows only its shadow on the ground, not a stand-in shape.
@@ -109,7 +109,7 @@ export function drawAnimalStatus(c,world){
   const big=a.boss||a.elite,half=a.boss?60:a.elite?42:23;
   c.fillStyle='#19362de8';c.fillRect(a.x-half,y,half*2,big?8:6);c.fillStyle=a.boss?'#d8705a':a.elite?'#e0a640':'#c8d78a';c.fillRect(a.x-half+1,y+1,(half*2-2)*a.health/a.maxHealth,big?6:4);
   c.font=big?'bold 13px monospace':'12px monospace';c.textAlign='center';const lv=a.level?`Lv ${a.level} `:'';
-  const tag=a.boss?`${a.name} · World boss`:a.elite?`${lv}${a.name} · Elite`:`${lv}${a.name} · ${BEHAVIOR_LABELS[a.behavior]||a.behavior}`;
+  const tag=a.boss?`${a.name} · World boss`:a.elite?`${lv}${a.name} · Elite`:world.regions?`${lv}${a.name}`:`${lv}${a.name} · ${BEHAVIOR_LABELS[a.behavior]||a.behavior}`;
   // A shiny's or an elite's tag is gold with a dark edge so it reads on bright grass.
   const gold=a.shiny||a.elite;if(gold){c.lineWidth=3;c.strokeStyle='#10261d';c.strokeText(tag,a.x,y-5);}
   c.fillStyle=gold?SHINY_GOLD:'#fff0cd';c.fillText(tag,a.x,y-5);
