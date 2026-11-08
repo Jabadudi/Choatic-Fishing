@@ -156,6 +156,11 @@ function drawProp(ctx,p,t){
   case 'wreck':ctx.save();ctx.translate(x,y);ctx.rotate(p.angle||-.3);ctx.fillStyle='#3e2b1c';ctx.beginPath();ctx.ellipse(0,0,80,26,0,0,Math.PI);ctx.fill();for(let i=-3;i<=3;i++)R(ctx,'#5a3e26',i*20-3,-30,6,30);R(ctx,'#5a3e26',-4,-90,8,90);ctx.restore();break;
   // The dungeon portal in Wilds Camp: a mossy stone arch round a slowly swirling blue light.
   case 'portal':{const pulse=.5+.5*Math.sin(t*2.2);
+   // Netanel's painted portal: 16 frames of the swirl at 10 a second, with a soft glow on the ground round it.
+   if(drawPropSprite(ctx,`portal/${Math.floor(t*10)%16}`,{x:-1e5,y:-1e5,w:1,h:1})){
+    ctx.save();ctx.fillStyle=`rgba(127,224,255,${.14+.1*pulse})`;ctx.beginPath();ctx.ellipse(x,y-64,82,92,0,0,Math.PI*2);ctx.fill();ctx.restore();
+    drawPropSprite(ctx,`portal/${Math.floor(t*10)%16}`,{x,y:y+4,w:134,h:147});break;
+   }
    ctx.save();const g=ctx.createRadialGradient?ctx.createRadialGradient(x,y-62,6,x,y-58,64):null;
    if(g){g.addColorStop(0,'#f2fdff');g.addColorStop(.35,'#7fe0ff');g.addColorStop(.8,'#1f6fa8');g.addColorStop(1,'#0c2f52');ctx.fillStyle=g;}else ctx.fillStyle='#3aa6d8';
    ctx.beginPath();ctx.moveTo(x-38,y);ctx.lineTo(x-38,y-70);ctx.arc(x,y-70,38,Math.PI,0);ctx.lineTo(x+38,y);ctx.closePath();ctx.fill();
