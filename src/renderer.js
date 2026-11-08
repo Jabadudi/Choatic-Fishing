@@ -84,7 +84,7 @@ export function render(ctx,world,view,{others=[]}={}){
     else{const back=effect.comboStep===2?-1:1;ctx.beginPath();ctx.arc(0,0,effect.name==='Anchor'?72:48,back*(-1+age*2),back*(1+age*2),back<0);ctx.stroke();}
     ctx.restore();
   }
-  if(world.adventure){drawWildsLabels(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500});if(view&&!world.defeat&&!INTERIOR_AREAS.includes(world.areaId)&&!cabinDamaged(world.story))drawAtmosphere(ctx,world,displayView);drawAnimalStatus(ctx,world);if(view){drawFieldProgress(ctx,world,displayView);drawComboCounter(ctx,world,displayView);drawFieldClear(ctx,world,displayView);}if(world.defeat&&view)drawDefeat(ctx,world,displayView);}
+  if(world.adventure){drawWildsLabels(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500});if(view&&!world.defeat&&!INTERIOR_AREAS.includes(world.areaId)&&!cabinDamaged(world.story))drawAtmosphere(ctx,world,displayView);drawAnimalStatus(ctx,world);if(view)hud(ctx,displayView,v=>{drawFieldProgress(ctx,world,v);drawComboCounter(ctx,world,v);drawFieldClear(ctx,world,v);});if(world.defeat&&view)drawDefeat(ctx,world,displayView);}
 }
 function drawBobber(ctx,world){
  const {elapsed:t,player:p,bobber}=world;if(!bobber)return;
@@ -103,6 +103,13 @@ function drawComboCounter(ctx,world,view){
  ctx.restore();
 }
 // The field map's clear goal, top centre: monsters defeated, whether the elite has fallen, and the best rank so far.
+// HUD pieces drawn on the world canvas keep their screen size when the camera zooms in: they draw into a view
+// zoom times larger, scaled back down around its top-left corner.
+function hud(ctx,view,draw){
+ const z=view.zoom||1;if(z===1)return draw(view);
+ const W=(view.right-view.left)*z,H=(view.bottom-view.top)*z;
+ ctx.save();ctx.translate(view.left,view.top);ctx.scale(1/z,1/z);draw({left:0,top:0,right:W,bottom:H,zoom:1});ctx.restore();
+}
 function drawFieldProgress(ctx,world,view){
  const f=fieldProgress(world);if(!f||world.fieldClear)return;
  if(f.species){drawRankTracker(ctx,f,view);return;}

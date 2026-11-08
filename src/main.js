@@ -54,12 +54,15 @@ let hudUI=null,radioUI=null,tradeUI=null,wellUI=null,questUI=null,backpackUI=nul
 installPressGuard();
 let touchMode=touchMedia.matches,touchUI=null;document.body.classList.toggle('touch-mode',touchMode);
 // Keep the explorer readable on a narrow portrait viewport.
-let view={scale:1,x:0,y:0,width:960,height:720,dpr:1};
+let view={scale:1,base:1,zoom:1,x:0,y:0,width:960,height:720,dpr:1};
+// The Regions game brings the camera 50% closer to Eli (Netanel's pick, 8 Nov 2026); the HUD keeps its size.
+const REGIONS_ZOOM=1.5;
+function applyZoom(){view.zoom=world?.regions&&world.adventure?REGIONS_ZOOM:1;view.scale=view.base*view.zoom;}
 function resize(){
   const r=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,1.5,Math.sqrt(1920*1080/(r.width*r.height)));
   view.width=r.width;view.height=r.height;view.dpr=dpr;
   canvas.width=Math.round(r.width*dpr);canvas.height=Math.round(r.height*dpr);
-  view.scale=gameScale(r.width,r.height,touchMode);
+  view.base=gameScale(r.width,r.height,touchMode);applyZoom();
   view.x=(r.width-960*view.scale)/2;view.y=(r.height-720*view.scale)/2;
 }
 let worldDrawn=false;
@@ -368,10 +371,10 @@ function frame(now){accumulator+=Math.min((now-last)/1000,.1);last=now;while(acc
  // make Safari and Firefox re-blur the full screen every frame.
  const sheet=backpackUI?.open||tradeUI?.open||wellUI?.open||radioUI?.open||skillsUI?.open||codexUI?.open||questUI?.open;
  if(sheet&&worldDrawn){if(now-lastUI>=1000/30){lastUI=now;updateProgression();updateUI();}requestAnimationFrame(frame);return;}worldDrawn=!!sheet;
- const display=lobby.presentation();camera(display?.player||world.player);const dpr=view.dpr;
+ const display=lobby.presentation();applyZoom();camera(display?.player||world.player);const dpr=view.dpr;
  ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle=INTERIOR_AREAS.includes(world.areaId)?'#101d20':'#1c4754';ctx.fillRect(0,0,canvas.width,canvas.height);
  ctx.setTransform(dpr*view.scale,0,0,dpr*view.scale,dpr*view.x,dpr*view.y);
- render(ctx,display||world,{left:-view.x/view.scale,top:-view.y/view.scale,right:(view.width-view.x)/view.scale,bottom:(view.height-view.y)/view.scale},{others:hubUI?.others(world)||[]});if(lobby.world?.adventure)placePrompt(display?.player||world.player);drawStoryWeather(ctx,world,{left:-view.x/view.scale,top:-view.y/view.scale,right:(view.width-view.x)/view.scale,bottom:(view.height-view.y)/view.scale},now/1000);syncAtmosphere();if(touchMode&&touchState.manualAim&&lobby.world&&!atlasOpen){const a=projectGround(touchState.manualAim.x,touchState.manualAim.y,world.areaId);ctx.strokeStyle='#fff1bc';ctx.lineWidth=1.5/view.scale;ctx.beginPath();ctx.arc(a.x,a.y,9/view.scale,0,Math.PI*2);ctx.moveTo(a.x-14/view.scale,a.y);ctx.lineTo(a.x+14/view.scale,a.y);ctx.moveTo(a.x,a.y-14/view.scale);ctx.lineTo(a.x,a.y+14/view.scale);ctx.stroke();}if(lobby.world&&now-lastUI>=1000/30){lastUI=now;updateProgression();updateUI();}requestAnimationFrame(frame);
+ render(ctx,display||world,{left:-view.x/view.scale,top:-view.y/view.scale,right:(view.width-view.x)/view.scale,bottom:(view.height-view.y)/view.scale,zoom:view.zoom},{others:hubUI?.others(world)||[]});if(lobby.world?.adventure)placePrompt(display?.player||world.player);drawStoryWeather(ctx,world,{left:-view.x/view.scale,top:-view.y/view.scale,right:(view.width-view.x)/view.scale,bottom:(view.height-view.y)/view.scale},now/1000);syncAtmosphere();if(touchMode&&touchState.manualAim&&lobby.world&&!atlasOpen){const a=projectGround(touchState.manualAim.x,touchState.manualAim.y,world.areaId);ctx.strokeStyle='#fff1bc';ctx.lineWidth=1.5/view.scale;ctx.beginPath();ctx.arc(a.x,a.y,9/view.scale,0,Math.PI*2);ctx.moveTo(a.x-14/view.scale,a.y);ctx.lineTo(a.x+14/view.scale,a.y);ctx.moveTo(a.x,a.y-14/view.scale);ctx.lineTo(a.x,a.y+14/view.scale);ctx.stroke();}if(lobby.world&&now-lastUI>=1000/30){lastUI=now;updateProgression();updateUI();}requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
 titleArtReady.then(()=>{titleArtIn=true;(window.requestIdleCallback||setTimeout)(()=>preloadProps());});
