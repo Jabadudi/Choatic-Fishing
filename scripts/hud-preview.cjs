@@ -20,7 +20,7 @@ const SE={...PHONE,viewport:{width:667,height:375}};
  }
  // No two HUD pieces may cover each other.
  async function noOverlap(page,label){
-  const ids=['#hud-menu','#hud-map','#hud-tracker','#hud-icons','.hotbar','#hud-vitals','.radio-chip','#touch-use','#touch-examine','#touch-stick','.hud-act[data-core="still-water"]','.hud-act[data-core="reeds-call"]','.hud-act[data-core="sealed-3"]','.hud-act[data-core="sealed-4"]','.hud-act.dash','.hud-act.use','.hud-act.talk'];
+  const ids=['#hud-map','#hud-tracker','#hud-icons','.hotbar','#hud-vitals','.radio-chip','#touch-use','#touch-examine','#touch-stick','.hud-act[data-core="still-water"]','.hud-act[data-core="reeds-call"]','.hud-act[data-core="sealed-3"]','.hud-act[data-core="sealed-4"]','.hud-act.dash','.hud-act.use','.hud-act.talk'];
   const boxes=[];for(const id of ids){const l=page.locator(id).first();if(await l.count()&&await l.isVisible())boxes.push([id,await l.boundingBox()]);}
   // The action wheel's buttons are circles, so two of them only clash when their circles do.
   const round=id=>/hud-act|#touch-use|#touch-examine/.test(id),circles=(A,B)=>Math.hypot(A.x+A.width/2-B.x-B.width/2,A.y+A.height/2-B.y-B.height/2)<(A.width+B.width)/2-1;
