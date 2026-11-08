@@ -6,6 +6,7 @@ import {earnMarks} from './trade.js';
 import {areaFor} from './wilds.js';
 import {preloadSprite} from './sprites.js';
 import {STONES_LIMIT} from './wishing-well.js';
+import {mapDone} from './dungeon.js';
 // An elite never rises right beside Eli.
 export const ELITE_CLEARANCE=260;
 // How long the clear banner stays up.
@@ -32,7 +33,9 @@ export function createBunches(world,id){
  });
  return out;
 }
-export const mapCleared=(world,id)=>(stateFor(world,id)?.clears||0)>0;
+// A bunch map is cleared while every one of its monsters is down (a new dungeon run brings them all back); any other
+// field map once it has been cleared at all.
+export const mapCleared=(world,id)=>{const s=stateFor(world,id),f=fieldMap(id);return f?.bunches?(s?.defeated?.length||0)>=f.clear.kills:(s?.clears||0)>0;};
 const stateFor=(world,id)=>world.fieldMaps?.[id]||null;
 // The elite: its kind, made bigger, darker and much tougher, at its spot on the map.
 export function createElite(spec,world){
@@ -72,9 +75,10 @@ export function fieldKill(world,animal){
  if(animal.eliteId){state.elite=true;state.eliteAt=world.elapsed+(f.elite.respawnSeconds||300);}
  else state.kills++;
  // A bunch map remembers which of its monsters are down; once cleared it stays cleared.
- if(f.bunches){if(!state.defeated.includes(animal.id))state.defeated.push(animal.id);if(state.clears>0)return '';}
+ if(f.bunches&&!state.defeated.includes(animal.id))state.defeated.push(animal.id);
  if(state.kills<f.clear.kills||!state.elite)return '';
- return clearMap(world,animal.areaId);
+ const text=clearMap(world,animal.areaId),run=mapDone(world,animal.areaId);
+ return run?`${text} · ${run}`:text;
 }
 function clearMap(world,id){
  const f=fieldMap(id),state=stateFor(world,id),seconds=Math.max(0,world.elapsed-state.startedAt);

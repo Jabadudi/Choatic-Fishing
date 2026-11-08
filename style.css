@@ -819,3 +819,26 @@ body.touch-mode #chat-box.open{bottom:auto;top:calc(8px + var(--hud-t,0px));tran
 .game-pick small{font:11px Georgia,serif;color:#c8b98f}
 .game-pick .game-pick-on{border-color:#ffd27a;background:#3a2810d9;color:#ffd27a;box-shadow:0 0 0 1px #ffd27a55 inset}
 .game-pick a:hover{border-color:#ffd27a;color:#fff3d6}
+/* Dungeon entry card (beside the Wilds Camp portal) and run results. */
+.dungeon-card,.dungeon-results{--d-gold:#e6c77f;--d-dim:#b7995a;--d-ink:#f3e6bf;--d-muted:#c2cdb6;position:fixed;z-index:30;box-sizing:border-box;border:1.5px solid var(--d-dim);border-radius:12px;background:#0c2119f2;color:var(--d-ink);box-shadow:0 18px 60px #000b;font-family:Georgia,'Times New Roman',serif}
+.dungeon-card{left:max(16px,var(--safe-l,0px));top:56%;transform:translateY(-50%);width:min(320px,calc(100vw - 32px));padding:14px 16px}
+.dungeon-results{inset:0;margin:auto;width:min(440px,calc(100vw - 32px));height:fit-content;padding:18px 20px;text-align:center}
+.dungeon-card[hidden],.dungeon-results[hidden]{display:none}
+.dungeon-card h2,.dungeon-results h2{margin:0 0 6px;font:600 21px Georgia,serif;color:var(--d-gold)}
+.dungeon-results h2{display:flex;align-items:center;justify-content:center;gap:12px}
+.dungeon-row{display:flex;justify-content:space-between;gap:10px;margin:0 0 8px;font:12px Arial,sans-serif;color:var(--d-muted)}
+.dungeon-best{white-space:nowrap;padding:7px 9px;border:1px solid #c9a85f44;border-radius:8px;background:#0a1a14;color:var(--d-ink)}
+.dungeon-faces{display:flex;gap:6px;margin:4px 0 10px}
+.dungeon-faces img{width:48px;height:48px;object-fit:contain;border:1px solid #c9a85f44;border-radius:8px;background:#12322a;image-rendering:pixelated}
+.dungeon-faces img:last-child{border-color:#e0705a99;background:#3a1d18}
+.dungeon-buttons{display:flex;gap:8px;margin-top:10px}
+.dungeon-buttons button{flex:1;min-height:42px;border:1px solid var(--d-dim);border-radius:8px;background:#163a2e;color:var(--d-ink);font:700 14px Arial,sans-serif;cursor:pointer}
+.dungeon-buttons .dungeon-go,.dungeon-buttons .dungeon-again{flex:1.4;border-color:#f3d98f;background:linear-gradient(#f0d48a,#c99c48);color:#22180a;letter-spacing:.08em}
+.dungeon-buttons button:hover{filter:brightness(1.1)}
+.dungeon-hint{display:block;margin-top:8px;font:11px Arial,sans-serif;color:var(--d-muted)}
+.dungeon-rank{display:inline-grid;place-items:center;width:48px;height:48px;border:2px solid currentColor;border-radius:50%;font:800 28px Georgia,serif}
+.rank-S{color:#ffcf3a}.rank-A{color:#9fe0ff}.rank-B{color:#b8e08a}.rank-C{color:#e8d8c0}
+.dungeon-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.dungeon-grid span{display:flex;flex-direction:column;gap:2px;padding:8px;border:1px solid #c9a85f44;border-radius:8px;background:#0a1a14;font:700 20px Georgia,serif}
+.dungeon-grid small{font:11px Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--d-muted)}
+.dungeon-note{margin:0;font:13px Arial,sans-serif;color:var(--d-gold)}

@@ -8,14 +8,19 @@ import {REGION_START,REGION_MAPS,GATE_REACH} from '../src/region-play.js';
 import {damageAnimal} from '../src/wildlife.js';
 import {captureSave,restoreSave,requireGame} from '../src/save-format.js';
 import {STARTER_SWORD} from '../src/warrior.js';
+import {CAMP,DUNGEON,startRun,nearPortal,portalOf,backToCamp} from '../src/dungeon.js';
 const idle=w=>({left:false,right:false,up:false,down:false,held:false,aim:{x:w.player.x+1,y:w.player.y}});
-const regions=()=>{const w=new World(()=>.3,{adventure:true,regions:true});w.journeyId='regions-test';return w;};
+const fresh=()=>{const w=new World(()=>.3,{adventure:true,regions:true});w.journeyId='regions-test';return w;};
+// Most tests play inside a dungeon run, entered through the camp portal.
+const regions=()=>{const w=fresh();startRun(w);return w;};
 const slimes=w=>w.wildlife.filter(a=>a.areaId===REGION_START&&a.health>0);
 const kill=(w,a)=>{Object.assign(w.player,{x:a.x-40,y:a.y});a.downRemaining=1;for(let i=0;i<200&&a.health>0;i++){w.player.health=w.progression.maxHealth;damageAnimal(w,a,1000,w.player,0);}assert.equal(a.health,0);};
 
-test('a Regions game starts on 1.1 Dewdrop Meadow with no story, no townsfolk and Eli’s sword in hand',()=>{
+test('a Regions game starts in Wilds Camp by the portal; ENTER puts Eli on 1.1 Dewdrop Meadow, no story, sword in hand',()=>{
+ const c=fresh();assert.equal(c.areaId,CAMP);assert.equal(c.dungeon.run,null);assert.equal(nearPortal(c),false);
+ const q=portalOf();Object.assign(c.player,{x:q.x,y:q.y+60});assert.equal(nearPortal(c),true);
  const w=regions(),a=AREAS[REGION_START];
- assert.equal(w.areaId,REGION_START);assert.equal(w.story,null);assert.equal(w.regions,true);
+ assert.equal(w.areaId,REGION_START);assert.equal(w.story,null);assert.equal(w.regions,true);assert.ok(w.dungeon.run);
  assert.deepEqual([w.npcs.length,w.rabbits.length,w.spawns],[0,0,null]);
  assert.equal(w.player.name,'Eli');assert.equal(w.inventory.item?.name,STARTER_SWORD);
  // A third of the old Landing's height, run west to east.
@@ -36,12 +41,12 @@ test('slimes stand in bunches of three or four, and their count is the kill goal
  for(const s of rest)assert.ok(s.alert>0&&s.threat,'the bunch is roused');
 });
 
-test('the gate east stays sealed until every slime is down; clearing pays once and stays cleared',()=>{
+test('the gate east stays sealed until every slime is down; clearing pays once and stays cleared for the run',()=>{
  const w=regions(),a=AREAS[REGION_START];
  Object.assign(w.player,{x:a.width-GATE_REACH+20,y:380});w.update(1/60,idle(w));assert.match(w.message,/gate is sealed\. \d+ slimes/);
  const all=slimes(w),stones=w.well.stones;
  for(const s of all.slice(0,-1))kill(w,s);
- assert.equal(w.fieldClear,undefined);assert.equal(fieldProgress(w).kills,all.length-1);
+ assert.ok(!w.fieldClear);assert.equal(fieldProgress(w).kills,all.length-1);
  kill(w,all.at(-1));
  assert.ok(w.fieldClear);assert.equal(w.fieldClear.code,'1.1');assert.equal(w.fieldClear.first,true);assert.equal(w.well.stones,stones+1);
  assert.equal(fieldProgress(w).kills,all.length,'the count stays full');assert.equal(fieldProgress(w).clears,1);
@@ -93,4 +98,22 @@ test('1.3 Saltspray Shore: shore crabs in bunches and Mudshell, the giant boss c
  Object.assign(w.player,{x:AREAS['mossroot-trail'].width-10,y:380});w.moveActor(w.player,40,0);assert.equal(w.areaId,id);
  // Mudshell counts toward the clear like any crab.
  for(const a of here)kill(w,a);assert.equal(fieldProgress(w).kills,f.clear.kills);assert.equal(w.fieldClear.code,'1.3');
+});
+
+test('a dungeon run ends on Mudshell with a run rank and best record; Run again brings every monster back; a save keeps it all',()=>{
+ const w=regions(),first=w.dungeon.runs;
+ for(const id of DUNGEON.maps){w.areaId=id;for(const a of w.wildlife.filter(a=>a.areaId===id&&a.health>0))kill(w,a);}
+ const r=w.dungeon.result;assert.ok(r,'results screen');assert.match(r.rank,/^[SABC]$/);assert.equal(r.kills,DUNGEON.maps.reduce((n,id)=>n+FIELD_MAPS[id].clear.kills,0));
+ assert.equal(w.dungeon.run,null);assert.equal(w.dungeon.clears,1);assert.deepEqual(w.dungeon.best.rank,r.rank);assert.equal(r.best,true);
+ const stones=w.well.stones;
+ // Run again: fresh monsters, a fresh clock, gates shut again; the first-clear reward is not paid twice.
+ startRun(w);assert.equal(w.dungeon.runs,first+1);assert.equal(w.dungeon.result,null);assert.equal(w.areaId,REGION_START);
+ for(const id of DUNGEON.maps)assert.equal(w.wildlife.filter(a=>a.areaId===id&&a.health>0).length,FIELD_MAPS[id].clear.kills);
+ Object.assign(w.player,{x:AREAS[REGION_START].width-10,y:380});w.moveActor(w.player,40,0);assert.equal(w.areaId,REGION_START,'gate shut again');
+ for(const a of slimes(w))kill(w,a);assert.equal(w.well.stones,stones,'first-clear reward once');assert.equal(w.fieldClear.first,false);
+ // A save mid-run keeps the run and the best record.
+ const back=restoreSave(captureSave(w));assert.ok(back.dungeon.run);assert.equal(back.dungeon.best.rank,r.rank);assert.equal(back.dungeon.runs,w.dungeon.runs);
+ // Walking west out of 1.1 lands in camp and ends the run.
+ Object.assign(w.player,{x:10,y:380});w.moveActor(w.player,-40,0);assert.equal(w.areaId,CAMP);assert.equal(w.dungeon.run,null);
+ backToCamp(w);assert.equal(w.areaId,CAMP);
 });

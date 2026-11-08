@@ -691,6 +691,51 @@ area({id:'landing',num:'1.1',name:'Reedwater Landing',frame:[195,395,272,400],si
   ramps:[]}
 });
 
+// Regions Wilds Camp: where the Regions game starts and every dungeon run begins and ends. A small clearing under the
+// same cliff as the maps, with tents and a campfire round a glowing portal into the dungeon, Reedwater Wilds
+// (src/dungeon.js). It has no monsters and no exits of its own: the portal is the way in, and the dungeon's first map
+// leads back here to the west.
+area({id:'wilds-camp',num:'1.0',name:'Wilds Camp',frame:[125,195,330,367],size:[1400,740],base:'land',ground:'meadow',seed:3301,spawn:[147,349],
+ scatter:false,
+ shapes:[['water',[[125,361],[143,360.4],[161,361.2],[179,360.5],[195,361],[195,367],[125,367]]]],
+ zones:[['sand',[[125,358.8],[145,358.2],[165,359],[183,358.3],[195,358.7],[195,367],[125,367]]],['forest',[[125,330],[195,330],[195,338],[125,338]]]],
+ roads:[{pts:[[127,349],[139,348.6],[151,349.2],[160,348.4]],style:'dirt'}],
+ props:[  {kind:'bush',at:[130,335.6],art:'round-bush'},{kind:'bush',at:[150,335.6],art:'round-bush'},{kind:'bush',at:[170,335.6],art:'round-bush'},{kind:'bush',at:[190,335.6],art:'round-bush'},
+  {kind:'portal',at:[160,347.4]},
+  {kind:'tent',at:[139,341.4]},
+  {kind:'tent',at:[181,341]},
+  {kind:'bench',at:[145,344.2],art:'plank-bench'},
+  {kind:'lantern',at:[153,344.6],art:'lantern-post'},
+  {kind:'lantern',at:[167,344.6],art:'lantern-post'},
+  {kind:'logs',at:[134,343.6],art:'firewood-stack'},
+  {kind:'cart',at:[186,343.6],art:'wood-barrel'},
+  {kind:'cart',at:[188,344.6],art:'apple-crate'},
+  {kind:'sign',at:[169,352.5],art:'signpost'},
+  {kind:'tree',at:[128,343],art:'meadow-oak-2'},
+  {kind:'tree',at:[192,342.6],art:'meadow-oak-4'},
+  {kind:'tree',at:[149,357.4],art:'round-oak'},
+  {kind:'tree',at:[177,357.2],art:'meadow-oak-1'},
+  {kind:'bush',at:[156,355.5],art:'berry-bush'},
+  {kind:'bush',at:[171,356],art:'leafy-bush'},
+  {kind:'bush',at:[136,354.5],art:'small-bush'},
+  {kind:'bush',at:[143,351.8],art:'yellow-flowers'},
+  {kind:'bush',at:[175,351.2],art:'white-flowers'},
+  {kind:'bush',at:[163,354.2],art:'lavender'},
+  {kind:'bush',at:[152,352.4],art:'grass-clump'},
+  {kind:'bush',at:[168,349.9],art:'grass-tuft'},
+  {kind:'bush',at:[185,352.6],art:'grass-tall'},
+  {kind:'bush',at:[132,350.6],art:'pink-flowers'},
+  {kind:'boulder',at:[191,355.4],art:'mossy-rock'},
+  {kind:'boulder',at:[130,356.8],art:'grey-rock'},
+  {kind:'boulder',at:[161,359.3],art:'sea-rock'},
+ ],
+ places:[{id:'wilds-camp',name:'Wilds Camp',at:[145,348],kind:'shore',text:'A little camp in a clearing under the cliff. Hunters rest here between runs into the wilds, and the old portal hums softly in the middle of it.'}],
+ exits:[],
+ elevation:{base:0,
+  terraces:[{id:'north-cliff',height:1,points:[[125,330],[195,330],[195,338.6],[183,339.3],[171,338.3],[159,339.4],[147,338.4],[135,339.2],[125,338.5]]}],
+  ramps:[]}
+});
+
 // Regions 1.1 Dewdrop Meadow: the first map of the Regions game, a short strip a third as tall as the old Landing, run
 // west to east. An earth cliff closes the north side and the sea the south side; the trail runs along the middle past
 // bunches of slimes (src/field-maps.js) to a sealed gate at the east end that opens once every slime is down.
@@ -946,7 +991,7 @@ area({id:'dewdrop-meadow',num:'1.1',name:'Dewdrop Meadow',frame:[195,395,330,367
   {id:'dewdrop-start',name:'Dewdrop Meadow',at:[203,349],kind:'shore',text:'A strip of wet meadow between the cliff and the sea. The grass is beaded with dew, and something round and wobbly is bouncing about further east.'},
   {id:'dewdrop-gate',name:'The Sealed Gate',at:[388,349],kind:'drowned',text:'An old stone gate across the trail. It stays shut while slimes still bounce about the meadow.'}
  ],
- exits:[{edge:'east',from:345,to:353,target:'mossroot-trail',label:'1.2 Mossroot Trail'}],
+ exits:[{edge:'west',from:345,to:353,target:'wilds-camp',label:'Wilds Camp'},{edge:'east',from:345,to:353,target:'mossroot-trail',label:'1.2 Mossroot Trail'}],
  // The north cliff: the meadow above it stands one level up and out of reach.
  elevation:{base:0,
   terraces:[{id:'north-cliff',height:1,points:[[195,330],[395,330],[395,338.5],[380,339.1],[365,338.2],[350,339.4],[335,338.2],[320,339.1],[305,338.5],[290,339.1],[275,338.2],[260,339.4],[245,338.2],[230,339.1],[215,338.5],[200,339.1],[195,338.4]]}],

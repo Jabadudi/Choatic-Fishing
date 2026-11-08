@@ -8,6 +8,7 @@ import {fieldMap,FIELD_MAPS} from './field-maps.js';
 import {ANIMAL_TYPES} from './entities.js';
 import {createBunches,mapCleared,fieldProgress} from './field-play.js';
 import {giveStarterSword} from './warrior.js';
+import {CAMP,DUNGEON,createDungeon,leftRun} from './dungeon.js';
 export const REGION_START='dewdrop-meadow';
 // The Regions maps in order, west to east: 1.1 Dewdrop Meadow, 1.2 Mossroot Trail, 1.3 Saltspray Shore.
 export const REGION_MAPS=Object.freeze(Object.keys(FIELD_MAPS).filter(id=>FIELD_MAPS[id].bunches).sort((a,b)=>FIELD_MAPS[a].code.localeCompare(FIELD_MAPS[b].code,undefined,{numeric:true})));
@@ -17,23 +18,27 @@ const foes=(id,n)=>{const name=(ANIMAL_TYPES[fieldMap(id)?.species]?.name||'mons
 const arrival=(world,id)=>`${fieldMap(id).code} ${areaFor(id).name} · ${mapCleared(world,id)?'Cleared. The gate east stands open.':`Defeat every ${foes(id,1)} to open the gate east.`}`;
 // How close to the east edge Eli must walk for the gate to speak.
 export const GATE_REACH=150;
+// A new Regions game starts in Wilds Camp, by the portal into the dungeon (src/dungeon.js).
 export function startRegions(world){
- Object.assign(world,{regions:true,story:null,npcs:[],rabbits:[],spawns:null,areaId:REGION_START});
- Object.assign(world.player,AREAS[REGION_START].spawn,{name:'Eli',spriteId:'eli'});
+ Object.assign(world,{regions:true,story:null,npcs:[],rabbits:[],spawns:null,areaId:CAMP,dungeon:createDungeon()});
+ Object.assign(world.player,AREAS[CAMP].spawn,{name:'Eli',spriteId:'eli'});
  world.wildlife=allBunches(world);
  giveStarterSword(world);
- world.message=arrival(world,REGION_START);
+ world.message=`Wilds Camp · Step up to the portal to enter the dungeon, ${DUNGEON.name}.`;
 }
 // A restored Regions journey rebuilds its map's monsters from the field map state (the ones down stay down).
 export function restoreRegions(world){
  Object.assign(world,{regions:true,story:null,npcs:[],rabbits:[],spawns:null});
  Object.assign(world.player,{name:'Eli',spriteId:'eli'});
  world.wildlife=allBunches(world);
+ // A save from before the dungeon, standing in one of its maps, carries on as a run.
+ world.dungeon??=createDungeon();if(!world.dungeon.run&&DUNGEON.maps.includes(world.areaId))world.dungeon.run={startedAt:world.elapsed};
 }
 // Walking off the east edge into the next map needs the gate open (this map cleared); walking back west is always open.
 // Returns the arrival message, or null when the way is shut (the gate message is already up).
 export function regionCrossing(world,next){
  if(!world.regions)return '';
+ if(next.areaId===CAMP)return leftRun(world)||'Wilds Camp';
  const from=REGION_MAPS.indexOf(world.areaId),to=REGION_MAPS.indexOf(next.areaId);
  if(to>from&&!mapCleared(world,world.areaId))return null;
  return arrival(world,next.areaId);
