@@ -65,8 +65,9 @@ test('skill XP comes only from success, and every skill point also feeds the mai
  w.fishing.state='escaped';w.advanceFishing(w.player,0,false);assert.equal(w.progression.totalXp,0);assert.equal(w.progression.skills.fishing.xp,0);
  catchFish(w);assert.equal(w.progression.skills.fishing.xp,30);assert.equal(w.progression.totalXp,30);
  const p=w.progression,before={...p.stats},health=p.maxHealth;
- catchFish(w);catchFish(w);
- assert.equal(p.skills.fishing.level,2);assert.equal(p.level,2);
+ // Eli's level needs 240 EXP at Lv 1 (progression.js xpToNext): eight catches of 30.
+ for(let i=0;i<7;i++)catchFish(w);
+ assert.ok(p.skills.fishing.level>=2);assert.equal(p.level,2);assert.equal(p.totalXp,240);
  assert.deepEqual(p.stats,{strength:before.strength+1,dexterity:before.dexterity+1,luck:before.luck+1,wisdom:before.wisdom+1});
  assert.equal(p.maxHealth,health+10);assert.ok(p.damageMultiplier>1);assert.ok(p.lootMultiplier>1);
  // Wisdom grows skill XP.

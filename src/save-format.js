@@ -4,7 +4,8 @@ import {World} from './world.js';
 import {AREAS,walkable} from './wilds.js';
 import {stranded} from './terrain-height.js';
 import {animalGround} from './wildlife.js';
-import {SKILL_IDS,skillXpToNext} from './skills.js';
+import {SKILL_IDS,skillXpToNext,LEVEL_GROWTH} from './skills.js';
+import {levelForTotal} from './progression.js';
 import {validTree} from './skill-trees.js';
 import {validCoreSkills,DEFAULT_SLOTS} from './core-skills.js';
 import {restoreFamiliars} from './familiars.js';
@@ -24,7 +25,7 @@ import {restoreFieldMaps} from './field-play.js';
 import {applyLevel,MAX_LEVEL} from './field-maps.js';
 import {giveStarterSword} from './warrior.js';
 import {ARTIFACTS,ARTIFACT_SLOT_COUNT,RARITIES,artifactIdFor,normalizeArtifact} from './artifacts.js';
-export const SAVE_VERSION=8;
+export const SAVE_VERSION=9;
 export const SAVE_FORMAT='the-wilds-save';
 const clone=value=>JSON.parse(JSON.stringify(value));
 const fail=message=>{throw Error(message);};
@@ -105,6 +106,16 @@ function moveToNewMaps(s){
  for(const animal of Array.isArray(s.animals)?s.animals:[])if(animal&&SLOTS[animal.slotId]?.areaId==='windchime'){animal.x=SLOTS[animal.slotId].x;animal.y=SLOTS[animal.slotId].y;}
  if(s.story?.guide&&typeof s.story.guide==='object'){if(RENAMED[s.story.guide.areaId]){const g={...s.story.guide};move(g);s.story.guide=g;}relocateGuide(s.story);}
 }
+// Eli's level curve got much steeper (progression.js xpToNext). An old journey keeps every point of EXP it earned and
+// gets the level that EXP reaches on the new curve. Region Core points are refunded, since a lower level earns fewer, and
+// health is held to what the new level can surely carry.
+function rebaseLevel(s){
+ const p=s?.progression;if(!p||typeof p!=='object'||!number(p.totalXp,0,1e12))return;
+ const {level,xp}=levelForTotal(p.totalXp);p.level=level;p.xp=xp;
+ if(number(p.pendingChoices))p.pendingChoices=Math.min(p.pendingChoices,level-1);
+ if(p.coreSkills&&typeof p.coreSkills==='object')p.coreSkills={levels:{},slots:[...DEFAULT_SLOTS]};
+ if(s.player&&number(s.player.health))s.player.health=Math.min(s.player.health,100+(level-1)*LEVEL_GROWTH.health);
+}
 // The Regions game (main.js) only loads its own journeys; tests and tools leave this unset and load any journey.
 let requiredGame=null;
 export const requireGame=game=>{requiredGame=game;};
@@ -126,6 +137,8 @@ export function restoreSave(input){
  const restack=save.version===6;if(restack)save.version=7;
  // Version 8 redraws Willowback as four areas and Windchime Path on a new trail. See moveToNewMaps.
  if(save.version===7){save.version=8;moveToNewMaps(save.state);}
+ // Version 9 moves Eli onto the new, much slower level curve. See rebaseLevel.
+ if(save.version===8){save.version=9;rebaseLevel(save.state);}
  if(save.version!==SAVE_VERSION)fail('This save version is not supported. Your existing save was not changed.');
  if(!number(save.savedAt,0,1e16)||typeof save.journeyId!=='string'||save.journeyId.length>120)fail('Invalid save header.');
  const s=save.state;if(!s||!Object.hasOwn(AREAS,s.areaId))fail('Unknown saved area.');

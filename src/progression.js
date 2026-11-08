@@ -4,6 +4,18 @@ import {sumPassives} from './passives.js';
 import {STUN} from './combo.js';
 import {createCoreSkills,CORE_LEVEL_CAP} from './core-skills.js';
 export const XP=Object.freeze({catch:30,elimination:90});
+// Eli's level curve (approved by Netanel on 8 Nov 2026, the "Hardest" option): EXP to go from level L to L+1 is
+// 80·L² + 160·L, so 240 at Lv 1, 9,600 at Lv 10, 20,400 at Lv 15. Clearing each Region 1 map once leaves Eli about
+// Lv 10, a few levels under the Lv 14-15 monsters at the end, so reaching Region 2 takes some farming.
+// Arena matches keep their own quick flat curve.
+export const xpToNext=level=>80*level*level+160*level;
+const arenaXpToNext=level=>90+(level-1)*45;
+// The level and leftover EXP that a lifetime EXP total reaches on Eli's curve (used to move old saves onto it).
+export function levelForTotal(total,cap=CORE_LEVEL_CAP){
+ let level=1,xp=Math.max(0,Math.floor(total||0));
+ while(level<cap&&xp>=xpToNext(level)){xp-=xpToNext(level);level++;}
+ return {level,xp:level>=cap?0:xp};
+}
 export const BUFFS=Object.freeze([
  {id:'speed',name:'Fleet Footed',description:'+5% movement speed'},
  {id:'power',name:'Heavy Hitter',description:'+8% damage'},
@@ -23,7 +35,7 @@ export class Progression {
  get maxDashes(){return 1+this.upgrades.dash;}
  tickUpgrades(dt){this.upgradeRemaining-=dt;while(this.upgradeRemaining<1e-9){this.pendingUpgrades++;this.upgradeRemaining+=30;}}
  chooseUpgrade(kind){if(!this.pendingUpgrades||!Object.hasOwn(this.upgrades,kind))return false;this.upgrades[kind]++;this.pendingUpgrades--;return true;}
- get xpToNextLevel(){return 90+(this.level-1)*45;}
+ get xpToNextLevel(){return this.characterStats?xpToNext(this.level):arenaXpToNext(this.level);}
  get speedMultiplier(){return (1+this.ranks.speed*.05+this.upgrades.hermes*.15)*(1+(this.familiar?.speed||0));}
  get growth(){return this.characterStats?this.level-1:0;}
  get stats(){const n=this.growth,f=this.familiar||{};return {strength:BASE_STAT+n*LEVEL_GROWTH.strength+(f.strength||0),dexterity:BASE_STAT+n*LEVEL_GROWTH.dexterity+(f.dexterity||0),luck:BASE_STAT+n*LEVEL_GROWTH.luck+(f.luck||0),wisdom:BASE_STAT+n*LEVEL_GROWTH.wisdom+(f.wisdom||0)};}
@@ -54,7 +66,8 @@ export class Progression {
   const skill=Object.hasOwn(this.skills,id)?this.skills[id]:null;if(!skill||!Number.isSafeInteger(base)||base<=0)return null;
   const amount=Math.round(base*(this.skillXpMultiplier+this.passive(`skillXp.${id}`))*(1+(this.familiar?.[`${id}Xp`]||0)));let skillLevels=0;skill.xp+=amount;
   while(skill.xp>=skillXpToNext(skill.level)){skill.xp-=skillXpToNext(skill.level);skill.level++;skillLevels++;}
-  return {skill:id,amount,skillLevels,levels:this.award(amount)};
+  // Wisdom and familiar bonuses speed up the skill only; Eli's own level gets the plain base EXP.
+  return {skill:id,amount,skillLevels,levels:this.award(this.characterStats?base:amount)};
  }
  recordElimination(victimId){if(typeof victimId!=='string'||!victimId.trim()||this.eliminations.has(victimId))return false;this.eliminations.add(victimId);this.award(XP.elimination);return true;}
  choose(reward){if(!this.pendingChoices||!Object.hasOwn(this.specials,reward))return false;this.specials[reward]++;this.pendingChoices--;return true;}

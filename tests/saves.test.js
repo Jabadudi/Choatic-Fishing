@@ -14,12 +14,12 @@ class MemoryStore{
 test('journey roundtrip restores progression, quest, inventory references, drops, discoveries and wildlife',()=>{
  const w=fresh();w.inventory.receive({name:'Reed Spear'});w.inventory.receive({name:'Sardine'});w.inventory.receive({name:'Old Boot'});
  const spear=w.inventory.allItems[0];spear.uses=2;w.inventory.assignHotbar(spear.id,6);w.equip(6);
- w.backpackAction(w.inventory.allItems[2].id,'drop');w.progression.award(115);w.progression.choose('tidal');w.progression.grantCatchBuff(()=>.9);
+ w.backpackAction(w.inventory.allItems[2].id,'drop');w.progression.award(265);w.progression.choose('tidal');w.progression.grantCatchBuff(()=>.9);
  w.quests['mara-sardine'].status='complete';w.discovered.add('tree');w.hunting={total:1,bySpecies:{rabbit:1}};
  w.rabbits[0].health=0;w.rabbits[0].state='dead';w.rabbits[0].deathRemaining=.5;w.wildlife[0].health=38;
  w.player.health=62;w.fishing.state='reeling';w.bobber={x:650,y:1910};
  const encoded=JSON.stringify(captureSave(w)),restored=restoreSave(parseSave(encoded));
- assert.equal(restored.progression.totalXp,115);assert.equal(restored.progression.level,2);assert.equal(restored.progression.specials.tidal,1);
+ assert.equal(restored.progression.totalXp,265);assert.equal(restored.progression.level,2);assert.equal(restored.progression.xp,25);assert.equal(restored.progression.specials.tidal,1);
  assert.equal(restored.inventory.item.name,'Reed Spear');assert.equal(restored.inventory.item.uses,2);
  assert.equal(restored.inventory.item,restored.inventory.allItems[0]);restored.inventory.use();assert.equal(restored.inventory.allItems[0].uses,1);assert.equal(w.inventory.item.uses,2);
  assert.equal(restored.inventory.allItems.length,2);assert.equal(restored.drops[0].item.name,'Old Boot');assert.equal(restored.quests['mara-sardine'].status,'complete');
