@@ -45,7 +45,7 @@ const ANDROID='Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTM
   await page.locator('#story-close').click();await page.waitForTimeout(400);
   assert.equal(await page.locator('#rotate-prompt').isVisible(),false);
   const parts={};
-  for(const s of ['#hud-menu','#hud-map','#hud-tracker','#hud-icons','.hotbar','#hud-vitals','#touch-use','#touch-examine','.hud-act.dash','.touch-movement','.radio-chip','.status'])parts[s]=await box(page,s);
+  for(const s of ['#hud-map','#hud-tracker','#hud-icons','.hotbar','#hud-vitals','#touch-use','#touch-examine','.hud-act.dash','.touch-movement','.radio-chip','.status'])parts[s]=await box(page,s);
   for(const s of ['#hud-menu','#hud-map','#hud-icons','#open-skills','#open-backpack','.hotbar','#hud-vitals','#touch-use','.touch-movement'])assert.ok(parts[s]||await box(page,s),`${name}: ${s} visible`);
   const keys=Object.keys(parts).filter(s=>parts[s]&&s!=='.status');
   for(let i=0;i<keys.length;i++)for(let j=i+1;j<keys.length;j++)if(true)assert.ok(!overlap(parts[keys[i]],parts[keys[j]]),`${name}: ${keys[i]} overlaps ${keys[j]}`);

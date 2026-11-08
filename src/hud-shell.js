@@ -30,9 +30,9 @@ const ICONS={
 };
 // The EXP hover card: exact experience in this level, what is left, and the percent, like an MMO's EXP bar tooltip.
 export function expDetails(p,cap=CORE_LEVEL_CAP){
- if(p.level>=cap)return {fraction:1,percent:'MAX',lines:[`Lv. ${p.level} · Max level`,'No more EXP to earn']};
+ if(p.level>=cap)return {max:true,fraction:1,percent:'MAX',lines:[`Lv. ${p.level} · Max level`,'No more EXP to earn']};
  const need=p.xpToNextLevel,have=Math.max(0,Math.min(p.xp,need)),fraction=need>0?have/need:0,percent=`${(Math.floor(fraction*1000)/10).toFixed(1)}%`;
- return {fraction,percent,lines:[`EXP ${have.toLocaleString('en-US')} / ${need.toLocaleString('en-US')} (${percent})`,`${(need-have).toLocaleString('en-US')} more to reach Lv. ${p.level+1}`]};
+ return {have,need,fraction,percent,lines:[`EXP ${have.toLocaleString('en-US')} / ${need.toLocaleString('en-US')} (${percent})`,`${(need-have).toLocaleString('en-US')} more to reach Lv. ${p.level+1}`]};
 }
 // A story objective reads "Chapter 5 · Mara is waiting…"; the part before the first dot becomes the tracker's heading.
 export function splitObjective(text,fallback){
@@ -47,9 +47,7 @@ export function mountHudShell({act,openHelp,examine,openAtlas,openQuests,openWel
 <div id="hud-tracker"><button class="hud-quest story" hidden><i aria-hidden="true"></i><b></b><span></span></button><button class="hud-quest side" hidden><i aria-hidden="true"></i><b></b><span></span></button></div>
 <div id="hud-feed" aria-live="polite"></div>
 <div id="hud-icons"><button id="hud-well" class="hud-icon" hidden aria-label="Open the Wishing Well">${svg(ICONS.well,20)}<span>Well</span></button></div>
-<div id="hud-vitals" class="hud-plate"><div class="hud-plate-head"><span id="hud-level">Lv.1</span><b id="hud-name">Eli</b></div><div class="hud-plate-body"><div id="hud-mp" class="plate-row mp" role="progressbar" aria-label="Mana" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><span class="hp-label">MP</span><span class="plate-text">100 / 100</span><div class="hp-track"><i></i></div></div><div id="hud-xp" class="plate-row xp exp-hover" tabindex="0" role="progressbar" aria-label="Experience" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span class="hp-label">EXP</span><span class="plate-text">0.0%</span><div class="hp-track"><i></i></div></div></div></div>
-<div id="hud-exp-edge" class="exp-hover" tabindex="0" aria-label="Experience"><i></i><span></span></div>
-<div id="hud-exp-ring" aria-hidden="true"></div>
+<div id="hud-vitals" class="hud-plate"><div class="plate-who"><span id="hud-level">Lv. 1</span></div><div id="hud-mp" class="plate-stat mp" role="progressbar" aria-label="Mana" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><div class="hp-row"><span class="hp-label">MANA</span><span class="plate-text"></span></div><div class="hp-track"><i></i></div></div><div id="hud-xp" class="plate-stat xp" tabindex="0" role="progressbar" aria-label="Experience" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="hp-row"><span class="hp-label">XP</span><span class="plate-text"></span></div><div class="hp-track"><i></i></div></div></div>
 <div id="hud-exp-tip" role="tooltip" hidden><b></b><span></span></div>
 <div id="hud-actions">
  <button class="hud-act side talk desk" data-act="talk" aria-label="Talk or examine">${svg(ICONS.talk)}<kbd></kbd><small>Talk</small></button>
@@ -73,24 +71,21 @@ export function mountHudShell({act,openHelp,examine,openAtlas,openQuests,openWel
  const stones=el('p');stones.id='hud-stones';stones.title='Wishstones';stones.innerHTML='<span class="wishstone-icon" style="width:14px;height:11px" aria-hidden="true"></span><span></span>';
  wallet.append($('purse-hud'),stones);icons.prepend(wallet);
  for(const id of ['open-chat','open-players','open-quests','open-codex','open-skills','open-backpack'])if($(id)){$(id).classList.add('hud-icon');icons.append($(id));}
- const vitals=$('hud-vitals'),plate=vitals.querySelector('.hud-plate-body');$('player-hp').classList.add('plate-row','hp');plate.prepend($('player-hp'));vitals.append(document.querySelector('.dash-mini'));
- // EXP: three looks to choose from (data-exp on the shell: edge, plate, ring). Hovering or tapping any of them shows the exact numbers.
- shell.dataset.exp=(()=>{try{return localStorage.getItem('wilds-exp-style')||'plate';}catch{return 'plate';}})();
- const tip=$('hud-exp-tip');let tipFor=null,tipUntil=0;
+ // Player plate, bottom-centre: HP on the left, Eli's portrait (the menu button) with the level under it in the middle, mana on the right, XP along the bottom.
+ const vitals=$('hud-vitals');$('player-hp').classList.add('plate-stat','hp');vitals.prepend($('player-hp'));vitals.querySelector('.plate-who').prepend($('hud-menu'));vitals.append(document.querySelector('.dash-mini'));
+ // Hovering (or tapping) the XP bar shows the exact EXP; the card follows the pointer along the bar.
+ const tip=$('hud-exp-tip'),xpBar=$('hud-xp');let tipFor=null,tipUntil=0,pointer=null;
  // The shell may be zoomed on big screens, so screen pixels are turned back into the shell's own pixels.
- const placeTip=target=>{const r=(target.id==='hud-xp'?vitals:target).getBoundingClientRect(),box=shell.getBoundingClientRect(),t=tip.getBoundingClientRect(),k=(t.width/(tip.offsetWidth||t.width))*(parseFloat(getComputedStyle(shell).zoom)||1)/(box.width/(shell.offsetWidth||box.width)||1)||1,w=t.width/k,h=t.height/k,W=box.width/k;
-  let x=(r.left-box.left+r.width/2)/k-w/2,y=(r.top-box.top)/k-h-8;if(y<4)y=(r.bottom-box.top)/k+8;
-  if(target.id==='hud-exp-edge'&&pointer)x=(pointer.x-box.left)/k-w/2;
+ const placeTip=()=>{const r=vitals.getBoundingClientRect(),box=shell.getBoundingClientRect(),t=tip.getBoundingClientRect(),k=(t.width/(tip.offsetWidth||t.width))*(parseFloat(getComputedStyle(shell).zoom)||1)/(box.width/(shell.offsetWidth||box.width)||1)||1,w=t.width/k,h=t.height/k,W=box.width/k;
+  const cx=pointer?pointer.x:r.left+r.width/2;let x=(cx-box.left)/k-w/2,y=(r.top-box.top)/k-h-44;if(y<4)y=(r.bottom-box.top)/k+8;
   tip.style.left=`${Math.max(4,Math.min(W-w-4,x))}px`;tip.style.top=`${y}px`;};
- let pointer=null;
- const showTip=(target,ms=0)=>{tipFor=target;tipUntil=ms?performance.now()+ms:0;fillTip();tip.hidden=false;placeTip(target);};
- const hideTip=()=>{tipFor=null;tip.hidden=true;};
- for(const t of [$('hud-xp'),$('hud-exp-edge'),$('hud-menu')]){
-  t.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse'&&(t.id!=='hud-menu'||shell.dataset.exp==='ring'))showTip(t);});
-  t.addEventListener('pointermove',e=>{pointer={x:e.clientX};if(tipFor===t)placeTip(t);});
-  t.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse'&&tipFor===t)hideTip();});
-  if(t.id!=='hud-menu'){t.addEventListener('focus',()=>showTip(t));t.addEventListener('blur',hideTip);t.addEventListener('pointerup',e=>{if(e.pointerType!=='mouse'){pointer={x:e.clientX};showTip(t,2600);}});}
- }
+ const showTip=(ms=0)=>{tipFor=xpBar;tipUntil=ms?performance.now()+ms:0;fillTip();tip.hidden=false;placeTip();};
+ const hideTip=()=>{tipFor=null;pointer=null;tip.hidden=true;};
+ xpBar.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse'){pointer={x:e.clientX};showTip();}});
+ xpBar.addEventListener('pointermove',e=>{pointer={x:e.clientX};if(tipFor)placeTip();});
+ xpBar.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse')hideTip();});
+ xpBar.addEventListener('focus',()=>showTip());xpBar.addEventListener('blur',hideTip);
+ xpBar.addEventListener('pointerup',e=>{if(e.pointerType!=='mouse'){pointer={x:e.clientX};showTip(2600);}});
  const fillTip=()=>{if(!world)return;const d=expDetails(world.progression);setText(tip.firstElementChild,d.lines[0]);setText(tip.lastElementChild,d.lines[1]);};
  const hotbar=document.querySelector('.hotbar'),pager=el('button','hotbar-pager','1–4');pager.id='hotbar-pager';pager.setAttribute('aria-label','Show hotbar slots 5 to 7');hotbar.append(pager);
  let page=1,selected=0;
@@ -147,15 +142,13 @@ export function mountHudShell({act,openHelp,examine,openAtlas,openQuests,openWel
    shell.hidden=!visible;if(!visible){if(sheet.open)sheet.close();return;}
    if(next!==world){world=next;carried=null;region='';queue=[];found.hidden=true;feed.replaceChildren();}
    sheetWorld=world;const p=world.progression,touch=isTouch();
-   setText($('hud-level'),`Lv.${p.level}`);setText($('hud-name'),world.player.name||'Eli');
-   // Player plate: HP is kept up to date by main.js; MP is the Region Core's reserves; EXP shows in whichever look is chosen.
+   setText($('hud-level'),`Lv. ${p.level}`);
+   // Player plate: HP is kept up to date by main.js; mana is the Region Core's reserves.
    const mpMax=reservesMax(world),mp=Math.max(0,Math.min(mpMax,world.core?.reserves??RESERVES_MAX)),mpRow=$('hud-mp');
    setText(mpRow.querySelector('.plate-text'),`${Math.floor(mp)} / ${mpMax}`);setWidth(mpRow.querySelector('i'),`${mp/mpMax*100}%`);
    if(mpRow.getAttribute('aria-valuenow')!==String(Math.floor(mp))){mpRow.setAttribute('aria-valuenow',String(Math.floor(mp)));mpRow.setAttribute('aria-valuemax',String(mpMax));}
-   const exp=expDetails(p),expWidth=`${exp.fraction*100}%`,xpRow=$('hud-xp'),edge=$('hud-exp-edge');
-   setWidth(xpRow.querySelector('i'),expWidth);setText(xpRow.querySelector('.plate-text'),exp.percent);setWidth(edge.firstElementChild,expWidth);setText(edge.lastElementChild,`EXP ${exp.percent}`);
-   const ring=$('hud-exp-ring'),deg=`${Math.round(exp.fraction*360)}deg`;if(ring.style.getPropertyValue('--exp')!==deg)ring.style.setProperty('--exp',deg);
-   if(xpRow.getAttribute('aria-valuenow')!==String(Math.round(exp.fraction*100)))xpRow.setAttribute('aria-valuenow',String(Math.round(exp.fraction*100)));
+   const exp=expDetails(p);setWidth(xpBar.querySelector('i'),`${exp.fraction*100}%`);setText(xpBar.querySelector('.plate-text'),exp.max?'MAX':`${exp.have.toLocaleString('en-US')} / ${exp.need.toLocaleString('en-US')}`);
+   if(xpBar.getAttribute('aria-valuenow')!==String(Math.round(exp.fraction*100)))xpBar.setAttribute('aria-valuenow',String(Math.round(exp.fraction*100)));
    if(tipFor){if(tipUntil&&performance.now()>tipUntil)hideTip();else fillTip();}
    // Tracker: the story first in gold, then the active side mission in blue.
    const [story,side]=tracker.children;

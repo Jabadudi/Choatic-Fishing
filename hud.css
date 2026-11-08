@@ -12,12 +12,12 @@
 :root body.exploring #open-saves,:root body.exploring #open-settings,:root body.exploring #toggle-fullscreen,:root body.exploring .exploration-kicker{display:none}
 
 /* 1 · Menu portrait */
-#hud-menu{position:absolute;left:var(--hud-l);top:calc(9px + var(--hud-t));width:42px;height:42px;padding:0;border-radius:50%;border:2px solid var(--hud-line);background:#14302f;overflow:hidden;box-shadow:0 2px 8px #0008;cursor:pointer}
+#hud-menu{position:relative;width:42px;height:42px;padding:0;border-radius:50%;border:2px solid var(--hud-line);background:#14302f;overflow:hidden;box-shadow:0 2px 8px #0008;cursor:pointer}
 .hud-portrait{display:block;width:100%;height:100%;background:url(assets/story/eli-sheet.png) -34px -214px/907px 540px no-repeat;image-rendering:pixelated}
 .hud-portrait.large{width:72px;height:72px;border-radius:50%;border:2px solid var(--hud-line);background-color:#10272c;background-position:-58px -366px;background-size:1555px 926px}
 #hud-menu:active{transform:scale(.94)}
 /* 2 · Minimap */
-#hud-map{position:absolute;left:calc(var(--hud-l) + 50px);top:calc(6px + var(--hud-t));width:96px;display:grid;justify-items:center;gap:2px;pointer-events:none}
+#hud-map{position:absolute;left:var(--hud-l);top:calc(6px + var(--hud-t));width:96px;display:grid;justify-items:center;gap:2px;pointer-events:none}
 #hud-shell #hud-map #open-atlas{position:relative;inset:auto;width:88px;height:88px;padding:0;border-radius:50%;border:2px solid var(--hud-line);background:#24413a;box-shadow:0 0 0 3px #10272c99,0 3px 10px #0008;overflow:hidden;pointer-events:auto}
 #hud-shell #hud-map #mini-atlas{display:block;width:100%;height:100%;border:0;filter:none;border-radius:50%}
 #hud-shell #hud-map #open-atlas::after{content:'';position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 16px #0b1d1ecc;pointer-events:none}
@@ -54,37 +54,33 @@
 #hud-wallet{display:flex;gap:4px;margin:5px 2px 0 0}
 #hud-shell #purse-hud,#hud-stones{display:flex;align-items:center;gap:4px;height:24px;margin:0;padding:0 9px 0 5px;border-radius:12px;background:#10272ccc;border:1px solid #c2b68e66;font:bold 11px Arial,sans-serif;color:#f5d7a4}
 #hud-stones{padding-left:7px;color:#cdeef6}
-/* 6 · Player plate (level, name, HP, MP, EXP), MMO style, and dash. The HP bar is #player-hp from main.js, moved in. */
-#hud-vitals{position:absolute;left:50%;bottom:calc(8px + var(--hud-b));transform:translateX(-50%);width:236px;pointer-events:none;
- border-radius:5px;padding:1px;background:linear-gradient(#5d666c,#1d2427);box-shadow:0 0 0 1px #0a1214,0 3px 10px #000a}
-.hud-plate-head{display:flex;align-items:center;gap:8px;height:17px;padding:0 8px;border-radius:4px 4px 0 0;background:linear-gradient(#48525a,#2b3237 60%,#232a2e);box-shadow:inset 0 1px #ffffff22}
-#hud-level{font:bold 11px/1 Arial,sans-serif;color:#ffd84a;text-shadow:0 1px 0 #3a2a00,0 0 3px #000}
-#hud-name{flex:1;margin-right:28px;text-align:center;font:bold 10.5px/1 Arial,sans-serif;color:#eef1f2;text-shadow:0 1px 1px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hud-plate-body{display:grid;gap:2px;padding:3px 4px 4px;border-radius:0 0 4px 4px;background:linear-gradient(#f6f3ea,#dcd6c6);box-shadow:inset 0 1px #fff,inset 0 -1px #a59d88}
-#hud-shell .plate-row{position:relative;display:grid;grid-template-columns:25px minmax(0,1fr);align-items:center;gap:3px;margin:0}
-#hud-shell .plate-row .hp-row{display:contents}
-#hud-shell .plate-row .hp-label{display:block;grid-area:1/1;height:11px;border-radius:2px;background:linear-gradient(#9aa0a5,#6c7378);box-shadow:inset 0 1px #ffffff55,0 0 0 1px #59606566;font:bold 7.5px/11px Arial,sans-serif;letter-spacing:.3px;text-align:center;color:#fff;text-shadow:0 1px 0 #0006}
-#hud-shell .plate-row .hp-track{grid-area:1/2;position:relative;height:11px;margin:0;border-radius:2px;background:#2b2226;border:1px solid #4d4038;box-shadow:inset 0 1px 2px #000a;overflow:hidden}
-#hud-shell .plate-row .hp-track i{position:absolute;left:0;top:0;bottom:0;width:100%;display:block}
-#hud-shell .plate-row #player-hp-text,#hud-shell .plate-row .plate-text{grid-area:1/2;z-index:1;justify-self:center;font:bold 8.5px/11px Verdana,Arial,sans-serif;color:#fff;letter-spacing:.2px;text-shadow:-1px 0 #000a,1px 0 #000a,0 -1px #000a,0 1px #000a;pointer-events:none;white-space:nowrap}
-#hud-shell #player-hp-trail{background:#fff2e6}
-#hud-shell #player-hp-fill{background:linear-gradient(#ffa3bd,#ec4a76 50%,#c4295a);box-shadow:inset 0 1px #ffd6e2,inset 0 -1px #8f1d40}
-#hud-shell #player-hp.low #player-hp-fill{background:linear-gradient(#ffb08f,#e5452f 50%,#a8241b)}
-#hud-mp .hp-track i{background:linear-gradient(#c8f3ff,#4cc2f0 50%,#2389c9);box-shadow:inset 0 1px #eafbff,inset 0 -1px #135d8f;transition:width .2s}
-#hud-xp .hp-track i{background:linear-gradient(#fff6b0,#f5c93e 50%,#cf8f19);box-shadow:inset 0 1px #fffbe0,inset 0 -1px #8a5b0a;transition:width .3s}
-/* EXP looks: "plate" is a third row in the plate, "edge" a full-width bar along the bottom of the screen, "ring" a ring around the portrait. */
-#hud-shell #hud-xp,#hud-shell #hud-exp-edge{pointer-events:auto;cursor:help;outline:0}
-#hud-shell:not([data-exp="plate"]) #hud-xp,#hud-shell:not([data-exp="edge"]) #hud-exp-edge,#hud-shell:not([data-exp="ring"]) #hud-exp-ring{display:none}
-#hud-exp-edge{position:absolute;left:0;right:0;bottom:0;height:9px;background:linear-gradient(#1b2528,#0b1214);border-top:1px solid #000;box-shadow:0 -1px #ffffff1a}
-#hud-exp-edge i{display:block;height:100%;width:0;background:linear-gradient(#fff6b0,#f5c93e 50%,#cf8f19);box-shadow:inset 0 1px #fffbe0;transition:width .3s}
-#hud-exp-edge::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 1px),#0008 calc(10% - 1px) 10%);pointer-events:none}
-#hud-exp-edge span{position:absolute;inset:0;font:bold 7.5px/9px Verdana,Arial,sans-serif;text-align:center;color:#fff;text-shadow:-1px 0 #000,1px 0 #000,0 -1px #000,0 1px #000}
-#hud-exp-edge:hover{height:12px}#hud-exp-edge:hover span{line-height:12px;font-size:9px}
-#hud-shell[data-exp="edge"] #hud-vitals{bottom:calc(14px + var(--hud-b))}
-#hud-exp-ring{position:absolute;left:calc(var(--hud-l) - 4px);top:calc(5px + var(--hud-t));width:50px;height:50px;border-radius:50%;pointer-events:none;
- background:conic-gradient(#f5c93e var(--exp,0deg),#0b1d1ecc 0);-webkit-mask:radial-gradient(circle,transparent 21px,#000 21.5px);mask:radial-gradient(circle,transparent 21px,#000 21.5px);box-shadow:0 0 6px #f5c93e66}
-#hud-shell[data-exp="ring"] #hud-menu{z-index:1;cursor:pointer}
-#hud-exp-tip{position:absolute;z-index:30;display:grid;gap:2px;padding:5px 9px 6px;border-radius:5px;background:linear-gradient(#1f2a2e,#10191c);border:1px solid #f5c93e88;box-shadow:0 4px 12px #000b;pointer-events:none;white-space:nowrap}
+/* 6 · Player plate, bottom-centre: HP | Eli's portrait (the menu) with the level under it | mana, and XP along the bottom.
+   The HP bar is #player-hp from main.js and the portrait is #hud-menu, both moved in. */
+#hud-vitals{position:absolute;left:50%;bottom:calc(6px + var(--hud-b));transform:translateX(-50%);width:292px;box-sizing:border-box;padding:7px 12px 8px;isolation:isolate;
+ display:grid;grid-template-columns:minmax(0,1fr) 56px minmax(0,1fr);grid-template-rows:auto auto;gap:5px 9px;pointer-events:none;filter:drop-shadow(0 3px 6px #0009)}
+#hud-vitals::before,#hud-vitals::after{content:'';position:absolute;z-index:-1;--c:9px;clip-path:polygon(var(--c) 0,calc(100% - var(--c)) 0,100% var(--c),100% calc(100% - var(--c)),calc(100% - var(--c)) 100%,var(--c) 100%,0 calc(100% - var(--c)),0 var(--c))}
+#hud-vitals::before{inset:0;background:linear-gradient(#c2b68e88,#c2b68e33)}
+#hud-vitals::after{inset:1px;--c:8.5px;background:linear-gradient(#142a2ef2,#0b1a1df2)}
+.plate-who{grid-area:1/2;display:grid;justify-items:center;align-content:end;margin-top:-30px}
+#hud-shell .plate-who #hud-menu{position:relative;left:auto;top:auto;width:50px;height:50px;border:2px solid #d9c487;background:#14302f;box-shadow:0 0 0 3px #0b1a1d,0 0 0 4px #c2b68e66,0 3px 8px #000a;pointer-events:auto}
+#hud-shell .plate-who .hud-portrait{background-position:-40px -255px;background-size:1080px 643px}
+#hud-level{margin-top:4px;font:bold 10px/1 Georgia,serif;color:var(--hud-gold);letter-spacing:.4px;text-shadow:0 1px 2px #000;white-space:nowrap}
+#hud-shell .plate-stat{position:relative;margin:0;display:grid;gap:3px;align-content:end}
+#hud-shell #player-hp{grid-area:1/1}#hud-mp{grid-area:1/3}#hud-xp{grid-area:2/1/3/4}
+#hud-shell .plate-stat .hp-row{position:static;display:flex;justify-content:space-between;align-items:baseline;font:inherit}
+#hud-shell .plate-stat .hp-label{display:block;font:bold 9px/1 Arial,sans-serif;letter-spacing:1px;color:var(--hud-cream);text-shadow:0 1px 1px #000}
+#hud-shell .plate-stat #player-hp-text,#hud-shell .plate-stat .plate-text{font:bold 10px/1 Arial,sans-serif;color:#fff;text-shadow:0 1px 1px #000;white-space:nowrap}
+#hud-shell .plate-stat .hp-track{position:relative;height:7px;margin:0;border-radius:1px;background:#081315;border:1px solid #000;box-shadow:inset 0 1px 2px #000c,0 0 0 1px #c2b68e26;overflow:hidden}
+#hud-shell .plate-stat .hp-track i{position:absolute;left:0;top:0;bottom:0;width:100%;display:block}
+#hud-shell #player-hp-trail{background:#f6e7d0}
+#hud-shell #player-hp-fill{background:linear-gradient(#f7a08c,#e0705c 55%,#bf4f3d);box-shadow:inset 0 1px #ffcfc0aa}
+#hud-shell #player-hp.low #player-hp-fill{background:linear-gradient(#ff9a7a,#e0453a 55%,#a7302a)}
+#hud-mp .hp-track i{background:linear-gradient(#bff4fb,#6fd3e6 55%,#3aa8c2);box-shadow:inset 0 1px #e6fcffaa;transition:width .2s}
+#hud-shell #hud-xp{pointer-events:auto;cursor:help;outline:0}
+#hud-shell #hud-xp .hp-track{height:5px}
+#hud-xp .hp-track i{background:linear-gradient(#ffe7a3,#e8b84e 55%,#c48a26);box-shadow:inset 0 1px #fff3cc99;transition:width .3s}
+#hud-shell #hud-xp:hover .hp-track,#hud-shell #hud-xp:focus-visible .hp-track{box-shadow:inset 0 1px 2px #000c,0 0 0 1px #e8c46a99}
+#hud-exp-tip{position:absolute;z-index:30;display:grid;gap:2px;padding:5px 9px 6px;border-radius:5px;background:linear-gradient(#1f2a2e,#10191c);border:1px solid #e8c46a88;box-shadow:0 4px 12px #000b;pointer-events:none;white-space:nowrap}
 #hud-exp-tip[hidden]{display:none}
 #hud-exp-tip b{font:bold 11px Arial,sans-serif;color:#ffd84a}#hud-exp-tip span{font:10.5px Arial,sans-serif;color:var(--hud-cream)}
 #hud-shell .dash-mini{position:absolute;left:0;top:6px;transform:translateX(-100%);display:flex;flex-direction:row;align-items:center;gap:4px;padding-right:8px;font:8px monospace;color:#c9eddb}
@@ -205,8 +201,8 @@
 :root body.exploring .status p{margin:0;font-size:10.5px;line-height:1.35}
 :root body.exploring .status p:empty{display:none}
 :root body.exploring #save-status{left:50%;right:auto;top:auto;bottom:calc(48px + var(--hud-b));transform:translateX(-50%)}
-:root body.exploring #explore-hint{bottom:calc(80px + var(--hud-b))}
-@media(min-height:600px) and (min-width:900px){:root body.exploring #explore-hint{bottom:calc(108px + var(--hud-b))}}
+:root body.exploring #explore-hint{bottom:calc(106px + var(--hud-b))}
+@media(min-height:600px) and (min-width:900px){:root body.exploring #explore-hint{bottom:calc(140px + var(--hud-b))}}
 /* The menu sheet */
 #hud-menu-sheet{width:min(760px,calc(100vw - 24px));max-height:calc(100dvh - 24px);padding:0;border:1px solid var(--hud-line);border-radius:10px;background:#0b1d1ef7;color:var(--hud-cream);font-family:Arial,sans-serif;overflow:auto}
 /* min-content rows: Safari otherwise sizes the row as if the buttons sat in one column, leaving the menu screen-tall. */
@@ -269,12 +265,12 @@
 :root body.exploring .status p{max-width:min(520px,100%);padding:8px 18px;border-radius:14px;border:1px solid #ffd36a88;color:#ffe9b0;font-size:14px;font-weight:bold;box-shadow:0 4px 16px #0008}
 /* Every other message sits in the bottom notice line, where the save badge used to show. Autosave is implied; the badge only appears for a failed save. */
 #world-notice{display:none}
-:root body.exploring #world-notice:not(:empty){display:block;position:absolute;z-index:6;left:50%;bottom:calc(82px + var(--hud-b));transform:translateX(-50%);width:max-content;max-width:min(460px,calc(100vw - 24px));margin:0;padding:4px 12px;border-radius:12px;background:#0b1d1ecc;color:#edf3df;font:10.5px/1.35 Arial,sans-serif;text-align:center;text-shadow:0 1px 3px #000;pointer-events:none;transition:opacity .8s}
+:root body.exploring #world-notice:not(:empty){display:block;position:absolute;z-index:6;left:50%;bottom:calc(108px + var(--hud-b));transform:translateX(-50%);width:max-content;max-width:min(460px,calc(100vw - 24px));margin:0;padding:4px 12px;border-radius:12px;background:#0b1d1ecc;color:#edf3df;font:10.5px/1.35 Arial,sans-serif;text-align:center;text-shadow:0 1px 3px #000;pointer-events:none;transition:opacity .8s}
 :root body.exploring #world-notice.quiet{opacity:0}
 @media(min-height:600px) and (min-width:900px){:root body.exploring #world-notice{zoom:1.3}}
 @media(max-width:600px){:root body.exploring #world-notice:not(:empty){bottom:calc(224px + var(--hud-b))}}
-:root body.exploring:not(.touch-mode):has(#explore-hint:not([hidden])) #world-notice:not(:empty){bottom:calc(110px + var(--hud-b))}
-@media(min-height:600px) and (min-width:900px){:root body.exploring:not(.touch-mode):has(#explore-hint:not([hidden])) #world-notice:not(:empty){bottom:calc(108px + var(--hud-b))}}
+:root body.exploring:not(.touch-mode):has(#explore-hint:not([hidden])) #world-notice:not(:empty){bottom:calc(136px + var(--hud-b))}
+@media(min-height:600px) and (min-width:900px){:root body.exploring:not(.touch-mode):has(#explore-hint:not([hidden])) #world-notice:not(:empty){bottom:calc(136px + var(--hud-b))}}
 /* Menu windows on phones: leave a margin all round and clear the notch and home bar, so no window fills the whole screen. */
 :root{--safe-l:env(safe-area-inset-left,0px);--safe-r:env(safe-area-inset-right,0px);--safe-t:env(safe-area-inset-top,0px);--safe-b:env(safe-area-inset-bottom,0px)}
 @media(max-width:960px),(max-height:560px){
