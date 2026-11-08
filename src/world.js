@@ -25,7 +25,7 @@ import {createFamiliars,absorbShard,updateFamiliar,familiarAction} from './famil
 import {noteEncounters} from './codex-discovery.js';
 import {updateDefeat} from './monsters.js';
 import {giveStarterSword} from './warrior.js';
-import {startRegions,updateRegions} from './region-play.js';
+import {startRegions,updateRegions,regionCrossing} from './region-play.js';
 import {createWell,updateWell,nearWell,findWishstone} from './wishing-well.js';
 import {artifactBonus,combineArtifacts,isArtifact,itemLabel,slotArtifact,unslotArtifact,withArticle} from './artifacts.js';
 export {LAND} from './terrain.js';
@@ -196,7 +196,10 @@ export class World {
    // Until Chapter 2 ends, Eli stays between the Landing and the Arrival Bay beach.
    if(next&&this.story&&!inlandUnlocked(this.story)&&!SHORE_AREAS.includes(next.areaId)){next=null;const a=Wilds.areaFor(this.areaId);p.x=Math.max(25,Math.min(a.width-25,p.x));p.y=Math.max(25,Math.min(a.height-25,p.y));this.message=storyObjective(this);}
    if(next&&!storyTransitionAllowed(this,next)){next=null;const a=Wilds.areaFor(this.areaId);p.x=Math.max(25,Math.min(a.width-25,p.x));p.y=Math.max(25,Math.min(a.height-25,p.y));this.message='Your guide is still on the trail. Stay with her before moving on.';}
-   if(next)this.enterArea(next,p);
+   // Regions: the east edge is shut until the map is cleared (src/region-play.js).
+   const crossing=next&&this.regions?regionCrossing(this,next):'';
+   if(crossing===null){next=null;const a=Wilds.areaFor(this.areaId);p.x=Math.max(25,Math.min(a.width-25,p.x));this.atGate=false;updateRegions(this);}
+   if(next)this.enterArea(next,p,crossing||null);
    p.walkTime=(p.walkTime||0)+Math.hypot(dx,dy)*.14;return;
   }
   let x=Math.max(LAND.left+15,Math.min(LAND.right-15,p.x+dx));

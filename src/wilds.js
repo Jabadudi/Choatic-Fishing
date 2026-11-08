@@ -1,6 +1,7 @@
 import {drawQuarryActorShadow} from './quarry-light.js';
 import {castShadow,shadowPass,muteShadows,contactShadow} from './ground-shadow.js';
 import {slimeShadow} from './slime-art.js';
+import {sheetShadow,sheetCreature} from './sheet-creature-art.js';
 import {elevationFor,heightAt,canTraverse,canReach,projectGround,unprojectGround} from './terrain-height.js';
 export {elevationFor,heightAt,canTraverse,canReach,projectGround,unprojectGround};
 import {elevationBands,drawElevationBand} from './elevation-art.js';
@@ -248,7 +249,7 @@ const DEEP_WATER=60;
 function dualGround(ctx,left,top,width,height,id){
  const plan=DUAL_GROUND[id];if(!plan||typeof document==='undefined')return false;
  const base=dualGridSheet(plan.base,markStale),sheets=plan.layers.map(k=>dualGridSheet(k,markStale));if(!base||sheets.some(s=>!s))return false;
- const C=GROUND_CELL;ctx.save();ctx.fillStyle=fullCellPattern(ctx,base,C);ctx.fillRect(left,top,width,height);
+ const C=GROUND_CELL;ctx.save();ctx.fillStyle=fullCellPattern(ctx,base,plan.baseCell||C);ctx.fillRect(left,top,width,height);
  ctx.imageSmoothingEnabled=true;
  plan.layers.forEach((k,i)=>drawDualGrid(ctx,sheets[i],(x,y)=>DUAL_TESTS[k](x,y,id),{left:left-C,top:top-C,width:width+2*C,height:height+2*C,cell:C}));
  ctx.restore();return true;
@@ -421,7 +422,7 @@ export function drawDepthSorted(ctx,world,view,actors,drawActor,{still=false,ter
   const x=it.ref?.x??it.x,y=it.ref?.y??it.oy;s.save();s.translate(0,-heightAt(x,y,id));
   if(it.kind==='atlas')propShadow(s,it.ref);
   else if(it.kind==='actor'){const a=it.ref;
-   if(a.species==='slime'){const o=slimeShadow(a);if(o)contactShadow(s,o.x,o.y,o.rx,o.ry);}
+   if(a.species==='slime'||sheetCreature(a)){const o=(a.species==='slime'?slimeShadow:sheetShadow)(a);if(o)contactShadow(s,o.x,o.y,o.rx,o.ry);}
    else if((a===p||a.npc||a.remote||a.cutscene)&&(a.health===undefined||a.health>0))contactShadow(s,Math.round(a.x),Math.round(a.y)+14,11,4);}
   s.restore();}});
  muteShadows(!!cast);

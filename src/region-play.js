@@ -4,31 +4,50 @@
 // monsters, placed in bunches (src/field-play.js createBunches), and a sealed gate at the east end that opens once
 // every one of them is down.
 import {AREAS,areaFor} from './wilds.js';
-import {fieldMap} from './field-maps.js';
+import {fieldMap,FIELD_MAPS} from './field-maps.js';
+import {ANIMAL_TYPES} from './entities.js';
 import {createBunches,mapCleared,fieldProgress} from './field-play.js';
 import {giveStarterSword} from './warrior.js';
 export const REGION_START='dewdrop-meadow';
+// The Regions maps in order, west to east: 1.1 Dewdrop Meadow, 1.2 Mossroot Trail, 1.3 Saltspray Shore.
+export const REGION_MAPS=Object.freeze(Object.keys(FIELD_MAPS).filter(id=>FIELD_MAPS[id].bunches).sort((a,b)=>FIELD_MAPS[a].code.localeCompare(FIELD_MAPS[b].code,undefined,{numeric:true})));
+// Every map's monsters, each in its own area; only the map Eli stands in moves and fights.
+const allBunches=world=>REGION_MAPS.flatMap(id=>createBunches(world,id));
+const foes=(id,n)=>{const name=(ANIMAL_TYPES[fieldMap(id)?.species]?.name||'monster').toLowerCase();return n===1?name:`${name}s`;};
+const arrival=(world,id)=>`${fieldMap(id).code} ${areaFor(id).name} · ${mapCleared(world,id)?'Cleared. The gate east stands open.':`Defeat every ${foes(id,1)} to open the gate east.`}`;
 // How close to the east edge Eli must walk for the gate to speak.
 export const GATE_REACH=150;
 export function startRegions(world){
  Object.assign(world,{regions:true,story:null,npcs:[],rabbits:[],spawns:null,areaId:REGION_START});
  Object.assign(world.player,AREAS[REGION_START].spawn,{name:'Eli',spriteId:'eli'});
- world.wildlife=createBunches(world,REGION_START);
+ world.wildlife=allBunches(world);
  giveStarterSword(world);
- world.message=`${fieldMap(REGION_START).code} ${areaFor(REGION_START).name} · Defeat every slime to open the gate east.`;
+ world.message=arrival(world,REGION_START);
 }
 // A restored Regions journey rebuilds its map's monsters from the field map state (the ones down stay down).
 export function restoreRegions(world){
  Object.assign(world,{regions:true,story:null,npcs:[],rabbits:[],spawns:null});
  Object.assign(world.player,{name:'Eli',spriteId:'eli'});
- world.wildlife=createBunches(world,world.areaId);
+ world.wildlife=allBunches(world);
 }
-// The east gate: shut until the map is cleared, then it points on to the next map, which is still to be built.
+// Walking off the east edge into the next map needs the gate open (this map cleared); walking back west is always open.
+// Returns the arrival message, or null when the way is shut (the gate message is already up).
+export function regionCrossing(world,next){
+ if(!world.regions)return '';
+ const from=REGION_MAPS.indexOf(world.areaId),to=REGION_MAPS.indexOf(next.areaId);
+ if(to>from&&!mapCleared(world,world.areaId))return null;
+ return arrival(world,next.areaId);
+}
+// The east gate: shut until the map is cleared, then it opens on to the next map. The last map's gate still points
+// at a map to be built.
 export function updateRegions(world){
  if(!world.regions)return;
  const area=areaFor(world.areaId),p=world.player;
  if(p.x<area.width-GATE_REACH){world.atGate=false;return;}
  if(world.atGate)return;world.atGate=true;
  const f=fieldProgress(world);if(!f)return;
- world.message=mapCleared(world,world.areaId)?'The gate stands open. The next map, 1.2, is still being built.':`The gate is sealed. ${f.goal-f.kills} ${f.goal-f.kills===1?'slime is':'slimes are'} still bouncing about the meadow.`;
+ const next=area.exits.find(e=>e.edge==='east'),left=f.goal-f.kills;
+ world.message=!mapCleared(world,world.areaId)?`The gate is sealed. ${left} ${foes(world.areaId,left)} ${left===1?'is':'are'} still about.`
+  :next?`The gate stands open. Walk east into ${next.label}.`:`The gate stands open. The next map, ${nextCode(world.areaId)}, is still being built.`;
 }
+const nextCode=id=>{const [r,m]=fieldMap(id).code.split('.').map(Number);return `${r}.${m+1}`;};

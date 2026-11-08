@@ -80,7 +80,11 @@ export function defineArea(def){
  // Cliffs and steep rock: dry but solid, except where a trail or stair climbs them.
  const cliffs=(def.cliffs||[]).map(poly=>{const p=Ps(poly);return {poly:p,box:boxOf(p)};});
  const onRoad=(x,y)=>roads.some(r=>lineDistance(x,y,r)<30)||deck(x,y);
- const blocked=(x,y)=>solidProps.some(p=>(x-p.x)**2+(y-p.y)**2<(p.r+12)**2)||cliffs.some(c=>outside(x,y,c.box)===0&&inside(x,y,c.poly))&&!onRoad(x,y);
+ // The hand-placed Regions maps (scatter:false) block only a flat oval at each prop's base, tested at the walker's
+ // feet (12 below its centre), so Eli can stand right in front of a rock or a trunk and walk behind its crown.
+ const footprint=def.scatter===false;
+ const hit=footprint?(p,x,y)=>{const rx=p.r+10,ry=Math.max(6,rx*.35);return ((x-p.x)/rx)**2+((y+12-p.y+3)/ry)**2<1;}:(p,x,y)=>(x-p.x)**2+(y-p.y)**2<(p.r+12)**2;
+ const blocked=(x,y)=>solidProps.some(p=>hit(p,x,y))||cliffs.some(c=>outside(x,y,c.box)===0&&inside(x,y,c.poly))&&!onRoad(x,y);
  area.places=places;
  const fixed=(def.fixedFeatures||[]).map(f=>({at:P(f.at),radius:f.radius||35,box:f.box?Ps(f.box):null}));
  return {area,elevation,water,deck,blocked,zoneAt,roads,trailAt,places,props,scatter:def.scatter!==false,walks,fords,bridges,toWorld:P,textures:def.textures||null,fixedFeatures:def.fixedFeatures||null,

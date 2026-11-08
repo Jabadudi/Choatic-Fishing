@@ -13,10 +13,14 @@ export function frameCell(mask){const frame=FRAME_BY_MASK[mask];return {column:f
 export const DUAL_GRID_SHEETS=Object.freeze({plateauTop:'plateau-top',cliffWall:'cliff-wall',sand:'sand',dirtPath:'dirt-path',water:'water',forestFloor:'forest-floor',meadowGrass:'meadow-grass',deepWater:'deep-water'});
 // Areas whose ground is built from dual-grid layers: a base texture, then each sheet over it in order. Water there
 // also walks on the same lattice (atlas-area.js), so the shoreline Eli stops at is the one on screen.
+// The Regions maps (Dewdrop Meadow on) lay Netanel's new grass, the plateau-top sheet's full cell, under everything,
+// at baseCell: 96 units a tile, the same size the cliff tops draw it, instead of the 48-unit ground lattice.
 export const GROUND_CELL=48;
 // base is a dual-grid sheet whose fully filled cell repeats under everything.
 export const DUAL_GROUND=Object.freeze({glasswater:{base:'meadowGrass',layers:['sand','dirtPath','water','deepWater']},
- 'dewdrop-meadow':{base:'meadowGrass',layers:['sand','dirtPath','water','deepWater']}});
+ 'dewdrop-meadow':{base:'plateauTop',baseCell:96,layers:['sand','dirtPath','water','deepWater']},
+ 'mossroot-trail':{base:'plateauTop',baseCell:96,layers:['sand','dirtPath','water','deepWater']},
+ 'saltspray-shore':{base:'plateauTop',baseCell:96,layers:['sand','dirtPath','water','deepWater']}});
 const sheets=new Map(),listeners=new Set();
 onTexturePackChange(()=>{sheets.clear();listeners.forEach(fn=>fn());});
 export function dualGridSheet(kind,invalidate=()=>{}){

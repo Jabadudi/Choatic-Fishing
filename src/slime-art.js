@@ -1,7 +1,12 @@
-// Chibi slimes for the Regions game, drawn in code: a round jelly dome with a glossy shine, big sparkly eyes and pink
-// cheeks. It squashes and stretches as it hops, rears back through its windup, and splats flat when defeated.
-// Each slime gets one of a few soft colours from its seed. Drawing only; the slime's stats are in src/entities.js.
+// Chibi slimes for the Regions game. They use Netanel's painted slime sheet (art/sprites/creatures/slime-sheet.png, cut
+// by scripts/prepare-slime-sprites.py into eight poses): resting, crouched, stretched mid-hop, landing, and splatted
+// flat. It crouches before a hop, stretches in the air, lands wide, flattens through its windup and splats when defeated.
+// Until the frames load, the old code-drawn jelly dome stands in. Drawing only; the slime's stats are in src/entities.js.
 import {castShadow} from './ground-shadow.js';
+import {drawProp} from './sprites.js';
+// The eight poses on the sheet, by number: 0 and 4 rest, 3 rests tall, 1 crouches, 2 and 5 stretch, 7 lands wide, 6 is flat.
+const SIZE=.5;
+export const SLIME_FRAMES=[[78,64],[88,45],[68,76],[75,69],[77,64],[69,73],[93,39],[83,55]];
 const COLORS=[
  {body:'#7fd36a',dark:'#4f9f45',light:'#c4f3a6'},
  {body:'#6fc3e8',dark:'#3f8cb8',light:'#bfe9fb'},
@@ -20,11 +25,35 @@ function slimePose(a){
  else if(a.state==='strike'){sx=.82;sy=1.22;}
  else if(moving){const land=1-Math.sin(hopT*Math.PI);sx=1+.18*land*land;sy=1-.16*land*land;}
  else{const b=Math.sin(t*3+(a.seed>>>0))*.04;sx=1+b;sy=1-b;}
- return {dead,lift,sx,sy};
+ return {dead,lift,sx,sy,hopT,moving,t};
+}
+// Which painted pose fits this moment.
+export function slimeFrame(a,pose=slimePose(a)){
+ const {dead,hopT,moving,t}=pose;
+ if(dead)return 6;
+ if(a.state==='attack'){const k=1-Math.max(0,Math.min(1,(a.attackRemaining??0)/Math.max(.01,a.attackWindup||.5)));return k<.45?7:6;}
+ if(a.state==='strike')return 2;
+ if(a.hurtRemaining>0)return 7;
+ if(moving)return hopT<.12?1:hopT<.42?2:hopT<.62?5:hopT<.86?3:7;
+ // At rest it breathes between its two resting poses, now and then sitting up tall.
+ const beat=Math.floor(t*2.2+((a.seed>>>0)%5));return [0,4,0,3][beat%4];
 }
 // The slime's contact shadow for the shadow pass: under its base, shrinking while it is in the air.
-export function slimeShadow(a){const {dead,lift,sx}=slimePose(a);if(dead)return null;const k=1-lift/26;return {x:Math.round(a.x),y:Math.round(a.y)-1,rx:17*sx*.95*k,ry:4.6*k};}
+export function slimeShadow(a){const pose=slimePose(a);if(pose.dead)return null;const k=1-pose.lift/26,[fw]=SLIME_FRAMES[slimeFrame(a,pose)];return {x:Math.round(a.x),y:Math.round(a.y)-1,rx:fw*SIZE*.46*k,ry:4.6*k};}
 export function drawSlime(c,a){
+ const pose=slimePose(a),f=slimeFrame(a,pose),[fw,fh]=SLIME_FRAMES[f];
+ if(!drawProp(c,`slime/${f}`,{x:-1e5,y:-1e5,w:1,h:1}))return drawnSlime(c,a);
+ const x=Math.round(a.x),y=Math.round(a.y);
+ if(!pose.dead)castShadow(c,x,y+1,fw*SIZE*.5*(1-pose.lift/40),{strength:1-pose.lift/30});
+ c.save();
+ // A hurt one flickers.
+ if(a.hurtRemaining>0&&Math.floor((a.time||0)*20)%2)c.globalAlpha=.6;
+ const shake=a.hurtRemaining>0?Math.round(Math.sin((a.time||0)*60)*1.5):0;
+ drawProp(c,`slime/${f}`,{x:x+shake,y:y+3-Math.round(pose.lift),w:fw*SIZE,h:fh*SIZE});
+ c.restore();
+}
+// The code-drawn slime, while the painted frames load.
+function drawnSlime(c,a){
  const col=slimeColor(a),{dead,lift,sx,sy}=slimePose(a);
  const x=Math.round(a.x),y=Math.round(a.y),R=17;
  c.save();c.translate(x,y);

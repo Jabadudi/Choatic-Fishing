@@ -84,7 +84,7 @@ export function render(ctx,world,view,{others=[]}={}){
     else{const back=effect.comboStep===2?-1:1;ctx.beginPath();ctx.arc(0,0,effect.name==='Anchor'?72:48,back*(-1+age*2),back*(1+age*2),back<0);ctx.stroke();}
     ctx.restore();
   }
-  if(world.adventure){drawWildsLabels(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500});if(view&&!world.defeat&&!INTERIOR_AREAS.includes(world.areaId)&&!cabinDamaged(world.story))drawAtmosphere(ctx,world,displayView);drawAnimalStatus(ctx,world);if(view){drawFieldProgress(ctx,world,displayView);drawComboCounter(ctx,world,displayView);drawFieldClear(ctx,world,displayView);}if(world.defeat&&view)drawDefeat(ctx,world,displayView);}
+  if(world.adventure){drawWildsLabels(ctx,world,view||{left:p.x-700,right:p.x+700,top:p.y-500,bottom:p.y+500});if(view&&!world.defeat&&!INTERIOR_AREAS.includes(world.areaId)&&!cabinDamaged(world.story))drawAtmosphere(ctx,world,displayView);drawAnimalStatus(ctx,world);if(view)hud(ctx,displayView,v=>{drawFieldProgress(ctx,world,v);drawComboCounter(ctx,world,v);drawFieldClear(ctx,world,v);});if(world.defeat&&view)drawDefeat(ctx,world,displayView);}
 }
 function drawBobber(ctx,world){
  const {elapsed:t,player:p,bobber}=world;if(!bobber)return;
@@ -103,12 +103,19 @@ function drawComboCounter(ctx,world,view){
  ctx.restore();
 }
 // The field map's clear goal, top centre: monsters defeated, whether the elite has fallen, and the best rank so far.
+// HUD pieces drawn on the world canvas keep their screen size when the camera zooms in: they draw into a view
+// zoom times larger, scaled back down around its top-left corner.
+function hud(ctx,view,draw){
+ const z=view.zoom||1;if(z===1)return draw(view);
+ const W=(view.right-view.left)*z,H=(view.bottom-view.top)*z;
+ ctx.save();ctx.translate(view.left,view.top);ctx.scale(1/z,1/z);draw({left:0,top:0,right:W,bottom:H,zoom:1});ctx.restore();
+}
 function drawFieldProgress(ctx,world,view){
  const f=fieldProgress(world);if(!f||world.fieldClear)return;
  if(f.species){drawRankTracker(ctx,f,view);return;}
  const W=view.right-view.left,size=Math.max(11,Math.min(14,W*.011)),x=view.left+W/2,y=view.top+size*2.2;
  // A bunch map (Regions) has no elite: its pill counts its own monsters, then says the gate is open.
- const text=f.species?(f.clears?`${f.code} · Cleared · Rank ${f.best} · The gate east is open`:`${f.code} · Slimes ${f.kills}/${f.goal}`):`${f.code} · Monsters ${f.kills}/${f.goal} · ${f.eliteName} ${f.elite?'✓':'—'}${f.best?` · Best ${f.best}`:''}`;
+ const text=f.species?(f.clears?`${f.code} · Cleared · Rank ${f.best} · The gate east is open`:`${f.code} · Monsters ${f.kills}/${f.goal}`):`${f.code} · Monsters ${f.kills}/${f.goal} · ${f.eliteName} ${f.elite?'✓':'—'}${f.best?` · Best ${f.best}`:''}`;
  ctx.save();ctx.font=`bold ${Math.round(size)}px Georgia, serif`;ctx.textAlign='center';ctx.textBaseline='middle';
  const w=(ctx.measureText?.(text)?.width||text.length*size*.6)+size*1.6,h=size*1.9;
  ctx.fillStyle='#1d2a22cc';ctx.fillRect(x-w/2,y-h/2,w,h);ctx.strokeStyle='#c9a85a';ctx.lineWidth=1;ctx.strokeRect(x-w/2+.5,y-h/2+.5,w-1,h-1);
