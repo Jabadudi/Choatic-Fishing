@@ -803,6 +803,11 @@ area({id:'dewdrop-meadow',num:'1.1',name:'Dewdrop Meadow',frame:[195,395,330,367
   {kind:'cart',at:[385.5,342],art:'wood-barrel'},
   {kind:'cart',at:[387.2,343.1],art:'apple-crate'},
   {kind:'sign',at:[384,353.5],art:'signpost'},
+  // Netanel's meadow trees, a few through the meadow.
+  {kind:'tree',at:[230,343.5],art:'meadow-oak-1'},
+  {kind:'tree',at:[252.5,354.5],art:'meadow-oak-2'},
+  {kind:'tree',at:[292.5,343],art:'meadow-oak-3'},
+  {kind:'tree',at:[365,355],art:'meadow-oak-4'},
   // Netanel's meadow sheet, spread through the meadow: grass tufts, wildflower patches, rocks, pebbles and bushes.
   {kind:'bush',at:[257,356.1],art:'berry-bush'},
   {kind:'bush',at:[254.4,352.3],art:'leafy-bush'},

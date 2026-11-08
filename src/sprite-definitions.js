@@ -298,7 +298,7 @@ for(const id of ['listening-tree','fallen-giant','hollow-tree','goldleaf-tree','
  'stone-bridge-v','stepping-stones','stepping-stone','rope-bridge','broken-watch','grey-spire','great-bridge','spring-pool','hollow-rock','drowned-colonnade',
  // Layered-world set (scripts/prepare-layered-props.py), the art style the game is moving to.
  'log-cabin','round-oak','round-bush','daisies','cattails','water-lily','grass-rock','log-pile','wood-barrel','plank-walk','plank-walk-start','plank-walk-end',
- 'grass-tuft','grass-clump','grass-sprigs','grass-tall','white-flowers','yellow-flowers','lavender','pink-flowers','grey-rock','pebbles','sandstone-rock','mossy-rock','leafy-bush','dark-bush','small-bush','berry-bush'])PROPS[`atlas/${id}`]=`props/atlas/${id}.webp`;
+ 'meadow-oak-1','meadow-oak-2','meadow-oak-3','meadow-oak-4','grass-tuft','grass-clump','grass-sprigs','grass-tall','white-flowers','yellow-flowers','lavender','pink-flowers','grey-rock','pebbles','sandstone-rock','mossy-rock','leafy-bush','dark-bush','small-bush','berry-bush'])PROPS[`atlas/${id}`]=`props/atlas/${id}.webp`;
 for(const id of ['rabbit','fox','deer','boar','elk','bear','heron','crab','goat','otter','duck','pike','seal','turtle','eel','shadow-walker','moonfang','rimejaw','flitlynx'])PROPS[`shard-${id}`]=`items/shard-${id}.webp`;
 
 // Editor-selectable scenery: visual bounds only; PROP_SOLID still owns collision.
@@ -306,7 +306,9 @@ PROPS['atlas/quarry-gantry']='props/atlas/quarry-gantry.webp';
 PROPS['atlas/stonecutting-bench']='props/atlas/stonecutting-bench.webp';
 export const ATLAS_PROP_ART={
  crane:{crane:['atlas/crane',120,120],'quarry-gantry':['atlas/quarry-gantry',220,195]},
- tree:{oak:['atlas/oak',150,118],pine:['atlas/pine',100,124],birch:['atlas/birch',80,118],'dead-tree':['atlas/dead-tree',110,114],'chime-tree':['atlas/chime-tree',150,140],'goldleaf-tree':['atlas/goldleaf-tree',150,160],'hollow-tree':['atlas/hollow-tree',150,160],'round-oak':['atlas/round-oak',150,160]},
+ tree:{oak:['atlas/oak',150,118],pine:['atlas/pine',100,124],birch:['atlas/birch',80,118],'dead-tree':['atlas/dead-tree',110,114],'chime-tree':['atlas/chime-tree',150,140],'goldleaf-tree':['atlas/goldleaf-tree',150,160],'hollow-tree':['atlas/hollow-tree',150,160],'round-oak':['atlas/round-oak',150,160],
+  // Netanel's meadow trees (scripts/prepare-meadow-trees.py).
+  'meadow-oak-1':['atlas/meadow-oak-1',165,146],'meadow-oak-2':['atlas/meadow-oak-2',148,172],'meadow-oak-3':['atlas/meadow-oak-3',153,136],'meadow-oak-4':['atlas/meadow-oak-4',152,147]},
  bush:{bush:['atlas/bush',60,40],fern:['atlas/fern',56,30],reeds:['atlas/reeds',56,38],'marsh-shrub':['atlas/marsh-shrub',60,26],'flower-box':['flower-box',64,38],'round-bush':['atlas/round-bush',62,46],daisies:['atlas/daisies',42,30],cattails:['atlas/cattails',34,40],'water-lily':['atlas/water-lily',38,29],
   // Netanel's meadow sheet (scripts/prepare-meadow-props.py): grass tufts, wildflowers and bushes.
   'grass-tuft':['atlas/grass-tuft',29,28],'grass-clump':['atlas/grass-clump',46,31],'grass-sprigs':['atlas/grass-sprigs',40,24],'grass-tall':['atlas/grass-tall',35,37],'white-flowers':['atlas/white-flowers',39,29],'yellow-flowers':['atlas/yellow-flowers',37,34],'lavender':['atlas/lavender',43,40],'pink-flowers':['atlas/pink-flowers',38,33],'leafy-bush':['atlas/leafy-bush',66,57],'dark-bush':['atlas/dark-bush',78,50],'small-bush':['atlas/small-bush',60,42],'berry-bush':['atlas/berry-bush',70,50]},
