@@ -4,12 +4,12 @@ import {World} from '../src/world.js';
 import {SLOTS} from '../src/spawn-tables.js';
 import {createCreature} from '../src/spawns.js';
 import {attack} from '../src/combat.js';
-import {COMBO,comboDisplay,hitStopDt} from '../src/combo.js';
+import {COMBO,STUN,comboDisplay,hitStopDt} from '../src/combo.js';
 import {animalPose} from '../src/wildlife-art.js';
 const idle=w=>({left:false,right:false,up:false,down:false,held:false,aim:{x:w.player.x+1,y:w.player.y}});
 // Reedwater Landing with one shadow walker beside Eli, facing it.
-function setup(){
- const w=new World(()=>.2,{adventure:true});w.journeyId='combo-test';w.spawns=null;w.rabbits=[];
+function setup(roll=.2){
+ const w=new World(()=>roll,{adventure:true});w.journeyId='combo-test';w.spawns=null;w.rabbits=[];
  const walker=createCreature(SLOTS['landing-east'],'shadow-walker',{id:'walker'});walker.health=walker.maxHealth=10000;w.wildlife=[walker];
  Object.assign(w.player,{x:walker.x-50,y:walker.y,angle:0});return {w,walker};
 }
@@ -84,4 +84,23 @@ test('the Iron Sword never breaks and chains the combo',()=>{
  const {w,walker}=setup();
  for(let i=0;i<3;i++){attack(w,w.player,{name:'Iron Sword'});run(w,w.player.cooldown+.01);}
  assert.equal(walker.maxHealth-walker.health,30+30*1.1+30*1.6);
+});
+
+test('without a stun a monster keeps attacking while Eli hits it; a stun stops its swing',()=>{
+ // Every roll misses the stun: the walker winds up and lands its swing through the whole combo.
+ const {w,walker}=setup(.99);w.player.progression.maxHealth;
+ const start=w.player.health;
+ for(let i=0;i<9;i++){attack(w,w.player,spear);run(w,w.player.cooldown+.01);}
+ assert.ok(!(walker.downRemaining>0));assert.ok(w.player.health<start,'the walker hit back during the combo');
+ // Every roll stuns: the first hit drops the swing and keeps it from starting another.
+ const s=setup(.01);s.walker.state='attack';s.walker.attackRemaining=.3;
+ attack(s.w,s.w.player,spear);assert.ok(s.walker.stunRemaining>0);assert.equal(s.walker.attackRemaining,0);assert.notEqual(s.walker.state,'attack');
+ assert.ok(s.w.effects.some(e=>e.label==='STUN'));
+ const health=s.w.player.health;run(s.w,STUN.seconds*.8);assert.equal(s.w.player.health,health,'no swing while stunned');
+});
+
+test('Stun is a stat: base chance, raised by familiars and area sets, capped',()=>{
+ const {w}=setup(),p=w.player.progression;assert.equal(p.stun,STUN.base);
+ p.familiar={stun:.06};p.collection={health:0,damage:0,stun:.05};assert.ok(Math.abs(p.stun-(STUN.base+.11))<1e-9);
+ p.familiar={stun:5};assert.equal(p.stun,STUN.max);
 });

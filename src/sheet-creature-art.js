@@ -12,7 +12,16 @@ export const SHEET_ROWS=Object.freeze(['walk','hit','die','attack']);
 export const SHEET_CREATURES=Object.freeze({
  stump:{sheet:'stump',size:52,shadow:11},
  'shore-crab':{sheet:'crab',size:76,shadow:19},
- 'boss-crab':{sheet:'mudshell',size:190,shadow:62}
+ 'boss-crab':{sheet:'mudshell',size:190,shadow:62},
+ 'boss-frog':{sheet:'frogking',size:180,shadow:60},
+ 'boss-mushroom':{sheet:'capstomper',size:180,shadow:56},
+ 'berry-sprite':{sheet:'sprite',size:50,shadow:12},
+ 'mushroom-imp':{sheet:'imp',size:56,shadow:13},
+ 'thistle-hog':{sheet:'thistle',size:60,shadow:15},
+ 'reed-frog':{sheet:'frog',size:58,shadow:15},
+ 'lantern-moth':{sheet:'moth',size:56,shadow:12},
+ 'ember-beetle':{sheet:'beetle',size:60,shadow:15},
+ 'pebble-hermit':{sheet:'hermit',size:62,shadow:16}
 });
 export const sheetCreature=a=>SHEET_CREATURES[a.species]||null;
 // Which painted frame fits this moment: [row, frame].
@@ -20,8 +29,11 @@ export function sheetFrame(a){
  const t=a.time||0;
  // Down: it topples over in about half a second, then lies still while it fades.
  if(a.health<=0)return ['die',Math.min(3,Math.floor(t/.15))];
- if(a.hurtRemaining>0)return ['hit',Math.min(2,Math.floor((.25-a.hurtRemaining)/.25*3))];
+ // Stunned or knocked down: it reels on the hit pose until it recovers.
+ if(a.downRemaining>0||a.stunRemaining>0)return ['hit',1];
+ // A swing keeps its attack frames even while Eli's hits land: monsters attack through hits unless stunned.
  if(a.state==='attack'){const k=1-Math.max(0,Math.min(1,(a.attackRemaining??0)/Math.max(.01,a.attackWindup||.5)));return ['attack',k<.35?0:k<.75?1:2];}
+ if(a.hurtRemaining>0)return ['hit',Math.min(2,Math.floor((.25-a.hurtRemaining)/.25*3))];
  // Just after a swing it pulls back in.
  if(a.attackCooldown&&a.attackCooldownRemaining>a.attackCooldown-.3)return ['attack',3];
  if(['walk','chase','return','flee'].includes(a.state))return ['walk',Math.floor(t*8+((a.seed>>>0)%4))%4];

@@ -36,6 +36,15 @@ export const LOOT_ITEMS=Object.freeze({
  'Sprout Bark':{name:'Sprout Bark',category:'upgrade-materials',description:'A curl of bark from a stumpling, still green underneath. It smells of rain and fresh-cut wood.'},
  'Crab Shell':{name:'Crab Shell',category:'upgrade-materials',description:'A small orange shell plate, light and hard. Smiths grind it into polish.'},
  'Mudshell Claw':{name:'Mudshell Claw',category:'upgrade-materials',description:'A claw as big as your head from the giant crab Mudshell. Still snaps shut if you poke the hinge.'},
+'Sprite Berry':{name:'Sprite Berry',category:'upgrade-materials',description:'A plump purple berry that still wriggles a little. Sweet, if you dare.'},
+ 'Toadstool Cap':{name:'Toadstool Cap',category:'upgrade-materials',description:'A spotted red cap, springy and warm. Do not eat it.'},
+ 'Thistle Quill':{name:'Thistle Quill',category:'upgrade-materials',description:'A long golden spine from a thistle hog. Sharp at both ends.'},
+ 'Cattail Fluff':{name:'Cattail Fluff',category:'upgrade-materials',description:'A handful of soft cattail down, still damp from the fen.'},
+ 'Glow Dust':{name:'Glow Dust',category:'upgrade-materials',description:'Fine golden dust from a lantern moth’s wings. It glows in the dark for days.'},
+ 'Ember Shell':{name:'Ember Shell',category:'upgrade-materials',description:'A wing case from an ember beetle. It stays warm long after the beetle is gone.'},
+ 'Spiral Shell':{name:'Spiral Shell',category:'upgrade-materials',description:'A heavy spiral shell, patched with moss. Something lived in it until recently.'},
+'Croaker Lily Pad':{name:'Croaker Lily Pad',category:'upgrade-materials',description:'A huge waxy lily pad, big enough to sit on. Old Croaker wore it as a hat.'},
+ 'Capstomper Cap':{name:'Capstomper Cap',category:'upgrade-materials',description:'A great spotted cap, thick as a door, from the toadstool that ruled the ruins.'},
  'Slime Jelly':{name:'Slime Jelly',category:'upgrade-materials',description:'A wobbly lump of slime, cool to the touch. It keeps its shape for a while, then slowly sags.'},
  'Shadow Ichor':{name:'Shadow Ichor',category:'upgrade-materials',description:'Black, cold and slow to pour. It drinks the light around it.'},
  'Rusted Axe Head':{name:'Rusted Axe Head',category:'upgrade-materials',description:'Pitted iron from a shadow walker’s axe. A smith could rework it.'},
@@ -61,7 +70,7 @@ export const LOOT_ITEMS=Object.freeze({
  ...Object.fromEntries(Object.entries(FAMILIARS).map(([id,f])=>[f.shard,{name:f.shard,category:'trophies',familiar:id,description:`A warm fragment of a ${f.name.toLowerCase()}’s spirit. Five of them fuse into a familiar.${f.wellOnly?' Only the Wishing Well brings these up.':''}`}]))
 });
 // Each kind of creature drops its own familiar shard. Luck raises these chances like any other rare drop.
-export const SHARD_CHANCES=Object.freeze({rabbit:.08,fox:.08,deer:.1,boar:.1,elk:.1,bear:.12,heron:.08,crab:.08,goat:.1,otter:.08,duck:.06,pike:.1,seal:.1,turtle:.1,eel:.08,'shadow-walker':.06});
+export const SHARD_CHANCES=Object.freeze({rabbit:.08,fox:.08,deer:.1,boar:.1,elk:.1,bear:.12,heron:.08,crab:.08,goat:.1,otter:.08,duck:.06,pike:.1,seal:.1,turtle:.1,eel:.08,'shadow-walker':.06,slime:.04,stump:.04,'shore-crab':.04,'boss-crab':.2,'boss-frog':.2,'boss-mushroom':.2,'berry-sprite':.04,'mushroom-imp':.04,'thistle-hog':.04,'reed-frog':.04,'lantern-moth':.04,'ember-beetle':.04,'pebble-hermit':.04});
 const artifactEntry=id=>({item:ARTIFACTS[id].name,chance:ARTIFACTS[id].chance,artifact:id});
 export const LOOT_TABLES=Object.freeze({
  rabbit:[{item:'Rabbit Meat',chance:1},{item:'Rabbit Pelt',chance:.5},artifactEntry('rabbits-foot'),{item:FAMILIARS['rabbit'].shard,chance:SHARD_CHANCES['rabbit']}],
@@ -81,10 +90,19 @@ export const LOOT_TABLES=Object.freeze({
  eel:[{item:'Eel Fillet',chance:1},{item:'Eel Skin',chance:.35},{item:'Eel Oil',chance:.2},artifactEntry('lodestone'),{item:FAMILIARS['eel'].shard,chance:SHARD_CHANCES['eel']}],
  'shadow-walker':[{item:'Shadow Ichor',chance:1},{item:'Rusted Axe Head',chance:.3},{item:'Black Light Shard',chance:.05},artifactEntry('black-light-heart'),{item:FAMILIARS['shadow-walker'].shard,chance:SHARD_CHANCES['shadow-walker']}],
  // The shadow walker kinds: ichor always, and something of whatever the shadow took.
- slime:[{item:'Slime Jelly',chance:1}],
- stump:[{item:'Sprout Bark',chance:1}],
- 'shore-crab':[{item:'Crab Shell',chance:1}],
- 'boss-crab':[{item:'Mudshell Claw',chance:1},{item:'Crab Shell',chance:.6}],
+ slime:[{item:'Slime Jelly',chance:1},{item:FAMILIARS['slime'].shard,chance:SHARD_CHANCES['slime']}],
+ stump:[{item:'Sprout Bark',chance:1},{item:FAMILIARS['stump'].shard,chance:SHARD_CHANCES['stump']}],
+ 'shore-crab':[{item:'Crab Shell',chance:1},{item:FAMILIARS['shore-crab'].shard,chance:SHARD_CHANCES['shore-crab']}],
+ 'boss-crab':[{item:'Mudshell Claw',chance:1},{item:'Crab Shell',chance:.6},{item:FAMILIARS['boss-crab'].shard,chance:SHARD_CHANCES['boss-crab']}],
+'berry-sprite':[{item:'Sprite Berry',chance:1},{item:FAMILIARS['berry-sprite'].shard,chance:SHARD_CHANCES['berry-sprite']}],
+ 'mushroom-imp':[{item:'Toadstool Cap',chance:1},{item:FAMILIARS['mushroom-imp'].shard,chance:SHARD_CHANCES['mushroom-imp']}],
+ 'thistle-hog':[{item:'Thistle Quill',chance:1},{item:FAMILIARS['thistle-hog'].shard,chance:SHARD_CHANCES['thistle-hog']}],
+ 'reed-frog':[{item:'Cattail Fluff',chance:1},{item:FAMILIARS['reed-frog'].shard,chance:SHARD_CHANCES['reed-frog']}],
+ 'lantern-moth':[{item:'Glow Dust',chance:1},{item:FAMILIARS['lantern-moth'].shard,chance:SHARD_CHANCES['lantern-moth']}],
+ 'ember-beetle':[{item:'Ember Shell',chance:1},{item:FAMILIARS['ember-beetle'].shard,chance:SHARD_CHANCES['ember-beetle']}],
+ 'pebble-hermit':[{item:'Spiral Shell',chance:1},{item:FAMILIARS['pebble-hermit'].shard,chance:SHARD_CHANCES['pebble-hermit']}],
+'boss-frog':[{item:'Croaker Lily Pad',chance:1},{item:'Cattail Fluff',chance:.6},{item:FAMILIARS['boss-frog'].shard,chance:SHARD_CHANCES['boss-frog']}],
+ 'boss-mushroom':[{item:'Capstomper Cap',chance:1},{item:'Toadstool Cap',chance:.6},{item:FAMILIARS['boss-mushroom'].shard,chance:SHARD_CHANCES['boss-mushroom']}],
  'hollow-stag':[{item:'Shadow Ichor',chance:1},{item:'Hollow Antler',chance:.35},{item:'Black Light Shard',chance:.05}],
  'gloam-boar':[{item:'Shadow Ichor',chance:1},{item:'Gloam Hide',chance:.35},{item:'Black Light Shard',chance:.05}],
  stoneshade:[{item:'Shadow Ichor',chance:1},{item:'Shadowstone',chance:.5},{item:'Black Light Shard',chance:.1}],

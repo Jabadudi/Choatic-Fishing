@@ -24,7 +24,7 @@ import {mountWell} from './well-ui.js';
 import {nearWell} from './wishing-well.js';
 import {marksLabel} from './trade.js';
 import {mountSkills} from './skills-ui.js';
-import {mountCodex} from './codex-ui.js';
+import {mountCollection} from './collection-ui.js';
 import {mountQuests} from './quest-ui.js';
 import {mountRadio} from './radio-ui.js';
 import {mountDungeon} from './dungeon-ui.js';
@@ -297,7 +297,7 @@ $('atlas-tab-area').onclick=()=>{atlasFocus=null;setMapMode('area');};$('atlas-t
 $('atlas-canvas').addEventListener('click',e=>{if(mapMode!=='world')return;const c=$('atlas-canvas'),r=c.getBoundingClientRect(),x=(e.clientX-r.left)*c.width/r.width,y=(e.clientY-r.top)*c.height/r.height,id=areaAt(x,y,c.width,c.height,fullView(c.width,c.height));if(id){atlasFocus={areaId:id};setMapMode('area');}});$('close-atlas').onclick=()=>toggleAtlas(false);$('inspect-place').onclick=()=>{world.inspect();canvas.focus();};
 const lobby=new Lobby(updateLobby);
 skillsUI=mountSkills({getWorld:()=>world,onOpen:()=>{toggleAtlas(false);release();},onClose:()=>{release();canvas.focus();}});
-codexUI=mountCodex({getWorld:()=>world,onOpen:()=>{backpackUI?.close();skillsUI?.close();questUI?.close();toggleAtlas(false);release();},onClose:()=>{release();canvas.focus();},onFamiliar:(id,action)=>world.familiarAction(id,action)});
+codexUI=mountCollection({getWorld:()=>world,onOpen:()=>{backpackUI?.close();skillsUI?.close();questUI?.close();toggleAtlas(false);release();},onClose:()=>{release();canvas.focus();},onFamiliar:(id,action)=>world.familiarAction(id,action)});
 tradeUI=mountTrade({getWorld:()=>world,onOpen:()=>{backpackUI?.close();skillsUI?.close();codexUI?.close();questUI?.close();toggleAtlas(false);release();},onClose:()=>{release();canvas.focus();}});
 radioUI=mountRadio({onOpen:()=>{backpackUI?.close();tradeUI?.close();wellUI?.close();skillsUI?.close();codexUI?.close();questUI?.close();toggleAtlas(false);release();},onClose:()=>{release();canvas.focus();}});
 radioUI.mountChip(document.querySelector('.playfield'));

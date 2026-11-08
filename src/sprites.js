@@ -98,6 +98,8 @@ function drawFitted(ctx,asset,{x,y,w,h,flipX=false},notify){
  const url=spriteAssetUrl(asset);let img=images.get(url);
  if(!img){img=new Image();if(notify)img.onload=()=>propListeners.forEach(fn=>fn());images.set(url,img);img.src=url;}
  if(!img.complete||!img.naturalWidth||!img.naturalHeight)return false;
+ // A probe only asks whether the image is ready (and starts loading it).
+ if(!ctx)return true;
  const k=Math.min(w/img.naturalWidth,h/img.naturalHeight),dw=img.naturalWidth*k,dh=img.naturalHeight*k;
  ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';if(notify)ctx.translate(Math.round(x),Math.round(y));else ctx.translate(x,y);if(flipX)ctx.scale(-1,1);
  ctx.drawImage(img,-dw/2,-dh,dw,dh);ctx.restore();return true;

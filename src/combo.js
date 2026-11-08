@@ -1,4 +1,4 @@
-// Field combat feel (Dragon Saga style): a 3-hit melee chain that ends in a knockdown, a combo counter that climbs
+// Field combat feel (Dragon Saga style): a 3-hit melee chain whose finisher can knock down (on a stun), a combo counter that climbs
 // while Eli keeps landing hits, and a short hit-stop on every melee hit. Gameplay only; the renderer reads the state.
 // Only Eli in the exploration game uses it, so arena and PvP balance stay as they were.
 import {practise} from './skills.js';
@@ -22,6 +22,10 @@ export const COMBO=Object.freeze({
  // Seconds the world slows to a near stop when a melee hit lands, and how slow it runs meanwhile.
  hitStop:Object.freeze({hit:.045,finisher:.09}),hitStopRate:.1
 });
+// Stun (Netanel, 8 Nov 2026): monsters keep attacking while they are hit; only a stun stops them. Every hit Eli lands
+// rolls his Stun chance (progression.stun). A stunned monster drops the swing it was winding up and cannot start one
+// for a moment; a stun on the finisher knocks it down instead. Bosses are never stunned.
+export const STUN=Object.freeze({base:.1,max:.6,seconds:.9,finisher:2.5});
 export const comboActive=(world,actor)=>!!world.adventure&&actor===world.player;
 // The step this swing is: it continues the chain while the window is open, else starts again at 1.
 export function nextStep(world,actor){
@@ -43,6 +47,20 @@ export function knockDown(world,target,seconds){
  target.downRemaining=Math.max(target.downRemaining||0,seconds);target.attackRemaining=0;
  world.effects.push({name:'down',label:'DOWN',x:target.x,y:target.y-48,angle:0,life:.8,duration:.8});
  return true;
+}
+export const canStun=(world,target)=>canKnockDown(world,target);
+// Rolls Eli's Stun chance for one landed hit; returns 'stun', 'down' or ''.
+export function rollStun(world,actor,target,swing){
+ if(!swing||!canStun(world,target))return '';
+ const chance=Math.min(1,(actor.progression?.stun??STUN.base)*(swing.finisher?STUN.finisher:1));
+ if((world.random?.()??Math.random())>=chance)return '';
+ if(swing.knockdown)return knockDown(world,target,swing.knockdown)?'down':'';
+ stun(world,target,STUN.seconds);return 'stun';
+}
+export function stun(world,target,seconds){
+ target.stunRemaining=Math.max(target.stunRemaining||0,seconds);target.attackRemaining=0;
+ if(['attack','strike','notice'].includes(target.state)){target.state=target.behavior==='aggressive'?'chase':'idle';target.time=0;}
+ world.effects.push({name:'down',label:'STUN',x:target.x,y:target.y-48,angle:0,life:.7,duration:.7});
 }
 // One landed hit by Eli: the counter climbs, the hit freezes the world for a moment, milestones pay XP.
 export function noteHit(world,actor,{finisher=false,melee=true}={}){

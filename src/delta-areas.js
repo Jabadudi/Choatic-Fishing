@@ -695,18 +695,20 @@ area({id:'landing',num:'1.1',name:'Reedwater Landing',frame:[195,395,272,400],si
 // same cliff as the maps, with tents and a campfire round a glowing portal into the dungeon, Reedwater Wilds
 // (src/dungeon.js). It has no monsters and no exits of its own: the portal is the way in, and the dungeon's first map
 // leads back here to the west.
-area({id:'wilds-camp',num:'1.0',name:'Wilds Camp',frame:[125,195,330,367],size:[1400,740],base:'land',ground:'meadow',seed:3301,spawn:[147,349],
+area({id:'wilds-camp',num:'1.0',name:'Wilds Camp',frame:[125,195,330,367],size:[1400,740],base:'land',ground:'meadow',seed:3301,spawn:[134,349.4],
  scatter:false,
  shapes:[['water',[[125,361],[143,360.4],[161,361.2],[179,360.5],[195,361],[195,367],[125,367]]]],
  zones:[['sand',[[125,358.8],[145,358.2],[165,359],[183,358.3],[195,358.7],[195,367],[125,367]]],['forest',[[125,330],[195,330],[195,338],[125,338]]]],
  roads:[{pts:[[127,349],[139,348.6],[151,349.2],[160,348.4]],style:'dirt'}],
  props:[  {kind:'bush',at:[130,335.6],art:'round-bush'},{kind:'bush',at:[150,335.6],art:'round-bush'},{kind:'bush',at:[170,335.6],art:'round-bush'},{kind:'bush',at:[190,335.6],art:'round-bush'},
-  {kind:'portal',at:[160,347.4]},
+  {kind:'portal',at:[160,347.4],dungeon:'reedwater-wilds'},
+  {kind:'portal',at:[144,348.2],dungeon:'thornberry-vale'},
+  {kind:'portal',at:[176,348.2],dungeon:'lanternlight-wilds'},
   {kind:'tent',at:[139,341.4]},
   {kind:'tent',at:[181,341]},
-  {kind:'bench',at:[145,344.2],art:'plank-bench'},
-  {kind:'lantern',at:[153,344.6],art:'lantern-post'},
-  {kind:'lantern',at:[167,344.6],art:'lantern-post'},
+  {kind:'bench',at:[190,349.4],art:'plank-bench'},
+  {kind:'lantern',at:[152,345],art:'lantern-post'},
+  {kind:'lantern',at:[168,345],art:'lantern-post'},
   {kind:'logs',at:[134,343.6],art:'firewood-stack'},
   {kind:'cart',at:[186,343.6],art:'wood-barrel'},
   {kind:'cart',at:[188,344.6],art:'apple-crate'},
@@ -1578,6 +1580,37 @@ export const LAND_FIELDS=['base','sea','ground','size','spawn','shapes','zones',
 export const BUILT_DEFS=DEFS;
 // New areas made in the atlas (a sub-area given a size, e.g. a cave behind a door) ship whole: their land-data.js entry
 // has isNew and carries its own name, number and frame; `within` is the area it sits inside on the world map.
+// Regions 1.4 to 1.11, the second and third dungeons of Region 1 (Netanel, 8 Nov 2026: "make the maps very similar to
+// the first level since it's still the same area"). Each is a copy of 1.1, 1.2 or 1.3 moved east along the same atlas
+// strip, with its own name, signs and exits. The first map of each dungeon leads west back to Wilds Camp.
+const WILDS_COPIES=[
+ // Dungeon 2, Thornberry Vale
+ {id:'bramble-hollow',num:'1.4',name:'Bramble Hollow',from:'dewdrop-meadow',seed:7411,west:'wilds-camp',east:'toadstool-glen',start:'Bramble bushes heavy with purple berries line the trail, and some of the berries are walking about on their own.'},
+ {id:'toadstool-glen',num:'1.5',name:'Toadstool Glen',from:'mossroot-trail',seed:7523,west:'bramble-hollow',east:'thistle-downs',start:'Red-capped toadstools grow thick under the trees. A few of them turn to watch you, and they do not look pleased.'},
+ {id:'thistle-downs',num:'1.6',name:'Thistle Downs',from:'dewdrop-meadow',seed:7639,west:'toadstool-glen',east:'cattail-fen',start:'Open downs covered in thistles. Round, spiny shapes snuffle about in the grass between them.'},
+ {id:'cattail-fen',num:'1.7',name:'Cattail Fen',from:'saltspray-shore',seed:7741,west:'thistle-downs',east:null,start:'The ground turns soft and wet. Cattails stand in the shallows, and the fen croaks from every side.'},
+ // Dungeon 3, Lanternlight Wilds
+ {id:'lantern-glade',num:'1.8',name:'Lantern Glade',from:'mossroot-trail',seed:8117,west:'wilds-camp',east:'ember-ridge',start:'A dim glade where little golden lights drift between the trees. The lights have wings.'},
+ {id:'ember-ridge',num:'1.9',name:'Ember Ridge',from:'dewdrop-meadow',seed:8231,west:'lantern-glade',east:'pebble-strand',start:'A warm ridge above the sea. The grass is scorched in patches, and something glowing trundles along the trail.'},
+ {id:'pebble-strand',num:'1.10',name:'Pebble Strand',from:'saltspray-shore',seed:8347,west:'ember-ridge',east:'mossback-ruins',start:'A long strand of round grey pebbles. Some of the bigger pebbles have legs.'},
+ {id:'mossback-ruins',num:'1.11',name:'Mossback Ruins',from:'mossroot-trail',seed:8459,west:'pebble-strand',east:null,start:'Old mossy stones half buried in the woods. Every creature of the wilds seems to gather here.'}
+];
+export const WILDS_MAP_IDS=Object.freeze(WILDS_COPIES.map(c=>c.id));
+{
+ const label=id=>{const c=WILDS_COPIES.find(x=>x.id===id);return c?`${c.num} ${c.name}`:id==='wilds-camp'?'Wilds Camp':id;};
+ WILDS_COPIES.forEach((c,i)=>{
+  const src=DEFS.find(d=>d.id===c.from),x0=795+i*200,dx=x0-src.frame[0];
+  // Every atlas point [x, y] moves east by dx; sizes and scalar values stay.
+  const shift=(v,key)=>Array.isArray(v)?(key!=='size'&&v.length===2&&typeof v[0]==='number'&&typeof v[1]==='number'?[v[0]+dx,v[1]]:v.map(x=>shift(x))):v&&typeof v==='object'?Object.fromEntries(Object.entries(v).map(([k,x])=>[k,shift(x,k)])):v;
+  const def=shift(src);
+  Object.assign(def,{id:c.id,num:c.num,name:c.name,seed:c.seed,frame:[x0,x0+200,src.frame[2],src.frame[3]],
+   places:[{id:`${c.id}-start`,name:c.name,at:[x0+8,349],kind:'shore',text:c.start},
+    {id:`${c.id}-gate`,name:'The Sealed Gate',at:[x0+193,349],kind:'drowned',text:'An old stone gate across the trail. It stays shut while monsters still hold this map.'}],
+   exits:[{edge:'west',from:345,to:353,target:c.west,label:label(c.west)},...(c.east?[{edge:'east',from:345,to:353,target:c.east,label:label(c.east)}]:[])]});
+  if(c.west==='wilds-camp')def.spawn=[x0+4,349];else delete def.spawn;
+  area(def);
+ });
+}
 const NEW_DEFS=Object.entries(LAND_DATA).filter(([id,e])=>e.isNew&&!DEFS.some(d=>d.id===id))
  .map(([id,e])=>({id,name:e.name||id,num:e.num||'',frame:e.frame,within:e.within||null,size:e.size||[2000,1400],base:'land',ground:'meadow',isNew:true}));
 export const DELTA_DEFS=[...DEFS,...NEW_DEFS].map(def=>{const edit=LAND_DATA[def.id];if(!edit)return def;const out={...def};for(const k of LAND_FIELDS)if(Object.hasOwn(edit,k))out[k]=edit[k];return out;});

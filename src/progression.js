@@ -1,6 +1,7 @@
 import {createSkills,skillXpToNext,BASE_STAT,LEVEL_GROWTH} from './skills.js';
 import {createSkillTrees,talentFor,talentState,pointsSpent,pointsEarned,treePassives} from './skill-trees.js';
 import {sumPassives} from './passives.js';
+import {STUN} from './combo.js';
 import {createCoreSkills,CORE_LEVEL_CAP} from './core-skills.js';
 export const XP=Object.freeze({catch:30,elimination:90});
 export const BUFFS=Object.freeze([
@@ -16,7 +17,9 @@ export class Progression {
   // Region Core skill points and wheel slots (core-skills.js).
   this.coreSkills=createCoreSkills();
   // Bonus from the active familiar (familiars.js), or null. Arena matches never have one.
-  this.familiar=null;}
+  this.familiar=null;
+  // Completed area sets of the collection book (src/collection.js): {health, damage}.
+  this.collection=null;}
  get maxDashes(){return 1+this.upgrades.dash;}
  tickUpgrades(dt){this.upgradeRemaining-=dt;while(this.upgradeRemaining<1e-9){this.pendingUpgrades++;this.upgradeRemaining+=30;}}
  chooseUpgrade(kind){if(!this.pendingUpgrades||!Object.hasOwn(this.upgrades,kind))return false;this.upgrades[kind]++;this.pendingUpgrades--;return true;}
@@ -24,11 +27,11 @@ export class Progression {
  get speedMultiplier(){return (1+this.ranks.speed*.05+this.upgrades.hermes*.15)*(1+(this.familiar?.speed||0));}
  get growth(){return this.characterStats?this.level-1:0;}
  get stats(){const n=this.growth,f=this.familiar||{};return {strength:BASE_STAT+n*LEVEL_GROWTH.strength+(f.strength||0),dexterity:BASE_STAT+n*LEVEL_GROWTH.dexterity+(f.dexterity||0),luck:BASE_STAT+n*LEVEL_GROWTH.luck+(f.luck||0),wisdom:BASE_STAT+n*LEVEL_GROWTH.wisdom+(f.wisdom||0)};}
- get damageMultiplier(){return (1+this.ranks.power*.08)*(1+(this.stats.strength-BASE_STAT)*.03);}
+ get damageMultiplier(){return (1+this.ranks.power*.08)*(1+(this.stats.strength-BASE_STAT)*.03)*(1+(this.collection?.damage||0));}
  get attackSpeed(){return 1+(this.stats.dexterity-BASE_STAT)*.03;}
  get lootMultiplier(){return 1+(this.stats.luck-BASE_STAT)*.04;}
  get skillXpMultiplier(){return 1+(this.stats.wisdom-BASE_STAT)*.05;}
- get maxHealth(){return 100+this.growth*LEVEL_GROWTH.health+this.ranks.vitality*10+this.upgrades.health*20+(this.familiar?.health||0)+this.passive('health.max');}
+ get maxHealth(){return 100+this.growth*LEVEL_GROWTH.health+this.ranks.vitality*10+this.upgrades.health*20+(this.familiar?.health||0)+(this.collection?.health||0)+this.passive('health.max');}
  // Every system that grants passives adds one source here; gameplay reads only the summed passive(key).
  passiveSources(){return [treePassives(this.skillTrees)];}
  get passives(){return sumPassives(this.passiveSources());}
@@ -38,6 +41,8 @@ export class Progression {
   if(this.skillPoints(skill)<=0||talentState(skill,this.skillTrees[skill],id)!=='open')return false;
   const ranks=this.skillTrees[skill];ranks[id]=(ranks[id]||0)+1;return talentFor(skill,id);
  }
+ // Chance that a hit stuns a monster (src/combo.js STUN): base, plus familiars, area sets and passives.
+ get stun(){return Math.min(STUN.max,STUN.base+(this.familiar?.stun||0)+(this.collection?.stun||0)+this.passive('combat.stun'));}
  get damageReduction(){return 1-(1-.5*(1-Math.pow(.9,this.ranks.armor)))*(1-(this.familiar?.damageReduction||0));}
  get specialCharges(){return this.specials.tidal+this.specials.whirlpool;}
  grantCatchBuff(random=Math.random){const buff=BUFFS[Math.min(BUFFS.length-1,Math.floor(random()*BUFFS.length))];this.ranks[buff.id]++;this.lastBuff=buff;return buff;}

@@ -64,6 +64,7 @@ export function cleanLand(def,built,notes=[]){
   if(!p||!Object.hasOwn(PROP_SOLID,p.kind)){drop(`prop ${i+1} (${p?.kind})`);return [];}
   const at=pt(p.at);if(!at){drop(`prop ${i+1}`);return [];}
   const o={kind:p.kind,at};
+  if(p.kind==='portal'&&id(p.dungeon))o.dungeon=p.dungeon;
   if(PROP_ART[p.kind]&&PROP_ART[p.kind].includes(p.art))o.art=p.art;
   if(isNum(p.angle))o.angle=Math.round(clamp(p.angle,-7,7)*100)/100;
   if(isNum(p.scale)&&p.scale!==1)o.scale=r1(clamp(p.scale,.2,6));

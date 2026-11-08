@@ -63,6 +63,8 @@ export function render(ctx,world,view,{others=[]}={}){
     const age=Math.max(0,duration-effect.life);ctx.save();ctx.globalAlpha=Math.min(1,effect.life/duration);ctx.translate(effect.x,effect.y-heightAt(effect.x,effect.y,world.areaId));ctx.rotate(effect.angle);
     ctx.strokeStyle='#f3d59d';ctx.fillStyle='#f3d59d';ctx.lineWidth=5;
     // Combo finisher: a wide white slash; DOWN pops over a knocked-down foe (src/combo.js).
+    if(effect.name==='combo-finisher'&&slashReady()){ctx.restore();continue;}
+    if(effect.comboStep&&drawSlash(ctx,effect,age)){ctx.restore();continue;}
     if(effect.name==='combo-finisher'){const k=Math.min(1,age/(duration*.6)),r=(effect.range||70)+18;ctx.strokeStyle='#fffbe8';ctx.lineWidth=9*(1-k)+2;ctx.beginPath();ctx.arc(0,0,r,-1.4,-1.4+2.8*k);ctx.stroke();ctx.restore();continue;}
     if(effect.name==='down'){ctx.font='bold 16px monospace';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#1a0b0b';ctx.fillStyle='#ffe066';const y=-Math.min(age,.15)*60;ctx.strokeText(effect.label,0,y);ctx.fillText(effect.label,0,y);ctx.restore();continue;}
     if(effect.name==='player-hit'||effect.name==='notice'){ctx.font=`bold ${effect.name==='notice'?22:15}px monospace`;ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#1a0b0b';ctx.fillStyle=effect.name==='notice'?'#ffcf5a':'#ff6b5b';const y=effect.name==='notice'?-Math.min(age,.2)*30:-age*30;ctx.strokeText(effect.label,0,y);ctx.fillText(effect.label,0,y);}
@@ -216,4 +218,16 @@ function drawCutsceneActor(ctx,a){
   ctx.fillStyle='#8f949c';ctx.fillRect(-16,4,5,11);ctx.fillRect(12,4,5,11);
  }
  ctx.restore();
+}
+
+// Netanel's painted combo slashes (assets/effects/slash, cut by scripts/prepare-slash-sprites.py): one row per hit of
+// the 3-hit chain, four frames each, drawn in front of Eli on the side he faces. The context is already at the
+// swing's origin and turned to its angle.
+const SLASH=Object.freeze({frame:.08,size:[0,130,130,170],reach:46,lift:30});
+const slashReady=()=>drawProp(null,'slash/3-0',{x:-1e5,y:-1e5,w:1,h:1,probe:true});
+function drawSlash(ctx,effect,age){
+ const hit=Math.min(3,Math.max(1,effect.comboStep)),frame=Math.floor(age/SLASH.frame);if(frame>3)return true;
+ const c=Math.cos(effect.angle),s=Math.sin(effect.angle),size=SLASH.size[hit];
+ ctx.rotate(-effect.angle);ctx.globalAlpha=1;
+ return drawProp(ctx,`slash/${hit}-${frame}`,{x:c*SLASH.reach,y:s*SLASH.reach*.6-SLASH.lift+size/2,w:size,h:size,flipX:c<0});
 }

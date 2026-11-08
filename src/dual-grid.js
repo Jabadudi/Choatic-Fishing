@@ -21,7 +21,9 @@ export const DUAL_GROUND=Object.freeze({glasswater:{base:'meadowGrass',layers:['
  'wilds-camp':{base:'plateauTop',baseCell:96,layers:['sand','dirtPath','water','deepWater']},
  'dewdrop-meadow':{base:'plateauTop',baseCell:96,layers:['sand','dirtPath','water','deepWater']},
  'mossroot-trail':{base:'plateauTop',baseCell:96,layers:['sand','dirtPath','water','deepWater']},
- 'saltspray-shore':{base:'plateauTop',baseCell:96,layers:['sand','dirtPath','water','deepWater']}});
+ 'saltspray-shore':{base:'plateauTop',baseCell:96,layers:['sand','dirtPath','water','deepWater']},
+ // Regions 1.4 to 1.11 are copies of 1.1 to 1.3 (src/delta-areas.js WILDS_COPIES) and share their ground.
+ ...Object.fromEntries(['bramble-hollow','toadstool-glen','thistle-downs','cattail-fen','lantern-glade','ember-ridge','pebble-strand','mossback-ruins'].map(id=>[id,{base:'plateauTop',baseCell:96,layers:['sand','dirtPath','water','deepWater']}]))});
 const sheets=new Map(),listeners=new Set();
 onTexturePackChange(()=>{sheets.clear();listeners.forEach(fn=>fn());});
 export function dualGridSheet(kind,invalidate=()=>{}){

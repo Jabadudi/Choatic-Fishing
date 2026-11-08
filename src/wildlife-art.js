@@ -28,8 +28,8 @@ export function animalPose(a){
  const t=a.time||0;
  if(a.health<=0)return {state:'death',time:t};
  if(a.boss)return bossPose(a,t);
- // Knocked down by a combo finisher: held on the hurt frame until it gets up.
- if(a.downRemaining>0)return {state:'hurt',time:.12};
+ // Knocked down by a combo finisher, or stunned: held on the hurt frame until it recovers.
+ if(a.downRemaining>0||a.stunRemaining>0)return {state:'hurt',time:.12};
  if(a.behavior==='aggressive'){
   if(a.state==='attack')return {state:'raise',time:t,duration:a.attackWindup};
   // The swing clip starts with the two raised frames, so the strike begins on its third.
@@ -97,7 +97,7 @@ export function drawWildlife(c,a){
  c.restore();
 }
 // How high the health bar sits above each shadow walker kind's feet.
-const STATUS_HEIGHT={slime:44,stump:48,'shore-crab':44,'boss-crab':112,'drowned-captain':86,greyhorn:134,'hollow-stag':98,'gloam-boar':42,stoneshade:96,whisperer:76,'mire-walker':64,'drowned-soldier':64,'ash-archer':62,inkeel:44};
+const STATUS_HEIGHT={slime:44,stump:48,'shore-crab':44,'boss-crab':112,'boss-frog':118,'boss-mushroom':128,'berry-sprite':46,'mushroom-imp':50,'thistle-hog':50,'reed-frog':50,'lantern-moth':52,'ember-beetle':48,'pebble-hermit':52,'drowned-captain':86,greyhorn:134,'hollow-stag':98,'gloam-boar':42,stoneshade:96,whisperer:76,'mire-walker':64,'drowned-soldier':64,'ash-archer':62,inkeel:44};
 export function drawAnimalStatus(c,world){
  for(const a of world.animals){
   if(a.health<=0||a.areaId!==world.areaId)continue;

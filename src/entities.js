@@ -47,18 +47,38 @@ export const ANIMAL_TYPES=Object.freeze({
  // Slime: the first monster of the Regions game. A round, wobbling blob that hops after Eli in bunches of three or
  // four (src/field-maps.js); weak alone, a nuisance together. Drawn from its painted poses (src/slime-art.js).
  slime:{behavior:BEHAVIORS.AGGRESSIVE,name:'Slime',maxHealth:34,radius:14,habitat:'land',speed:30,fearRange:0,
-  noticeRange:210,noticeDelay:.5,loseRange:420,leashRange:520,chaseSpeed:96,attackDamage:7,attackRange:46,attackWindup:.5,attackRecover:.45,attackCooldown:1.5,huntXp:16,loot:'slime',familiar:false},
+  noticeRange:210,noticeDelay:.5,loseRange:420,leashRange:520,chaseSpeed:96,attackDamage:7,attackRange:46,attackWindup:.5,attackRecover:.45,attackCooldown:1.5,huntXp:16,loot:'slime'},
  // Regions 1.2: a walking tree stump with a sprout on top. Slower than a slime and tougher, it plods up and swings a
  // root-arm. Stands in bunches like the slimes. Drawn from its painted sheet (src/sheet-creature-art.js).
  stump:{behavior:BEHAVIORS.AGGRESSIVE,name:'Stumpling',maxHealth:52,radius:13,habitat:'land',speed:24,fearRange:0,
-  noticeRange:220,noticeDelay:.6,loseRange:420,leashRange:520,chaseSpeed:82,attackDamage:9,attackRange:50,attackWindup:.6,attackRecover:.5,attackCooldown:1.7,huntXp:24,loot:'stump',familiar:false},
+  noticeRange:220,noticeDelay:.6,loseRange:420,leashRange:520,chaseSpeed:82,attackDamage:9,attackRange:50,attackWindup:.6,attackRecover:.5,attackCooldown:1.7,huntXp:24,loot:'stump'},
  // Regions 1.3: shore crabs, quick little nippers that scuttle in bunches on the sand (src/sheet-creature-art.js).
  'shore-crab':{behavior:BEHAVIORS.AGGRESSIVE,name:'Shore Crab',maxHealth:46,radius:15,habitat:'land',speed:34,fearRange:0,
-  noticeRange:230,noticeDelay:.45,loseRange:440,leashRange:540,chaseSpeed:104,attackDamage:9,attackRange:46,attackWindup:.45,attackRecover:.4,attackCooldown:1.4,huntXp:28,loot:'shore-crab',familiar:false},
+  noticeRange:230,noticeDelay:.45,loseRange:440,leashRange:540,chaseSpeed:104,attackDamage:9,attackRange:46,attackWindup:.45,attackRecover:.4,attackCooldown:1.4,huntXp:28,loot:'shore-crab'},
  // Regions 1.3 boss: Mudshell, a giant shore crab guarding the east gate. Its shell takes half damage until a combo
  // finisher knocks it over (armor, src/wildlife.js). Drawn from its own sheet, far bigger than the others.
  'boss-crab':{behavior:BEHAVIORS.AGGRESSIVE,name:'Mudshell',maxHealth:420,radius:40,habitat:'land',speed:18,fearRange:0,
-  noticeRange:280,noticeDelay:.8,loseRange:520,leashRange:460,chaseSpeed:70,attackDamage:16,attackRange:86,attackWindup:.85,attackRecover:.7,attackCooldown:2.2,knockback:150,huntXp:160,loot:'boss-crab',familiar:false},
+  noticeRange:280,noticeDelay:.8,loseRange:520,leashRange:460,chaseSpeed:70,attackDamage:16,attackRange:86,attackWindup:.85,attackRecover:.7,attackCooldown:2.2,knockback:150,huntXp:160,loot:'boss-crab'},
+ // Region 1 dungeons 2 and 3 (maps 1.4 to 1.11): Netanel's chibi monsters, drawn from their painted sheets (src/sheet-creature-art.js).
+ 'berry-sprite':{behavior:BEHAVIORS.AGGRESSIVE,name:'Berry Sprite',maxHealth:44,radius:14,habitat:'land',speed:32,fearRange:0,
+  noticeRange:230,noticeDelay:.5,loseRange:440,leashRange:540,chaseSpeed:100,attackDamage:9,attackRange:46,attackWindup:.5,attackRecover:.45,attackCooldown:1.5,huntXp:30,loot:'berry-sprite'},
+ 'mushroom-imp':{behavior:BEHAVIORS.AGGRESSIVE,name:'Mushroom Imp',maxHealth:50,radius:14,habitat:'land',speed:30,fearRange:0,
+  noticeRange:230,noticeDelay:.5,loseRange:440,leashRange:540,chaseSpeed:92,attackDamage:10,attackRange:48,attackWindup:.5,attackRecover:.45,attackCooldown:1.5,huntXp:32,loot:'mushroom-imp'},
+ 'thistle-hog':{behavior:BEHAVIORS.AGGRESSIVE,name:'Thistle Hog',maxHealth:58,radius:14,habitat:'land',speed:34,fearRange:0,
+  noticeRange:230,noticeDelay:.5,loseRange:440,leashRange:540,chaseSpeed:108,attackDamage:11,attackRange:48,attackWindup:.5,attackRecover:.45,attackCooldown:1.5,huntXp:34,loot:'thistle-hog'},
+ 'reed-frog':{behavior:BEHAVIORS.AGGRESSIVE,name:'Reed Frog',maxHealth:48,radius:14,habitat:'land',speed:30,fearRange:0,
+  noticeRange:230,noticeDelay:.5,loseRange:440,leashRange:540,chaseSpeed:96,attackDamage:10,attackRange:64,attackWindup:.5,attackRecover:.45,attackCooldown:1.5,huntXp:36,loot:'reed-frog'},
+ 'lantern-moth':{behavior:BEHAVIORS.AGGRESSIVE,name:'Lantern Moth',maxHealth:42,radius:14,habitat:'land',speed:38,fearRange:0,
+  noticeRange:230,noticeDelay:.5,loseRange:440,leashRange:540,chaseSpeed:112,attackDamage:11,attackRange:48,attackWindup:.5,attackRecover:.45,attackCooldown:1.5,huntXp:38,loot:'lantern-moth'},
+ 'ember-beetle':{behavior:BEHAVIORS.AGGRESSIVE,name:'Ember Beetle',maxHealth:64,radius:14,habitat:'land',speed:28,fearRange:0,
+  noticeRange:230,noticeDelay:.5,loseRange:440,leashRange:540,chaseSpeed:86,attackDamage:12,attackRange:48,attackWindup:.5,attackRecover:.45,attackCooldown:1.5,huntXp:40,loot:'ember-beetle'},
+ 'pebble-hermit':{behavior:BEHAVIORS.AGGRESSIVE,name:'Pebble Hermit',maxHealth:70,radius:14,habitat:'land',speed:26,fearRange:0,
+  noticeRange:230,noticeDelay:.5,loseRange:440,leashRange:540,chaseSpeed:80,attackDamage:12,attackRange:48,attackWindup:.5,attackRecover:.45,attackCooldown:1.5,huntXp:42,loot:'pebble-hermit'},
+ // Bosses of dungeons 2 and 3: like Mudshell, each waits alone before its last map's east gate and takes half damage.
+ 'boss-frog':{behavior:BEHAVIORS.AGGRESSIVE,name:'Old Croaker',maxHealth:560,radius:40,habitat:'land',speed:18,fearRange:0,
+  noticeRange:280,noticeDelay:.8,loseRange:520,leashRange:460,chaseSpeed:72,attackDamage:18,attackRange:100,attackWindup:.85,attackRecover:.7,attackCooldown:2.2,knockback:150,huntXp:220,loot:'boss-frog'},
+ 'boss-mushroom':{behavior:BEHAVIORS.AGGRESSIVE,name:'Capstomper',maxHealth:700,radius:40,habitat:'land',speed:18,fearRange:0,
+  noticeRange:280,noticeDelay:.8,loseRange:520,leashRange:460,chaseSpeed:72,attackDamage:20,attackRange:86,attackWindup:.85,attackRecover:.7,attackCooldown:2.2,knockback:150,huntXp:300,loot:'boss-mushroom'},
  // The shadow walker kinds: the same hunt, each with its own strengths. All stay slower than Eli at a run.
  // Hollow Stag: an infected deer or elk. Gallops after Eli (its sheet has a run row), low health, antler swing.
  'hollow-stag':{...monster('Hollow Stag'),maxHealth:60,radius:18,speed:48,noticeRange:260,chaseSpeed:165,attackDamage:14,attackRange:64,attackWindup:.45,attackRecover:.35,attackCooldown:1.3,huntXp:45,loot:'hollow-stag'},

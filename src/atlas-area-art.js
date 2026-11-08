@@ -154,12 +154,12 @@ function drawProp(ctx,p,t){
   case 'mine':R(ctx,'#3a3530',x-40,y-60,80,60);R(ctx,'#14110e',x-26,y-48,52,48);R(ctx,'#5a3e26',x-32,y-56,8,56);R(ctx,'#5a3e26',x+24,y-56,8,56);R(ctx,'#5a3e26',x-34,y-60,68,8);break;
   case 'lighthouse':shadow(ctx,x,y,40,12);R(ctx,'#d8d2c0',x-24,y-170,48,170);for(let i=0;i<4;i++)R(ctx,'#a0403a',x-24,y-150+i*40,48,14);R(ctx,'#3a3530',x-30,y-196,60,26);R(ctx,'#ffe9a0',x-16,y-192,32,18);break;
   case 'wreck':ctx.save();ctx.translate(x,y);ctx.rotate(p.angle||-.3);ctx.fillStyle='#3e2b1c';ctx.beginPath();ctx.ellipse(0,0,80,26,0,0,Math.PI);ctx.fill();for(let i=-3;i<=3;i++)R(ctx,'#5a3e26',i*20-3,-30,6,30);R(ctx,'#5a3e26',-4,-90,8,90);ctx.restore();break;
-  // The dungeon portal in Wilds Camp: a mossy stone arch round a slowly swirling blue light.
+  // A dungeon portal in Wilds Camp (one per dungeon, named above the arch): a mossy stone arch round a slowly swirling blue light.
   case 'portal':{const pulse=.5+.5*Math.sin(t*2.2);
    // Netanel's painted portal: 16 frames of the swirl at 10 a second, with a soft glow on the ground round it.
    if(drawPropSprite(ctx,`portal/${Math.floor(t*10)%16}`,{x:-1e5,y:-1e5,w:1,h:1})){
     ctx.save();ctx.fillStyle=`rgba(127,224,255,${.14+.1*pulse})`;ctx.beginPath();ctx.ellipse(x,y-64,82,92,0,0,Math.PI*2);ctx.fill();ctx.restore();
-    drawPropSprite(ctx,`portal/${Math.floor(t*10)%16}`,{x,y:y+4,w:134,h:147});break;
+    drawPropSprite(ctx,`portal/${Math.floor(t*10)%16}`,{x,y:y+4,w:134,h:147});portalName(ctx,p,x,y-152);break;
    }
    ctx.save();const g=ctx.createRadialGradient?ctx.createRadialGradient(x,y-62,6,x,y-58,64):null;
    if(g){g.addColorStop(0,'#f2fdff');g.addColorStop(.35,'#7fe0ff');g.addColorStop(.8,'#1f6fa8');g.addColorStop(1,'#0c2f52');ctx.fillStyle=g;}else ctx.fillStyle='#3aa6d8';
@@ -191,3 +191,13 @@ export function drawWoodDecks(ctx,decks){
  ctx.restore();return true;
 }
 export function drawWoodDeck(ctx,pts,width){return pts.length>1&&drawWoodDecks(ctx,[{pts,width}]);}
+
+// The name of a camp portal's dungeon, on a small dark tag above the arch.
+const PORTAL_NAMES={'reedwater-wilds':'Reedwater Wilds · Lv 1–7','thornberry-vale':'Thornberry Vale · Lv 7–11','lanternlight-wilds':'Lanternlight Wilds · Lv 11–15'};
+function portalName(ctx,p,x,y){
+ const name=PORTAL_NAMES[p.dungeon||'reedwater-wilds'];if(!name||!ctx.fillText)return;
+ ctx.save();ctx.font='600 13px system-ui, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+ const w=(ctx.measureText?.(name).width||name.length*7)+16;
+ ctx.fillStyle='rgba(18,28,24,.72)';ctx.beginPath();ctx.roundRect?ctx.roundRect(x-w/2,y-11,w,22,11):ctx.rect(x-w/2,y-11,w,22);ctx.fill();
+ ctx.fillStyle='#f4e7c4';ctx.fillText(name,x,y+1);ctx.restore();
+}

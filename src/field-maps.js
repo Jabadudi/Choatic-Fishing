@@ -21,6 +21,10 @@ export const FIELD_MAPS=Object.freeze({
   clear:Object.freeze({kills:MOSSROOT_BUNCHES.reduce((n,b)=>n+b[2],0),reward:Object.freeze({wishstones:1,marks:40})})}),
  'saltspray-shore':Object.freeze({code:'1.3',region:1,levels:[4,6],species:'shore-crab',bunches:SALTSPRAY_BUNCHES,elite:null,boss:'Mudshell',
   clear:Object.freeze({kills:SALTSPRAY_BUNCHES.reduce((n,b)=>n+b[2],0),reward:Object.freeze({wishstones:2,marks:60})})}),
+ // Region 1 dungeon 2, Thornberry Vale (1.4 to 1.7), and dungeon 3, Lanternlight Wilds (1.8 to 1.11): copies of the
+ // first maps (src/delta-areas.js WILDS_COPIES) with Netanel's new monsters, the same bunches, and levels rising on
+ // towards Lv 15. Old Croaker (Lv 11) ends 1.7 and Capstomper (Lv 15) ends 1.11. Mossback Ruins mixes the three monsters of its dungeon for now.
+ ...wildsMaps(),
  landing:Object.freeze({code:'1.1',region:1,levels:[1,2],pack:[3,4],
   // A giant shore crab on the Drowned Causeway. Its shell halves every hit until a combo finisher knocks it down.
   elite:Object.freeze({id:'mudshell',species:'crab',name:'Mudshell',level:3,x:3600,y:1350,scale:2.4,health:3,damage:1.6,armor:.5,
@@ -32,6 +36,16 @@ export const FIELD_MAPS=Object.freeze({
    tint:'brightness(.85) saturate(1.4) hue-rotate(28deg)',respawnSeconds:300}),
   clear:Object.freeze({kills:30,reward:Object.freeze({wishstones:1,marks:60})})})
 });
+function wildsMaps(){
+ const crabs=SALTSPRAY_BUNCHES.filter(b=>!b[3]);
+ const plan=[['bramble-hollow','1.4',[7,8],'berry-sprite',DEWDROP_BUNCHES,2,70],['toadstool-glen','1.5',[8,9],'mushroom-imp',MOSSROOT_BUNCHES,2,80],
+  ['thistle-downs','1.6',[9,10],'thistle-hog',DEWDROP_BUNCHES,2,90],['cattail-fen','1.7',[10,11],'reed-frog',[...crabs,Object.freeze([3700,450,1,'boss-frog',Object.freeze({level:11,boss:true})])],3,100,'Old Croaker'],
+  ['lantern-glade','1.8',[11,12],'lantern-moth',MOSSROOT_BUNCHES,2,110],['ember-ridge','1.9',[12,13],'ember-beetle',DEWDROP_BUNCHES,2,120],
+  ['pebble-strand','1.10',[13,14],'pebble-hermit',crabs,2,130],
+  ['mossback-ruins','1.11',[14,15],'lantern-moth',MOSSROOT_BUNCHES.map((b,i)=>Object.freeze([b[0],b[1],b[2],['lantern-moth','ember-beetle','pebble-hermit'][i%3]])).concat([Object.freeze([3700,450,1,'boss-mushroom',Object.freeze({level:15,boss:true})])]),3,150,'Capstomper']];
+ return Object.fromEntries(plan.map(([id,code,levels,species,bunches,wishstones,marks,boss])=>[id,Object.freeze({code,region:1,levels,species,bunches:Object.freeze(bunches),elite:null,...(boss?{boss}:{}),
+  clear:Object.freeze({kills:bunches.reduce((n,b)=>n+b[2],0),reward:Object.freeze({wishstones,marks})})})]));
+}
 export const fieldMap=id=>Object.hasOwn(FIELD_MAPS,id)?FIELD_MAPS[id]:null;
 export const ELITES=Object.freeze(Object.entries(FIELD_MAPS).filter(([,f])=>f.elite).map(([areaId,f])=>Object.freeze({...f.elite,areaId})));
 export const MAX_LEVEL=200;
