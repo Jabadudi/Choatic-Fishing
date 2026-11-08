@@ -5,7 +5,13 @@
 // map's band, come in packs around a leader, and one elite guards the east end. Defeating `clear.kills` monsters and
 // the elite clears the map with a rank; the first clear pays the reward.
 // Region 1 is Lv 1-15, Region 2 Lv 15-25, Region 3 Lv 25-45, with small steps between maps.
+// Regions 1.1 Dewdrop Meadow: the first map of the Regions game. Its slimes stand in fixed bunches, [x, y, count] in
+// world units, and do not come back: the kill goal is the number of slimes placed, so clearing the map means every
+// slime is down. No elite yet.
+const DEWDROP_BUNCHES=Object.freeze([[620,400,3],[1000,250,4],[1380,470,3],[1760,330,4],[2150,490,4],[2540,280,3],[2920,470,4],[3320,320,3],[3660,470,4]]);
 export const FIELD_MAPS=Object.freeze({
+ 'dewdrop-meadow':Object.freeze({code:'1.1',region:1,levels:[1,2],species:'slime',bunches:DEWDROP_BUNCHES,elite:null,
+  clear:Object.freeze({kills:DEWDROP_BUNCHES.reduce((n,b)=>n+b[2],0),reward:Object.freeze({wishstones:1,marks:30})})}),
  landing:Object.freeze({code:'1.1',region:1,levels:[1,2],pack:[3,4],
   // A giant shore crab on the Drowned Causeway. Its shell halves every hit until a combo finisher knocks it down.
   elite:Object.freeze({id:'mudshell',species:'crab',name:'Mudshell',level:3,x:3600,y:1350,scale:2.4,health:3,damage:1.6,armor:.5,
@@ -18,7 +24,7 @@ export const FIELD_MAPS=Object.freeze({
   clear:Object.freeze({kills:30,reward:Object.freeze({wishstones:1,marks:60})})})
 });
 export const fieldMap=id=>Object.hasOwn(FIELD_MAPS,id)?FIELD_MAPS[id]:null;
-export const ELITES=Object.freeze(Object.entries(FIELD_MAPS).map(([areaId,f])=>Object.freeze({...f.elite,areaId})));
+export const ELITES=Object.freeze(Object.entries(FIELD_MAPS).filter(([,f])=>f.elite).map(([areaId,f])=>Object.freeze({...f.elite,areaId})));
 export const MAX_LEVEL=200;
 // How strong a level makes a monster, relative to its Lv 1 kind.
 export const LEVEL_SCALE=Object.freeze({health:.18,damage:.12,xp:.25});

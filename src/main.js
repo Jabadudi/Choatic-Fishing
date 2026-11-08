@@ -37,6 +37,9 @@ import {preloadProps} from './sprites.js';
 import {titleArtReady} from './title-art.js';
 import './music.js';
 import {Lobby} from './lobby.js';
+import {requireGame} from './save-format.js';
+// This page is the Regions game: it loads only Regions journeys (The Wilds Classic, at /classic/, keeps its own).
+requireGame('regions');
 import {areaFor,placesFor,regionAt,nearestLandmark,examinableLandmark,paintAtlasLabels,INTERIOR_AREAS} from './wilds.js';
 import {areaMap,pauseAreaMapPainting} from './area-map-art.js';
 import {explorationHud,promptParts} from './hud.js';
@@ -249,7 +252,8 @@ canvas.setAttribute('aria-label','Reedwater exploration. WASD move, Space talk o
 // The map shows the area Eli is in, or zooms out to the whole delta.
 let mapMode='area';
 const storyGoal=()=>{const t=storyTarget(world);return t?.toward||t;};
-function setMapMode(mode){mapMode=mode;$('atlas-tab-area').setAttribute('aria-selected',mode==='area');$('atlas-tab-world').setAttribute('aria-selected',mode==='world');document.querySelector('.atlas-card p').textContent=mode==='world'?'The whole Reedwater Delta. Green outlines are the places you can walk; gold is where you are. Click an area to open its map.':'Walk through the marked map edge to reach the connecting path. Gold marks places you have found; the bright marker shows your position.';drawMap($('atlas-canvas'));}
+// The Regions game holds only its own maps, so its atlas has no whole-delta view.
+function setMapMode(mode){if(world.regions)mode='area';mapMode=mode;$('atlas-tab-area').setAttribute('aria-selected',mode==='area');$('atlas-tab-world').setAttribute('aria-selected',mode==='world');document.querySelector('.atlas-card p').textContent=mode==='world'?'The whole Reedwater Delta. Green outlines are the places you can walk; gold is where you are. Click an area to open its map.':'Walk through the marked map edge to reach the connecting path. Gold marks places you have found; the bright marker shows your position.';drawMap($('atlas-canvas'));}
 atlasImage(()=>{if(atlasOpen)drawMap($('atlas-canvas'));});
 // The area map shows where Eli is, or the area of the story's next stop when opened from the quest log.
 function drawMap(target){
@@ -281,7 +285,7 @@ function drawMinimap(target){
  c.setTransform(1,0,0,1,target.width/2,target.height/2);c.rotate(world.player.angle+Math.PI/2);
  c.fillStyle='#fff4c1';c.strokeStyle='#20383d';c.lineWidth=2;c.beginPath();c.moveTo(0,-9);c.lineTo(7,7);c.lineTo(0,3);c.lineTo(-7,7);c.closePath();c.stroke();c.fill();c.setTransform(1,0,0,1,0,0);
 }
-function toggleAtlas(open=!atlasOpen){if(!open){atlasFocus=null;pauseAreaMapPainting();}if(open){backpackUI?.close();skillsUI?.close();codexUI?.close();questUI?.close();}atlasOpen=open;release();if(open&&touchUI)touchUI.update(world,true);$('world-atlas').hidden=!open;if(open)drawMap($('atlas-canvas'));else canvas.focus();}
+function toggleAtlas(open=!atlasOpen){$('atlas-tab-world').hidden=!!world.regions;if(world.regions&&mapMode==='world')setMapMode('area');if(!open){atlasFocus=null;pauseAreaMapPainting();}if(open){backpackUI?.close();skillsUI?.close();codexUI?.close();questUI?.close();}atlasOpen=open;release();if(open&&touchUI)touchUI.update(world,true);$('world-atlas').hidden=!open;if(open)drawMap($('atlas-canvas'));else canvas.focus();}
 $('open-atlas').onclick=()=>toggleAtlas(true);
 $('atlas-tab-area').onclick=()=>{atlasFocus=null;setMapMode('area');};$('atlas-tab-world').onclick=()=>setMapMode('world');
 $('atlas-canvas').addEventListener('click',e=>{if(mapMode!=='world')return;const c=$('atlas-canvas'),r=c.getBoundingClientRect(),x=(e.clientX-r.left)*c.width/r.width,y=(e.clientY-r.top)*c.height/r.height,id=areaAt(x,y,c.width,c.height,fullView(c.width,c.height));if(id){atlasFocus={areaId:id};setMapMode('area');}});$('close-atlas').onclick=()=>toggleAtlas(false);$('inspect-place').onclick=()=>{world.inspect();canvas.focus();};
@@ -312,7 +316,7 @@ function updateLobby(){
  document.querySelector('.lobby-note').textContent=touchMode?'Drag the left stick to move · Tap water to aim · Use · Examine':document.querySelector('.controls').textContent;
  $('lobby-screen').hidden=!!lobby.world;if(touchUI)touchUI.update(world,!touchMode||!lobby.world);
  $('leave-lobby').hidden=lobby.mode==='menu';
- $('lobby-status').textContent=lobby.mode==='menu'?'Chapter 1 · The Old Fishing Hut. Follow Eli from the dock to a night that changes everything.':lobby.status;
+ $('lobby-status').textContent=lobby.mode==='menu'?'Regions 1.1 · Dewdrop Meadow. Fight through each field map, clear it, and move on east.':lobby.status;
  const inRoom=['host','guest'].includes(lobby.mode),connecting=['creating','joining'].includes(lobby.mode);
  $('lobby-menu').hidden=inRoom;$('room-panel').hidden=!inRoom;
  $('create-room').disabled=connecting;$('join-room').disabled=connecting;

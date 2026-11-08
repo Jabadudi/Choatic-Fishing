@@ -118,7 +118,7 @@ test('field map progress and monster levels survive a save; bad data is refused'
 });
 
 test('the elite can be created for every field map from its data',()=>{
- for(const [areaId,f] of Object.entries(FIELD_MAPS)){
+ for(const [areaId,f] of Object.entries(FIELD_MAPS).filter(([,f])=>f.elite)){
   const w=field(areaId),a=createElite({...f.elite,areaId},w);assert.ok(a,f.elite.name);assert.equal(a.elite,true);assert.equal(a.level,f.elite.level);
  }
 });

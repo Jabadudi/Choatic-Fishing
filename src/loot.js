@@ -33,6 +33,7 @@ export const LOOT_ITEMS=Object.freeze({
  'Eel Fillet':{name:'Eel Fillet',category:'consumables',description:'Oily and firm. It grills well over a fire.'},
  'Eel Skin':{name:'Eel Skin',category:'upgrade-materials',description:'Slick, strong skin. It wraps a rod grip or a bow handle.'},
  'Eel Oil':{name:'Eel Oil',category:'upgrade-materials',description:'A small flask of oil. It keeps leather and lamps going.'},
+ 'Slime Jelly':{name:'Slime Jelly',category:'upgrade-materials',description:'A wobbly lump of slime, cool to the touch. It keeps its shape for a while, then slowly sags.'},
  'Shadow Ichor':{name:'Shadow Ichor',category:'upgrade-materials',description:'Black, cold and slow to pour. It drinks the light around it.'},
  'Rusted Axe Head':{name:'Rusted Axe Head',category:'upgrade-materials',description:'Pitted iron from a shadow walker’s axe. A smith could rework it.'},
  'Hollow Antler':{name:'Hollow Antler',category:'upgrade-materials',description:'A Hollow Stag’s antler, black at the core and light as dry reed. Shadow still creeps along the tines.'},
@@ -77,6 +78,7 @@ export const LOOT_TABLES=Object.freeze({
  eel:[{item:'Eel Fillet',chance:1},{item:'Eel Skin',chance:.35},{item:'Eel Oil',chance:.2},artifactEntry('lodestone'),{item:FAMILIARS['eel'].shard,chance:SHARD_CHANCES['eel']}],
  'shadow-walker':[{item:'Shadow Ichor',chance:1},{item:'Rusted Axe Head',chance:.3},{item:'Black Light Shard',chance:.05},artifactEntry('black-light-heart'),{item:FAMILIARS['shadow-walker'].shard,chance:SHARD_CHANCES['shadow-walker']}],
  // The shadow walker kinds: ichor always, and something of whatever the shadow took.
+ slime:[{item:'Slime Jelly',chance:1}],
  'hollow-stag':[{item:'Shadow Ichor',chance:1},{item:'Hollow Antler',chance:.35},{item:'Black Light Shard',chance:.05}],
  'gloam-boar':[{item:'Shadow Ichor',chance:1},{item:'Gloam Hide',chance:.35},{item:'Black Light Shard',chance:.05}],
  stoneshade:[{item:'Shadow Ichor',chance:1},{item:'Shadowstone',chance:.5},{item:'Black Light Shard',chance:.1}],

@@ -4,7 +4,7 @@ export const STARTER_SWORD='Iron Sword';
 export const STARTER_SWORD_ITEM=Object.freeze({name:STARTER_SWORD,category:'weapons',description:'Eli’s sword. A plain, honest blade that never needs mending. 30 damage; swing three times in a row for a combo that ends in a knockdown.'});
 // Gives the sword once: on its first free hotbar slot, held ready. Journeys saved before Eli carried one get it on load.
 export function giveStarterSword(world){
- if(!world.adventure||!world.story)return false;
+ if(!world.adventure||!world.story&&!world.regions)return false;
  const inv=world.inventory;if(inv.allItems.some(item=>item.name===STARTER_SWORD))return false;
  if(!inv.receive({...STARTER_SWORD_ITEM}))return false;
  const sword=inv.allItems.find(item=>item.name===STARTER_SWORD),slot=inv.slots.indexOf(null);

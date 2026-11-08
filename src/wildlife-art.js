@@ -1,3 +1,4 @@
+import {drawSlime} from './slime-art.js';
 import {heightAt} from './terrain-height.js';
 import {drawEntitySprite,spriteHasArt} from './sprites.js';
 import {BEHAVIOR_LABELS,facingFor} from './entities.js';
@@ -66,6 +67,8 @@ export function drawWildlife(c,a){
  c.save();if(a.health<=0)c.globalAlpha=Math.min(1,a.deathRemaining);else if(a.hurtRemaining>0)c.globalAlpha=.55;
  // A Whisperer is faint until it hunts.
  if(a.visibility!==undefined&&a.health>0)c.globalAlpha*=a.visibility;
+ // A slime has no sheet: it is drawn in code (src/slime-art.js).
+ if(a.species==='slime'){drawSlime(c,a);c.restore();return;}
  if(drawEntitySprite(c,a.spriteId,{x,y,...animalPose(a),facingX:a.direction.x,direction:facingFor(a.direction.x,a.direction.y)})){c.restore();return;}
  // A creature with its own sheet that has not arrived yet shows only its shadow on the ground, not a stand-in shape.
  if(spriteHasArt(a.spriteId)&&!['deer','turtle'].includes(a.species)&&a.spriteId!=='nightwalker'){
@@ -92,7 +95,7 @@ export function drawWildlife(c,a){
  c.restore();
 }
 // How high the health bar sits above each shadow walker kind's feet.
-const STATUS_HEIGHT={'drowned-captain':86,greyhorn:134,'hollow-stag':98,'gloam-boar':42,stoneshade:96,whisperer:76,'mire-walker':64,'drowned-soldier':64,'ash-archer':62,inkeel:44};
+const STATUS_HEIGHT={slime:44,'drowned-captain':86,greyhorn:134,'hollow-stag':98,'gloam-boar':42,stoneshade:96,whisperer:76,'mire-walker':64,'drowned-soldier':64,'ash-archer':62,inkeel:44};
 export function drawAnimalStatus(c,world){
  for(const a of world.animals){
   if(a.health<=0||a.areaId!==world.areaId)continue;

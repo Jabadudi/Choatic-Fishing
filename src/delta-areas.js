@@ -691,6 +691,37 @@ area({id:'landing',num:'1.1',name:'Reedwater Landing',frame:[195,395,272,400],si
   ramps:[]}
 });
 
+// Regions 1.1 Dewdrop Meadow: the first map of the Regions game, a short strip a third as tall as the old Landing, run
+// west to east. An earth cliff closes the north side and the sea the south side; the trail runs along the middle past
+// bunches of slimes (src/field-maps.js) to a sealed gate at the east end that opens once every slime is down.
+// It has no exits yet: the next map is still to be built (src/region-play.js keeps the gate).
+area({id:'dewdrop-meadow',num:'1.1',name:'Dewdrop Meadow',frame:[195,395,330,367],size:[4000,740],base:'land',ground:'meadow',seed:4127,spawn:[199,349],
+ shapes:[
+  // The sea along the south side.
+  ['water',[[195,361.5],[215,360.8],[240,361.6],[262,360.6],[285,361.4],[310,360.4],[335,361.2],[360,360.6],[380,361.4],[395,360.8],[395,367],[195,367]]],
+  ['water','ellipse',[300,358.5],5,1.6]
+ ],
+ zones:[
+  ['sand',[[195,359],[220,358.4],[245,359.2],[270,358.2],[295,356.4],[305,356.4],[320,358.6],[345,358.2],[370,359],[395,358.4],[395,367],[195,367]]],
+  ['forest',[[195,330],[395,330],[395,335],[195,335]]]
+ ],
+ roads:[{pts:[[195,349],[215,348.4],[240,349.6],[265,347.8],[290,349],[315,350.2],[340,348.6],[365,349.4],[388,349]],style:'dirt'}],
+ props:[{kind:'boulder',at:[212,357],art:'grass-rock'},{kind:'tree',at:[222,338.2],art:'round-oak'},{kind:'bush',at:[234,339.4],art:'round-bush'},
+  {kind:'logs',at:[247,356],art:'log-pile',solid:0},{kind:'bush',at:[258,357.4],art:'daisies'},{kind:'boulder',at:[272,339],art:'grass-rock'},
+  {kind:'tree',at:[288,338.4],art:'round-oak'},{kind:'bush',at:[300,339.6],art:'round-bush'},{kind:'bush',at:[318,357.6],art:'daisies'},
+  {kind:'tree',at:[330,338.6],art:'round-oak'},{kind:'boulder',at:[344,357],art:'grass-rock'},{kind:'bush',at:[356,339.2],art:'round-bush'},
+  {kind:'cart',at:[372,357],art:'wood-barrel'},{kind:'tree',at:[378,338.4],art:'round-oak'},{kind:'stone',at:[391,349],art:'standing-stone'}],
+ places:[
+  {id:'dewdrop-start',name:'Dewdrop Meadow',at:[203,349],kind:'shore',text:'A strip of wet meadow between the cliff and the sea. The grass is beaded with dew, and something round and wobbly is bouncing about further east.'},
+  {id:'dewdrop-gate',name:'The Sealed Gate',at:[388,349],kind:'drowned',text:'An old stone gate across the trail. It stays shut while slimes still bounce about the meadow.'}
+ ],
+ exits:[],
+ // The north cliff: the meadow above it stands one level up and out of reach.
+ elevation:{base:0,
+  terraces:[{id:'north-cliff',height:1,points:[[195,330],[395,330],[395,336],[380,336.6],[365,335.6],[350,336.4],[335,335.4],[320,336.2],[305,335.4],[290,336.4],[275,335.6],[260,336.2],[245,335.4],[230,336.4],[215,335.6],[195,336.2]]}],
+  ramps:[]}
+});
+
 area({id:'arrival-bay',num:'22',name:'Arrival Bay',frame:[180,300,385,470],size:[2400,1700],base:'water',ground:'sand',sea:true,spawn:[251,402],
  shapes:[
   ['land',[[180,385],[300,385],[300,398],[284,400],[262,396],[240,401],[214,397],[196,400],[180,397]],{zone:'sand'}],
