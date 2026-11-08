@@ -1,4 +1,4 @@
-import {castShadow} from './ground-shadow.js';
+import {castShadow,contactShadow,projectFrom,CAST} from './ground-shadow.js';
 import {ATLAS_PROP_ART} from './sprite-definitions.js';
 import {groundPattern} from './ground-textures.js';
 import {DUAL_GROUND} from './dual-grid.js';
@@ -95,7 +95,20 @@ export function atlasPropArt(p){
  return PAINTED[p.kind];
 }
 // Plants that lie flat on the ground or the water cast no shadow.
-const FLAT_ART=new Set(['daisies','water-lily','cattails','reeds']);
+const FLAT_ART=new Set(['daisies','water-lily','cattails','reeds','grass-tuft','grass-clump','grass-sprigs','grass-tall','white-flowers','yellow-flowers','lavender','pink-flowers']);
+// The prop's part of the shadow pass (src/ground-shadow.js): a painted prop throws its own outline, a drawn one an oval.
+export function propShadow(s,p){
+ if(p.inWater||p.kind==='dock'||p.kind==='waterfall')return;
+ const art=atlasPropArt(p),x=Math.round(p.x),y=Math.round(p.y),k=p.scale||1;
+ if(!art){contactShadow(s,x,y,24*k);return;}
+ const [id,w,h]=art;if(FLAT_ART.has(p.art))return;
+ const name=(!!(p.art&&ATLAS_PROP_ART[p.kind]?.[p.art])||id.startsWith('atlas/'))?id:`atlas/${id}`;
+ if(!drawPropSprite(s,name,{x:-1e5,y:-1e5,w:1,h:1})){contactShadow(s,x,y,w*.36*k);return;}
+ // A small contact oval ties the thrown outline to the foot.
+ const ground=y-h*CAST.tuck*k;
+ contactShadow(s,x,ground+Math.min(6,h*.06*k),w*.32*k,Math.max(3,h*.06*k));
+ projectFrom(s,x,y,c=>drawPropSprite(c,name,{x,y,w,h}),k,ground);
+}
 function drawProp(ctx,p,t){
  const x=Math.round(p.x),y=Math.round(p.y),art=atlasPropArt(p);
  if(art){

@@ -105,6 +105,7 @@ function drawComboCounter(ctx,world,view){
 // The field map's clear goal, top centre: monsters defeated, whether the elite has fallen, and the best rank so far.
 function drawFieldProgress(ctx,world,view){
  const f=fieldProgress(world);if(!f||world.fieldClear)return;
+ if(f.species){drawRankTracker(ctx,f,view);return;}
  const W=view.right-view.left,size=Math.max(11,Math.min(14,W*.011)),x=view.left+W/2,y=view.top+size*2.2;
  // A bunch map (Regions) has no elite: its pill counts its own monsters, then says the gate is open.
  const text=f.species?(f.clears?`${f.code} · Cleared · Rank ${f.best} · The gate east is open`:`${f.code} · Slimes ${f.kills}/${f.goal}`):`${f.code} · Monsters ${f.kills}/${f.goal} · ${f.eliteName} ${f.elite?'✓':'—'}${f.best?` · Best ${f.best}`:''}`;
@@ -114,6 +115,37 @@ function drawFieldProgress(ctx,world,view){
  ctx.fillStyle=f.kills>=f.goal&&!f.elite?'#ffd24a':'#f3e6bf';ctx.fillText(text,x,y+1);ctx.restore();
 }
 const RANK_COLORS={S:'#ffcf3a',A:'#9fe0ff',B:'#b8e08a',C:'#e8d8c0'};
+// A bunch map's live tracker (Regions): the rank the run is on course for in a big letter, a COMBO bar (the current
+// chain, toward a 30-hit chain; a tick marks the best so far), a KILLS bar toward the map's goal, and one segment per
+// bunch that fills as its monsters fall. Once cleared, it shows the best rank and that the gate is open.
+function drawRankTracker(ctx,f,view){
+ const W=view.right-view.left,k=Math.max(.75,Math.min(1.15,W/1150)),bw=210*k,box=54*k,gap=8*k,w=box+gap+bw,x=view.left+W/2-w/2,y=view.top+8*k;
+ const rank=f.clears?f.best:f.live;
+ ctx.save();ctx.textBaseline='middle';
+ // The rank box.
+ ctx.fillStyle='#14201acc';ctx.fillRect(x,y,box,box);ctx.strokeStyle='#c9a85a';ctx.lineWidth=2;ctx.strokeRect(x+1,y+1,box-2,box-2);
+ ctx.strokeStyle='#ffffff22';ctx.lineWidth=1;ctx.strokeRect(x+4,y+4,box-8,box-8);
+ ctx.textAlign='center';ctx.font=`900 ${Math.round(38*k)}px Arial`;ctx.lineWidth=4*k;ctx.strokeStyle='#10180f';ctx.fillStyle=f.started||f.clears?RANK_COLORS[rank]||'#fff':'#8b9a8e';
+ ctx.strokeText(rank,x+box/2,y+box/2+2*k);ctx.fillText(rank,x+box/2,y+box/2+2*k);
+ ctx.font=`bold ${Math.round(8*k)}px Arial`;ctx.fillStyle='#e9d8a8';ctx.fillText(f.clears?'CLEARED':`${f.code} RANK`,x+box/2,y+box-6*k);
+ // COMBO and KILLS bars.
+ const bx=x+box+gap,label=46*k,track=bw-label,bh=9*k;
+ ctx.fillStyle='#14201ab0';ctx.fillRect(bx-4*k,y,bw+8*k,box);
+ const bar=(row,name,t,top,bottom,mark,text)=>{const by=y+3*k+row*15*k;ctx.textAlign='left';ctx.font=`bold ${Math.round(11*k)}px Arial`;ctx.lineWidth=3;ctx.strokeStyle='#10180f';ctx.strokeText(name,bx,by+bh/2);ctx.fillStyle='#f3e6bf';ctx.fillText(name,bx,by+bh/2);
+  ctx.fillStyle='#10180fcc';ctx.fillRect(bx+label,by,track,bh);ctx.strokeStyle='#c9a85a99';ctx.lineWidth=1;ctx.strokeRect(bx+label+.5,by+.5,track-1,bh-1);
+  const g=ctx.createLinearGradient?ctx.createLinearGradient(0,by,0,by+bh):null;if(g){g.addColorStop(0,top);g.addColorStop(1,bottom);ctx.fillStyle=g;}else ctx.fillStyle=top;
+  ctx.fillRect(bx+label+1,by+1,Math.max(0,(track-2)*Math.min(1,t)),bh-2);
+  if(mark>0){ctx.fillStyle='#fff3d6';ctx.fillRect(bx+label+1+(track-2)*Math.min(1,mark)-1,by-1,2,bh+2);}
+  ctx.textAlign='right';ctx.font=`bold ${Math.round(9*k)}px Arial`;ctx.lineWidth=3;ctx.strokeStyle='#10180f';ctx.strokeText(text,bx+bw-3*k,by+bh/2+.5);ctx.fillStyle='#fff3d6';ctx.fillText(text,bx+bw-3*k,by+bh/2+.5);};
+ bar(0,'COMBO',f.combo/30,'#ffe27a','#e0a640',f.bestCombo/30,`${f.combo} · best ${f.bestCombo}`);
+ bar(1,'KILLS',f.kills/f.goal,'#ff9a4a','#d8502a',0,`${f.kills} / ${f.goal}`);
+ // One segment per bunch.
+ const n=f.bunches.length,sg=3*k,sw=(bw-sg*(n-1))/n,sy=y+box-12*k,sh=10*k;
+ f.bunches.forEach((b,i)=>{const sx=bx+i*(sw+sg);ctx.fillStyle='#10180fcc';ctx.fillRect(sx,sy,sw,sh);
+  if(b.down){ctx.fillStyle=b.down===b.count?'#7fd36a':'#3f7a3a';ctx.fillRect(sx+1,sy+1,(sw-2)*(b.down===b.count?1:b.down/b.count),sh-2);}
+  ctx.strokeStyle=b.down===b.count?'#e9ffd0':'#6b7a5a';ctx.lineWidth=1;ctx.strokeRect(sx+.5,sy+.5,sw-1,sh-1);});
+ ctx.restore();
+}
 // The clear banner: the map's name, the rank in big letters, how it was earned, and the first-clear reward.
 function drawFieldClear(ctx,world,view){
  const c=world.fieldClear;if(!c)return;

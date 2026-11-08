@@ -1,5 +1,6 @@
 import {drawQuarryActorShadow} from './quarry-light.js';
-import {castShadow} from './ground-shadow.js';
+import {castShadow,shadowPass,muteShadows,contactShadow} from './ground-shadow.js';
+import {slimeShadow} from './slime-art.js';
 import {elevationFor,heightAt,canTraverse,canReach,projectGround,unprojectGround} from './terrain-height.js';
 export {elevationFor,heightAt,canTraverse,canReach,projectGround,unprojectGround};
 import {elevationBands,drawElevationBand} from './elevation-art.js';
@@ -31,7 +32,7 @@ import {groundPattern,groundKind} from './ground-textures.js';
 import {pathPattern} from './path-texture.js';
 import {DELTA} from './delta-areas.js';
 import {linkEntries} from './atlas-area.js';
-import {drawAtlasGround,drawAtlasProp} from './atlas-area-art.js';
+import {drawAtlasGround,drawAtlasProp,atlasPropArt,propShadow} from './atlas-area-art.js';
 export const WINDCHIME_ENTRY={x:330,y:1120};
 // Original, repeatable pixel-art areas. Exit coordinates connect actual map edges.
 const segmentDistance=(x,y,ax,ay,bx,by)=>{const dx=bx-ax,dy=by-ay,l=dx*dx+dy*dy,t=l?Math.max(0,Math.min(1,((x-ax)*dx+(y-ay)*dy)/l)):0;return Math.hypot(x-ax-t*dx,y-ay-t*dy);};
@@ -368,6 +369,12 @@ function fadeCanopy(key,x,y,big,p,step){
  const k=big?2:1,target=y>p.y+12&&Math.abs(p.x-x)<48*k+8&&p.y>y-100*k-15?.3:1,cur=fades.get(key)??1,next=cur+(target-cur)*step;
  if(next>.999)fades.delete(key);else fades.set(key,next);
 }
+// A hand-placed tree fades only while its canopy actually covers Eli: he is behind its foot and inside its crown.
+function fadeProp(key,o,p,id,step){
+ const [,w,h]=atlasPropArt(o)||[0,150,150],y=o.y-heightAt(o.x,o.y,id)+heightAt(p.x,p.y,id);
+ const target=p.y<y-6&&p.y>y-h*(o.scale||1)+20&&Math.abs(p.x-o.x)<w*(o.scale||1)*.45?.3:1,cur=fades.get(key)??1,next=cur+(target-cur)*step;
+ if(next>.999)fades.delete(key);else fades.set(key,next);
+}
 function pushTree(it,x,y,key,sway,big,near){it.kind='tree';it.x=x;it.oy=y;it.y=y;it.key=key;it.sway=sway;it.big=big;it.near=near;}
 // still: a one-off picture (the area maps): canopies stay solid and the live fade state is left alone.
 export function drawDepthSorted(ctx,world,view,actors,drawActor,{still=false,terrainView=view}={}){
@@ -394,7 +401,7 @@ export function drawDepthSorted(ctx,world,view,actors,drawActor,{still=false,ter
  if(id==='village')for(const object of villageObjects)if(object.x>view.left-200&&object.x<view.right+200&&object.y>view.top-30&&object.y<view.bottom+220){const it=slot(n++);it.kind='village';it.y=object.y+18;it.ref=object;}
  if(DELTA[id])for(const object of DELTA[id].props)if(object.kind!=='waterfall'&&object.x>view.left-200&&object.x<view.right+200&&object.y>view.top-30&&object.y<view.bottom+220){const it=slot(n++);it.kind='atlas';it.y=object.y;it.ref=object;
   // A hand-placed tree in a layered area fades like a canopy when it stands in front of Eli.
-  if(layeredArea(id)&&(object.kind==='tree'||object.kind==='big-tree')){it.key=`prop:${object.x},${object.y}`;if(!still)fadeCanopy(it.key,object.x,object.y-heightAt(object.x,object.y,id)+heightAt(p.x,p.y,id),true,p,step);}}
+  if(layeredArea(id)&&(object.kind==='tree'||object.kind==='big-tree')){it.key=`prop:${object.x},${object.y}`;if(!still)fadeProp(it.key,object,p,id,step);}}
  if(id==='landing'){const it=slot(n++);it.kind='story-cabin';it.y=1515;}
  if(DELTA[id]?.elevation)for(const place of placesFor(id)){const it=slot(n++);it.kind='elevation-landmark';it.y=place.y;it.ref=place;}
  order.length=0;for(let i=0;i<n;i++)order.push(slots[i]);
@@ -409,6 +416,16 @@ export function drawDepthSorted(ctx,world,view,actors,drawActor,{still=false,ter
    const player=order.findIndex(it=>it.kind==='actor'&&it.ref===p);if(player>=0)order.push(...order.splice(player,1));
   }
  }else order.sort((a,b)=>a.y-b.y);
+ // Layered areas cast every shadow in one pass first (src/ground-shadow.js); the per-object shadows stay off meanwhile.
+ const cast=layeredArea(id)&&shadowPass(ctx,s=>{for(const it of order){
+  const x=it.ref?.x??it.x,y=it.ref?.y??it.oy;s.save();s.translate(0,-heightAt(x,y,id));
+  if(it.kind==='atlas')propShadow(s,it.ref);
+  else if(it.kind==='actor'){const a=it.ref;
+   if(a.species==='slime'){const o=slimeShadow(a);if(o)contactShadow(s,o.x,o.y,o.rx,o.ry);}
+   else if((a===p||a.npc||a.remote||a.cutscene)&&(a.health===undefined||a.health>0))contactShadow(s,Math.round(a.x),Math.round(a.y)+14,11,4);}
+  s.restore();}});
+ muteShadows(!!cast);
+ try{
  for(const it of order){
   if(it.kind==='elevation-band'){drawElevationBand(ctx,it.ref,t,still);continue;}
   ctx.save();if(DELTA[id]?.elevation){const x=it.ref?.x??it.x,y=it.ref?.y??it.oy;ctx.translate(0,-heightAt(x,y,id));}
@@ -433,6 +450,7 @@ export function drawDepthSorted(ctx,world,view,actors,drawActor,{still=false,ter
   }
   ctx.restore();
  }
+ }finally{muteShadows(false);}
 }
 // Shore foam and sparkle positions are found once per chunk on a coarse grid, so the live water layer never samples distance per frame.
 const shores=new Map(),MAX_SHORES=60;

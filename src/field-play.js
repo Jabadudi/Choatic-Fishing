@@ -87,10 +87,17 @@ function clearMap(world,id){
  if(!f.bunches)Object.assign(state,freshRun());
  return `${f.code} ${name} cleared · Rank ${result.rank}${reward?` · First clear: ${reward.wishstones} Wishstone, ${reward.marks} reed marks`:''}`;
 }
+// A bunch map's live tracker: each bunch's size and how many of it are down, and the rank the run is on course for.
+function liveScore(world,f,state){
+ const down=new Set(state.defeated||[]),id=world.areaId;
+ const bunches=f.bunches.map(([,,count],b)=>({count,down:Array.from({length:count},(_,i)=>`${id}:${b+1}-${i+1}`).filter(n=>down.has(n)).length}));
+ const seconds=state.startedAt===null?0:Math.max(0,world.elapsed-state.startedAt),combo=world.combo?.remaining>0?world.combo.count:0;
+ return {bunches,seconds,damage:state.damage,combo,bestCombo:state.combo,live:rankFor({seconds,damage:state.damage,combo:state.combo}).rank,started:state.startedAt!==null};
+}
 // What the HUD shows for the map Eli is on: progress toward the clear.
 export function fieldProgress(world){
  const f=fieldMap(world.areaId),state=stateFor(world,world.areaId);if(!f||!state)return null;
- return {code:f.code,kills:Math.min(state.kills,f.clear.kills),goal:f.clear.kills,elite:state.elite,eliteName:f.elite?.name??null,best:state.best,clears:state.clears,...(f.bunches?{species:f.species}:{})};
+ return {code:f.code,kills:Math.min(state.kills,f.clear.kills),goal:f.clear.kills,elite:state.elite,eliteName:f.elite?.name??null,best:state.best,clears:state.clears,...(f.bunches?{species:f.species,...liveScore(world,f,state)}:{})};
 }
 // Accepts only known maps and sane numbers; older saves start every map fresh.
 export function restoreFieldMaps(data,world,fail=m=>{throw Error(m);}){
