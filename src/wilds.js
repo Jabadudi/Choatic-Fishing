@@ -249,7 +249,7 @@ const DEEP_WATER=60;
 function dualGround(ctx,left,top,width,height,id){
  const plan=DUAL_GROUND[id];if(!plan||typeof document==='undefined')return false;
  const base=dualGridSheet(plan.base,markStale),sheets=plan.layers.map(k=>dualGridSheet(k,markStale));if(!base||sheets.some(s=>!s))return false;
- const C=GROUND_CELL;ctx.save();ctx.fillStyle=fullCellPattern(ctx,base,C);ctx.fillRect(left,top,width,height);
+ const C=GROUND_CELL;ctx.save();ctx.fillStyle=fullCellPattern(ctx,base,plan.baseCell||C);ctx.fillRect(left,top,width,height);
  ctx.imageSmoothingEnabled=true;
  plan.layers.forEach((k,i)=>drawDualGrid(ctx,sheets[i],(x,y)=>DUAL_TESTS[k](x,y,id),{left:left-C,top:top-C,width:width+2*C,height:height+2*C,cell:C}));
  ctx.restore();return true;
