@@ -23,7 +23,8 @@ const FLAT='chimewood';
 function find(kind){for(let gy=4;gy<26;gy++)for(let gx=6;gx<30;gx++){const o=sceneryAt(gx,gy,FLAT);if(o?.kind===kind)return {...o,gx,gy};}}
 function scene(player,area=FLAT){const w=new World(()=>0,{adventure:true});w.rabbits=[];w.areaId=area;Object.assign(w.player,player);return w;}
 const viewAt=p=>({left:p.x-480,top:p.y-360,right:p.x+480,bottom:p.y+360});
-const explorerAt=(ops,p)=>ops.findIndex(o=>o[0]==='ellipse'&&o[1]===Math.round(p.x)+5&&o[2]===Math.round(p.y)+14);
+// Eli's ground shadow (src/ground-shadow.js) marks where he is drawn: its core sits just right of and below his feet.
+const explorerAt=(ops,p)=>ops.findIndex(o=>o[0]==='ellipse'&&Math.abs(o[1]-(p.x+13*.22))<.01&&Math.abs(o[2]-(p.y+14))<.01);
 const crownAt=(ops,o)=>ops.findIndex(op=>op[0]==='drawImage'&&op.length===4&&Math.abs(op[2]-(Math.round(o.x)-48))<=2&&op[3]===Math.round(o.y)-100);
 
 test('a tree in front of the player draws its canopy over them, one behind draws under them',()=>{
@@ -58,7 +59,7 @@ test('the canopy eases to 30% while the player is behind it and back when they l
 });
 
 import {LANDMARKS,landmarkCanopyAlpha} from '../src/wilds.js';
-// 1.1 is a layered map: Eli is always drawn over its scenery, and a canopy in front of him fades instead.
+// 1.1 is a layered map: Eli and the scenery sort by where they stand, and a canopy in front of him fades.
 test('the Hollow Tree joins the depth sort and fades its big canopy over a player behind it',()=>{
  const tree=LANDMARKS.find(p=>p.kind==='tree'),bigCrown=ops=>ops.findIndex(op=>op[0]==='drawImage'&&op.length===4&&Math.abs(op[2]-(tree.x-96))<=2&&op[3]===tree.y-200);
  for(const [dy,front] of [[-70,true],[25,false]]){
@@ -67,7 +68,7 @@ test('the Hollow Tree joins the depth sort and fades its big canopy over a playe
    render(ctx,w,viewAt(w.player));
    const player=explorerAt(ctx.ops,w.player),crown=bigCrown(ctx.ops);
    assert.ok(player>=0&&crown>=0,'both drawn');
-   assert.ok(crown<player,'Eli stays readable on top');
+   assert.equal(crown>player,front,front?'canopy over Eli':'Eli over the canopy');
    for(let i=0;i<120;i++){w.elapsed+=1/60;render(ctx,w,viewAt(w.player));}
    assert.ok(Math.abs(landmarkCanopyAlpha(tree.id)-(front?.3:1))<.02,front?'fades to 30%':'stays solid');
   });

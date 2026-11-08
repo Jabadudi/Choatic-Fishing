@@ -55,7 +55,9 @@ function drawFace(c,s,earth){
   // Faces turned away from the upper-left light sit a little darker.
   const turn=Math.max(0,(q[0]-p[0])*-1)/Math.hypot(q[0]-p[0],q[1]-p[1]);if(turn>.2){c.fillStyle=`rgba(20,14,8,${.18*turn})`;c.fill();}
   c.restore();
-  // Contact shadow on the lower ground.
+  // The wall's shadow on the lower ground, falling down and away from the upper-left light, then a contact shadow.
+  if(Math.abs(fb[0]-fa[0])>Math.abs(fb[1]-fa[1])){const top=Math.min(fa[1],fb[1]),cast=c.createLinearGradient(0,top,0,top+38);cast.addColorStop(0,'rgba(18,34,22,.3)');cast.addColorStop(1,'rgba(18,34,22,0)');
+   c.save();c.fillStyle=cast;c.beginPath();c.moveTo(fa[0],fa[1]);c.lineTo(fb[0],fb[1]);c.lineTo(fb[0]+10,fb[1]+38);c.lineTo(fa[0]+10,fa[1]+38);c.closePath();c.fill();c.restore();}
   line(c,[fa[0],fa[1]+3],[fb[0],fb[1]+3],'rgba(24,30,18,.18)',8);
   line(c,[fa[0],fa[1]+1],[fb[0],fb[1]+1],'rgba(24,22,14,.35)',2);
   // The lip: grass (or sand) curling over the top of the wall, with a dark underside.

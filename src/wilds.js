@@ -1,4 +1,5 @@
 import {drawQuarryActorShadow} from './quarry-light.js';
+import {castShadow} from './ground-shadow.js';
 import {elevationFor,heightAt,canTraverse,canReach,projectGround,unprojectGround} from './terrain-height.js';
 export {elevationFor,heightAt,canTraverse,canReach,projectGround,unprojectGround};
 import {elevationBands,drawElevationBand} from './elevation-art.js';
@@ -102,7 +103,10 @@ const ZONE_COLORS={moss:['#68774c','#738354','#7c8c5b'],leaves:['#947044','#a17b
 export const paletteAt=(x,y,id)=>DELTA[id]?ZONE_COLORS[DELTA[id].zoneAt(x,y)]||ZONE_COLORS.meadow:COLORS[regionAt(x,y,id)];
 const nearEdge=(e,x,y)=>{const z=e.heightAt(x,y);return [[0,-110],[0,40],[-50,0],[50,0],[-40,-60],[40,-60]].some(([dx,dy])=>e.heightAt(x+dx,y+dy)!==z);};
 function atlasScenery(gx,gy,id){
- const b=DELTA[id],x=gx*72+12+hash(gx,gy)*48,y=gy*72+12+hash(gx,gy,3)*48,r=hash(gx,gy,9);
+ const b=DELTA[id];
+ // A hand-placed area (scatter: false) has only the trees, plants and rocks set down in its props.
+ if(!b.scatter)return null;
+ const x=gx*72+12+hash(gx,gy)*48,y=gy*72+12+hash(gx,gy,3)*48,r=hash(gx,gy,9);
  if(b.elevation&&(id==='abandoned-quarry'?b.elevation.heightAt(x,y)!==0:nearEdge(b.elevation,x,y))||b.elevation?.rampAt(x,y)||b.clear(x,y)||waterDistance(x,y,id)<95||roadDistance(x,y,id)<65||b.places.some(p=>Math.hypot(x-p.x,y-p.y)<100))return null;
  const zone=b.zoneAt(x,y);if(['paving','moss','leaves','pebbles','decking'].includes(zone)||b.fixedFeatures&&zone==='clear')return null;
  const kind=zone==='forest'?(r<.74?'tree':r<.84?'bush':null):zone==='cliff'?null:zone==='rock'?(r<.3?'rock':null):zone==='sand'||zone==='clear'||zone==='dirt'?(r<.04?'rock':null):zone==='marsh'?(r<.18?'bush':r<.24?'tree':null):(r<.13?'tree':r<.21?'rock':r<.35?'bush':null);
@@ -121,7 +125,7 @@ function atlasArt(id,zone,kind,r){
  const pick=DUAL_GROUND[id]&&LAYERED_ART[art]||art;
  return {id:`atlas/${pick}`,w:ATLAS_ART[pick][0],h:ATLAS_ART[pick][1]};
 }
-const groundShadow=(ctx,x,y,rx)=>{ctx.fillStyle='rgba(20,40,30,.28)';ctx.beginPath();ctx.ellipse(x+3,y+2,rx,rx*.32,0,0,Math.PI*2);ctx.fill();};
+const groundShadow=(ctx,x,y,rx)=>castShadow(ctx,x,y,rx,{ry:rx*.32});
 export function surfaceAt(x,y,id='landing'){
  if(DELTA[id]?.deck(x,y))return 'path';
  if(id==='marsh'&&onMarshDeck(x,y))return 'path';
@@ -283,9 +287,9 @@ function staticArea(ctx,left,top,width,height,id,tiledGround=false){
   // Flowers grow in grass; the textured sand, stone and marsh of the atlas areas stay bare.
   const bare=atlasTextures&&!['meadow','clear',undefined].includes(DELTA[id].zoneAt(px,py));
   // The layered-world areas use the painted daisies, water lilies and cattails.
-  if(layered){const art=wet>35&&road>36&&r>.73&&!bare?'daisies':wet< -18&&wet> -110&&r>.92?'water-lily':wet< -2&&wet> -16&&r>.55?'cattails':null;
+  if(layered){const art=wet>35&&road>36&&r>.73&&!bare&&DELTA[id].scatter?'daisies':wet< -18&&wet> -110&&r>.92?'water-lily':wet< -2&&wet> -16&&r>.55?'cattails':null;
    if(art){const [,w,h]=ATLAS_PROP_ART.bush[art];drawProp(ctx,`atlas/${art}`,{x:Math.round(px),y:Math.round(py)+4,w,h});continue;}}
-  if(wet>35&&road>36&&r>.73&&!bare){for(let i=0;i<3;i++)wildflower(ctx,Math.round(px+hash(x,i,3)*16),Math.round(py+hash(y,i,4)*13),i!==2);}
+  if(wet>35&&road>36&&r>.73&&!bare&&DELTA[id]?.scatter!==false){for(let i=0;i<3;i++)wildflower(ctx,Math.round(px+hash(x,i,3)*16),Math.round(py+hash(y,i,4)*13),i!==2);}
   else if(wet>0&&wet<17&&r>.35)rock(ctx,px,py,true);
   else if(wet< -18&&wet> -110&&coastDistance(px,py)<0&&r>.8)lilyPad(ctx,Math.round(px),Math.round(py),r>.93);
   else if(wet< -2&&wet> -16&&r>.55)reeds(ctx,Math.round(px),Math.round(py),x);
@@ -357,7 +361,7 @@ export function crownSprite(big=false){
 const fades=new Map(),slots=[],order=[];let fadeTime=0;
 export const canopyAlpha=(gx,gy)=>fades.get(`${gx},${gy}`)??1;
 export const landmarkCanopyAlpha=id=>fades.get(`landmark:${id}`)??1;
-const slot=i=>{const it=slots[i]??=({y:0,kind:'',x:0,oy:0,key:'',sway:0,big:false,near:false,ref:null,art:null});it.art=null;it.ref=null;return it;};
+const slot=i=>{const it=slots[i]??=({y:0,kind:'',x:0,oy:0,key:'',sway:0,big:false,near:false,ref:null,art:null});it.art=null;it.ref=null;it.key='';return it;};
 const nearActor=(x,y,actors)=>actors.some(a=>Math.abs(a.ref.x-x)<70&&a.ref.y>y-130&&a.ref.y<y+40);
 // A canopy that stands in front of the player and overlaps them eases to 30% so they stay visible.
 function fadeCanopy(key,x,y,big,p,step){
@@ -388,15 +392,22 @@ export function drawDepthSorted(ctx,world,view,actors,drawActor,{still=false,ter
  if(id==='marsh')for(const object of MARSH_OBJECTS)if(object.x>view.left-180&&object.x<view.right+180&&object.y>view.top-30&&object.y<view.bottom+200){const it=slot(n++);it.kind='marsh';it.y=object.y+12;it.ref=object;}
  if(DISTRICTS[id])for(const object of [...DISTRICTS[id].buildings,...DISTRICTS[id].props])if(object.x>view.left-200&&object.x<view.right+200&&object.y>view.top-30&&object.y<view.bottom+220){const it=slot(n++);it.kind='village';it.y=object.y+18;it.ref=object;}
  if(id==='village')for(const object of villageObjects)if(object.x>view.left-200&&object.x<view.right+200&&object.y>view.top-30&&object.y<view.bottom+220){const it=slot(n++);it.kind='village';it.y=object.y+18;it.ref=object;}
- if(DELTA[id])for(const object of DELTA[id].props)if(object.kind!=='waterfall'&&object.x>view.left-200&&object.x<view.right+200&&object.y>view.top-30&&object.y<view.bottom+220){const it=slot(n++);it.kind='atlas';it.y=object.y;it.ref=object;}
+ if(DELTA[id])for(const object of DELTA[id].props)if(object.kind!=='waterfall'&&object.x>view.left-200&&object.x<view.right+200&&object.y>view.top-30&&object.y<view.bottom+220){const it=slot(n++);it.kind='atlas';it.y=object.y;it.ref=object;
+  // A hand-placed tree in a layered area fades like a canopy when it stands in front of Eli.
+  if(layeredArea(id)&&(object.kind==='tree'||object.kind==='big-tree')){it.key=`prop:${object.x},${object.y}`;if(!still)fadeCanopy(it.key,object.x,object.y-heightAt(object.x,object.y,id)+heightAt(p.x,p.y,id),true,p,step);}}
  if(id==='landing'){const it=slot(n++);it.kind='story-cabin';it.y=1515;}
  if(DELTA[id]?.elevation)for(const place of placesFor(id)){const it=slot(n++);it.kind='elevation-landmark';it.y=place.y;it.ref=place;}
  order.length=0;for(let i=0;i<n;i++)order.push(slots[i]);
  if(DELTA[id]?.elevation){
   for(const it of order){const x=it.ref?.x??it.x,y=it.ref?.y??it.oy;it.depth=it.y-heightAt(x,y,id);}
-  order.sort((a,b)=>Number(a.kind==='actor')-Number(b.kind==='actor')||a.depth-b.depth);
-  // Keep the local explorer readable even behind a crane, rim tree or mob.
-  const player=order.findIndex(it=>it.kind==='actor'&&it.ref===p);if(player>=0)order.push(...order.splice(player,1));
+  // The layered painter's areas sort everyone and everything by where they stand: Eli walks behind a tree or a tent
+  // and in front of it, and a tree in front of him fades so he stays readable. The quarry keeps its old order:
+  // actors over the scenery, Eli last.
+  if(layeredArea(id))order.sort((a,b)=>a.depth-b.depth);
+  else{
+   order.sort((a,b)=>Number(a.kind==='actor')-Number(b.kind==='actor')||a.depth-b.depth);
+   const player=order.findIndex(it=>it.kind==='actor'&&it.ref===p);if(player>=0)order.push(...order.splice(player,1));
+  }
  }else order.sort((a,b)=>a.y-b.y);
  for(const it of order){
   if(it.kind==='elevation-band'){drawElevationBand(ctx,it.ref,t,still);continue;}
@@ -406,7 +417,7 @@ export function drawDepthSorted(ctx,world,view,actors,drawActor,{still=false,ter
   else if(it.kind==='marsh')drawMarshObject(ctx,it.ref,t);
   else if(it.kind==='village')drawVillageObject(ctx,it.ref,t);
   else if(it.kind==='elevation-landmark')drawLandmark(ctx,it.ref,t);
-  else if(it.kind==='atlas')drawAtlasProp(ctx,it.ref,t);
+  else if(it.kind==='atlas'){if(it.key)ctx.globalAlpha=still?1:fades.get(it.key)??1;drawAtlasProp(ctx,it.ref,t);}
   else if(it.kind==='actor')drawActor(ctx,it.ref);
   else if(it.art&&drawProp(ctx,it.art.id,{x:-1e4,y:-1e4,w:1,h:1})){
    // A painted tree fades like a canopy when it stands in front of Eli.
@@ -530,10 +541,12 @@ export function drawWildsLabels(ctx,world,view){
 export function drawExplorer(ctx,p,time=0){
  // Simulation records the last step's facing and time; a recent step plays the walk for that direction.
  const walking=time-(p.steppedAt??-Infinity)<.12,direction=p.facing||'down';
+ // Eli and everyone drawn like him cast the shared ground shadow at their feet.
+ if(p.health===undefined||p.health>0)castShadow(ctx,p.x,p.y+12,13);
  if(drawEntitySprite(ctx,p.spriteId||'player',{x:p.x,y:p.y,state:p.animationState||(walking?'walk':'idle'),time,direction,facingX:direction==='left'?-1:1}))return;
  const art=SPRITES[p.spriteId]?.fallback||{};
  const x=Math.round(p.x),y=Math.round(p.y),step=Math.sin(p.walkTime||0)*2;
- ctx.fillStyle='rgba(30,40,50,.3)';ctx.beginPath();ctx.ellipse(x+5,y+14,15,5,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#423d3c';ctx.fillRect(x-8,y+6+step,6,9);ctx.fillRect(x+3,y+6-step,6,9);
+ ctx.fillStyle='#423d3c';ctx.fillRect(x-8,y+6+step,6,9);ctx.fillRect(x+3,y+6-step,6,9);
  ctx.fillStyle=art.shirt||'#71885f';ctx.fillRect(x-11,y-8,22,17);ctx.fillStyle='#a2b580';ctx.fillRect(x-8,y-8,7,10);ctx.fillStyle='#c6a276';ctx.fillRect(x-7,y-20,14,12);ctx.fillStyle=art.hair||'#554739';ctx.fillRect(x-9,y-23,18,6);ctx.fillStyle='#d0b77e';if(art.hat!==false)ctx.fillRect(x-13,y-22,26,4);ctx.fillStyle='#775b44';ctx.fillRect(x-6,y-5,13,14);ctx.fillStyle='#c78066';ctx.fillRect(x-8,y-8,17,3);ctx.fillRect(x-11,y-5,5,8);
  ctx.strokeStyle='#c6ae78';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+10,y);ctx.lineTo(x+Math.cos(p.angle)*30,y+Math.sin(p.angle)*30);ctx.stroke();
 }

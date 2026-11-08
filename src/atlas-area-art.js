@@ -1,3 +1,4 @@
+import {castShadow} from './ground-shadow.js';
 import {ATLAS_PROP_ART} from './sprite-definitions.js';
 import {groundPattern} from './ground-textures.js';
 import {DUAL_GROUND} from './dual-grid.js';
@@ -61,7 +62,8 @@ export function drawAtlasGround(ctx,built,left,top,width,height){
  for(const r of built.roads){if(!near(r,0,left,top,width,height))continue;}
 }
 const R=(ctx,c,x,y,w,h)=>{ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),w,h);};
-function shadow(ctx,x,y,rx,ry){ctx.fillStyle='rgba(20,40,40,.28)';ctx.beginPath();ctx.ellipse(x+4,y+4,rx,ry,0,0,Math.PI*2);ctx.fill();}
+// Every prop casts the shared ground shadow (src/ground-shadow.js).
+function shadow(ctx,x,y,rx,ry){castShadow(ctx,x,y,rx,{ry});}
 function roof(ctx,x,y,w,h,c,d){ctx.fillStyle=d;ctx.beginPath();ctx.moveTo(x-w/2-6,y);ctx.lineTo(x,y-h);ctx.lineTo(x+w/2+6,y);ctx.closePath();ctx.fill();ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(x-w/2-2,y-2);ctx.lineTo(x,y-h+2);ctx.lineTo(x+w/2+2,y-2);ctx.closePath();ctx.fill();}
 // A prop with `scale` is drawn bigger or smaller around its foot.
 export function drawAtlasProp(ctx,p,t=0){
@@ -92,12 +94,14 @@ export function atlasPropArt(p){
  if(ATLAS_PROP_ART[p.kind]&&['tree','bush','boulder'].includes(p.kind))return Object.values(ATLAS_PROP_ART[p.kind])[0];
  return PAINTED[p.kind];
 }
+// Plants that lie flat on the ground or the water cast no shadow.
+const FLAT_ART=new Set(['daisies','water-lily','cattails','reeds']);
 function drawProp(ctx,p,t){
  const x=Math.round(p.x),y=Math.round(p.y),art=atlasPropArt(p);
  if(art){
   // A jetty runs down from its spot into the water.
   const [id,w,h]=art,foot=p.kind==='dock'?y+80:y;
-  if(!p.inWater&&p.kind!=='dock'){if(p.art==='quarry-gantry'){shadow(ctx,x-w*.36,foot,w*.1,5);shadow(ctx,x+w*.36,foot,w*.1,5);}else shadow(ctx,x,foot,w*.36,Math.max(5,h*.07));}
+  if(!p.inWater&&p.kind!=='dock'&&!FLAT_ART.has(p.art)){if(p.art==='quarry-gantry'){shadow(ctx,x-w*.36,foot,w*.1,5);shadow(ctx,x+w*.36,foot,w*.1,5);}else shadow(ctx,x,foot,w*.36,Math.max(5,h*.07));}
   const explicit=!!(p.art&&ATLAS_PROP_ART[p.kind]?.[p.art])||id.startsWith('atlas/');
   if(drawPropSprite(ctx,explicit||id.startsWith('atlas/')?id:`atlas/${id}`,{x,y:foot,w,h}))return;
  }

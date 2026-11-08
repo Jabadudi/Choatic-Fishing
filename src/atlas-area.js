@@ -83,7 +83,7 @@ export function defineArea(def){
  const blocked=(x,y)=>solidProps.some(p=>(x-p.x)**2+(y-p.y)**2<(p.r+12)**2)||cliffs.some(c=>outside(x,y,c.box)===0&&inside(x,y,c.poly))&&!onRoad(x,y);
  area.places=places;
  const fixed=(def.fixedFeatures||[]).map(f=>({at:P(f.at),radius:f.radius||35,box:f.box?Ps(f.box):null}));
- return {area,elevation,water,deck,blocked,zoneAt,roads,trailAt,places,props,walks,fords,bridges,toWorld:P,textures:def.textures||null,fixedFeatures:def.fixedFeatures||null,
+ return {area,elevation,water,deck,blocked,zoneAt,roads,trailAt,places,props,scatter:def.scatter!==false,walks,fords,bridges,toWorld:P,textures:def.textures||null,fixedFeatures:def.fixedFeatures||null,
   // Ground kept free of random trees and rocks: the walks' ends, landmarks and props.
   clear:(x,y)=>fixed.some(f=>f.box?inside(x,y,f.box):Math.hypot(x-f.at[0],y-f.at[1])<f.radius+25)||props.some(p=>Math.hypot(x-p.x,y-p.y)<(p.clear??90))||decks.some(d=>outside(x,y,d.box)<60&&lineDistance(x,y,d.pts)<d.half+50)};
 }
