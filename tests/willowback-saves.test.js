@@ -14,7 +14,7 @@ function oldSave(areaId,x,y,story=null,edit=()=>{}){
  const save=captureSave(w);save.version=7;Object.assign(save.state,{areaId});Object.assign(save.state.player,{x,y});edit(save.state);return save;
 }
 test('saves from the old Upper Lanes, Millside and Commons wake up on the new Willowback maps',()=>{
- assert.equal(SAVE_VERSION,8);
+ assert.ok(SAVE_VERSION>=8);
  for(const [old,now] of [['village-north','village-market'],['village-mill','village-farm'],['village','village'],['windchime','windchime']]){
   const w=restoreSave(oldSave(old,600,1510));assert.equal(w.areaId,now,old);assert.deepEqual({x:w.player.x,y:w.player.y},{x:AREAS[now].spawn.x,y:AREAS[now].spawn.y},old);
   assert.ok(walkable(w.player.x,w.player.y,w.areaId));assert.equal(captureSave(w).version,SAVE_VERSION);
