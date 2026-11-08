@@ -12,6 +12,10 @@ import {areaFor} from './wilds.js';
 import {chanceLabel} from './codex.js';
 import {setItemIcon} from './item-icons.js';
 import {spriteAssetUrl} from './sprites.js';
+import {drawWildlife} from './wildlife-art.js';
+import {sheetCreature} from './sheet-creature-art.js';
+import {LEVEL_SCALE} from './field-maps.js';
+import {CONTACT} from './contact.js';
 const ART={slime:'creatures/slime/slime-0.webp',stump:'creatures/stump/stump-walk-0.webp','shore-crab':'creatures/crab/crab-walk-0.webp','boss-crab':'creatures/mudshell/mudshell-walk-0.webp',
  'berry-sprite':'creatures/sprite/sprite-walk-0.webp','mushroom-imp':'creatures/imp/imp-walk-0.webp','thistle-hog':'creatures/thistle/thistle-walk-0.webp','reed-frog':'creatures/frog/frog-walk-0.webp',
  'boss-frog':'creatures/frogking/frogking-walk-0.webp','lantern-moth':'creatures/moth/moth-walk-0.webp','ember-beetle':'creatures/beetle/beetle-walk-0.webp','pebble-hermit':'creatures/hermit/hermit-walk-0.webp',
@@ -31,6 +35,19 @@ const LORE={
  'pebble-hermit':'A hermit crab living in a round grey pebble. It hides when hit and pinches when you stop.',
  'boss-mushroom':'Capstomper, a mushroom imp grown huge in Mossback Ruins. It guards the east gate of 1.11 and its cap turns half of every blow aside.'
 };
+// Attacks tab: each monster's one attack, its name, and how it plays out (src/entities.js has the numbers).
+export const ATTACK_NAMES={slime:'Hop Slam',stump:'Root Swing','shore-crab':'Pinch','boss-crab':'Shell Crush','berry-sprite':'Berry Bowl','mushroom-imp':'Cap Charge',
+ 'thistle-hog':'Spine Ram','reed-frog':'Tongue Lash','boss-frog':'King\u2019s Tongue','lantern-moth':'Face Dive','ember-beetle':'Ember Butt','pebble-hermit':'Pebble Pinch','boss-mushroom':'Cap Stomp'};
+const reachWord=r=>r<56?'Short':r<80?'Medium':'Long';
+const shoveWord=k=>k<120?'Light':k<200?'Strong':'Heavy';
+// The damage a card's monster does across its level band: "9" or "9–10".
+// A stat as the monster really has it on its map (src/field-maps.js applyLevel): "9" or "9–10" across its level band.
+export function statAt(card,base,per){
+ const f=fieldMap(card.map),levels=card.boss?[f.bunches.find(b=>b[3]===card.species)?.[4]?.level??1]:f.levels;
+ const at=l=>Math.round(base*(1+per*(l-1))),lo=at(levels[0]),hi=at(levels[levels.length-1]);
+ return lo===hi?lo.toLocaleString('en-US'):`${lo.toLocaleString('en-US')}–${hi.toLocaleString('en-US')}`;
+}
+export const attackDamageAt=card=>statAt(card,ANIMAL_TYPES[card.species].attackDamage,LEVEL_SCALE.damage);
 const MAP_LOOK={'dewdrop-meadow':'meadow','mossroot-trail':'trail','saltspray-shore':'shore','bramble-hollow':'meadow','toadstool-glen':'trail','thistle-downs':'meadow','cattail-fen':'shore',
  'lantern-glade':'trail','ember-ridge':'meadow','pebble-strand':'shore','mossback-ruins':'trail'};
 const SLOTS=15;
@@ -42,6 +59,35 @@ const img=(species,alt='')=>`<img src="${spriteAssetUrl(ART[species])}" alt="${e
 function levelOf(card){
  const f=fieldMap(card.map);if(card.boss){const b=f.bunches.find(b=>b[3]===card.species);return String(b?.[4]?.level??'?');}
  const [lo,hi]=f.levels;return lo===hi?String(lo):`${lo}–${hi}`;
+}
+// The attack, looped like a GIF with the game's own art: a short rest, the wind-up, the strike and the pull back,
+// with the reach drawn as a dashed line in front of it. Runs only while its canvas is on the page.
+const attackLoop=spec=>{const rest=.7,wind=spec.attackWindup||.5,strike=Math.max(.35,spec.attackRecover||.4);return {rest,wind,strike,total:rest+wind+strike};};
+export function attackPose(spec,t){
+ const L=attackLoop(spec),k=t%L.total;
+ if(k<L.rest)return {state:'idle',time:k,attackRemaining:0,attackCooldownRemaining:0};
+ if(k<L.rest+L.wind)return {state:'attack',time:k-L.rest,attackRemaining:L.rest+L.wind-k,attackCooldownRemaining:0};
+ return {state:'strike',time:k-L.rest-L.wind,attackRemaining:0,attackCooldownRemaining:spec.attackCooldown-(k-L.rest-L.wind)};
+}
+function playAttack(canvas,species){
+ if(!canvas)return;const spec=ANIMAL_TYPES[species],sheet=sheetCreature({species}),size=sheet?.size||(species==='slime'?48:60);
+ const range=spec.attackRange,footX=size*.5+14,viewW=footX+Math.max(range,size*.5)+34,viewH=size*1.05+30;
+ const scale=Math.min(canvas.width/viewW,canvas.height/viewH),view=canvas.width/scale,shift=(view-viewW)/2,footY=canvas.height/scale-14;
+ const a={...spec,species,entityType:'animal',health:spec.maxHealth,maxHealth:spec.maxHealth,x:footX,y:footY,direction:{x:1,y:0},seed:3,hurtRemaining:0};
+ const start=performance.now(),c=canvas.getContext('2d');c.imageSmoothingEnabled=false;
+ const frame=now=>{
+  if(!canvas.isConnected)return;
+  Object.assign(a,attackPose(spec,(now-start)/1000));
+  c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,canvas.width,canvas.height);c.setTransform(scale,0,0,scale,shift*scale,0);
+  c.fillStyle='#0000000f';c.fillRect(-shift,footY,view,1.5/scale*2);
+  drawWildlife(c,a);
+  // The reach, measured from the monster's centre like the game does, drawn over it so it always shows.
+  const hit=a.state==='strike'&&a.time<.2,ink=hit?'#c0492f':'#7b6446';
+  c.globalAlpha=hit?1:.75;c.strokeStyle=ink;c.lineWidth=2/scale;c.setLineDash([6/scale,4/scale]);c.beginPath();c.moveTo(footX,footY-3);c.lineTo(footX+range,footY-3);c.stroke();c.setLineDash([]);
+  c.fillStyle=ink;c.fillRect(footX+range-1/scale,footY-14/scale-6,2/scale,16/scale+6);c.globalAlpha=1;
+  requestAnimationFrame(frame);
+ };
+ requestAnimationFrame(frame);
 }
 export function mountCollection({getWorld,onOpen,onClose,onFamiliar=()=>false}){
  const button=document.createElement('button');button.id='open-codex';button.hidden=true;
@@ -80,7 +126,7 @@ export function mountCollection({getWorld,onOpen,onClose,onFamiliar=()=>false}){
    <p class="book-legend">Defeat a monster once to register its card. Stars at ${STAR_KILLS.join(', ')} kills. Empty slots fill as new maps open.</p>`;
   const card=BOOK_CARDS.find(c=>c.species===pick.monsters),spec=ANIMAL_TYPES[card.species],s=cardState(w,card.species),f=fieldMap(card.map),a=areaFor(card.map);
   let panel='';
-  if(sub==='info')panel=`<div class="book-stats"><span><small>Level</small><b>${levelOf(card)}</b></span><span><small>HP</small><b>${spec.maxHealth}</b></span><span><small>Attack</small><b>${spec.attackDamage}</b></span><span><small>XP</small><b>${spec.huntXp}</b></span></div>
+  if(sub==='info')panel=`<div class="book-stats"><span><small>Level</small><b>${levelOf(card)}</b></span><span><small>HP</small><b>${statAt(card,spec.maxHealth,LEVEL_SCALE.health)}</b></span><span><small>Attack</small><b>${attackDamageAt(card)}</b></span><span><small>XP</small><b>${statAt(card,spec.huntXp,LEVEL_SCALE.xp)}</b></span></div>
    <p>${s.registered?esc(LORE[card.species]):'Defeat this monster once to read its page.'}</p>
    <p class="book-meta">Defeated <b>${s.kills}</b> · ${s.next?`${s.next-s.kills} more for the next star`:'All stars earned'}</p>`;
   if(sub==='drops')panel=`<ul class="book-drops">${LOOT_TABLES[spec.loot].map(e=>`<li><span class="book-icon" data-item="${esc(e.item)}"></span><span><b>${s.registered?esc(e.item):'???'}</b><em>${FAMILIARS[spec.loot]?.shard===e.item?'Familiar shard':'Drop'}</em></span><span class="book-pct">${chanceLabel(e.chance)}</span></li>`).join('')}</ul>
@@ -88,10 +134,16 @@ export function mountCollection({getWorld,onOpen,onClose,onFamiliar=()=>false}){
   if(sub==='found'){const n=f.bunches.filter(b=>b[3]===card.species||(!b[3]&&!card.boss)).reduce((t,b)=>t+b[2],0);
    panel=`<p class="book-meta"><b>${esc(f.code)} ${esc(a.name)}</b> · Lv ${f.levels[0]}–${f.levels[1]}</p>${strip(card.map,card.boss)}
    <p>${card.boss?`${esc(spec.name)} waits alone in front of the east gate.`:`${n} of them in ${f.bunches.filter(b=>!b[3]).length} bunches. Each dot is a bunch; the number is how many stand in it.`}</p>`;}
+  if(sub==='attacks'){const knock=spec.knockback??160,bump=attackDamageAt(card).split('–').map(n=>Math.max(CONTACT.min,Math.round(+n*CONTACT.share))).filter((v,i,a)=>a.indexOf(v)===i).join('–');
+   panel=`<div class="book-attack"><canvas width="440" height="220" aria-label="${esc(spec.name)} attack animation"></canvas><span class="book-attack-name">${s.registered?esc(ATTACK_NAMES[card.species]||'Attack'):'???'}</span></div>
+   <div class="book-stats"><span><small>Damage</small><b>${attackDamageAt(card)}</b></span><span><small>Reach</small><b>${reachWord(spec.attackRange)}</b><em>${spec.attackRange}</em></span><span><small>Wind-up</small><b>${spec.attackWindup}s</b></span><span><small>Cooldown</small><b>${spec.attackCooldown}s</b></span></div>
+   <ul class="book-facts"><li><b>Bump</b> ${bump} damage if you walk into it</li><li><b>Knockback</b> ${shoveWord(knock)}</li>${card.boss?'<li><b>Unstoppable</b> Stuns and knockdowns do nothing while it attacks</li><li><b>Shell</b> Halves every hit until a finisher knocks it down</li>':''}</ul>
+   <p class="book-note">The dashed line is how far the attack reaches. Watch for the wind-up, then dash out of range.</p>`;}
   right.innerHTML=`<div class="book-hero"><div class="book-portrait ${s.registered?'':'locked'}">${img(card.species,spec.name)}</div><div><small class="book-kicker">${card.boss?'Boss · ':''}Region 1 · ${esc(f.code)}</small><h3>${s.registered?esc(spec.name):'???'}</h3>${stars(s.stars)}</div></div>
-   <div class="book-subtabs" role="tablist">${[['info','Info'],['drops','Drops'],['found','Found in']].map(([id,l])=>`<button type="button" role="tab" data-sub="${id}" aria-selected="${sub===id}">${l}</button>`).join('')}</div>
+   <div class="book-subtabs" role="tablist">${[['info','Info'],['drops','Drops'],['found','Found in'],['attacks','Attacks']].map(([id,l])=>`<button type="button" role="tab" data-sub="${id}" aria-selected="${sub===id}">${l}</button>`).join('')}</div>
    <div class="book-panel">${panel}</div>`;
   for(const icon of right.querySelectorAll('.book-icon'))setItemIcon(icon,icon.dataset.item);
+  if(sub==='attacks')playAttack(right.querySelector('.book-attack canvas'),card.species);
  }
  // ---- Familiars
  function familiars(w){
