@@ -9,8 +9,9 @@ const COLORS=[
  {body:'#f0c95a',dark:'#c2932c',light:'#fff0b0'}
 ];
 export const slimeColor=a=>COLORS[(a.seed>>>0)%COLORS.length];
-export function drawSlime(c,a){
- const col=slimeColor(a),t=a.time||0,dead=a.health<=0,moving=['walk','chase','return','notice'].includes(a.state);
+// How high the slime is off the ground and how squashed it is this frame.
+function slimePose(a){
+ const t=a.time||0,dead=a.health<=0,moving=['walk','chase','return','notice'].includes(a.state);
  // A hop: up off the ground, squashed on landing. The windup squashes low; the strike stretches forward.
  const hopT=moving?(t*2.6+((a.seed>>>0)%7)/7)%1:0,lift=moving?Math.sin(hopT*Math.PI)*10:0;
  let sx=1,sy=1;
@@ -19,6 +20,12 @@ export function drawSlime(c,a){
  else if(a.state==='strike'){sx=.82;sy=1.22;}
  else if(moving){const land=1-Math.sin(hopT*Math.PI);sx=1+.18*land*land;sy=1-.16*land*land;}
  else{const b=Math.sin(t*3+(a.seed>>>0))*.04;sx=1+b;sy=1-b;}
+ return {dead,lift,sx,sy};
+}
+// The slime's contact shadow for the shadow pass: under its base, shrinking while it is in the air.
+export function slimeShadow(a){const {dead,lift,sx}=slimePose(a);if(dead)return null;const k=1-lift/26;return {x:Math.round(a.x),y:Math.round(a.y)+1,rx:17*sx*.95*k,ry:4.6*k};}
+export function drawSlime(c,a){
+ const col=slimeColor(a),{dead,lift,sx,sy}=slimePose(a);
  const x=Math.round(a.x),y=Math.round(a.y),R=17;
  c.save();c.translate(x,y);
  // Shadow on the ground, smaller while the slime is in the air.

@@ -1,5 +1,6 @@
 import {drawQuarryActorShadow} from './quarry-light.js';
-import {castShadow} from './ground-shadow.js';
+import {castShadow,shadowPass,muteShadows,contactShadow} from './ground-shadow.js';
+import {slimeShadow} from './slime-art.js';
 import {elevationFor,heightAt,canTraverse,canReach,projectGround,unprojectGround} from './terrain-height.js';
 export {elevationFor,heightAt,canTraverse,canReach,projectGround,unprojectGround};
 import {elevationBands,drawElevationBand} from './elevation-art.js';
@@ -31,7 +32,7 @@ import {groundPattern,groundKind} from './ground-textures.js';
 import {pathPattern} from './path-texture.js';
 import {DELTA} from './delta-areas.js';
 import {linkEntries} from './atlas-area.js';
-import {drawAtlasGround,drawAtlasProp,atlasPropArt} from './atlas-area-art.js';
+import {drawAtlasGround,drawAtlasProp,atlasPropArt,propShadow} from './atlas-area-art.js';
 export const WINDCHIME_ENTRY={x:330,y:1120};
 // Original, repeatable pixel-art areas. Exit coordinates connect actual map edges.
 const segmentDistance=(x,y,ax,ay,bx,by)=>{const dx=bx-ax,dy=by-ay,l=dx*dx+dy*dy,t=l?Math.max(0,Math.min(1,((x-ax)*dx+(y-ay)*dy)/l)):0;return Math.hypot(x-ax-t*dx,y-ay-t*dy);};
@@ -415,6 +416,16 @@ export function drawDepthSorted(ctx,world,view,actors,drawActor,{still=false,ter
    const player=order.findIndex(it=>it.kind==='actor'&&it.ref===p);if(player>=0)order.push(...order.splice(player,1));
   }
  }else order.sort((a,b)=>a.y-b.y);
+ // Layered areas cast every shadow in one pass first (src/ground-shadow.js); the per-object shadows stay off meanwhile.
+ const cast=layeredArea(id)&&shadowPass(ctx,s=>{for(const it of order){
+  const x=it.ref?.x??it.x,y=it.ref?.y??it.oy;s.save();s.translate(0,-heightAt(x,y,id));
+  if(it.kind==='atlas')propShadow(s,it.ref);
+  else if(it.kind==='actor'){const a=it.ref;
+   if(a.species==='slime'){const o=slimeShadow(a);if(o)contactShadow(s,o.x,o.y,o.rx,o.ry);}
+   else if((a===p||a.npc||a.remote||a.cutscene)&&(a.health===undefined||a.health>0))contactShadow(s,Math.round(a.x),Math.round(a.y)+15,12,4.5);}
+  s.restore();}});
+ muteShadows(!!cast);
+ try{
  for(const it of order){
   if(it.kind==='elevation-band'){drawElevationBand(ctx,it.ref,t,still);continue;}
   ctx.save();if(DELTA[id]?.elevation){const x=it.ref?.x??it.x,y=it.ref?.y??it.oy;ctx.translate(0,-heightAt(x,y,id));}
@@ -439,6 +450,7 @@ export function drawDepthSorted(ctx,world,view,actors,drawActor,{still=false,ter
   }
   ctx.restore();
  }
+ }finally{muteShadows(false);}
 }
 // Shore foam and sparkle positions are found once per chunk on a coarse grid, so the live water layer never samples distance per frame.
 const shores=new Map(),MAX_SHORES=60;
