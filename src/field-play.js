@@ -27,7 +27,7 @@ export function createBunches(world,id){
    const a=createCreature({id:slimeId,areaId:id,habitat:'land',x:x+Math.cos(angle)*r,y:y+Math.sin(angle)*r*.7},species,{id:slimeId,seed:(b*977+i*131+17)>>>0,index:i});
    if(!a)continue;applyLevel(a,extra.level??levelAt(id,x,width));a.packId=`${id}:${b+1}`;a.bunch=true;
    // The boss gets the elite's long gold bar and name, a short knockdown, and a shell that halves every hit until then.
-   if(extra.boss)Object.assign(a,{elite:true,armor:extra.armor??.5});
+   if(extra.boss)Object.assign(a,{elite:true,mapBoss:true,armor:extra.armor??.5});
    out.push(a);
   }
  });

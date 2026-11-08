@@ -24,7 +24,9 @@ export const COMBO=Object.freeze({
 });
 // Stun (Netanel, 8 Nov 2026): monsters keep attacking while they are hit; only a stun stops them. Every hit Eli lands
 // rolls his Stun chance (progression.stun). A stunned monster drops the swing it was winding up and cannot start one
-// for a moment; a stun on the finisher knocks it down instead. Bosses are never stunned.
+// for a moment; a stun on the finisher knocks it down instead. World bosses are never stunned, and a map's boss
+// (Mudshell, Old Croaker, Capstomper) cannot be stunned or knocked down while it is winding up or landing an attack
+// (Netanel, 8 Nov 2026): a stun that lands then shows RESIST.
 export const STUN=Object.freeze({base:.1,max:.6,seconds:.9,finisher:2.5});
 export const comboActive=(world,actor)=>!!world.adventure&&actor===world.player;
 // The step this swing is: it continues the chain while the window is open, else starts again at 1.
@@ -49,11 +51,15 @@ export function knockDown(world,target,seconds){
  return true;
 }
 export const canStun=(world,target)=>canKnockDown(world,target);
-// Rolls Eli's Stun chance for one landed hit; returns 'stun', 'down' or ''.
+export const ATTACK_STATES=Object.freeze(['attack','strike']);
+// A map boss in the middle of an attack shrugs off stuns and knockdowns.
+export const resistsStun=target=>!!target.mapBoss&&ATTACK_STATES.includes(target.state);
+// Rolls Eli's Stun chance for one landed hit; returns 'stun', 'down', 'resist' or ''.
 export function rollStun(world,actor,target,swing){
  if(!swing||!canStun(world,target))return '';
  const chance=Math.min(1,(actor.progression?.stun??STUN.base)*(swing.finisher?STUN.finisher:1));
  if((world.random?.()??Math.random())>=chance)return '';
+ if(resistsStun(target)){world.effects.push({name:'down',label:'RESIST',x:target.x,y:target.y-48,angle:0,life:.7,duration:.7});return 'resist';}
  if(swing.knockdown)return knockDown(world,target,swing.knockdown)?'down':'';
  stun(world,target,STUN.seconds);return 'stun';
 }
