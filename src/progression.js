@@ -16,7 +16,9 @@ export class Progression {
   // Region Core skill points and wheel slots (core-skills.js).
   this.coreSkills=createCoreSkills();
   // Bonus from the active familiar (familiars.js), or null. Arena matches never have one.
-  this.familiar=null;}
+  this.familiar=null;
+  // Completed area sets of the collection book (src/collection.js): {health, damage}.
+  this.collection=null;}
  get maxDashes(){return 1+this.upgrades.dash;}
  tickUpgrades(dt){this.upgradeRemaining-=dt;while(this.upgradeRemaining<1e-9){this.pendingUpgrades++;this.upgradeRemaining+=30;}}
  chooseUpgrade(kind){if(!this.pendingUpgrades||!Object.hasOwn(this.upgrades,kind))return false;this.upgrades[kind]++;this.pendingUpgrades--;return true;}
@@ -24,11 +26,11 @@ export class Progression {
  get speedMultiplier(){return (1+this.ranks.speed*.05+this.upgrades.hermes*.15)*(1+(this.familiar?.speed||0));}
  get growth(){return this.characterStats?this.level-1:0;}
  get stats(){const n=this.growth,f=this.familiar||{};return {strength:BASE_STAT+n*LEVEL_GROWTH.strength+(f.strength||0),dexterity:BASE_STAT+n*LEVEL_GROWTH.dexterity+(f.dexterity||0),luck:BASE_STAT+n*LEVEL_GROWTH.luck+(f.luck||0),wisdom:BASE_STAT+n*LEVEL_GROWTH.wisdom+(f.wisdom||0)};}
- get damageMultiplier(){return (1+this.ranks.power*.08)*(1+(this.stats.strength-BASE_STAT)*.03);}
+ get damageMultiplier(){return (1+this.ranks.power*.08)*(1+(this.stats.strength-BASE_STAT)*.03)*(1+(this.collection?.damage||0));}
  get attackSpeed(){return 1+(this.stats.dexterity-BASE_STAT)*.03;}
  get lootMultiplier(){return 1+(this.stats.luck-BASE_STAT)*.04;}
  get skillXpMultiplier(){return 1+(this.stats.wisdom-BASE_STAT)*.05;}
- get maxHealth(){return 100+this.growth*LEVEL_GROWTH.health+this.ranks.vitality*10+this.upgrades.health*20+(this.familiar?.health||0)+this.passive('health.max');}
+ get maxHealth(){return 100+this.growth*LEVEL_GROWTH.health+this.ranks.vitality*10+this.upgrades.health*20+(this.familiar?.health||0)+(this.collection?.health||0)+this.passive('health.max');}
  // Every system that grants passives adds one source here; gameplay reads only the summed passive(key).
  passiveSources(){return [treePassives(this.skillTrees)];}
  get passives(){return sumPassives(this.passiveSources());}

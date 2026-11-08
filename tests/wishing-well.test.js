@@ -62,10 +62,10 @@ test('the Artifact pool spends stones and puts artifacts in the backpack; a seco
 
 test('every familiar is in the Familiar pool before Eli has met it',()=>{
  const w=awake(10);
- assert.deepEqual(familiarPool(w),['rabbit','fox','deer','boar','elk','bear','heron','crab','goat','otter','duck','pike','seal','turtle','eel','shadow-walker','moonfang','rimejaw','flitlynx']);
+ assert.deepEqual(familiarPool(w),['rabbit','fox','deer','boar','elk','bear','heron','crab','goat','otter','duck','pike','seal','turtle','eel','shadow-walker','slime','stump','shore-crab','boss-crab','moonfang','rimejaw','flitlynx']);
  assert.ok(poolRates(w,'familiars').prizes.every(p=>p.inPool&&p.why===null));
  assert.equal(w.codex.has('rimejaw'),false);
- // Rimejaw is the eighteenth of nineteen, so a roll of .92 picks it.
+ // Rimejaw is the twenty-second of twenty-three, so a roll of .92 picks it.
  const rare=drawWell(w,'familiars',1,sequence([.5,.1,.92]));
  assert.equal(rare.results[0].familiar,'rimejaw');assert.equal(w.familiars.shards.rimejaw,SHARD_COUNTS.rare);assert.match(w.message,/Rimejaw Familiar Shard ×5/);
  assert.equal(w.codex.has('rimejaw'),true,'shards for an unmet creature open its index entry');

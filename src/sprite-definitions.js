@@ -302,7 +302,7 @@ for(const id of ['listening-tree','fallen-giant','hollow-tree','goldleaf-tree','
 for(let i=0;i<16;i++)PROPS[`portal/${i}`]=`props/portal/portal-${i}.webp`;
 for(let i=0;i<8;i++)PROPS[`slime/${i}`]=`creatures/slime/slime-${i}.webp`;
 for(const sheet of ['stump','crab','mudshell'])for(const row of ['walk','hit','die','attack'])for(let i=0;i<4;i++)PROPS[`${sheet}/${row}-${i}`]=`creatures/${sheet}/${sheet}-${row}-${i}.webp`;
-for(const id of ['rabbit','fox','deer','boar','elk','bear','heron','crab','goat','otter','duck','pike','seal','turtle','eel','shadow-walker','moonfang','rimejaw','flitlynx'])PROPS[`shard-${id}`]=`items/shard-${id}.webp`;
+for(const id of ['rabbit','fox','deer','boar','elk','bear','heron','crab','goat','otter','duck','pike','seal','turtle','eel','shadow-walker','slime','stump','shore-crab','boss-crab','moonfang','rimejaw','flitlynx'])PROPS[`shard-${id}`]=`items/shard-${id}.webp`;
 
 // Editor-selectable scenery: visual bounds only; PROP_SOLID still owns collision.
 PROPS['atlas/quarry-gantry']='props/atlas/quarry-gantry.webp';

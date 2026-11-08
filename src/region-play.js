@@ -9,6 +9,7 @@ import {ANIMAL_TYPES} from './entities.js';
 import {createBunches,mapCleared,fieldProgress} from './field-play.js';
 import {giveStarterSword} from './warrior.js';
 import {CAMP,DUNGEON,createDungeon,leftRun} from './dungeon.js';
+import {createCollection,applyCollection} from './collection.js';
 export const REGION_START='dewdrop-meadow';
 // The Regions maps in order, west to east: 1.1 Dewdrop Meadow, 1.2 Mossroot Trail, 1.3 Saltspray Shore.
 export const REGION_MAPS=Object.freeze(Object.keys(FIELD_MAPS).filter(id=>FIELD_MAPS[id].bunches).sort((a,b)=>FIELD_MAPS[a].code.localeCompare(FIELD_MAPS[b].code,undefined,{numeric:true})));
@@ -20,7 +21,7 @@ const arrival=(world,id)=>`${fieldMap(id).code} ${areaFor(id).name} · ${mapClea
 export const GATE_REACH=150;
 // A new Regions game starts in Wilds Camp, by the portal into the dungeon (src/dungeon.js).
 export function startRegions(world){
- Object.assign(world,{regions:true,story:null,npcs:[],rabbits:[],spawns:null,areaId:CAMP,dungeon:createDungeon()});
+ Object.assign(world,{regions:true,story:null,npcs:[],rabbits:[],spawns:null,areaId:CAMP,dungeon:createDungeon(),collection:createCollection()});
  Object.assign(world.player,AREAS[CAMP].spawn,{name:'Eli',spriteId:'eli'});
  world.wildlife=allBunches(world);
  giveStarterSword(world);
@@ -32,6 +33,7 @@ export function restoreRegions(world){
  Object.assign(world.player,{name:'Eli',spriteId:'eli'});
  world.wildlife=allBunches(world);
  // A save from before the dungeon, standing in one of its maps, carries on as a run.
+ world.collection??=createCollection();applyCollection(world);
  world.dungeon??=createDungeon();if(!world.dungeon.run&&DUNGEON.maps.includes(world.areaId))world.dungeon.run={startedAt:world.elapsed};
 }
 // Walking off the east edge into the next map needs the gate open (this map cleared); walking back west is always open.
@@ -47,6 +49,7 @@ export function regionCrossing(world,next){
 // at a map to be built.
 export function updateRegions(world){
  if(!world.regions)return;
+ applyCollection(world);
  const area=areaFor(world.areaId),p=world.player;
  if(p.x<area.width-GATE_REACH){world.atGate=false;return;}
  if(world.atGate)return;world.atGate=true;
