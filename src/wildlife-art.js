@@ -28,8 +28,8 @@ export function animalPose(a){
  const t=a.time||0;
  if(a.health<=0)return {state:'death',time:t};
  if(a.boss)return bossPose(a,t);
- // Knocked down by a combo finisher: held on the hurt frame until it gets up.
- if(a.downRemaining>0)return {state:'hurt',time:.12};
+ // Knocked down by a combo finisher, or stunned: held on the hurt frame until it recovers.
+ if(a.downRemaining>0||a.stunRemaining>0)return {state:'hurt',time:.12};
  if(a.behavior==='aggressive'){
   if(a.state==='attack')return {state:'raise',time:t,duration:a.attackWindup};
   // The swing clip starts with the two raised frames, so the strike begins on its third.

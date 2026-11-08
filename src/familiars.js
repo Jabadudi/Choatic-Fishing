@@ -52,13 +52,13 @@ export const FAMILIARS=Object.freeze({
  'boss-frog':{name:'Old Croaker',shard:'Old Croaker Familiar Shard',spriteId:'boss-frog',scale:.35,ring:1.3,
   passive:{name:'Bog Belly',ranks:[{health:25,strength:2},{health:55,strength:4}]},ultimate:{name:'Fen Lord',bonus:{damageReduction:.08,speed:.06}}},
  'boss-mushroom':{name:'Capstomper',shard:'Capstomper Familiar Shard',spriteId:'boss-mushroom',scale:.35,ring:1.3,
-  passive:{name:'Spore Armor',ranks:[{health:30,damageReduction:.03},{health:65,damageReduction:.06}]},ultimate:{name:'Earthshaker',bonus:{strength:4}}},
+  passive:{name:'Spore Armor',ranks:[{health:30,damageReduction:.03},{health:65,damageReduction:.06}]},ultimate:{name:'Earthshaker',bonus:{strength:3,stun:.05}}},
  'berry-sprite':{name:'Berry Sprite',shard:'Berry Sprite Familiar Shard',spriteId:'berry-sprite',scale:.9,
   passive:{name:'Sweet Juice',ranks:[{health:12},{health:30}]},ultimate:{name:'Berry Bounty',bonus:{luck:3}}},
  'mushroom-imp':{name:'Mushroom Imp',shard:'Mushroom Imp Familiar Shard',spriteId:'mushroom-imp',scale:.9,
-  passive:{name:'Spore Cloud',ranks:[{dexterity:2},{dexterity:5}]},ultimate:{name:'Fairy Ring',bonus:{huntingXp:.2}}},
+  passive:{name:'Spore Cloud',ranks:[{stun:.03},{stun:.06}]},ultimate:{name:'Fairy Ring',bonus:{huntingXp:.2}}},
  'thistle-hog':{name:'Thistle Hog',shard:'Thistle Hog Familiar Shard',spriteId:'thistle-hog',scale:.9,
-  passive:{name:'Prickle Coat',ranks:[{damageReduction:.04},{damageReduction:.08}]},ultimate:{name:'Bristle Rush',bonus:{strength:3}}},
+  passive:{name:'Prickle Coat',ranks:[{damageReduction:.04},{damageReduction:.08}]},ultimate:{name:'Bristle Rush',bonus:{strength:2,stun:.04}}},
  'reed-frog':{name:'Reed Frog',shard:'Reed Frog Familiar Shard',spriteId:'reed-frog',scale:.9,
   passive:{name:'Lily Hop',ranks:[{speed:.04},{speed:.08}]},ultimate:{name:'Long Tongue',bonus:{dexterity:3,luck:2}}},
  'lantern-moth':{name:'Lantern Moth',shard:'Lantern Moth Familiar Shard',spriteId:'lantern-moth',scale:.9,
@@ -76,7 +76,7 @@ export const FAMILIARS=Object.freeze({
 });
 const BONUS_TEXT={health:n=>`+${n} max HP`,strength:n=>`+${n} Strength`,dexterity:n=>`+${n} Dexterity`,luck:n=>`+${n} Luck`,wisdom:n=>`+${n} Wisdom`,
  speed:n=>`+${Math.round(n*100)}% movement speed`,damageReduction:n=>`${Math.round(n*100)}% less damage taken`,
- fishingXp:n=>`+${Math.round(n*100)}% Fishing XP`,huntingXp:n=>`+${Math.round(n*100)}% Hunting XP`,cookingXp:n=>`+${Math.round(n*100)}% Cooking XP`};
+ fishingXp:n=>`+${Math.round(n*100)}% Fishing XP`,huntingXp:n=>`+${Math.round(n*100)}% Hunting XP`,cookingXp:n=>`+${Math.round(n*100)}% Cooking XP`,stun:n=>`+${Math.round(n*100)}% Stun`};
 export function describeBonus(bonus){
  // Four equal attribute points read better as one phrase.
  const stats=['strength','dexterity','luck','wisdom'],every=bonus.strength!==undefined&&stats.every(id=>bonus[id]===bonus.strength);

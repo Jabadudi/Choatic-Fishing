@@ -29,6 +29,7 @@ export function mountSkills({getWorld,onOpen,onClose}){
   const row=(label,value,hint)=>{const term=el('dt',null,label),detail=el('dd',null,String(value));detail.append(el('small',null,hint));stats.append(term,detail);};
   row('Max health',`${Math.ceil(world.player.health)} / ${p.maxHealth}`,`+${LEVEL_GROWTH.health} each level`);
   for(const stat of STATS)row(stat.name,p.stats[stat.id],stat.description);
+  row('Stun',`${Math.round(p.stun*100)}%`,'Chance a hit stops a monster’s attack; on a finisher it knocks it down');
   // Familiar bonuses are already inside the numbers above; this row says where they come from.
   const active=world.familiars?.active;if(active&&p.familiar)row('Familiar',FAMILIARS[active].name,describeBonus(p.familiar));
   character.replaceChildren(name,level,bar(p.xp,p.xpToNextLevel,'Experience toward next level'),xp,stats);

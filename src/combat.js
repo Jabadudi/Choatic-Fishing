@@ -2,7 +2,7 @@ import {damageAnimal} from './wildlife.js';
 import {huntableInArea} from './entities.js';
 import {artifactBonus,WET_REACH} from './artifacts.js';
 import {waterDistance,canReach,heightAt} from './wilds.js';
-import {comboActive,startSwing,noteHit,knockDown,downBonus} from './combo.js';
+import {comboActive,startSwing,noteHit,rollStun,downBonus} from './combo.js';
 import {notePlayerHurt} from './field-play.js';
 import {stillWaterGuardAmount,afterPlayerHit,onCoreLineHit,coreLineMultiplier,waterstepEvasion,corePower,coreGuard,preventCoreDefeat,wallBlocks} from './core-abilities.js';
 export const combatTargets=world=>world.adventure?[...world.actors,...world.animals.filter(a=>huntableInArea(world,a))]:world.actors;
@@ -87,7 +87,7 @@ export function attack(world,actor,item){
    const difference=Math.atan2(Math.sin(angle-actor.angle),Math.cos(angle-actor.angle));
    if(Math.hypot(dx,dy)<=spec.range+(target.radius||14)&&Math.abs(difference)<=(spec.arc??1.05)){
     const amount=spec.damage*(swing?swing.damage*downBonus(target):1),push=spec.knockback*(swing?swing.knockback:1);
-    if(damage(world,target,amount,actor,angle,push)){landed++;if(swing?.knockdown&&target.health>0)knockDown(world,target,swing.knockdown);}
+    if(damage(world,target,amount,actor,angle,push)){landed++;if(target.health>0)rollStun(world,actor,target,swing);}
    }
   }
   for(let i=0;i<landed;i++)noteHit(world,actor,{finisher:!!swing?.finisher});

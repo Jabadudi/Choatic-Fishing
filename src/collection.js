@@ -31,9 +31,9 @@ export const AREA_SETS=Object.freeze([
  Object.freeze({id:'reedwater-wilds',name:'Reedwater Wilds',area:'Maps 1.1 to 1.3',cards:Object.freeze(['slime','stump','shore-crab','boss-crab']),
   effect:Object.freeze({health:10,damage:.03}),reward:Object.freeze({wishstones:3})}),
  Object.freeze({id:'thornberry-vale',name:'Thornberry Vale',area:'Maps 1.4 to 1.7',cards:Object.freeze(['berry-sprite','mushroom-imp','thistle-hog','reed-frog','boss-frog']),
-  effect:Object.freeze({health:20,damage:.04}),reward:Object.freeze({wishstones:4})}),
+  effect:Object.freeze({health:20,damage:.04,stun:.03}),reward:Object.freeze({wishstones:4})}),
  Object.freeze({id:'lanternlight-wilds',name:'Lanternlight Wilds',area:'Maps 1.8 to 1.11',cards:Object.freeze(['lantern-moth','ember-beetle','pebble-hermit','boss-mushroom']),
-  effect:Object.freeze({health:30,damage:.05}),reward:Object.freeze({wishstones:5})})
+  effect:Object.freeze({health:30,damage:.05,stun:.05}),reward:Object.freeze({wishstones:5})})
 ]);
 const kills=(world,species)=>world.hunting?.bySpecies?.[species]||0;
 const cleared=id=>world=>(world.fieldMaps?.[id]?.clears||0)>0;
@@ -76,16 +76,16 @@ export function exploreState(world,id){
  const goals=e.goals.map(([label,test])=>({label,done:!!test(world)}));
  return {id,goals,done:goals.every(g=>g.done),claimed:!!world.collection?.explored.includes(id)};
 }
-// What completed sets add to Eli: {health, damage}. Kept on progression.collection.
+// What completed sets add to Eli: {health, damage, stun}. Kept on progression.collection.
 export function collectionBonus(world){
- const bonus={health:0,damage:0};
+ const bonus={health:0,damage:0,stun:0};
  for(const set of AREA_SETS)if(setState(world,set.id).done)for(const [k,v] of Object.entries(set.effect))bonus[k]+=v;
  return bonus;
 }
 export function applyCollection(world){
  if(!world.progression)return;
  const b=collectionBonus(world),old=world.progression.collection;
- if(old&&old.health===b.health&&old.damage===b.damage)return;
+ if(old&&old.health===b.health&&old.damage===b.damage&&old.stun===b.stun)return;
  world.progression.collection=b;
 }
 function pay(world,{wishstones=0,marks=0,shard}){

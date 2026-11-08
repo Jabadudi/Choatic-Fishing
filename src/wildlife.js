@@ -82,7 +82,9 @@ export function damageAnimal(world,animal,amount,source,angle,knockback=0,origin
   animal.attackerId=source.id;animal.anger=1;
  }animal.threat={x:source.x,y:source.y};rousePack(world,animal,source);
  // A boss is far too heavy to be shoved far.
- if(!fighting){const shove=knockback*(animal.boss?.08:.45);animal.vx+=Math.cos(angle)*shove;animal.vy+=Math.sin(angle)*shove;}
+ // Monsters barely budge from a hit, so a combo cannot push them out of reach of their own swing.
+ const steady=world.adventure&&animal.behavior==='aggressive'&&!(animal.downRemaining>0);
+ if(!fighting){const shove=knockback*(animal.boss?.08:steady?.1:.45);animal.vx+=Math.cos(angle)*shove;animal.vy+=Math.sin(angle)*shove;}
  if(animal.species==='rabbit'){animal.state='idle';animal.time=0;}
  world.effects.push({name:'animal-hit',label:`-${Math.round(taken)}`,x:animal.x,y:animal.y-25,angle:0,life:.6,duration:.6});
  if(animal.health===0){
@@ -157,6 +159,8 @@ export function updateWildlife(world,dt){
   const reaction=reactionFor(a,{disturbed:close||rushed,provoked:a.behavior==='defensive'?a.anger>0:a.alert>0});
   // Knocked down by a combo finisher: it lies still and cannot swing until it gets up (src/combo.js).
   if(a.downRemaining>0){a.downRemaining=Math.max(0,a.downRemaining-dt);a.attackRemaining=0;if(['attack','strike','notice'].includes(a.state)){a.state=a.behavior==='aggressive'?'chase':'idle';a.time=0;}continue;}
+  // Stunned by one of Eli's hits: it reels and cannot start or finish a swing until it shakes it off.
+  if(a.stunRemaining>0){a.stunRemaining=Math.max(0,a.stunRemaining-dt);a.attackRemaining=0;if(['attack','strike','notice'].includes(a.state)){a.state=a.behavior==='aggressive'?'chase':'idle';a.time=0;}continue;}
   if(a.boss){updateBoss(world,a,dt);continue;}
   if(reaction==='pursue'){updateMonster(world,a,dt);continue;}
   if(reaction==='retaliate'){

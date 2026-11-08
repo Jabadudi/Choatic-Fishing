@@ -1,6 +1,7 @@
 import {createSkills,skillXpToNext,BASE_STAT,LEVEL_GROWTH} from './skills.js';
 import {createSkillTrees,talentFor,talentState,pointsSpent,pointsEarned,treePassives} from './skill-trees.js';
 import {sumPassives} from './passives.js';
+import {STUN} from './combo.js';
 import {createCoreSkills,CORE_LEVEL_CAP} from './core-skills.js';
 export const XP=Object.freeze({catch:30,elimination:90});
 export const BUFFS=Object.freeze([
@@ -40,6 +41,8 @@ export class Progression {
   if(this.skillPoints(skill)<=0||talentState(skill,this.skillTrees[skill],id)!=='open')return false;
   const ranks=this.skillTrees[skill];ranks[id]=(ranks[id]||0)+1;return talentFor(skill,id);
  }
+ // Chance that a hit stuns a monster (src/combo.js STUN): base, plus familiars, area sets and passives.
+ get stun(){return Math.min(STUN.max,STUN.base+(this.familiar?.stun||0)+(this.collection?.stun||0)+this.passive('combat.stun'));}
  get damageReduction(){return 1-(1-.5*(1-Math.pow(.9,this.ranks.armor)))*(1-(this.familiar?.damageReduction||0));}
  get specialCharges(){return this.specials.tidal+this.specials.whirlpool;}
  grantCatchBuff(random=Math.random){const buff=BUFFS[Math.min(BUFFS.length-1,Math.floor(random()*BUFFS.length))];this.ranks[buff.id]++;this.lastBuff=buff;return buff;}

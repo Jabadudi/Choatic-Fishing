@@ -114,7 +114,7 @@ export function mountCollection({getWorld,onOpen,onClose,onFamiliar=()=>false}){
    <div class="book-list">${AREA_SETS.map(set=>{const s=setState(w,set.id);return `<button type="button" class="book-row" data-pick="${set.id}" aria-current="${set.id===pick.sets}"><b>${esc(set.name)}</b>${pill(s.claimed,s.done,`${s.have}/${s.total} cards`)}<span class="book-legend">${esc(set.area)}</span><span></span><span class="book-bar"><i style="width:${s.have/s.total*100}%"></i></span></button>`;}).join('')}
 </div>
    <p class="book-legend">An area set is every monster card from that area. Completing it turns on its set effect for good and pays a one-time reward.</p>`;
-  const set=AREA_SETS.find(s=>s.id===pick.sets),s=setState(w,set.id),eff=[set.effect.health?`+${set.effect.health} max HP`:'',set.effect.damage?`+${Math.round(set.effect.damage*100)}% damage`:''].filter(Boolean).join(', ');
+  const set=AREA_SETS.find(s=>s.id===pick.sets),s=setState(w,set.id),eff=[set.effect.health?`+${set.effect.health} max HP`:'',set.effect.damage?`+${Math.round(set.effect.damage*100)}% damage`:'',set.effect.stun?`+${Math.round(set.effect.stun*100)}% Stun`:''].filter(Boolean).join(', ');
   right.innerHTML=`<div class="book-head"><h2>${esc(set.name)}</h2>${pill(s.claimed,s.done,'In progress')}</div>
    <small class="book-kicker">${esc(set.area)} · cards needed</small>
    <div class="book-mini">${set.cards.map(sp=>`<span class="${cardState(w,sp).registered?'':'locked'}" title="${esc(ANIMAL_TYPES[sp].name)}">${img(sp,ANIMAL_TYPES[sp].name)}</span>`).join('')}</div>
