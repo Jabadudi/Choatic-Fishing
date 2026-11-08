@@ -301,8 +301,8 @@ for(const id of ['listening-tree','fallen-giant','hollow-tree','goldleaf-tree','
  'meadow-oak-1','meadow-oak-2','meadow-oak-3','meadow-oak-4','grass-tuft','grass-clump','grass-sprigs','grass-tall','white-flowers','yellow-flowers','lavender','pink-flowers','grey-rock','pebbles','sandstone-rock','mossy-rock','leafy-bush','dark-bush','small-bush','berry-bush'])PROPS[`atlas/${id}`]=`props/atlas/${id}.webp`;
 for(let i=0;i<16;i++)PROPS[`portal/${i}`]=`props/portal/portal-${i}.webp`;
 for(let i=0;i<8;i++)PROPS[`slime/${i}`]=`creatures/slime/slime-${i}.webp`;
-for(const sheet of ['stump','crab','mudshell'])for(const row of ['walk','hit','die','attack'])for(let i=0;i<4;i++)PROPS[`${sheet}/${row}-${i}`]=`creatures/${sheet}/${sheet}-${row}-${i}.webp`;
-for(const id of ['rabbit','fox','deer','boar','elk','bear','heron','crab','goat','otter','duck','pike','seal','turtle','eel','shadow-walker','slime','stump','shore-crab','boss-crab','moonfang','rimejaw','flitlynx'])PROPS[`shard-${id}`]=`items/shard-${id}.webp`;
+for(const sheet of ['stump','crab','mudshell','frogking','capstomper','sprite','imp','thistle','frog','moth','beetle','hermit'])for(const row of ['walk','hit','die','attack'])for(let i=0;i<4;i++)PROPS[`${sheet}/${row}-${i}`]=`creatures/${sheet}/${sheet}-${row}-${i}.webp`;
+for(const id of ['rabbit','fox','deer','boar','elk','bear','heron','crab','goat','otter','duck','pike','seal','turtle','eel','shadow-walker','slime','stump','shore-crab','boss-crab','boss-frog','boss-mushroom','berry-sprite','mushroom-imp','thistle-hog','reed-frog','lantern-moth','ember-beetle','pebble-hermit','moonfang','rimejaw','flitlynx'])PROPS[`shard-${id}`]=`items/shard-${id}.webp`;
 
 // Editor-selectable scenery: visual bounds only; PROP_SOLID still owns collision.
 PROPS['atlas/quarry-gantry']='props/atlas/quarry-gantry.webp';

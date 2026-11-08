@@ -2,6 +2,7 @@
 // Monsters (cards, stars, drops, where they live), Familiars (bond, summon, passives), Sets (one per area) and Explore
 // (three goals per map). The left page lists, the right page shows what is picked. It reads the world and changes it
 // only through onFamiliar and collectionAction.
+import {DUNGEONS} from './dungeon.js';
 import {BOOK_REGIONS,BOOK_CARDS,AREA_SETS,EXPLORATION,STAR_KILLS,cardState,bookScore,setState,exploreState,collectionAction} from './collection.js';
 import {FAMILIARS,FAMILIAR_TIERS,familiarPassives,familiarStatus,familiarBonus,describeBonus} from './familiars.js';
 import {ANIMAL_TYPES} from './entities.js';
@@ -11,14 +12,27 @@ import {areaFor} from './wilds.js';
 import {chanceLabel} from './codex.js';
 import {setItemIcon} from './item-icons.js';
 import {spriteAssetUrl} from './sprites.js';
-const ART={slime:'creatures/slime/slime-0.webp',stump:'creatures/stump/stump-walk-0.webp','shore-crab':'creatures/crab/crab-walk-0.webp','boss-crab':'creatures/mudshell/mudshell-walk-0.webp'};
+const ART={slime:'creatures/slime/slime-0.webp',stump:'creatures/stump/stump-walk-0.webp','shore-crab':'creatures/crab/crab-walk-0.webp','boss-crab':'creatures/mudshell/mudshell-walk-0.webp',
+ 'berry-sprite':'creatures/sprite/sprite-walk-0.webp','mushroom-imp':'creatures/imp/imp-walk-0.webp','thistle-hog':'creatures/thistle/thistle-walk-0.webp','reed-frog':'creatures/frog/frog-walk-0.webp',
+ 'boss-frog':'creatures/frogking/frogking-walk-0.webp','lantern-moth':'creatures/moth/moth-walk-0.webp','ember-beetle':'creatures/beetle/beetle-walk-0.webp','pebble-hermit':'creatures/hermit/hermit-walk-0.webp',
+ 'boss-mushroom':'creatures/capstomper/capstomper-walk-0.webp'};
 const LORE={
  slime:'A chibi jelly that hops in bunches of three or four. Weak alone, a nuisance together.',
  stump:'A walking tree stump with a sprout on top. Slower than a slime and tougher, it plods up and swings a root-arm.',
  'shore-crab':'Scuttles across the wet sand of Saltspray Shore in bunches and pinches fast.',
- 'boss-crab':'The boss crab of Reedwater Wilds. It guards the east gate of 1.3, shrugs off half of every hit and is never knocked down.'
+ 'boss-crab':'The boss crab of Reedwater Wilds. It guards the east gate of 1.3, shrugs off half of every hit and is never knocked down.',
+ 'berry-sprite':'A purple berry that grew legs and wandered off the bush. Small and quick, it bowls into you after a little crouch.',
+ 'mushroom-imp':'A red-capped toadstool with a very bad temper. When it pulls its cap down, it is about to charge.',
+ 'thistle-hog':'A round hog covered in thistle spines. It snuffles about the downs and rams anyone who gets close.',
+ 'reed-frog':'A fat green frog of Cattail Fen. It hops in bunches and its tongue reaches further than you think.',
+ 'boss-frog':'Old Croaker, the frog king of Cattail Fen. It waits at the east gate of 1.7 and shrugs off half of every hit.',
+ 'lantern-moth':'A moth with a glowing belly that drifts between the trees of Lantern Glade, then dives at your face.',
+ 'ember-beetle':'A beetle whose shell glows like a coal. Slow, tough and hot to the touch.',
+ 'pebble-hermit':'A hermit crab living in a round grey pebble. It hides when hit and pinches when you stop.',
+ 'boss-mushroom':'Capstomper, a mushroom imp grown huge in Mossback Ruins. It guards the east gate of 1.11 and its cap turns half of every blow aside.'
 };
-const MAP_LOOK={'dewdrop-meadow':'meadow','mossroot-trail':'trail','saltspray-shore':'shore'};
+const MAP_LOOK={'dewdrop-meadow':'meadow','mossroot-trail':'trail','saltspray-shore':'shore','bramble-hollow':'meadow','toadstool-glen':'trail','thistle-downs':'meadow','cattail-fen':'shore',
+ 'lantern-glade':'trail','ember-ridge':'meadow','pebble-strand':'shore','mossback-ruins':'trail'};
 const SLOTS=15;
 const BOOK='<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5zM20 5.5c0-.8-.7-1.5-1.5-1.5H13v16h5.5c.8 0 1.5-.7 1.5-1.5zM6.5 8h2.5M6.5 11h2.5M15 8h2.5M15 11h2.5"/></svg>';
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -55,7 +69,7 @@ export function mountCollection({getWorld,onOpen,onClose,onFamiliar=()=>false}){
  }
  function strip(map,boss){
   const f=fieldMap(map),a=areaFor(map);let h=`<div class="book-strip book-${MAP_LOOK[map]||'meadow'}" role="img" aria-label="Where they stand in ${esc(f.code)} ${esc(a.name)}">`;
-  for(const [x,y,n,species] of f.bunches){const isBoss=species==='boss-crab';if(isBoss!==!!boss)continue;h+=`<span class="book-dot${isBoss?' boss':''}" style="left:${x/a.width*100}%;top:${y/a.height*100}%">${isBoss?'☠':n}</span>`;}
+  for(const [x,y,n,species] of f.bunches){const isBoss=!!f.bunches.find(b=>b[3]===species)?.[4]?.boss;if(isBoss!==!!boss)continue;h+=`<span class="book-dot${isBoss?' boss':''}" style="left:${x/a.width*100}%;top:${y/a.height*100}%">${isBoss?'☠':n}</span>`;}
   return h+'</div>';
  }
  // ---- Monsters
@@ -98,7 +112,7 @@ export function mountCollection({getWorld,onOpen,onClose,onFamiliar=()=>false}){
  function sets(w){
   left.innerHTML=`<div class="book-head"><h2>Area Sets</h2><span class="book-score">${AREA_SETS.filter(s=>setState(w,s.id).done).length}/${AREA_SETS.length} complete</span></div>
    <div class="book-list">${AREA_SETS.map(set=>{const s=setState(w,set.id);return `<button type="button" class="book-row" data-pick="${set.id}" aria-current="${set.id===pick.sets}"><b>${esc(set.name)}</b>${pill(s.claimed,s.done,`${s.have}/${s.total} cards`)}<span class="book-legend">${esc(set.area)}</span><span></span><span class="book-bar"><i style="width:${s.have/s.total*100}%"></i></span></button>`;}).join('')}
-    <div class="book-row off"><b>Next area</b><span class="book-pill">Not built</span><span class="book-legend">Each new area brings its own set.</span></div></div>
+</div>
    <p class="book-legend">An area set is every monster card from that area. Completing it turns on its set effect for good and pays a one-time reward.</p>`;
   const set=AREA_SETS.find(s=>s.id===pick.sets),s=setState(w,set.id),eff=[set.effect.health?`+${set.effect.health} max HP`:'',set.effect.damage?`+${Math.round(set.effect.damage*100)}% damage`:''].filter(Boolean).join(', ');
   right.innerHTML=`<div class="book-head"><h2>${esc(set.name)}</h2>${pill(s.claimed,s.done,'In progress')}</div>
@@ -113,8 +127,8 @@ export function mountCollection({getWorld,onOpen,onClose,onFamiliar=()=>false}){
  function explore(w){
   const maps=BOOK_REGIONS[0].maps;
   left.innerHTML=`<div class="book-head"><h2>Exploration</h2><span class="book-score">${counts(w).explore} goals</span></div>
-   <div class="book-list">${maps.map(id=>{const e=exploreState(w,id),n=e.goals.filter(g=>g.done).length,f=fieldMap(id);return `<button type="button" class="book-row ex" data-pick="${id}" aria-current="${id===pick.explore}"><b>${esc(f.code)} ${esc(areaFor(id).name)}</b>${pill(e.claimed,e.done,`${n}/3`)}<span class="book-legend">Lv ${f.levels[0]}–${f.levels[1]} · ${esc(rewardText(EXPLORATION[id].reward))}</span><span></span><span class="book-bar"><i style="width:${n/3*100}%"></i></span></button>`;}).join('')}
-    <div class="book-row off"><b>1.4 and on</b><span class="book-pill">Not built</span><span class="book-legend">New maps bring their own goals.</span></div></div>
+   <div class="book-list">${maps.map(id=>{const e=exploreState(w,id),n=e.goals.filter(g=>g.done).length,f=fieldMap(id),head=DUNGEONS.find(d=>d.maps[0]===id);return `${head?`<small class="book-kicker book-group">${esc(head.name)}</small>`:''}<button type="button" class="book-row ex" data-pick="${id}" aria-current="${id===pick.explore}"><b>${esc(f.code)} ${esc(areaFor(id).name)}</b>${pill(e.claimed,e.done,`${n}/3`)}<span class="book-legend">Lv ${f.levels[0]}–${f.levels[1]} · ${esc(rewardText(EXPLORATION[id].reward))}</span><span></span><span class="book-bar"><i style="width:${n/3*100}%"></i></span></button>`;}).join('')}
+</div>
    <p class="book-legend">Every map has three goals. Finishing all three pays the map's reward once.</p>`;
   const id=pick.explore,e=exploreState(w,id),f=fieldMap(id);
   right.innerHTML=`<div class="book-head"><h2>${esc(f.code)} ${esc(areaFor(id).name)}</h2><small class="book-kicker">Lv ${f.levels[0]}–${f.levels[1]}</small></div>

@@ -921,6 +921,7 @@ body.touch-mode #chat-box.open{bottom:auto;top:calc(8px + var(--hud-t,0px));tran
 #book-sheet .book-list{display:flex;flex-direction:column;gap:8px}
 #book-sheet .book-row{display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center;text-align:left;background:var(--bk-card);border:1px solid var(--bk-rule);border-radius:8px;padding:9px 11px;cursor:pointer;font:inherit;color:inherit}
 #book-sheet .book-row.off{cursor:default;opacity:.55}
+#book-sheet .book-row.ex{padding:6px 11px;gap:2px 10px}#book-sheet .book-group{margin-top:4px}
 #book-sheet .book-row[aria-current="true"]{border-color:var(--bk-brass);box-shadow:0 0 0 2px #e8c46a}
 #book-sheet .book-row .book-bar{grid-column:1/-1}#book-sheet .book-row .book-bar i{background:#6b9a3a}#book-sheet .book-row.ex .book-bar i{background:#b9862a}
 #book-sheet .book-pill{font:800 11px Arial,sans-serif;border-radius:10px;padding:2px 8px;white-space:nowrap;background:#eadfca;color:var(--bk-soft)}

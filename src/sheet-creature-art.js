@@ -12,7 +12,16 @@ export const SHEET_ROWS=Object.freeze(['walk','hit','die','attack']);
 export const SHEET_CREATURES=Object.freeze({
  stump:{sheet:'stump',size:52,shadow:11},
  'shore-crab':{sheet:'crab',size:76,shadow:19},
- 'boss-crab':{sheet:'mudshell',size:190,shadow:62}
+ 'boss-crab':{sheet:'mudshell',size:190,shadow:62},
+ 'boss-frog':{sheet:'frogking',size:180,shadow:60},
+ 'boss-mushroom':{sheet:'capstomper',size:180,shadow:56},
+ 'berry-sprite':{sheet:'sprite',size:50,shadow:12},
+ 'mushroom-imp':{sheet:'imp',size:56,shadow:13},
+ 'thistle-hog':{sheet:'thistle',size:60,shadow:15},
+ 'reed-frog':{sheet:'frog',size:58,shadow:15},
+ 'lantern-moth':{sheet:'moth',size:56,shadow:12},
+ 'ember-beetle':{sheet:'beetle',size:60,shadow:15},
+ 'pebble-hermit':{sheet:'hermit',size:62,shadow:16}
 });
 export const sheetCreature=a=>SHEET_CREATURES[a.species]||null;
 // Which painted frame fits this moment: [row, frame].

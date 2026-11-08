@@ -8,7 +8,7 @@ import {fieldMap,FIELD_MAPS} from './field-maps.js';
 import {ANIMAL_TYPES} from './entities.js';
 import {createBunches,mapCleared,fieldProgress} from './field-play.js';
 import {giveStarterSword} from './warrior.js';
-import {CAMP,DUNGEON,createDungeon,leftRun} from './dungeon.js';
+import {CAMP,DUNGEONS,dungeonOfMap,createDungeon,leftRun} from './dungeon.js';
 import {createCollection,applyCollection} from './collection.js';
 export const REGION_START='dewdrop-meadow';
 // The Regions maps in order, west to east: 1.1 Dewdrop Meadow, 1.2 Mossroot Trail, 1.3 Saltspray Shore.
@@ -25,7 +25,7 @@ export function startRegions(world){
  Object.assign(world.player,AREAS[CAMP].spawn,{name:'Eli',spriteId:'eli'});
  world.wildlife=allBunches(world);
  giveStarterSword(world);
- world.message=`Wilds Camp · Step up to the portal to enter the dungeon, ${DUNGEON.name}.`;
+ world.message=`Wilds Camp · Step up to a portal to enter its dungeon: ${DUNGEONS.map(d=>d.name).join(', ')}.`;
 }
 // A restored Regions journey rebuilds its map's monsters from the field map state (the ones down stay down).
 export function restoreRegions(world){
@@ -34,7 +34,7 @@ export function restoreRegions(world){
  world.wildlife=allBunches(world);
  // A save from before the dungeon, standing in one of its maps, carries on as a run.
  world.collection??=createCollection();applyCollection(world);
- world.dungeon??=createDungeon();if(!world.dungeon.run&&DUNGEON.maps.includes(world.areaId))world.dungeon.run={startedAt:world.elapsed};
+ world.dungeon??=createDungeon();const inside=dungeonOfMap(world.areaId);if(!world.dungeon.run&&inside)world.dungeon.run={id:inside.id,startedAt:world.elapsed};
 }
 // Walking off the east edge into the next map needs the gate open (this map cleared); walking back west is always open.
 // Returns the arrival message, or null when the way is shut (the gate message is already up).

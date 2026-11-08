@@ -9,18 +9,31 @@ import {absorbShard,FAMILIARS} from './familiars.js';
 export const STAR_KILLS=Object.freeze([1,30,100]);
 // The cards of each region, in book order. map is where the monster lives.
 export const BOOK_REGIONS=Object.freeze([
- Object.freeze({id:1,name:'Reedwater Wilds',maps:Object.freeze(['dewdrop-meadow','mossroot-trail','saltspray-shore']),cards:Object.freeze([
+ Object.freeze({id:1,name:'Reedwater Wilds',maps:Object.freeze(['dewdrop-meadow','mossroot-trail','saltspray-shore','bramble-hollow','toadstool-glen','thistle-downs','cattail-fen','lantern-glade','ember-ridge','pebble-strand','mossback-ruins']),cards:Object.freeze([
   Object.freeze({species:'slime',map:'dewdrop-meadow'}),
   Object.freeze({species:'stump',map:'mossroot-trail'}),
   Object.freeze({species:'shore-crab',map:'saltspray-shore'}),
-  Object.freeze({species:'boss-crab',map:'saltspray-shore',boss:true})
+  Object.freeze({species:'boss-crab',map:'saltspray-shore',boss:true}),
+  Object.freeze({species:'berry-sprite',map:'bramble-hollow'}),
+  Object.freeze({species:'mushroom-imp',map:'toadstool-glen'}),
+  Object.freeze({species:'thistle-hog',map:'thistle-downs'}),
+  Object.freeze({species:'reed-frog',map:'cattail-fen'}),
+  Object.freeze({species:'boss-frog',map:'cattail-fen',boss:true}),
+  Object.freeze({species:'lantern-moth',map:'lantern-glade'}),
+  Object.freeze({species:'ember-beetle',map:'ember-ridge'}),
+  Object.freeze({species:'pebble-hermit',map:'pebble-strand'}),
+  Object.freeze({species:'boss-mushroom',map:'mossback-ruins',boss:true})
  ])})
 ]);
 export const BOOK_CARDS=Object.freeze(BOOK_REGIONS.flatMap(r=>r.cards));
 // One set per area: every monster card of that area. The effect lasts once the set is complete; the reward is claimed once.
 export const AREA_SETS=Object.freeze([
  Object.freeze({id:'reedwater-wilds',name:'Reedwater Wilds',area:'Maps 1.1 to 1.3',cards:Object.freeze(['slime','stump','shore-crab','boss-crab']),
-  effect:Object.freeze({health:10,damage:.03}),reward:Object.freeze({wishstones:3})})
+  effect:Object.freeze({health:10,damage:.03}),reward:Object.freeze({wishstones:3})}),
+ Object.freeze({id:'thornberry-vale',name:'Thornberry Vale',area:'Maps 1.4 to 1.7',cards:Object.freeze(['berry-sprite','mushroom-imp','thistle-hog','reed-frog','boss-frog']),
+  effect:Object.freeze({health:20,damage:.04}),reward:Object.freeze({wishstones:4})}),
+ Object.freeze({id:'lanternlight-wilds',name:'Lanternlight Wilds',area:'Maps 1.8 to 1.11',cards:Object.freeze(['lantern-moth','ember-beetle','pebble-hermit','boss-mushroom']),
+  effect:Object.freeze({health:30,damage:.05}),reward:Object.freeze({wishstones:5})})
 ]);
 const kills=(world,species)=>world.hunting?.bySpecies?.[species]||0;
 const cleared=id=>world=>(world.fieldMaps?.[id]?.clears||0)>0;
@@ -30,8 +43,18 @@ const defeated=(species,n)=>world=>kills(world,species)>=n;
 export const EXPLORATION=Object.freeze({
  'dewdrop-meadow':{goals:[['Clear the map',cleared('dewdrop-meadow')],['Clear with rank A or better',rankAtLeast('dewdrop-meadow','A')],['Defeat 100 slimes',defeated('slime',100)]],reward:{marks:200}},
  'mossroot-trail':{goals:[['Clear the map',cleared('mossroot-trail')],['Clear with rank A or better',rankAtLeast('mossroot-trail','A')],['Defeat 100 stumplings',defeated('stump',100)]],reward:{marks:300}},
- 'saltspray-shore':{goals:[['Clear the map',cleared('saltspray-shore')],['Clear with rank S',rankAtLeast('saltspray-shore','S')],['Defeat Mudshell 5 times',defeated('boss-crab',5)]],reward:{marks:400,shard:'boss-crab'}}
+ 'saltspray-shore':{goals:[['Clear the map',cleared('saltspray-shore')],['Clear with rank S',rankAtLeast('saltspray-shore','S')],['Defeat Mudshell 5 times',defeated('boss-crab',5)]],reward:{marks:400,shard:'boss-crab'}},
+ ...normalMap('bramble-hollow','berry-sprite','berry sprites',500),
+ ...normalMap('toadstool-glen','mushroom-imp','mushroom imps',550),
+ ...normalMap('thistle-downs','thistle-hog','thistle hogs',600),
+ ...bossMap('cattail-fen','boss-frog','Old Croaker',700),
+ ...normalMap('lantern-glade','lantern-moth','lantern moths',750),
+ ...normalMap('ember-ridge','ember-beetle','ember beetles',800),
+ ...normalMap('pebble-strand','pebble-hermit','pebble hermits',850),
+ ...bossMap('mossback-ruins','boss-mushroom','Capstomper',1000)
 });
+function normalMap(id,species,plural,marks){return {[id]:{goals:[['Clear the map',cleared(id)],['Clear with rank A or better',rankAtLeast(id,'A')],[`Defeat 100 ${plural}`,defeated(species,100)]],reward:{marks}}};}
+function bossMap(id,species,name,marks){return {[id]:{goals:[['Clear the map',cleared(id)],['Clear with rank S',rankAtLeast(id,'S')],[`Defeat ${name} 5 times`,defeated(species,5)]],reward:{marks,shard:species}}};}
 export const createCollection=()=>({sets:[],explored:[]});
 export const starsFor=n=>STAR_KILLS.filter(k=>n>=k).length;
 export function cardState(world,species){

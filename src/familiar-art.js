@@ -5,7 +5,7 @@ import {FAMILIARS} from './familiars.js';
 import {BRUME_TIMING} from './sprite-definitions.js';
 import {drawVillageCreature} from './village-creature-art.js';
 // Familiars reuse their species' artwork, drawn smaller over a spirit glow. Nothing here moves the follower.
-const GLOW={slime:'#b8f07a',stump:'#d8f0a0','shore-crab':'#ffb08a','boss-crab':'#ff8a6a',rabbit:'#cfe6ff',fox:'#ffb37a',boar:'#e0b48a',elk:'#e6edc0',bear:'#ffc46b',heron:'#ffc8d8',crab:'#ff9a7a',goat:'#e8e2d0',otter:'#d9b38c',duck:'#9fe0c8',pike:'#d8e6a8',seal:'#a8c4ff',deer:'#ffe3a0',turtle:'#a8f0c8',eel:'#9ee6ff','shadow-walker':'#b9a0ff',moonfang:'#dde3ff',rimejaw:'#a6e4ff',flitlynx:'#ffbf8a'};
+const GLOW={'boss-frog':'#b8f07a','boss-mushroom':'#ff8a6a','berry-sprite':'#d68cff','mushroom-imp':'#ff8a6a','thistle-hog':'#e0d070','reed-frog':'#9fe08a','lantern-moth':'#ffd36a','ember-beetle':'#ffa040','pebble-hermit':'#8ab0ff',slime:'#b8f07a',stump:'#d8f0a0','shore-crab':'#ffb08a','boss-crab':'#ff8a6a',rabbit:'#cfe6ff',fox:'#ffb37a',boar:'#e0b48a',elk:'#e6edc0',bear:'#ffc46b',heron:'#ffc8d8',crab:'#ff9a7a',goat:'#e8e2d0',otter:'#d9b38c',duck:'#9fe0c8',pike:'#d8e6a8',seal:'#a8c4ff',deer:'#ffe3a0',turtle:'#a8f0c8',eel:'#9ee6ff','shadow-walker':'#b9a0ff',moonfang:'#dde3ff',rimejaw:'#a6e4ff',flitlynx:'#ffbf8a'};
 // Guardians run on their sheets' run rows. Stand-ins until each has the standard 4-direction walk set.
 const GUARDIAN_RUN={moonfang:'run',rimejaw:'walk',flitlynx:'walk'};
 // Guardians that have it walk on the 4-direction set instead: the Moonfang is drawn as Brume.
