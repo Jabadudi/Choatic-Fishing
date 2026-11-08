@@ -55,8 +55,8 @@ installPressGuard();
 let touchMode=touchMedia.matches,touchUI=null;document.body.classList.toggle('touch-mode',touchMode);
 // Keep the explorer readable on a narrow portrait viewport.
 let view={scale:1,base:1,zoom:1,x:0,y:0,width:960,height:720,dpr:1};
-// The Regions game brings the camera 50% closer to Eli (Netanel's pick, 8 Nov 2026); the HUD keeps its size.
-const REGIONS_ZOOM=1.5;
+// The Regions game brings the camera 25% closer to Eli (Netanel, 8 Nov 2026: 50% was too close); the HUD keeps its size.
+const REGIONS_ZOOM=1.25;
 function applyZoom(){view.zoom=world?.regions&&world.adventure?REGIONS_ZOOM:1;view.scale=view.base*view.zoom;}
 function resize(){
   const r=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,1.5,Math.sqrt(1920*1080/(r.width*r.height)));
