@@ -12,6 +12,7 @@ import {MERCHANTS,findMarks,marksLabel} from './trade.js';
 import {attack,special,updateProjectiles,startRush,updateRush,WEAPON_RUSHES,holdRepeats} from './combat.js';
 import {hitStopDt,updateCombo} from './combo.js';
 import {createBosses,updateBosses} from './bosses.js';
+import {updateContact} from './contact.js';
 import {createFieldMaps,updateFieldMaps} from './field-play.js';
 import {createCore,updateCore,useCoreAbility,useCoreSlot,waterstepSpeed} from './core-abilities.js';
 import {facingFor} from './entities.js';
@@ -262,6 +263,7 @@ export class World {
   updateDefeat(this,dt);
   updateSpawns(this,dt);
   updateBosses(this,dt);
+  updateContact(this,dt);
   updateFieldMaps(this,dt);updateRegions(this);
   updateFamiliar(this,dt);
   if(this.adventure)this.pullDrops(dt);
