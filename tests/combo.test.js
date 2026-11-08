@@ -125,3 +125,17 @@ test('holding attack with the bow keeps loosing arrows',()=>{
  for(let t=0;t<2.5;t+=1/60){const before=w.projectiles.length;w.update(1/60,held);if(w.projectiles.length>before)shots++;}
  assert.ok(shots>=3,`expected several arrows, got ${shots}`);
 });
+
+test('a map boss cannot be stunned or knocked down while it is attacking, but can between attacks',async()=>{
+ const {createBunches}=await import('../src/field-play.js');
+ const s=setup(.01),boss=createBunches(s.w,'saltspray-shore').find(a=>a.species==='boss-crab');
+ assert.ok(boss?.mapBoss,'Mudshell on 1.3 is a map boss');boss.health=boss.maxHealth=10000;
+ Object.assign(boss,{x:s.walker.x,y:s.walker.y,areaId:s.w.areaId});s.w.wildlife=[boss];
+ // Every roll stuns, but Mudshell is winding up: the swing goes on and RESIST shows.
+ boss.state='attack';boss.attackRemaining=.5;
+ for(let i=0;i<3;i++){attack(s.w,s.w.player,spear);s.w.player.cooldown=0;boss.state='attack';}
+ assert.ok(!(boss.stunRemaining>0));assert.ok(!(boss.downRemaining>0));assert.ok(boss.attackRemaining>0);
+ assert.ok(s.w.effects.some(e=>e.label==='RESIST'));
+ // Between attacks the same hit stuns it as before.
+ boss.state='chase';s.w.player.comboStep=0;attack(s.w,s.w.player,spear);assert.ok(boss.stunRemaining>0);
+});
