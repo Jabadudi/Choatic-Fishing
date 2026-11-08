@@ -23,7 +23,7 @@ function slimePose(a){
  return {dead,lift,sx,sy};
 }
 // The slime's contact shadow for the shadow pass: under its base, shrinking while it is in the air.
-export function slimeShadow(a){const {dead,lift,sx}=slimePose(a);if(dead)return null;const k=1-lift/26;return {x:Math.round(a.x),y:Math.round(a.y)+1,rx:17*sx*.95*k,ry:4.6*k};}
+export function slimeShadow(a){const {dead,lift,sx}=slimePose(a);if(dead)return null;const k=1-lift/26;return {x:Math.round(a.x),y:Math.round(a.y)-1,rx:17*sx*.95*k,ry:4.6*k};}
 export function drawSlime(c,a){
  const col=slimeColor(a),{dead,lift,sx,sy}=slimePose(a);
  const x=Math.round(a.x),y=Math.round(a.y),R=17;

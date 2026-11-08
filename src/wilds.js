@@ -422,7 +422,7 @@ export function drawDepthSorted(ctx,world,view,actors,drawActor,{still=false,ter
   if(it.kind==='atlas')propShadow(s,it.ref);
   else if(it.kind==='actor'){const a=it.ref;
    if(a.species==='slime'){const o=slimeShadow(a);if(o)contactShadow(s,o.x,o.y,o.rx,o.ry);}
-   else if((a===p||a.npc||a.remote||a.cutscene)&&(a.health===undefined||a.health>0))contactShadow(s,Math.round(a.x),Math.round(a.y)+15,12,4.5);}
+   else if((a===p||a.npc||a.remote||a.cutscene)&&(a.health===undefined||a.health>0))contactShadow(s,Math.round(a.x),Math.round(a.y)+14,11,4);}
   s.restore();}});
  muteShadows(!!cast);
  try{

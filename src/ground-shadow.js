@@ -16,7 +16,7 @@ export function castShadow(ctx,x,y,rx,{ry=Math.max(3,rx*.36),strength=1}={}){
 // onto the ground (flattened and leaned away from the light), and each creature gets a small contact oval right under
 // its feet. All of it is drawn solid into one buffer at two game pixels per texel, then laid on the ground once at a
 // single strength, so shadows have crisp pixel edges like the art and never stack darker where they overlap.
-export const CAST={lean:.5,drop:.2,alpha:.3,texel:2};
+export const CAST={lean:.3,drop:.12,alpha:.3,texel:2,tuck:.14};
 let buffer=null;
 export function shadowPass(ctx,draw){
  const canvas=ctx.canvas;
@@ -38,8 +38,10 @@ export function muteShadows(on){muted=on;}
 // A contact shadow: a flat oval straight under the feet, nudged a touch away from the light.
 export function contactShadow(s,x,y,rx,ry=Math.max(2.5,rx*.34)){s.beginPath();s.ellipse(x+rx*.1,y,rx,ry,0,0,Math.PI*2);s.fill();}
 // Lays whatever draw() paints (a sprite standing on (x,y)) down on the ground, leaning right and down from its foot.
-export function projectFrom(s,x,y,draw,scale=1){
- s.save();s.transform(1,0,-CAST.lean,-CAST.drop,CAST.lean*y,y+CAST.drop*y);
+// ground is the line where the art meets the ground: painted props have rounded bottoms, so it sits a little above the
+// box's foot, and the shadow starts there, tucked behind the base instead of below it.
+export function projectFrom(s,x,y,draw,scale=1,ground=y){
+ s.save();s.transform(1,0,-CAST.lean,-CAST.drop,CAST.lean*ground,ground+CAST.drop*ground);
  if(scale!==1){s.translate(x,y);s.scale(scale,scale);s.translate(-x,-y);}
  draw(s);s.restore();
 }
