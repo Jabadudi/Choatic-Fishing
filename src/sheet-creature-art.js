@@ -10,7 +10,7 @@ import {drawProp} from './sprites.js';
 export const SHEET_ROWS=Object.freeze(['walk','hit','die','attack']);
 // size: how many game px wide the 300 px canvas is drawn. shadow: the contact shadow's half width.
 export const SHEET_CREATURES=Object.freeze({
- stump:{sheet:'stump',size:39,shadow:8},
+ stump:{sheet:'stump',size:52,shadow:11},
  'shore-crab':{sheet:'crab',size:76,shadow:19},
  'boss-crab':{sheet:'mudshell',size:190,shadow:62}
 });

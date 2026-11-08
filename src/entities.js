@@ -50,7 +50,7 @@ export const ANIMAL_TYPES=Object.freeze({
   noticeRange:210,noticeDelay:.5,loseRange:420,leashRange:520,chaseSpeed:96,attackDamage:7,attackRange:46,attackWindup:.5,attackRecover:.45,attackCooldown:1.5,huntXp:16,loot:'slime',familiar:false},
  // Regions 1.2: a walking tree stump with a sprout on top. Slower than a slime and tougher, it plods up and swings a
  // root-arm. Stands in bunches like the slimes. Drawn from its painted sheet (src/sheet-creature-art.js).
- stump:{behavior:BEHAVIORS.AGGRESSIVE,name:'Stumpling',maxHealth:52,radius:10,habitat:'land',speed:24,fearRange:0,
+ stump:{behavior:BEHAVIORS.AGGRESSIVE,name:'Stumpling',maxHealth:52,radius:13,habitat:'land',speed:24,fearRange:0,
   noticeRange:220,noticeDelay:.6,loseRange:420,leashRange:520,chaseSpeed:82,attackDamage:9,attackRange:50,attackWindup:.6,attackRecover:.5,attackCooldown:1.7,huntXp:24,loot:'stump',familiar:false},
  // Regions 1.3: shore crabs, quick little nippers that scuttle in bunches on the sand (src/sheet-creature-art.js).
  'shore-crab':{behavior:BEHAVIORS.AGGRESSIVE,name:'Shore Crab',maxHealth:46,radius:15,habitat:'land',speed:34,fearRange:0,

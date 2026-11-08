@@ -97,7 +97,7 @@ export function drawWildlife(c,a){
  c.restore();
 }
 // How high the health bar sits above each shadow walker kind's feet.
-const STATUS_HEIGHT={slime:44,stump:38,'shore-crab':44,'boss-crab':112,'drowned-captain':86,greyhorn:134,'hollow-stag':98,'gloam-boar':42,stoneshade:96,whisperer:76,'mire-walker':64,'drowned-soldier':64,'ash-archer':62,inkeel:44};
+const STATUS_HEIGHT={slime:44,stump:48,'shore-crab':44,'boss-crab':112,'drowned-captain':86,greyhorn:134,'hollow-stag':98,'gloam-boar':42,stoneshade:96,whisperer:76,'mire-walker':64,'drowned-soldier':64,'ash-archer':62,inkeel:44};
 export function drawAnimalStatus(c,world){
  for(const a of world.animals){
   if(a.health<=0||a.areaId!==world.areaId)continue;
